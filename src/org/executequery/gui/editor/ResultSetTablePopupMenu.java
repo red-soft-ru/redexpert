@@ -53,6 +53,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     private final DatabaseTableObject tableObject;
     private final ReflectiveAction reflectiveAction;
     private final ResultSetTableContainer resultSetTableContainer;
+    private final JMenuItem autoWidthForColsItem;
 
     private Point lastPopupPoint;
     private boolean doubleClickCellOpensDialog;
@@ -98,7 +99,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
         // the auto column width menu-item
-        JMenuItem autoWidthForColsItem = create(bundleString("AutoWidthForCols"), "autoWidthForCols");
+        autoWidthForColsItem = create(bundleString("AutoWidthForCols"), "autoWidthForCols");
         autoWidthForColsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyEvent.CTRL_DOWN_MASK));
 
         // --- arrange menu items ---
@@ -236,14 +237,16 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
     @SuppressWarnings("unused")
     public void autoWidthForCols(ActionEvent e) {
 
-        if (table.getAutoResizeMode() != JTable.AUTO_RESIZE_ALL_COLUMNS) {
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-            ((JMenuItem) e.getSource()).setText(bundleString("ColumnWidthByContent"));
+        boolean isAutoResizeable = !table.isAutoResizeable();
 
-        } else {
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            ((JMenuItem) e.getSource()).setText(bundleString("AutoWidthForCols"));
-        }
+        table.setTableColumnWidthFromContents();
+        table.setAutoResizeable(isAutoResizeable);
+        table.setAutoResizeMode(isAutoResizeable ? JTable.AUTO_RESIZE_ALL_COLUMNS : JTable.AUTO_RESIZE_OFF);
+
+        autoWidthForColsItem.setText(isAutoResizeable ?
+                bundleString("ColumnWidthByContent") :
+                bundleString("AutoWidthForCols")
+        );
     }
 
     @SuppressWarnings("unused")

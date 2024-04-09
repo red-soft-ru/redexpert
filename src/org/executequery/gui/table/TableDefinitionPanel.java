@@ -953,28 +953,28 @@ public abstract class TableDefinitionPanel extends JPanel
                     return cd.getColumnName();
 
                 case TYPE_COLUMN:
-                    return cd.getColumnType();
+                    return cd.getTypeName();
 
                 case DOMAIN_COLUMN:
                     return cd.getDomain();
 
                 case SIZE_COLUMN:
-                    return cd.getColumnSize();
+                    return cd.getSize();
 
                 case SCALE_COLUMN:
-                    return cd.getColumnScale();
+                    return cd.getScale();
 
                 case SUBTYPE_COLUMN:
-                    return cd.getColumnSubtype();
+                    return cd.getSubtype();
 
                 case REQUIRED_COLUMN:
-                    return cd.isRequired();
+                    return cd.isNotNull();
 
                 case CHECK_COLUMN:
                     return cd.getCheck();
 
                 case DESCRIPTION_COLUMN:
-                    return cd.getDescription();
+                    return cd.getRemarks();
 
                 case COMPUTED_BY_COLUMN:
                     return cd.getComputedBy();
@@ -1017,7 +1017,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 case TYPE_COLUMN:
                     if (value != null) {
                         if (value.getClass() == String.class) {
-                            cd.setColumnType((String) value);
+                            cd.setTypeName((String) value);
 
                             int intValue = 0;
                             for (int i = 0; i < intDataTypes.length; i++) {
@@ -1028,7 +1028,7 @@ public abstract class TableDefinitionPanel extends JPanel
                             }
 
                             cd.setSQLType(intValue);
-                            if (cd.getSQLType() != cd.getDomainType()) {
+                            if (cd.getSQLType() != cd.getSQLType()) {
                                 _model.setValueAt("", row, DOMAIN_COLUMN);
 
                                 if (!isEditSize(row))
@@ -1052,25 +1052,25 @@ public abstract class TableDefinitionPanel extends JPanel
                                 if (!isEditSize(row))
                                     _model.setValueAt("-1", row, SIZE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getSize()), row, SIZE_COLUMN);
 
                                 if (!isEditScale(row))
                                     _model.setValueAt("-1", row, SCALE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getScale()), row, SCALE_COLUMN);
 
                                 if (!isEditSubtype(row))
                                     _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getSubtype()), row, SUBTYPE_COLUMN);
                             }
                             updateCollation(getValueAt(row, ENCODING_COLUMN).toString(), row);
 
                         } else {
-                            cd.setColumnType(dataTypes[(int) value]);
+                            cd.setTypeName(dataTypes[(int) value]);
                             cd.setSQLType(intDataTypes[(int) value]);
 
-                            if (cd.getSQLType() != cd.getDomainType()) {
+                            if (cd.getSQLType() != cd.getSQLType()) {
 
                                 _model.setValueAt("", row, DOMAIN_COLUMN);
                                 if (!isEditSize(row))
@@ -1094,17 +1094,17 @@ public abstract class TableDefinitionPanel extends JPanel
                                 if (!isEditSize(row))
                                     _model.setValueAt("-1", row, SIZE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnSize()), row, SIZE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getSize()), row, SIZE_COLUMN);
 
                                 if (!isEditScale(row))
                                     _model.setValueAt("-1", row, SCALE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnScale()), row, SCALE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getScale()), row, SCALE_COLUMN);
 
                                 if (!isEditSubtype(row))
                                     _model.setValueAt((cd.getSQLType() == Types.LONGVARBINARY) ? "0" : "1", row, SUBTYPE_COLUMN);
                                 else
-                                    _model.setValueAt(String.valueOf(cd.getColumnSubtype()), row, SUBTYPE_COLUMN);
+                                    _model.setValueAt(String.valueOf(cd.getSubtype()), row, SUBTYPE_COLUMN);
                             }
 
                             if (!isEditEncoding(row))
@@ -1113,7 +1113,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
                     } else {
                         cd.setSQLType(0);
-                        cd.setColumnType(null);
+                        cd.setTypeName(null);
 //                        _model.setValueAt("-1", row, SIZE_COLUMN);
 //                        _model.setValueAt("-1", row, SCALE_COLUMN);
 //                        _model.setValueAt("1", row, SUBTYPE_COLUMN);
@@ -1123,32 +1123,32 @@ public abstract class TableDefinitionPanel extends JPanel
 
                 case DOMAIN_COLUMN:
                     if (value.getClass() == String.class) {
-                        cd.setDatabaseConnection(dc);
+                        cd.setConnection(dc);
                         cd.setDomain((String) value);
                         if (!MiscUtils.isNull((String) value)) {
-                            cd.setColumnType(getStringType(cd.getDomainType()));
-                            _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
+                            cd.setTypeName(getStringType(cd.getSQLType()));
+                            _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
                         }
 
                     } else {
-                        cd.setDatabaseConnection(dc);
+                        cd.setConnection(dc);
                         cd.setDomain(domains[(int) value]);
-                        cd.setColumnType(getStringType(cd.getDomainType()));
-                        _model.setValueAt(cd.getColumnType(), row, TYPE_COLUMN);
+                        cd.setTypeName(getStringType(cd.getSQLType()));
+                        _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
                     }
                     updateCollation(getValueAt(row, ENCODING_COLUMN).toString(), row);
                     break;
 
                 case SIZE_COLUMN:
-                    cd.setColumnSize(Integer.parseInt((String) value));
+                    cd.setSize(Integer.parseInt((String) value));
                     break;
 
                 case SCALE_COLUMN:
-                    cd.setColumnScale(Integer.parseInt((String) value));
+                    cd.setScale(Integer.parseInt((String) value));
                     break;
 
                 case SUBTYPE_COLUMN:
-                    cd.setColumnSubtype(Integer.parseInt((String) value));
+                    cd.setSubtype(Integer.parseInt((String) value));
                     break;
 
                 case REQUIRED_COLUMN:
@@ -1160,7 +1160,7 @@ public abstract class TableDefinitionPanel extends JPanel
                     break;
 
                 case DESCRIPTION_COLUMN:
-                    cd.setDescription((String) value);
+                    cd.setRemarks((String) value);
                     break;
 
                 case COMPUTED_BY_COLUMN:
@@ -1202,7 +1202,7 @@ public abstract class TableDefinitionPanel extends JPanel
 
         boolean isEditSize(int row) {
             ColumnData cd = tableVector.elementAt(row);
-            return (cd.getColumnType() != null)
+            return (cd.getTypeName() != null)
                     && ((cd.getSQLType() == Types.NUMERIC)
                             || (cd.getSQLType() == Types.CHAR)
                             || (cd.getSQLType() == Types.VARCHAR)
@@ -1210,8 +1210,8 @@ public abstract class TableDefinitionPanel extends JPanel
                             || (cd.getSQLType() == Types.BLOB)
                             || (cd.getSQLType() == Types.LONGVARCHAR)
                             || (cd.getSQLType() == Types.LONGVARBINARY)
-                            || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                            || cd.getColumnType().equalsIgnoreCase("CHAR"));
+                            || cd.getTypeName().equalsIgnoreCase("VARCHAR")
+                            || cd.getTypeName().equalsIgnoreCase("CHAR"));
         }
 
         boolean isEditScale(int row) {

@@ -240,7 +240,7 @@ public class TableValidationPanel extends JPanel implements TabView {
         selectedConnection = databaseConnections.get(connectionsComboBox.getSelectedIndex());
         try {
             if (!selectedConnection.isConnected())
-                ConnectionManager.createDataSource(selectedConnection);
+                ConnectionManager.createDataSource(selectedConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e);

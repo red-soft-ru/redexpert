@@ -16,8 +16,6 @@ import org.underworldlabs.util.MiscUtils;
 import javax.swing.*;
 import java.util.Vector;
 
-import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_DESCRIPTOR;
-import static org.executequery.databaseobjects.impl.DefaultDatabaseUDF.BY_VALUE;
 import static org.underworldlabs.util.SQLUtils.columnDataFromProcedureParameter;
 
 public class CreateUDFPanel extends AbstractCreateObjectPanel {
@@ -104,7 +102,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
         for (int i = 0; i < params.size(); i++) {
             ColumnData param = params.elementAt(i);
             if (param.isCString())
-                sb.append("CSTRING (").append(param.getColumnSize()).append(") ");
+                sb.append("CSTRING (").append(param.getSize()).append(") ");
             else {
                 if (param.getSQLType() == Types.BLOB ||
                         param.getSQLType() == Types.LONGVARBINARY ||
@@ -119,7 +117,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                         !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                     sb.append(param.getMechanism()).append(" ");
             }
-            if (param.isRequired() && param.getMechanism() != null && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
+            if (param.isNotNull() && param.getMechanism() != null && !param.getMechanism().contains("BY BLOB DESCRIPTOR"))
                 sb.append(" NULL ");
             if (i < params.size() - 1)
                 sb.append(",");
@@ -245,9 +243,9 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
                 selectTypePanel.setColumnData(returnsType);
                 selectTypePanel.refresh();
 
-                if (udfParameter.getMechanism() == BY_DESCRIPTOR)
+                if (DefaultDatabaseUDF.byDescriptor(udfParameter))
                     mechanismBox.setSelectedIndex(2);
-                else if (udfParameter.getMechanism() == BY_VALUE)
+                else if (DefaultDatabaseUDF.byValue(udfParameter))
                     mechanismBox.setSelectedIndex(1);
                 else mechanismBox.setSelectedIndex(0);
             }

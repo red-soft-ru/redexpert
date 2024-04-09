@@ -41,6 +41,8 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
+import javax.swing.*;
+import javax.swing.plaf.TreeUI;
 import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -62,51 +64,55 @@ public final class ConnectionManager {
      * Creates a stored data source for the specified database
      * connection properties object.
      *
-     * @param the database connection properties object
+     * @param databaseConnection database connection properties object
+     * @param isAutoconnect      is connection opened automaticaly
      */
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection) throws IllegalArgumentException {
-        createDataSource(databaseConnection, null);
+    public static synchronized void createDataSource(DatabaseConnection databaseConnection, boolean isAutoconnect) throws IllegalArgumentException {
+        createDataSource(databaseConnection, null, isAutoconnect);
     }
 
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder) throws IllegalArgumentException {
+    public static synchronized void createDataSource(
+            DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder, boolean isAutoconnect
+    ) throws IllegalArgumentException {
+
+        databaseConnection.setAutoConnect(isAutoconnect);
 
         // check the connection has a driver
         if (databaseConnection.getJDBCDriver() == null) {
-
             long driverId = databaseConnection.getDriverId();
             DatabaseDriver driver = driverById(driverId);
 
-            if (driver != null) {
-
+            if (driver != null)
                 databaseConnection.setJDBCDriver(driver);
-
-            } else {
-
+            else
                 throw new DataSourceException("No JDBC driver specified");
-            }
-
         }
 
         Log.info("Initialising data source for " + databaseConnection.getName());
+
         ConnectionPool pool = new ConnectionPoolImpl(databaseConnection);
         pool.setMinimumConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
         pool.setInitialConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
         connectionPools.put(databaseConnection, pool);
+
         databaseConnection.setConnected(true);
-        DatabaseObjectNode hostNode = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection);
-        ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
         long startTime = System.currentTimeMillis();
-        loadTree(hostNode, connectionBuilder);
+
+        ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (panel != null) {
+            DatabaseObjectNode hostNode = panel.getHostNode(databaseConnection);
+            ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
+            loadTree(hostNode, connectionBuilder);
+            panel.getTree().nodeChanged(hostNode);
+        }
 
         DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
         try {
 
             ResultSet rs = querySender.getResultSet("select rdb$character_set_name from rdb$database").getResultSet();
-            if (rs != null && rs.next()) {
-                if (rs.getString(1) != null) {
+            if (rs != null && rs.next())
+                if (rs.getString(1) != null)
                     databaseConnection.setDBCharset(rs.getString(1).trim());
-                }
-            }
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
@@ -119,28 +125,30 @@ public final class ConnectionManager {
             databaseConnection.setConnected(false);
 
         if (databaseConnection.isConnected()) {
-            Log.info("Connection time = "+(System.currentTimeMillis()-startTime)+"ms");
+            Log.info("Connection time = " + (System.currentTimeMillis() - startTime) + "ms");
             Log.info("Data source " + databaseConnection.getName() + " initialized.");
         }
     }
 
-
     public static void loadTree(DatabaseObjectNode root, ConnectionBuilder connectionBuilder) {
         try {
             root.populateChildren();
+
             Enumeration<TreeNode> nodes = root.children();
             while (nodes.hasMoreElements()) {
+
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
                 if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
                     loadTree(node, connectionBuilder);
+
                     if (node.getType() == NamedObject.META_TAG)
                         ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
                 }
             }
+
         } catch (Exception e) {
-            if (!connectionBuilder.isCancelled()) {
-                e.printStackTrace();
-            }
+            if (!connectionBuilder.isCancelled())
+                Log.error(e.getMessage(), e);
         }
     }
 
@@ -161,7 +169,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection);
+                createDataSource(databaseConnection, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
@@ -187,7 +195,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection);
+                createDataSource(databaseConnection, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);

@@ -401,16 +401,16 @@ public class EditTablePanel extends TableDefinitionPanel {
                             append(value).
                             append(SPACE);
 
-                    value = cd.getColumnType();
+                    value = cd.getTypeName();
                     if (value != null && value.length() > 0) {
-                        sqlText.append(value).append(OPEN_B).append(cd.getColumnSize());
+                        sqlText.append(value).append(OPEN_B).append(cd.getSize());
 
-                        int scale = cd.getColumnScale();
+                        int scale = cd.getScale();
                         if (scale != 0) {
                             sqlText.append(COMMA).append(scale);
                         }
 
-                        sqlText.append(CLOSE_B).append(cd.isRequired() ? NOT_NULL : NULL);
+                        sqlText.append(CLOSE_B).append(cd.isNotNull() ? NOT_NULL : NULL);
                     }
 
                     sqlText.append(NEW_LINE);
@@ -457,9 +457,9 @@ public class EditTablePanel extends TableDefinitionPanel {
     private void tableChanged(ColumnData cd, int row, int col) {
         sqlText.setLength(0);
 
-        int size = cd.getColumnSize();
-        int scale = cd.getColumnScale();
-        String type = cd.getColumnType();
+        int size = cd.getSize();
+        int scale = cd.getScale();
+        String type = cd.getTypeName();
         
         /*
         if (col == 2) {
@@ -492,14 +492,14 @@ public class EditTablePanel extends TableDefinitionPanel {
             }
 
             sqlText.append(CLOSE_B).
-                    append(cd.isRequired() ? NOT_NULL : NULL).
+                    append(cd.isNotNull() ? NOT_NULL : NULL).
                     append(NEW_LINE);
 
             tempSqlText.put(ADD + row, sqlText.toString());
-        } else if (originalData[row].getColumnSize() == size &&
-                originalData[row].getColumnType().equals(type) &&
-                originalData[row].getColumnScale() == scale &&
-                originalData[row].isRequired() == cd.isRequired()) {
+        } else if (originalData[row].getSize() == size &&
+                originalData[row].getTypeName().equals(type) &&
+                originalData[row].getScale() == scale &&
+                originalData[row].isNotNull() == cd.isNotNull()) {
 
             tempSqlText.remove(MODIFY + row);
 
@@ -524,7 +524,7 @@ public class EditTablePanel extends TableDefinitionPanel {
             }
 
             sqlText.append(CLOSE_B).
-                    append(cd.isRequired() ? NOT_NULL : NULL).
+                    append(cd.isNotNull() ? NOT_NULL : NULL).
                     append(CLOSE_B).
                     append(NEW_LINE);
 

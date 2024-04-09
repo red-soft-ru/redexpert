@@ -260,7 +260,7 @@ public class CreateTableScriptsGenerator {
                                 append(sb_spaces_2).
                                 append(column.getFormattedDataType());
 
-                        sb.append(column.isRequired() ? NOT_NULL : EMPTY);
+                        sb.append(column.isNotNull() ? NOT_NULL : EMPTY);
 
                         if (column.isKey() && includeConstraints) {
 

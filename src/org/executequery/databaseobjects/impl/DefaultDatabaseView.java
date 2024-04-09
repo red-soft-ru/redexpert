@@ -112,26 +112,35 @@ public class DefaultDatabaseView extends AbstractTableObject
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                getRemarks(), getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateView(
+                getName(),
+                getCreateFields(),
+                getSource(),
+                getRemarks(),
+                getDatabaseMajorVersion(),
+                false,
+                true,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                null, getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateView(
+                getName(),
+                getCreateFields(),
+                getSource(),
+                null,
+                getDatabaseMajorVersion(),
+                false,
+                true,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("VIEW", getName(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
-        return SQLUtils.generateCreateView(getName(), getCreateFields(), getSource(),
-                comment, getDatabaseMajorVersion(), false, true, getHost().getDatabaseConnection());
     }
 
     @Override

@@ -361,27 +361,61 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), getRemarks(), false, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateTriggerStatement(
+                getName(),
+                getTriggerTableName(),
+                isTriggerActive(),
+                getStringTriggerType(),
+                getTriggerSequence(),
+                getTriggerSourceCode(),
+                getEngine(),
+                getEntryPoint(),
+                getSqlSecurity(),
+                getRemarks(),
+                false,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), null, false, getHost().getDatabaseConnection());
-    }
-
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateTriggerStatement(
+                getName(),
+                getTriggerTableName(),
+                isTriggerActive(),
+                getStringTriggerType(),
+                getTriggerSequence(),
+                getTriggerSourceCode(),
+                getEngine(),
+                getEntryPoint(),
+                getSqlSecurity(),
+                null,
+                false,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
-        return SQLUtils.generateCreateTriggerStatement(getName(), getTriggerTableName(), isTriggerActive(), getStringTriggerType(),
-                getTriggerSequence(), getTriggerSourceCode(), getEngine(), getEntryPoint(), getSqlSecurity(), comment, true, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateTriggerStatement(
+                getName(),
+                getTriggerTableName(),
+                isTriggerActive(),
+                getStringTriggerType(),
+                getTriggerSequence(),
+                getTriggerSourceCode(),
+                getEngine(),
+                getEntryPoint(),
+                getSqlSecurity(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                true,
+                getHost().getDatabaseConnection()
+        );
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("TRIGGER", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

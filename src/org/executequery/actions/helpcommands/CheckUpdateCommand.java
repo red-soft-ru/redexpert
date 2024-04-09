@@ -30,22 +30,11 @@ import java.awt.event.ActionEvent;
  *
  * @author Takis Diakoumis
  */
-public class CheckVersionCommand implements BaseCommand {
+public class CheckUpdateCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        new CheckForUpdateNotifier().checkForUpdate(true);
+        new CheckForUpdateNotifier().forceCheckForUpdate(true);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

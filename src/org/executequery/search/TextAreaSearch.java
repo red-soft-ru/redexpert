@@ -23,6 +23,7 @@ package org.executequery.search;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.text.JTextComponent;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class TextAreaSearch {
 
     public static final char[] REGEX_SPECIAL = {
             '.', '(', ')', '[', ']', '{', '}',
-            '^', '$', '*', '|', '+', '?'
+            '^', '$', '*', '|', '+', '?', '\\'
     };
 
     /**
@@ -122,12 +123,7 @@ public class TextAreaSearch {
             return -1;
         }
 
-        if (replacing) {
-            if (replacementText == null)
-                replacementText = "";
 
-            textComponent.replaceSelection(replacementText);
-        }
 
         String regexPattern = useRegex ?
                 findText :
@@ -135,12 +131,21 @@ public class TextAreaSearch {
 
         Pattern pattern;
         Matcher matcher;
+        Matcher replaceMatcher;
         try {
 
             pattern = matchCase ?
                     Pattern.compile(regexPattern) :
                     Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
-
+            if (replacing) {
+                if (replacementText == null)
+                    replacementText = "";
+                if (!MiscUtils.isNull(textComponent.getSelectedText())) {
+                    replaceMatcher = pattern.matcher(textComponent.getSelectedText());
+                    if (replaceMatcher.matches())
+                        textComponent.replaceSelection(replacementText);
+                }
+            }
             text = textComponent.getText();
             matcher = pattern.matcher(text);
 

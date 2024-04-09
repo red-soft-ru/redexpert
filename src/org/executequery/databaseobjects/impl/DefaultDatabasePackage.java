@@ -101,24 +101,30 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), getRemarks(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreatePackage(
+                getName(),
+                getHeaderSource(),
+                getBodySource(),
+                getRemarks(),
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), null, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreatePackage(
+                getName(),
+                getHeaderSource(),
+                getBodySource(),
+                null,
+                getHost().getDatabaseConnection()
+        );
     }
 
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("PACKAGE", getName(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        String comment = Comparer.isCommentsNeed() ? getRemarks() : null;
-        return SQLUtils.generateCreatePackage(getName(), getHeaderSource(), getBodySource(), comment, getHost().getDatabaseConnection());
     }
 
     @Override

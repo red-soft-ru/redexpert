@@ -45,6 +45,8 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -79,6 +81,7 @@ public class TableDataTab extends JPanel
 
     private final boolean displayRowCount;
     private ResultSetTableModel tableModel;
+    private ResultSetTablePopupMenu popupMenuListener;
     private ResultSetTable table;
     private JScrollPane scroller;
     private DatabaseObject databaseObject;
@@ -507,7 +510,9 @@ public class TableDataTab extends JPanel
                     return false;
                 }
             });
+
             table.setModel(sorter);
+            tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
 
             if (isDatabaseTable()) {
@@ -743,7 +748,8 @@ public class TableDataTab extends JPanel
     private void createResultSetTable() {
 
         table = new ResultSetTable();
-        table.addMouseListener(new ResultSetTablePopupMenu(table, this, asDatabaseTableObject()));
+        popupMenuListener = new ResultSetTablePopupMenu(table, this, asDatabaseTableObject());
+        table.addMouseListener(popupMenuListener);
         setTableProperties();
     }
 
@@ -771,10 +777,10 @@ public class TableDataTab extends JPanel
                     component_value = ((DatePicker) component).getDateStringOrEmptyString();
                     break;
                 case Types.TIMESTAMP:
-                    component_value = ((EQDateTimePicker) component).getStringValue();
+                    component_value = ((DefaultDateTimePicker) component).getStringValue();
                     break;
                 case Types.TIME:
-                    component_value = ((EQTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    component_value = ((DefaultTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
                 case Types.BOOLEAN:
                     component_value = ((RDBCheckBox) component).getStringValue();
@@ -885,10 +891,10 @@ public class TableDataTab extends JPanel
                             field = new DatePicker();
                             break;
                         case Types.TIMESTAMP:
-                            field = new EQDateTimePicker();
+                            field = new DefaultDateTimePicker();
                             break;
                         case Types.TIME:
-                            field = new EQTimePicker();
+                            field = new DefaultTimePicker();
                             break;
                         case Types.BOOLEAN:
                             field = new RDBCheckBox();
@@ -1197,12 +1203,7 @@ public class TableDataTab extends JPanel
         switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
         switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
         switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
-        switchAutoresizeModeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                table.switchAutoResizeMode();
-            }
-        });
+        switchAutoresizeModeButton.addActionListener(e -> popupMenuListener.autoWidthForCols(null));
         bar.add(switchAutoresizeModeButton);
 
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,

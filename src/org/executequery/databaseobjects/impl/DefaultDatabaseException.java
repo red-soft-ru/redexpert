@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -61,12 +62,12 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() {
-        return SQLUtils.generateCreateException(getName(), getExceptionText(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateException(getName(), getExceptionText(), getRemarks(), true, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() {
-        return getCreateSQLText();
+        return SQLUtils.generateCreateException(getName(), getExceptionText(), null, false, getHost().getDatabaseConnection());
     }
 
     @Override
@@ -75,14 +76,9 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     }
 
     @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return this.getCreateSQLText();
-    }
-
-    @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseException comparingException = (DefaultDatabaseException) databaseObject;
-        return SQLUtils.generateAlterException(this, comparingException);
+        return SQLUtils.generateAlterException(this, comparingException, Comparer.isCommentsNeed());
     }
 
 

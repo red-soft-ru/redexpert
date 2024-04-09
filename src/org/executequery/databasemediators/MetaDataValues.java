@@ -615,9 +615,9 @@ public class MetaDataValues implements ConnectionListener {
                 cd.setSchema(schema);
                 cd.setColumnName(columnName);
                 cd.setSQLType(rs.getShort(5));
-                cd.setColumnType(rs.getString(6));
-                cd.setColumnSize(rs.getInt(7));
-                cd.setColumnScale(rs.getInt(9));
+                cd.setTypeName(rs.getString(6));
+                cd.setSize(rs.getInt(7));
+                cd.setScale(rs.getInt(9));
                 cd.setNotNull(rs.getInt(11) == 0);
                 cd.setDefaultValue(rs.getString(13));
                 cd.setTableName(name);
@@ -684,7 +684,7 @@ public class MetaDataValues implements ConnectionListener {
                                 "and rf.rdb$field_name = '" + cd.getColumnName() + "'\n" +
                                 "and  rf.rdb$field_source = f.rdb$field_name");
                         resultSet.next();
-                        cd.setColumnSubtype(resultSet.getShort(1));
+                        cd.setSubtype(resultSet.getShort(1));
                     } finally {
                         releaseResources(resultSet);
                     }
@@ -1315,8 +1315,8 @@ public class MetaDataValues implements ConnectionListener {
                 ColumnData cd = new ColumnData(databaseConnection);
                 cd.setColumnName(rs.getString(4));
                 cd.setSQLType(rs.getInt(5));
-                cd.setColumnType(rs.getString(6));
-                cd.setColumnSize(rs.getInt(7));
+                cd.setTypeName(rs.getString(6));
+                cd.setSize(rs.getInt(7));
                 cd.setNotNull(rs.getInt(11) == 0);
                 cd.setTableName(name);
                 v.add(cd);

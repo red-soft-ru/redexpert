@@ -107,7 +107,7 @@ public class NewTablePanel extends TableDefinitionPanel
                 break;
 
             case TYPE_COLUMN:
-                cd.setColumnType(value);
+                cd.setTypeName(value);
                 break;
 
             case DOMAIN_COLUMN:
@@ -121,21 +121,21 @@ public class NewTablePanel extends TableDefinitionPanel
             case SIZE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
-                    cd.setColumnSize(_value);
+                    cd.setSize(_value);
                 }
                 break;
 
             case SCALE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
-                    cd.setColumnScale(_value);
+                    cd.setScale(_value);
                 }
                 break;
 
             case SUBTYPE_COLUMN:
                 if (!MiscUtils.isNull(value)) {
                     int _value = Integer.parseInt(value);
-                    cd.setColumnSubtype(_value);
+                    cd.setSubtype(_value);
                 }
                 break;
 
@@ -162,7 +162,7 @@ public class NewTablePanel extends TableDefinitionPanel
                 append(SPACE);
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getColumnType() != null) {
+                if (cd.getTypeName() != null) {
                     line.append(cd.getFormattedDataType());
                 }
             } else {
@@ -173,9 +173,9 @@ public class NewTablePanel extends TableDefinitionPanel
                         .append(cd.getAutoincrement().getStartValue()).append(")");
             } else {
                 if (!MiscUtils.isNull(cd.getDefaultValue().getValue())) {
-                    line.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType(), cd.getDatabaseConnection()));
+                    line.append(MiscUtils.formattedDefaultValue(cd.getDefaultValue(), cd.getSQLType(), cd.getConnection()));
                 }
-                line.append(cd.isRequired() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
+                line.append(cd.isNotNull() ? NOT_NULL : CreateTableSQLSyntax.EMPTY);
                 if (!MiscUtils.isNull(cd.getCheck())) {
                     line.append(" CHECK ( ").append(cd.getCheck()).append(")");
                 }

@@ -122,28 +122,57 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateFunction(
-                getName(), getFunctionArguments(), getSourceCode(),
-                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(),
-                false, true, isDeterministic(), getHost().getDatabaseConnection());
+                getName(),
+                getFunctionArguments(),
+                getSourceCode(),
+                getEntryPoint(),
+                getEngine(),
+                getSqlSecurity(),
+                getRemarks(),
+                false,
+                true,
+                isDeterministic(),
+                getHost().getDatabaseConnection()
+        );
     }
 
+    @Override
     public String getCreateSQLTextWithoutComment() {
         return SQLUtils.generateCreateFunction(
-                getName(), getFunctionArguments(), getSourceCode(),
-                getEntryPoint(), getEngine(), getSqlSecurity(), getRemarks(),
-                false, false, isDeterministic(), getHost().getDatabaseConnection());
+                getName(),
+                getFunctionArguments(),
+                getSourceCode(),
+                getEntryPoint(),
+                getEngine(),
+                getSqlSecurity(),
+                null,
+                false,
+                false,
+                isDeterministic(),
+                getHost().getDatabaseConnection()
+        );
+    }
+
+    @Override
+    public String getCompareCreateSQL() throws DataSourceException {
+        return SQLUtils.generateCreateFunction(
+                getName(),
+                getFunctionArguments(),
+                getSourceCode(),
+                getEntryPoint(),
+                getEngine(),
+                getSqlSecurity(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                true,
+                Comparer.isCommentsNeed(),
+                isDeterministic(),
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("FUNCTION", getName(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return SQLUtils.generateCreateFunction(getName(), getFunctionArguments(), getSourceCode(), getEntryPoint(),
-                getEngine(), getSqlSecurity(), getRemarks(), true, Comparer.isCommentsNeed(),
-                isDeterministic(), getHost().getDatabaseConnection());
     }
 
     @Override

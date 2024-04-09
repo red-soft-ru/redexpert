@@ -7,7 +7,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.underworldlabs.swing.EQDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
 import org.underworldlabs.swing.cron.CronPanel;
 import org.underworldlabs.util.SQLUtils;
 
@@ -25,8 +25,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     private CronPanel cronPanel;
 
-    private EQDateTimePicker startDatePicker;
-    private EQDateTimePicker endDatePicker;
+    private DefaultDateTimePicker startDatePicker;
+    private DefaultDateTimePicker endDatePicker;
 
     private JTextField idField;
     private JTextField databaseField;
@@ -52,8 +52,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
         if(job.getJobType()==DefaultDatabaseJob.PSQL_TYPE)
             sqlTextPanel.setSQLText(job.getSource());
         else bashTextPanel.getTextAreaComponent().setText(job.getSource());
-        startDatePicker.setDateTimePermissive(job.getStartDate());
-        endDatePicker.setDateTimePermissive(job.getEndDate());
+        startDatePicker.setDateTime(job.getStartDate());
+        endDatePicker.setDateTime(job.getEndDate());
         activeBox.setSelected(job.isActive());
         idField.setText(job.getId());
         databaseField.setText(job.getDatabase());
@@ -75,10 +75,10 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
             }
         });
         activeBox = new JCheckBox(bundleStaticString("active"));
-        startDatePicker = new EQDateTimePicker();
-        startDatePicker.setVisibleNullBox(true);
-        endDatePicker = new EQDateTimePicker();
-        endDatePicker.setVisibleNullBox(true);
+        startDatePicker = new DefaultDateTimePicker();
+        startDatePicker.setVisibleNullCheck(true);
+        endDatePicker = new DefaultDateTimePicker();
+        endDatePicker.setVisibleNullCheck(true);
         cronPanel = new CronPanel(editing);
 
         topGbh.addLabelFieldPair(topPanel, bundleString("startDate"), startDatePicker, null, true, false);

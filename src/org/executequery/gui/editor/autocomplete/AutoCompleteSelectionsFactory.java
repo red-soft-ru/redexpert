@@ -150,9 +150,9 @@ public class AutoCompleteSelectionsFactory {
             addUserDefinedKeywords(listSelections);
 
             if (databaseHost != null && databaseHost.isConnected()) {
-
-                databaseSystemFunctionsForHost(databaseHost, listSelections);
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
+                databaseSystemFunctionsForHost(databaseHost, listSelections);
+
             }
 
             Collections.sort(listSelections, new AutoCompleteListItemComparator());
@@ -211,6 +211,7 @@ public class AutoCompleteSelectionsFactory {
 
         ResultSet rs = null;
         DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
+        TreeSet<String> keywords = databaseHost.getDatabaseConnection().getKeywords();
 
         try {
 
@@ -219,8 +220,7 @@ public class AutoCompleteSelectionsFactory {
             extractNames(tableNames, databaseMetaData.getStringFunctions());
             extractNames(tableNames, databaseMetaData.getNumericFunctions());
             extractNames(tableNames, databaseMetaData.getTimeDateFunctions());
-
-            addKeywordsFromList(tableNames, listSelections, DATABASE_SYSTEM_FUNCTION_DESCRIPTION, AutoCompleteListItemType.SYSTEM_FUNCTION);
+            addKeywordsFromList(tableNames, listSelections, DATABASE_SYSTEM_FUNCTION_DESCRIPTION, AutoCompleteListItemType.SYSTEM_FUNCTION, keywords);
 
         } catch (SQLException e) {
 
@@ -316,8 +316,17 @@ public class AutoCompleteSelectionsFactory {
                                      String description, AutoCompleteListItemType autoCompleteListItemType) {
 
         for (String keyword : keywords) {
-
             list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType));
+        }
+
+    }
+
+    private void addKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list,
+                                     String description, AutoCompleteListItemType autoCompleteListItemType, TreeSet<String> checks) {
+        for (String keyword : keywords) {
+            if (!checks.contains(keyword)) {
+                list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType));
+            }
         }
 
     }

@@ -92,29 +92,60 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         return PARAMETER_NUMBER;
     }
 
+    @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateProcedure(
-                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
-                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, true);
+                getName(),
+                getEntryPoint(),
+                getEngine(),
+                getParameters(),
+                getSqlSecurity(),
+                getAuthid(),
+                getSourceCode(),
+                getRemarks(),
+                getHost().getDatabaseConnection(),
+                false,
+                true
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
-                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(),
-                getSourceCode(), getRemarks(), getHost().getDatabaseConnection(), false, false);
-    }
-
-    @Override
-    public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
+                getName(),
+                getEntryPoint(),
+                getEngine(),
+                getParameters(),
+                getSqlSecurity(),
+                getAuthid(),
+                getSourceCode(),
+                null,
+                getHost().getDatabaseConnection(),
+                false,
+                false
+        );
     }
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
         return SQLUtils.generateCreateProcedure(
-                getName(), getEntryPoint(), getEngine(), getParameters(), getSqlSecurity(), getAuthid(), getSourceCode(),
-                getRemarks(), getHost().getDatabaseConnection(), true, Comparer.isCommentsNeed());
+                getName(),
+                getEntryPoint(),
+                getEngine(),
+                getParameters(),
+                getSqlSecurity(),
+                getAuthid(),
+                getSourceCode(),
+                Comparer.isCommentsNeed() ? getRemarks() : null,
+                getHost().getDatabaseConnection(),
+                true,
+                Comparer.isCommentsNeed()
+        );
+    }
+
+    @Override
+    public String getDropSQL() throws DataSourceException {
+        return SQLUtils.generateDefaultDropQuery("PROCEDURE", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

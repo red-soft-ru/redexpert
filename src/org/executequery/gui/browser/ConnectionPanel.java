@@ -52,10 +52,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -67,10 +64,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Takis Diakoumis
@@ -187,6 +182,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         super(new BorderLayout());
         this.controller = controller;
         init();
+        addListeners();
     }
 
     GridBagHelper gbh;
@@ -462,6 +458,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // create the advanced panel
 
         model = new JdbcPropertiesTableModel();
+        model.addTableModelListener(e -> updateJdbcProperties());
+
         JTable table = new DefaultTable(model);
         table.getTableHeader().setReorderingAllowed(false);
 
@@ -533,6 +531,29 @@ public class ConnectionPanel extends AbstractConnectionPanel
         EventMediator.registerListener(this);
         standardComponents.addAll(basicComponents);
         checkVisibleComponents();
+    }
+
+    private void addListeners() {
+
+        userField.addKeyListener(getKeyAdapter());
+        passwordField.addKeyListener(getKeyAdapter());
+        hostField.addKeyListener(getKeyAdapter());
+        portField.addKeyListener(getKeyAdapter());
+        sourceField.addKeyListener(getKeyAdapter());
+        urlField.addKeyListener(getKeyAdapter());
+        roleField.addKeyListener(getKeyAdapter());
+        certificateFileField.addKeyListener(getKeyAdapter());
+        containerPasswordField.addKeyListener(getKeyAdapter());
+
+        authCombo.addActionListener(this::processActionEvent);
+        methodCombo.addActionListener(this::processActionEvent);
+        driverCombo.addActionListener(this::processActionEvent);
+        savePwdCheck.addActionListener(this::processActionEvent);
+        charsetsCombo.addActionListener(this::processActionEvent);
+        namesToUpperBox.addActionListener(this::processActionEvent);
+        encryptPwdCheck.addActionListener(this::processActionEvent);
+        saveContPwdCheck.addActionListener(this::processActionEvent);
+        verifyServerCertCheck.addActionListener(this::processActionEvent);
     }
 
     public void addTab(String title, Component component) {
@@ -966,9 +987,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         populateConnectionObject();
 
-        EventMediator.fireEvent(
-                new DefaultConnectionRepositoryEvent(
-                        this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
+        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
+                this,
+                ConnectionRepositoryEvent.CONNECTION_MODIFIED,
+                (DatabaseConnection) null
+        ));
 
         return true;
     }
@@ -1035,19 +1058,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void storeJdbcProperties() {
 
         Properties properties = databaseConnection.getJdbcProperties();
-        if (properties == null) {
-
+        if (properties == null)
             properties = new Properties();
 
-        } else {
+        for (String[] advancedProperty : advancedProperties) {
 
-            properties.clear();
-        }
-
-        for (int i = 0; i < advancedProperties.length; i++) {
-
-            String key = advancedProperties[i][0];
-            String value = advancedProperties[i][1];
+            String key = advancedProperty[0];
+            String value = advancedProperty[1];
 
             if (!MiscUtils.isNull(key) && !MiscUtils.isNull(value)) {
 
@@ -1060,10 +1077,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
                     continue;
                 properties.setProperty(key, value);
             }
-
         }
 
-        properties.setProperty("connectTimeout", String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout")));
+        if (!properties.containsKey("connectTimeout")) {
+            String connectTimeout = String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout"));
+            properties.setProperty("connectTimeout", connectTimeout);
+        }
 
         if (!properties.containsKey("lc_ctype"))
             properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
@@ -1108,8 +1127,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (path == null)
                 path = ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             properties.setProperty("process_name", path);
+
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
 
         databaseConnection.setJdbcProperties(properties);
@@ -1161,31 +1181,70 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void setJdbcProperties() {
         advancedProperties = new String[20][2];
+
         Properties properties = databaseConnection.getJdbcProperties();
-        if (properties == null || properties.size() == 0) {
+        if (properties == null || properties.isEmpty()) {
             model.fireTableDataChanged();
             return;
         }
 
         int count = 0;
         for (Enumeration<?> i = properties.propertyNames(); i.hasMoreElements(); ) {
-            String name = (String) i.nextElement();
-            if (!name.equalsIgnoreCase("password") && !name.equalsIgnoreCase("lc_ctype")
-                    && !name.equalsIgnoreCase("useGSSAuth")
-                    && !name.equalsIgnoreCase("process_id")
-                    && !name.equalsIgnoreCase("process_name")
-                    && !name.equalsIgnoreCase("roleName")
-                    && !name.equalsIgnoreCase("isc_dpb_trusted_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_multi_factor_auth")
-                    && !name.equalsIgnoreCase("isc_dpb_certificate_base64")
-                    && !name.equalsIgnoreCase("isc_dpb_repository_pin")
-                    && !name.equalsIgnoreCase("isc_dpb_verify_server")) {
-                advancedProperties[count][0] = name;
-                advancedProperties[count][1] = properties.getProperty(name);
-                count++;
-            }
+
+            String key = (String) i.nextElement();
+            if (propertyKeyIgnored(key))
+                continue;
+
+            advancedProperties[count][0] = key;
+            advancedProperties[count][1] = properties.getProperty(key);
+            count++;
         }
+
         model.fireTableDataChanged();
+    }
+
+    /**
+     * Update the values of the current database connection
+     * from the jdbc properties table.
+     */
+    private void updateJdbcProperties() {
+
+        Properties properties = databaseConnection.getJdbcProperties();
+        for (String[] property : advancedProperties) {
+
+            String key = property[0];
+            if (propertyKeyIgnored(key))
+                continue;
+
+            String value = property[1];
+            if (MiscUtils.isNull(value)) {
+                properties.remove(key);
+                continue;
+            }
+
+            properties.setProperty(key, value);
+        }
+
+        databaseConnection.setJdbcProperties(properties);
+        sshTunnelConnectionPanel.update(databaseConnection);
+    }
+
+    private boolean propertyKeyIgnored(String key) {
+
+        if (MiscUtils.isNull(key))
+            return true;
+
+        return key.equalsIgnoreCase("password")
+                || key.equalsIgnoreCase("lc_ctype")
+                || key.equalsIgnoreCase("useGSSAuth")
+                || key.equalsIgnoreCase("process_id")
+                || key.equalsIgnoreCase("process_name")
+                || key.equalsIgnoreCase("roleName")
+                || key.equalsIgnoreCase("isc_dpb_trusted_auth")
+                || key.equalsIgnoreCase("isc_dpb_multi_factor_auth")
+                || key.equalsIgnoreCase("isc_dpb_certificate_base64")
+                || key.equalsIgnoreCase("isc_dpb_repository_pin")
+                || key.equalsIgnoreCase("isc_dpb_verify_server");
     }
 
     /**
@@ -1194,14 +1253,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * @param databaseConnection connection properties object
      */
     public void connected(DatabaseConnection databaseConnection) {
-
         populateConnectionFields(databaseConnection);
-
-        /*
-        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
-                        ConnectionRepositoryEvent.CONNECTION_MODIFIED,
-                        databaseConnection));
-        */
     }
 
     /**
@@ -1393,21 +1445,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         // assign as the current connection
         this.databaseConnection = databaseConnection;
 
-        // set the correct driver selected
-        selectDriver();
-
-        // set the jdbc properties
-        setJdbcProperties();
-
-        // the tx level
-        setTransactionIsolationLevel();
-
-        // enable/disable fields
-        enableFields(databaseConnection.isConnected());
-
-        // shh tunnel where applicable
-        sshTunnelConnectionPanel.setValues(databaseConnection);
-
+        selectDriver(); // set the correct driver selected
+        setJdbcProperties(); // set the jdbc properties
+        setTransactionIsolationLevel(); // the tx level
+        enableFields(databaseConnection.isConnected()); // enable/disable fields
+        sshTunnelConnectionPanel.setValues(databaseConnection); // SSH tunnel where applicable
     }
 
     /**
@@ -1416,39 +1458,35 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void populateConnectionObject() {
 
-        if (databaseConnection == null) {
-
+        if (databaseConnection == null)
             return;
-        }
-        String path = sourceField.getText().replace("\\", "/");
+
         databaseConnection.setPasswordStored(savePwdCheck.isSelected());
         databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
         databaseConnection.setUserName(userField.getText());
         databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
         databaseConnection.setHost(hostField.getText());
         databaseConnection.setPort(portField.getText());
-        databaseConnection.setSourceName(path);
+        databaseConnection.setSourceName(sourceField.getText().replace("\\", "/"));
         databaseConnection.setURL(urlField.getText());
         databaseConnection.setRole(roleField.getText());
         databaseConnection.setCertificate(certificateFileField.getText());
         databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
         databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
         databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
-        databaseConnection.setCharset(charsetsCombo.getSelectedItem().toString());
-        databaseConnection.setAuthMethod(authCombo.getSelectedItem().toString());
-        databaseConnection.setConnectionMethod(methodCombo.getSelectedItem().toString());
+        databaseConnection.setCharset((String) charsetsCombo.getSelectedItem());
+        databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+        databaseConnection.setConnectionMethod((String) methodCombo.getSelectedItem());
         databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
+
         // jdbc driver selection
         int driverIndex = driverCombo.getSelectedIndex();
         if (driverIndex >= jdbcDrivers.size() + 1) {
-
             driverIndex = jdbcDrivers.size();
-
             driverCombo.setSelectedIndex(driverIndex);
         }
 
         if (driverIndex >= 0) {
-
             DatabaseDriver driver = jdbcDrivers.get(driverIndex);
 
             databaseConnection.setJDBCDriver(driver);
@@ -1457,7 +1495,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
             databaseConnection.setDatabaseType(Integer.toString(driver.getType()));
 
         } else {
-
             databaseConnection.setDriverId(0);
             databaseConnection.setJDBCDriver(null);
             databaseConnection.setDriverName(null);
@@ -1465,15 +1502,112 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
 
         sshTunnelConnectionPanel.update(databaseConnection);
+        storeJdbcProperties(); // retrieve the jdbc properties
+        getTransactionIsolationLevel(); // set the tx level on the connection props object
+    }
 
-        // retrieve the jdbc properties
+    private KeyAdapter getKeyAdapter() {
+        return new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                processActionEvent(e);
+            }
+        };
+    }
+
+    private void processActionEvent(KeyEvent e) {
+
+        if (databaseConnection == null)
+            return;
+
+        Object source = e.getSource();
+        if (Objects.equals(source, containerPasswordField)) {
+            databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        } else if (Objects.equals(source, certificateFileField)) {
+            databaseConnection.setCertificate(certificateFileField.getText());
+
+        } else if (Objects.equals(source, roleField)) {
+            databaseConnection.setRole(roleField.getText());
+
+        } else if (Objects.equals(source, urlField)) {
+            databaseConnection.setURL(urlField.getText());
+
+        } else if (Objects.equals(source, sourceField)) {
+            databaseConnection.setSourceName(sourceField.getText().replace("\\", "/"));
+
+        } else if (Objects.equals(source, portField)) {
+            databaseConnection.setPort(portField.getText());
+
+        } else if (Objects.equals(source, hostField)) {
+            databaseConnection.setHost(hostField.getText());
+
+        } else if (Objects.equals(source, passwordField)) {
+            databaseConnection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+
+        } else if (Objects.equals(source, userField))
+            databaseConnection.setUserName(userField.getText());
+
         storeJdbcProperties();
+    }
+    
+    private void processActionEvent(ActionEvent e) {
 
-        // set the tx level on the connection props object
-        getTransactionIsolationLevel();
+        if (databaseConnection == null)
+            return;
 
-        // check if the name has to update the tree display
-        //checkNameUpdate();
+        Object source = e.getSource();
+        if (Objects.equals(source, savePwdCheck)) {
+            databaseConnection.setPasswordStored(savePwdCheck.isSelected());
+
+        } else if (Objects.equals(source, encryptPwdCheck)) {
+            databaseConnection.setPasswordEncrypted(encryptPwdCheck.isSelected());
+
+        } else if (Objects.equals(source, saveContPwdCheck)) {
+            databaseConnection.setContainerPasswordStored(saveContPwdCheck.isSelected());
+
+        } else if (Objects.equals(source, verifyServerCertCheck)) {
+            databaseConnection.setVerifyServerCertCheck(verifyServerCertCheck.isSelected());
+
+        } else if (Objects.equals(source, charsetsCombo)) {
+            databaseConnection.setCharset((String) charsetsCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, authCombo)) {
+            databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, methodCombo)) {
+            databaseConnection.setConnectionMethod((String) methodCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, namesToUpperBox)) {
+            databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
+
+        } else if (Objects.equals(source, driverCombo)) {
+
+            int driverIndex = driverCombo.getSelectedIndex();
+            if (driverIndex >= jdbcDrivers.size() + 1) {
+                driverIndex = jdbcDrivers.size();
+                driverCombo.setSelectedIndex(driverIndex);
+            }
+
+            long driverId = 0;
+            String driverName = null;
+            String databaseType = null;
+            DatabaseDriver driver = null;
+
+            if (driverIndex >= 0) {
+                driver = jdbcDrivers.get(driverIndex);
+                driverName = driver.getName();
+                driverId = driver.getId();
+                databaseType = Integer.toString(driver.getType());
+            }
+
+            databaseConnection.setDriverId(driverId);
+            databaseConnection.setJDBCDriver(driver);
+            databaseConnection.setDriverName(driverName);
+            databaseConnection.setDatabaseType(databaseType);
+        }
+
+        storeJdbcProperties();
     }
 
     /**
@@ -1488,23 +1622,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
         connectButton.setEnabled(false);
         disconnectButton.setEnabled(false);
 
-        if (databaseConnection != null) {
-
+        if (databaseConnection != null)
             populateConnectionObject();
-        }
 
         this.host = host;
 
         populateConnectionFields(host.getDatabaseConnection());
-
-        // set the focus field
+        populateAndSave();
         focusNameField();
 
         // queue a save
-        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this,
+        EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
+                this,
                 ConnectionRepositoryEvent.CONNECTION_MODIFIED,
-                databaseConnection));
-
+                databaseConnection)
+        );
     }
 
     private void focusNameField() {

@@ -24,10 +24,10 @@ import biz.redsoft.IFBBlob;
 import biz.redsoft.IFBClob;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
-import org.executequery.databaseobjects.Types;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
@@ -43,7 +43,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -103,7 +103,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     DefaultStatementExecutor executor;
 
-    private JTable fakeTable;
+    private ResultSetTable table;
 
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
@@ -125,20 +125,17 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         this.maxRecords = maxRecords;
         this.query = query;
         this.isTable = isTable;
-        columnHeaders = new ArrayList<ResultSetColumnHeader>();
-        visibleColumnHeaders = new ArrayList<ResultSetColumnHeader>();
 
-        tableData = new ArrayList<List<RecordDataItem>>();
+        table = new ResultSetTable();
+        tableData = new ArrayList<>();
+        columnHeaders = new ArrayList<>();
+        visibleColumnHeaders = new ArrayList<>();
         recordDataItemFactory = new RecordDataItemFactory();
 
-        fakeTable=new JTable();
         holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
 
-        if (resultSet != null) {
-
+        if (resultSet != null)
             createTable(resultSet);
-        }
-
     }
 
     public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData) {
@@ -254,18 +251,18 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             if (!isTable) {
                 if (resultSet != null) {
 
-                try {
+                    try {
 
-                    Statement statement = resultSet.getStatement();
-                    resultSet.close();
+                        Statement statement = resultSet.getStatement();
+                        resultSet.close();
 
-                    if (statement != null) {
-                        if (!statement.isClosed())
-                            statement.close();
+                        if (statement != null) {
+                            if (!statement.isClosed())
+                                statement.close();
+                        }
+
+                    } catch (SQLException e) {
                     }
-
-                } catch (SQLException e) {
-                }
 
                 }
             }
@@ -275,7 +272,6 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private boolean fetchAll = false;
     private boolean cancelled = false;
-
 
 
     public synchronized void getDataForTable(ResultSet resultSet, int count, List<ColumnData> columnDataList) throws SQLException, InterruptedException {
@@ -534,167 +530,193 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     private void addingRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
 
 
-            if (interrupted || Thread.interrupted()) {
+        if (interrupted || Thread.interrupted()) {
 
-                throw new InterruptedException();
-            }
+            throw new InterruptedException();
+        }
 
-            recordCount++;
-            List<RecordDataItem> rowData = new ArrayList<RecordDataItem>(count);
+        recordCount++;
+        List<RecordDataItem> rowData = new ArrayList<RecordDataItem>(count);
 
-            for (int i = 1; i <= count; i++) {
+        for (int i = 1; i <= count; i++) {
 
-                zeroBaseIndex = i - 1;
+            zeroBaseIndex = i - 1;
 
-                ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
-                RecordDataItem value = recordDataItemFactory.create(header);
+            ResultSetColumnHeader header = columnHeaders.get(zeroBaseIndex);
+            RecordDataItem value = recordDataItemFactory.create(header);
 
-                try {
+            try {
 
-                    int dataType = header.getDataType();
-                    switch (dataType) {
+                int dataType = header.getDataType();
+                switch (dataType) {
 
-                        // some drivers (informix for example)
-                        // was noticed to return the hashcode from
-                        // getObject for -1 data types (eg. longvarchar).
-                        // force string for these - others stick with
-                        // getObject() for default value formatting
+                    // some drivers (informix for example)
+                    // was noticed to return the hashcode from
+                    // getObject for -1 data types (eg. longvarchar).
+                    // force string for these - others stick with
+                    // getObject() for default value formatting
 
-                        case Types.CHAR:
-                        case Types.VARCHAR:
-                            value.setValue(resultSet.getString(i));
-                            break;
-                        case Types.TIME_WITH_TIMEZONE:
-                            value.setValue(resultSet.getObject(i, OffsetTime.class));
-                            break;
-                        case Types.TIMESTAMP_WITH_TIMEZONE:
-                            value.setValue(resultSet.getObject(i, OffsetDateTime.class));
-                            break;
-                        case Types.DATE:
-                            value.setValue(resultSet.getObject(i, LocalDate.class));
-                            break;
-                        case Types.TIME:
-                            value.setValue(resultSet.getObject(i, LocalTime.class));
-                            break;
-                        case Types.TIMESTAMP:
-                            value.setValue(resultSet.getObject(i, LocalDateTime.class));
-                            break;
-                        case Types.LONGVARCHAR:
-                        case Types.CLOB:
-                            Clob clob = resultSet.getClob(i);
-                            if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                try {
-                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
-                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
-                                    Connection unwrapCon = connection.unwrap(Connection.class);
-                                    IFBClob ifbClob = (IFBClob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBClobImpl");
-                                    ifbClob.detach(clob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
-                                    value.setValue(ifbClob);
-                                } catch (ClassNotFoundException e) {
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                value.setValue(clob);
-                            }
-                            if (columnDataList != null) {
-                                ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
-                                if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
-                                    ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getDatabaseConnection().getCharset());
-                            } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
-                            break;
-                        case Types.LONGVARBINARY:
-                        case Types.VARBINARY:
-                        case Types.BINARY:
-                            value.setValue(resultSet.getBytes(i));
-                            break;
-                        case Types.BLOB:
-                            Blob blob = resultSet.getBlob(i);
-                            if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
-                                try {
-                                    PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
-                                    PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
-                                    Connection unwrapCon = connection.unwrap(Connection.class);
-                                    IFBBlob ifbBlob = (IFBBlob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBBlobImpl");
-                                    ifbBlob.detach(blob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
-                                    value.setValue(ifbBlob);
-                                } catch (ClassNotFoundException e) {
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                value.setValue(blob);
-                            }
-                            break;
-                        case Types.BIT:
-                        case Types.TINYINT:
-                        case Types.SMALLINT:
-                        case Types.INTEGER:
-                        case Types.INT128:
-                        case Types.BIGINT:
-                        case Types.FLOAT:
-                        case Types.REAL:
-                        case Types.DOUBLE:
-                        case Types.NUMERIC:
-                        case Types.DECIMAL:
-                        case Types.NULL:
-                        case Types.OTHER:
-                        case Types.JAVA_OBJECT:
-                        case Types.DISTINCT:
-                        case Types.STRUCT:
-                        case Types.ARRAY:
-                        case Types.REF:
-                        case Types.DATALINK:
-                        case Types.BOOLEAN:
-                        case Types.ROWID:
-                        case Types.NCHAR:
-                        case Types.NVARCHAR:
-                        case Types.LONGNVARCHAR:
-                        case Types.NCLOB:
-                        case Types.SQLXML:
-
-                            // use getObject for all other known types
-
-                            value.setValue(resultSet.getObject(i));
-                            break;
-
-                        default:
-
-                            // otherwise try as string
-
-                            asStringOrObject(value, resultSet, i);
-                            break;
-                    }
-
-                } catch (Exception e) {
-
-                    try {
-
-                        // ... and on dump, resort to string
+                    case Types.CHAR:
+                    case Types.VARCHAR:
                         value.setValue(resultSet.getString(i));
+                        break;
+                    case Types.TIME_WITH_TIMEZONE:
+                        value.setValue(resultSet.getObject(i, OffsetTime.class));
+                        break;
+                    case Types.TIMESTAMP_WITH_TIMEZONE:
+                        value.setValue(resultSet.getObject(i, OffsetDateTime.class));
+                        break;
+                    case Types.DATE:
+                        value.setValue(resultSet.getObject(i, LocalDate.class));
+                        break;
+                    case Types.TIME:
+                        value.setValue(resultSet.getObject(i, LocalTime.class));
+                        break;
+                    case Types.TIMESTAMP:
+                        value.setValue(resultSet.getObject(i, LocalDateTime.class));
+                        break;
+                    case Types.LONGVARCHAR:
+                    case Types.CLOB:
+                        Clob clob = resultSet.getClob(i);
+                        if (clob != null && clob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                            try {
+                                PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                Connection unwrapCon = connection.unwrap(Connection.class);
+                                IFBClob ifbClob = (IFBClob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBClobImpl");
+                                ifbClob.detach(clob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                value.setValue(ifbClob);
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            value.setValue(clob);
+                        }
+                        if (columnDataList != null) {
+                            ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getCharset());
+                            if (MiscUtils.isNull(columnDataList.get(i - 1).getCharset()) || Objects.equals(columnDataList.get(i - 1).getCharset(), CreateTableSQLSyntax.NONE))
+                                ((ClobRecordDataItem) value).setCharset(columnDataList.get(i - 1).getConnection().getCharset());
+                        } else ((ClobRecordDataItem) value).setCharset(CreateTableSQLSyntax.NONE);
+                        break;
+                    case Types.LONGVARBINARY:
+                    case Types.VARBINARY:
+                    case Types.BINARY:
+                        value.setValue(resultSet.getBytes(i));
+                        break;
+                    case Types.BLOB:
+                        Blob blob = resultSet.getBlob(i);
+                        if (blob != null && blob.getClass().getName().contains("org.firebirdsql.jdbc")) {
+                            try {
+                                PooledResultSet pooledResultSet = (PooledResultSet) resultSet;
+                                PooledConnection connection = (PooledConnection) pooledResultSet.getStatement().getConnection();
+                                Connection unwrapCon = connection.unwrap(Connection.class);
+                                IFBBlob ifbBlob = (IFBBlob) DynamicLibraryLoader.loadingObjectFromClassLoader(connection.getDatabaseConnection().getDriverMajorVersion(), unwrapCon, "FBBlobImpl");
+                                ifbBlob.detach(blob, ((PooledStatement) pooledResultSet.getStatement()).getStatement());
+                                value.setValue(ifbBlob);
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            value.setValue(blob);
+                        }
+                        break;
+                    case Types.BIT:
+                    case Types.TINYINT:
+                    case Types.SMALLINT:
+                    case Types.INTEGER:
+                    case Types.INT128:
+                    case Types.BIGINT:
+                    case Types.FLOAT:
+                    case Types.REAL:
+                    case Types.DOUBLE:
+                    case Types.NUMERIC:
+                    case Types.DECIMAL:
+                    case Types.NULL:
+                    case Types.OTHER:
+                    case Types.JAVA_OBJECT:
+                    case Types.DISTINCT:
+                    case Types.STRUCT:
+                    case Types.ARRAY:
+                    case Types.REF:
+                    case Types.DATALINK:
+                    case Types.BOOLEAN:
+                    case Types.ROWID:
+                    case Types.NCHAR:
+                    case Types.NVARCHAR:
+                    case Types.LONGNVARCHAR:
+                    case Types.NCLOB:
+                    case Types.SQLXML:
 
-                    } catch (SQLException sqlException) {
+                        // use getObject for all other known types
 
-                        // catch-all SQLException - yes, this is hideous
+                        value.setValue(resultSet.getObject(i));
+                        break;
 
-                        // noticed with invalid date formatted values in mysql
+                    default:
 
-                        value.setValue("<Error - " + sqlException.getMessage() + ">");
-                    }
+                        // otherwise try as string
+
+                        asStringOrObject(value, resultSet, i);
+                        break;
                 }
 
-                if (resultSet.wasNull()) {
+            } catch (Exception e) {
+                try {
+                    // ... and on dump, resort to string
+                    value.setValue(resultSet.getString(i));
 
-                    value.setNull();
-                }
-
-                rowData.add(value);
-                if(value.getDisplayValue()!=null) {
-                    int width = fakeTable.getFontMetrics(fakeTable.getFont()).stringWidth(value.getDisplayValue().toString());
-                    if(width>header.getColWidth())
-                        header.setColWidth(width+5);
+                } catch (SQLException sqlException) {
+                    // catch-all SQLException - yes, this is hideous
+                    // noticed with invalid date formatted values in mysql
+                    value.setValue("<Error - " + sqlException.getMessage() + ">");
                 }
             }
 
-            tableData.add(rowData);
+            if (resultSet.wasNull())
+                value.setNull();
+
+            rowData.add(value);
+            if (value.getDisplayValue() != null) {
+
+                int width = -1;
+                FontMetrics metrics = table.getFontMetrics(table.getFont());
+
+                int valueType = value.getDataType();
+                if (valueType == Types.DATE) {
+                    String stringValue = SystemProperties.getProperty("user", "results.date.pattern");
+                    if (!MiscUtils.isNull(stringValue))
+                        width = metrics.stringWidth(stringValue);
+
+                } else if (valueType == Types.TIME) {
+                    String stringValue = SystemProperties.getProperty("user", "results.time.pattern");
+                    if (!MiscUtils.isNull(stringValue))
+                        width = metrics.stringWidth(stringValue);
+
+                } else if (valueType == Types.TIMESTAMP) {
+                    String stringValue = SystemProperties.getProperty("user", "results.timestamp.pattern");
+                    if (!MiscUtils.isNull(stringValue))
+                        width = metrics.stringWidth(stringValue);
+
+                } else if (valueType == Types.TIME_WITH_TIMEZONE) {
+                    String stringValue = SystemProperties.getProperty("user", "results.time.timezone.pattern");
+                    if (!MiscUtils.isNull(stringValue))
+                        width = metrics.stringWidth(stringValue);
+
+                } else if (valueType == Types.TIMESTAMP_WITH_TIMEZONE) {
+                    String stringValue = SystemProperties.getProperty("user", "results.timestamp.timezone.pattern");
+                    if (!MiscUtils.isNull(stringValue))
+                        width = metrics.stringWidth(stringValue);
+                }
+
+                if (width < 0)
+                    width = metrics.stringWidth(value.getDisplayValue().toString());
+
+                if (width > header.getColWidth())
+                    header.setColWidth(width + 5);
+            }
+        }
+
+        tableData.add(rowData);
     }
 
     public void cancelFetch() {
@@ -964,13 +986,18 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     @Override
     public boolean isCellEditable(int row, int column) {
-        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
 
+        if (!isTable)
+            return false;
+
+        RecordDataItem recordDataItem = tableData.get(row).get(asVisibleColumnIndex(column));
         if (!visibleColumnHeaders.get(column).isEditable()) {
+            table.restoreOldCellSize(column);
             return recordDataItem.isNew() && cellsEditable;
         }
-        if (recordDataItem.isBlob()) {
 
+        if (recordDataItem.isBlob()) {
+            table.restoreOldCellSize(column);
             return false;
         }
 
@@ -1022,7 +1049,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             if (rdi instanceof ClobRecordDataItem) {
                 ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getCharset());
                 if (MiscUtils.isNull(columnDataList.get(i).getCharset()) || Objects.equals(columnDataList.get(i).getCharset(), CreateTableSQLSyntax.NONE))
-                    ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getDatabaseConnection().getCharset());
+                    ((ClobRecordDataItem) rdi).setCharset(columnDataList.get(i).getConnection().getCharset());
             }
             row.add(rdi);
         }
@@ -1121,15 +1148,19 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                 return Object.class;
 
         }
+    }
 
+    public void setTable(ResultSetTable table) {
+        this.table = table != null ? table : new ResultSetTable();
     }
 
     public void closeResultSet() throws SQLException {
+
         if (rs != null && !rs.isClosed())
             rs.close();
+
         if (executor != null)
             executor.releaseResources();
     }
+
 }
-
-

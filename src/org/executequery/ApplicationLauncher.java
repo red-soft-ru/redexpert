@@ -441,14 +441,8 @@ public class ApplicationLauncher {
     }
 
     private void doCheckForUpdate() {
-
-        boolean doUpdateCheck = booleanUserProperty("startup.version.check");
-
-        if (doUpdateCheck) {
-
+        if (booleanUserProperty("startup.version.check"))
             new CheckForUpdateNotifier().startupCheckForUpdate();
-        }
-
     }
 
     private boolean booleanUserProperty(String key) {

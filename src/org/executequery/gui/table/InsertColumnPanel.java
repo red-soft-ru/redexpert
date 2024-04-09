@@ -199,10 +199,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     void init_edited_elements() {
 
         columnData.setSQLType(column.getTypeInt());
-        columnData.setColumnType(column.getTypeName());
-        columnData.setColumnSize(column.getColumnSize());
-        columnData.setColumnScale(column.getColumnScale());
-        columnData.setColumnSubtype(column.getColumnSubtype());
+        columnData.setTypeName(column.getTypeName());
+        columnData.setSize(column.getColumnSize());
+        columnData.setScale(column.getColumnScale());
+        columnData.setSubtype(column.getColumnSubtype());
         columnData.setDomain(column.getDomain());
         selectTypePanel.refresh();
         nameField.setText(columnEdited.getName());
@@ -249,7 +249,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
         } else if (keyEvent.getSource() == descriptionPanel.getTextPane()) {
 
-            columnData.setDescription(descriptionPanel.getSQLText());
+            columnData.setRemarks(descriptionPanel.getSQLText());
             if (editing) {
                 column.makeCopy();
                 column.setColumnDescription(descriptionPanel.getSQLText());
@@ -299,9 +299,9 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
             columnData.setColumnName(nameField.getText());
             column.makeCopy();
             column.setTypeInt(columnData.getSQLType());
-            column.setTypeName(columnData.getColumnType());
-            column.setColumnSize(columnData.getColumnSize());
-            column.setColumnScale(columnData.getColumnScale());
+            column.setTypeName(columnData.getTypeName());
+            column.setColumnSize(columnData.getSize());
+            column.setColumnScale(columnData.getScale());
             column.setCharset(columnData.getCharset());
             column.setCollate(columnData.getCollate());
             sb.append(SQLUtils.generateAlterDefinitionColumn(column, columnData, table.getName(), "^"));

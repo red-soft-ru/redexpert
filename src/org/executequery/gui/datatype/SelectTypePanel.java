@@ -93,11 +93,11 @@ public class SelectTypePanel extends JPanel {
                 if (field.getValue() <= 0)
                     field.setValue(1);
                 if (field == sizeField) {
-                    cd.setColumnSize(field.getValue());
+                    cd.setSize(field.getValue());
                 } else if (field == scaleField) {
-                    cd.setColumnScale(field.getValue());
+                    cd.setScale(field.getValue());
                 } else if (field == subtypeField) {
-                    cd.setColumnSubtype(field.getValue());
+                    cd.setSubtype(field.getValue());
                 }
             }
         };
@@ -191,7 +191,7 @@ public class SelectTypePanel extends JPanel {
     private void refreshType() {
         int index = typeBox.getSelectedIndex();
         if (index >= 0) {
-            cd.setColumnType(dataTypes[index]);
+            cd.setTypeName(dataTypes[index]);
             cd.setSQLType(intDataTypes[index]);
             setSizeVisible(cd.getSQLType() == Types.NUMERIC
                     || cd.getSQLType() == Types.CHAR
@@ -200,9 +200,9 @@ public class SelectTypePanel extends JPanel {
                     || cd.getSQLType() == Types.BLOB
                     || cd.getSQLType() == Types.LONGVARBINARY
                     || cd.getSQLType() == Types.LONGVARCHAR
-                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                    || cd.getColumnType().equalsIgnoreCase("CHAR")
-                    || cd.getColumnType().equalsIgnoreCase(T.DECFLOAT)
+                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || cd.getTypeName().equalsIgnoreCase("CHAR")
+                    || cd.getTypeName().equalsIgnoreCase(T.DECFLOAT)
             );
             if (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL) {
                 sizeLabel.setText(Bundles.getCommon("precision"));
@@ -211,8 +211,8 @@ public class SelectTypePanel extends JPanel {
             setSubtypeVisible(cd.getSQLType() == Types.BLOB);
             setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
                     || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
-                    || cd.getColumnType().equalsIgnoreCase("VARCHAR")
-                    || cd.getColumnType().equalsIgnoreCase("CHAR"));
+                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || cd.getTypeName().equalsIgnoreCase("CHAR"));
             if (!refreshing) {
                 if (cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.BLOB) {
                     sizeField.setText("80");
@@ -228,9 +228,9 @@ public class SelectTypePanel extends JPanel {
     }
 
     public void refreshColumn() {
-        cd.setColumnSize(sizeField.getValue());
-        cd.setColumnScale(scaleField.getValue());
-        cd.setColumnSubtype(subtypeField.getValue());
+        cd.setSize(sizeField.getValue());
+        cd.setScale(scaleField.getValue());
+        cd.setSubtype(subtypeField.getValue());
     }
 
     private void setSizeVisible(boolean flag) {
@@ -240,8 +240,8 @@ public class SelectTypePanel extends JPanel {
             sizeField.setValue(1);
         else sizeField.setValue(0);
         if (refreshing)
-            sizeField.setValue(cd.getColumnSize());
-        cd.setColumnSize(sizeField.getValue());
+            sizeField.setValue(cd.getSize());
+        cd.setSize(sizeField.getValue());
     }
 
     private void setScaleVisible(boolean flag) {
@@ -251,8 +251,8 @@ public class SelectTypePanel extends JPanel {
             scaleField.setValue(1);
         } else scaleField.setValue(0);
         if (refreshing)
-            scaleField.setValue(cd.getColumnScale());
-        cd.setColumnScale(scaleField.getValue());
+            scaleField.setValue(cd.getScale());
+        cd.setScale(scaleField.getValue());
     }
 
     private void setSubtypeVisible(boolean flag) {
@@ -261,8 +261,8 @@ public class SelectTypePanel extends JPanel {
             subtypeField.setValue(1);
         } else subtypeField.setValue(0);
         if (refreshing)
-            subtypeField.setValue(cd.getColumnSubtype());
-        cd.setColumnSubtype(subtypeField.getValue());
+            subtypeField.setValue(cd.getSubtype());
+        cd.setSubtype(subtypeField.getValue());
     }
 
     private void setEncodingVisible(boolean flag) {
@@ -317,8 +317,8 @@ public class SelectTypePanel extends JPanel {
 
     public void refresh() {
         refreshing = true;
-        cd.setColumnType(getStringType(cd.getSQLType()));
-        typeBox.setSelectedItem(cd.getColumnType());
+        cd.setTypeName(getStringType(cd.getSQLType()));
+        typeBox.setSelectedItem(cd.getTypeName());
         refreshType();
         refreshing = false;
     }
@@ -360,7 +360,7 @@ public class SelectTypePanel extends JPanel {
 
     protected String[] loadCollates(String charset) {
         DefaultStatementExecutor sender = new DefaultStatementExecutor();
-        sender.setDatabaseConnection(cd.getDatabaseConnection());
+        sender.setDatabaseConnection(cd.getConnection());
         List<String> collates = new ArrayList<>();
         collates.add("");
         collates.add(CreateTableSQLSyntax.NONE);

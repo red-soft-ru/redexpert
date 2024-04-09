@@ -192,13 +192,15 @@ public class ComparerDBPanel extends JPanel implements TabView {
         propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
         propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
 
-        propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
 
         if (isExtractMetadata) {
-            propertiesCheckBoxMap.get(CHECK_CREATE).setVisible(false);
-            propertiesCheckBoxMap.get(CHECK_ALTER).setVisible(false);
-            propertiesCheckBoxMap.get(CHECK_DROP).setVisible(false);
+            propertiesCheckBoxMap.remove(CHECK_CREATE);
+            propertiesCheckBoxMap.remove(CHECK_ALTER);
+            propertiesCheckBoxMap.remove(CHECK_DROP);
+            propertiesCheckBoxMap.remove(IGNORE_FIELDS_POSITIONS);
+
         } else {
+            propertiesCheckBoxMap.get(CHECK_CREATE).setSelected(true);
             propertiesCheckBoxMap.get(CHECK_ALTER).setSelected(true);
             propertiesCheckBoxMap.get(CHECK_DROP).setSelected(true);
         }
@@ -409,9 +411,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         try {
 
             if (!isExtractMetadata && !masterConnection.isConnected())
-                ConnectionManager.createDataSource(masterConnection);
+                ConnectionManager.createDataSource(masterConnection, true);
             if (!targetConnection.isConnected())
-                ConnectionManager.createDataSource(targetConnection);
+                ConnectionManager.createDataSource(targetConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
@@ -422,25 +424,25 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 new Comparer(
                         this, targetConnection, masterConnection,
                         new boolean[]{
-                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                                !isPropertySelected(IGNORE_PK),
+                                !isPropertySelected(IGNORE_FK),
+                                !isPropertySelected(IGNORE_UK),
+                                !isPropertySelected(IGNORE_CK)
                         },
-                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                        !isPropertySelected(IGNORE_COMMENTS),
+                        !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                        !isPropertySelected(IGNORE_FIELDS_POSITIONS)
                 ) :
                 new Comparer(this, targetConnection,
                         new boolean[]{
-                                !propertiesCheckBoxMap.get(IGNORE_PK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_FK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_UK).isSelected(),
-                                !propertiesCheckBoxMap.get(IGNORE_CK).isSelected()
+                                !isPropertySelected(IGNORE_PK),
+                                !isPropertySelected(IGNORE_FK),
+                                !isPropertySelected(IGNORE_UK),
+                                !isPropertySelected(IGNORE_CK)
                         },
-                        !propertiesCheckBoxMap.get(IGNORE_COMMENTS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected(),
-                        !propertiesCheckBoxMap.get(IGNORE_FIELDS_POSITIONS).isSelected()
+                        !isPropertySelected(IGNORE_COMMENTS),
+                        !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                        !isPropertySelected(IGNORE_FIELDS_POSITIONS)
                 );
 
         if (!isExtractMetadata)
@@ -508,12 +510,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
         comparer.dropConstraints(
                 attributesCheckBoxMap.get(NamedObject.TABLE).isSelected(),
                 attributesCheckBoxMap.get(NamedObject.GLOBAL_TEMPORARY).isSelected(),
-                propertiesCheckBoxMap.get(CHECK_DROP).isSelected(),
-                propertiesCheckBoxMap.get(CHECK_ALTER).isSelected());
+                isPropertySelected(CHECK_DROP),
+                isPropertySelected(CHECK_ALTER)
+        );
 
         rootTreeNode.removeAllChildren();
 
-        if (propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() && !isCanceled()) {
+        if ((isPropertySelected(CHECK_CREATE) || isExtractMetadata) && !isCanceled()) {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.CREATE, bundleString("CreateObjects")));
 
@@ -532,10 +535,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
                             attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
                             attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.JOB).isSelected());
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
 
-                    if (!propertiesCheckBoxMap.get(IGNORE_COMPUTED_FIELDS).isSelected() && !isCanceled()) {
+                    if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
                         loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
                         if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                             loggingOutputPanel.append(comparer.getComputedFieldsList());
@@ -547,7 +549,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.CREATE))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
@@ -558,7 +560,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
         }
 
-        if (propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() && !isCanceled()) {
+        if (isPropertySelected(CHECK_ALTER) && !isCanceled()) {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.ALTER, bundleString("AlterObjects")));
 
@@ -577,7 +579,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.ALTER))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
@@ -588,7 +590,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
         }
 
-        if (propertiesCheckBoxMap.get(CHECK_DROP).isSelected() && !isCanceled()) {
+        if (isPropertySelected(CHECK_ALTER) && !isCanceled()) {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
 
@@ -607,7 +609,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(ComparerTreeNode.DROP))
+                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                             .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
                                     Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
 
@@ -625,6 +627,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
             comparer.createConstraints();
         }
 
+    }
+
+    private boolean isPropertySelected(int key) {
+        return propertiesCheckBoxMap.containsKey(key) && propertiesCheckBoxMap.get(key).isSelected();
     }
 
     // --- buttons handlers ---
@@ -646,19 +652,25 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 return;
             }
 
-            for (int i = 0; i < NamedObject.SYSTEM_DOMAIN; i++) {
-                if (attributesCheckBoxMap.get(i).isSelected())
-                    break;
-                if (i == NamedObject.SYSTEM_DOMAIN - 1) {
-                    GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoAttributes"));
-                    return;
-                }
-            }
-
-            if (!propertiesCheckBoxMap.get(CHECK_CREATE).isSelected() &&
-                    !propertiesCheckBoxMap.get(CHECK_ALTER).isSelected() &&
-                    !propertiesCheckBoxMap.get(CHECK_DROP).isSelected()) {
+            if (!isPropertySelected(CHECK_CREATE) && !isPropertySelected(CHECK_ALTER) && !isPropertySelected(CHECK_DROP)) {
                 GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoProperties"));
+                return;
+            }
+        }
+
+        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+
+            if (objectType == NamedObject.USER)
+                continue;
+
+            if (attributesCheckBoxMap.get(objectType).isSelected())
+                break;
+
+            if (objectType == NamedObject.SYSTEM_DOMAIN - 1) {
+                GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
+                        "UnableExtractNoAttributes" :
+                        "UnableCompareNoAttributes")
+                );
                 return;
             }
         }
@@ -811,13 +823,11 @@ public class ComparerDBPanel extends JPanel implements TabView {
         else
             return;
 
-        for (JCheckBox checkBox : checkBoxMap.values()) {
+        for (JCheckBox checkBox : checkBoxMap.values())
             curFlag = curFlag && checkBox.isSelected();
-        }
-        for (JCheckBox checkBox : checkBoxMap.values()) {
-            checkBox.setSelected(!curFlag);
-        }
 
+        for (JCheckBox checkBox : checkBoxMap.values())
+            checkBox.setSelected(!curFlag);
     }
 
     private void switchTargetSource() {

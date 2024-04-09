@@ -36,6 +36,7 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
           "IndexName",
           "IndexedColumn",
           "Expression",
+          "Selectivity",
           "Unique"});
     /**
      * the table indexed columns
@@ -83,17 +84,19 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
       case 1:
         return index.getName();
       case 2:
-          String cols = "";
-          for (int i = 0; i < index.getIndexColumns().size(); i++) {
-              if (i != 0)
-                  cols += ",";
-              cols += " " + index.getIndexColumns().get(i).getFieldName();
-          }
-          return cols;
+        String cols = "";
+        for (int i = 0; i < index.getIndexColumns().size(); i++) {
+          if (i != 0)
+            cols += ",";
+          cols += " " + index.getIndexColumns().get(i).getFieldName();
+        }
+        return cols;
       case 3:
         return index.getExpression();
       case 4:
-          return Boolean.valueOf(index.isUnique());
+        return index.getIndexColumns().get(0).getSelectivity();
+      case 5:
+        return Boolean.valueOf(index.isUnique());
       default:
         return null;
     }
@@ -116,9 +119,11 @@ public class TableColumnIndexTableModel extends AbstractDatabaseTableViewModel {
   }
 
   public Class<?> getColumnClass(int col) {
-    if (col == 4) {
+    if (col == 5) {
       return Boolean.class;
     }
+    if (col == 4)
+      return Double.class;
     return String.class;
   }
 

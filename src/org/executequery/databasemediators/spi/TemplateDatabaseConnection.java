@@ -108,6 +108,11 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
    */
   private int transactionIsolation;
 
+  /**
+   * Shows that connection was opened automaticaly
+   */
+  private boolean isAutoConnected = false;
+
   private String charset;
 
   private String role;
@@ -788,6 +793,16 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     public TreeSet<String> getKeywords() {
         return null;
     }
+
+  @Override
+  public void setAutoConnect(boolean val) {
+    isAutoConnected = val;
+  }
+
+  @Override
+  public boolean isAutoConnected() {
+    return isAutoConnected;
+  }
 
 }
 

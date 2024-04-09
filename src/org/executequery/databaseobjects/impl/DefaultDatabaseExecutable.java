@@ -279,7 +279,10 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         pp.setPosition(rs.getInt(prefixLabel() + positionLabel()));
         final short fieldScale = rs.getShort(FIELD_SCALE);
         pp.setScale(fieldScale);
-        pp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), pp.getSubType(), pp.getScale()));
+        if (rs.getInt(FIELD_TYPE) == 261 && this instanceof DefaultDatabaseUDF) {
+            pp.setSqlType("BLOB");
+        } else
+            pp.setSqlType(DatabaseTypeConverter.getDataTypeName(rs.getInt(FIELD_TYPE), pp.getSubType(), pp.getScale()));
         switch (pp.getDataType()) {
             case Types.DECIMAL:
             case Types.NUMERIC:
@@ -296,8 +299,10 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         if (pp.getDataType() == Types.LONGVARBINARY ||
                 pp.getDataType() == Types.LONGVARCHAR ||
                 pp.getDataType() == Types.BLOB) {
-            pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
-            pp.setSize(rs.getInt(SEGMENT_LENGTH));
+            if (!(this instanceof DefaultDatabaseUDF)) {
+                pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
+                pp.setSize(rs.getInt(SEGMENT_LENGTH));
+            }
         }
         String domain = rs.getString(FIELD_NAME);
         if (domain != null && !domain.startsWith("RDB$"))

@@ -105,15 +105,15 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
             databaseDomain = (DefaultDatabaseDomain) ConnectionsTreePanel.getNamedObjectFromHost(connection, NamedObject.SYSTEM_DOMAIN, domain);
         columnData.setColumnName(domain);
         columnData.setDomain(domain);
-        columnData.setDescription(columnData.getDomainDescription());
-        columnData.setCheck(columnData.getDomainCheck());
-        columnData.setNotNull(columnData.isDomainNotNull());
-        columnData.setDefaultValue(columnData.getDomainDefault());
+        columnData.setRemarks(columnData.getRemarks());
+        columnData.setCheck(columnData.getCheck());
+        columnData.setNotNull(columnData.isNotNull());
+        columnData.setDefaultValue(columnData.getDefaultValue());
         simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), domain));
         checkTextPane.setText(columnData.getCheck());
         defaultValueTextPane.setText(columnData.getDefaultValue().getValue());
         nameField.setText(columnData.getColumnName());
-        notNullBox.setSelected(columnData.isRequired());
+        notNullBox.setSelected(columnData.isNotNull());
         if (getDatabaseVersion() < 3)
             notNullBox.setEnabled(false);
         selectTypePanel.refresh();
@@ -186,7 +186,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
         } else if (e.getDocument() == checkTextPane.getDocument()) {
             columnData.setCheck(checkTextPane.getText());
         } else if (e.getDocument() == simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument()) {
-            columnData.setDescription(simpleCommentPanel.getComment());
+            columnData.setRemarks(simpleCommentPanel.getComment());
         } else if (e.getDocument() == nameField.getDocument()) {
             columnData.setColumnName(nameField.getText());
         }

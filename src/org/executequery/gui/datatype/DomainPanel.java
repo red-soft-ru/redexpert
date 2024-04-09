@@ -46,14 +46,14 @@ public class DomainPanel extends JPanel {
         newDomainButton = new JButton(bundleString("NewDomain"));
         newDomainButton.addActionListener(actionEvent -> {
             BaseDialog dialog = new BaseDialog(CreateDomainPanel.CREATE_TITLE, true);
-            CreateDomainPanel panel = new CreateDomainPanel(columnData.getDatabaseConnection(), dialog);
+            CreateDomainPanel panel = new CreateDomainPanel(columnData.getConnection(), dialog);
             dialog.addDisplayComponent(panel);
             dialog.display();
         });
         editDomainButton.addActionListener(actionEvent -> {
             BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, true);
             CreateDomainPanel panel = new CreateDomainPanel(
-                    columnData.getDatabaseConnection(), dialog,
+                    columnData.getConnection(), dialog,
                     ((DefaultDatabaseDomain) Objects.requireNonNull(domainBox.getSelectedItem())).getName());
             dialog.addDisplayComponent(panel);
             dialog.display();
@@ -72,7 +72,7 @@ public class DomainPanel extends JPanel {
                 }
             }
             if (!finded) {
-                NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(columnData.getDatabaseConnection(), NamedObject.SYSTEM_DOMAIN, currentDomain);
+                NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(columnData.getConnection(), NamedObject.SYSTEM_DOMAIN, currentDomain);
                 domainBox.addItem(namedObject);
                 domainBox.setSelectedItem(namedObject);
             }
@@ -127,7 +127,7 @@ public class DomainPanel extends JPanel {
     }*/
 
     List<NamedObject> getDomains() {
-        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(columnData.getDatabaseConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
+        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(columnData.getConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
     }
 
     private String bundleString(String key) {

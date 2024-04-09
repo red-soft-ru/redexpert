@@ -242,7 +242,7 @@ public class CursorsPanel extends JPanel
         dc = databaseConnection;
         tableEditorModel.setElements(new ColumnData(dc).getTableNames());
         for (ColumnData cd : tableVector) {
-            cd.setDatabaseConnection(dc);
+            cd.setConnection(dc);
         }
     }
 
@@ -658,7 +658,7 @@ public class CursorsPanel extends JPanel
                     return cd.getSelectOperator();
 
                 case DESCRIPTION_COLUMN:
-                    return cd.getDescription();
+                    return cd.getRemarks();
 
                 default:
                     return null;
@@ -683,7 +683,7 @@ public class CursorsPanel extends JPanel
                     cd.setSelectOperator((String) value);
                     break;
                 case DESCRIPTION_COLUMN:
-                    cd.setDescription((String) value);
+                    cd.setRemarks((String) value);
                     break;
             }
 

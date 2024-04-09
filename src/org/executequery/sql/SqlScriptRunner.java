@@ -147,9 +147,6 @@ public class SqlScriptRunner {
                     else
                         statement = querySender.getPreparedStatement(derivedQuery);
 
-                    if (statement == null)
-                        continue;
-
                     statementResult = querySender.execute(query.getQueryType(), statement);
 
                     if (statementResult.isException()) {

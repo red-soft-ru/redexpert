@@ -244,6 +244,7 @@ public class FindReplaceDialog extends DefaultActionButtonsPanel
                 if (!isReplaceCheck.isSelected())
                     return;
 
+                replacement = replacement.replace("\\", "\\\\");
                 addReplace(replacement);
                 TextAreaSearch.setReplacementText(replacement);
                 TextAreaSearch.replaceAll();

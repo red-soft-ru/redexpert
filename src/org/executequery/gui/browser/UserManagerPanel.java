@@ -322,7 +322,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (!getSelectedConnection().isConnected())
-            ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).connect();
+            ConnectionManager.createDataSource(getSelectedConnection(), true);
 
         try {
             DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();

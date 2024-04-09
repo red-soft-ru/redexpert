@@ -5,9 +5,11 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.T;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.EQDateTimePicker;
-import org.underworldlabs.swing.EQTimePicker;
-import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
+import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -20,10 +22,14 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField maxField;
     private JTextField minField;
-    private EQTimePicker minTime;
-    private EQTimePicker maxTime;
-    private EQDateTimePicker minDateTime;
-    private EQDateTimePicker maxDateTime;
+    private DefaultTimePicker minTime;
+    private DefaultTimePicker maxTime;
+    private DefaultTimezonePicker minTimezone;
+    private DefaultTimezonePicker maxTimezone;
+    private DefaultDateTimePicker minDateTime;
+    private DefaultDateTimePicker maxDateTime;
+    private DefaultDateTimezonePicker minDateTimezone;
+    private DefaultDateTimezonePicker maxDateTimezone;
     private DatePicker maxDate;
     private DatePicker minDate;
     private NumberTextField countSymbolsAfterComma;
@@ -110,23 +116,39 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             }
 
         }
-        if (col.getFormattedDataType().contentEquals(T.TIME)
-                || col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
-            minTime = new EQTimePicker();
-            minTime.setVisibleNullBox(false);
+
+        if (col.getFormattedDataType().contentEquals(T.TIME)) {
+
+            minTime = new DefaultTimePicker();
+            minTime.setVisibleNullCheck(false);
             minTime.setTime(LocalTime.MIN);
-            minTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
-            maxTime = new EQTimePicker();
-            maxTime.setVisibleNullBox(false);
+
+            maxTime = new DefaultTimePicker();
+            maxTime.setVisibleNullCheck(false);
             maxTime.setTime(LocalTime.MAX);
-            maxTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE));
-            JLabel label = new JLabel(bundles("Min"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+
+            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Max"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
+
+        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
+
+            minTimezone = new DefaultTimezonePicker();
+            minTimezone.setVisibleNullCheck(false);
+            minTimezone.setTime(LocalTime.MIN);
+
+            maxTimezone = new DefaultTimezonePicker();
+            maxTimezone.setVisibleNullCheck(false);
+            maxTimezone.setTime(LocalTime.MAX);
+
+            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(minTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
+            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(maxTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
+        }
+
         if (col.getFormattedDataType().contentEquals(T.DATE)) {
             minDate = new DatePicker();
             minDate.setDate(LocalDate.of(0, 1, 1));
@@ -139,23 +161,39 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(maxDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)
-                || col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
-            minDateTime = new EQDateTimePicker();
-            minDateTime.setVisibleNullBox(false);
-            minDateTime.setDateTimePermissive(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
-            minDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
-            maxDateTime = new EQDateTimePicker();
-            maxDateTime.setVisibleNullBox(false);
-            maxDateTime.setDateTimePermissive(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
-            maxDateTime.setVisibleTimeZone(col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE));
-            JLabel label = new JLabel(bundles("Min"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
+
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
+
+            minDateTime = new DefaultDateTimePicker();
+            minDateTime.setVisibleNullCheck(false);
+            minDateTime.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
+
+            maxDateTime = new DefaultDateTimePicker();
+            maxDateTime.setVisibleNullCheck(false);
+            maxDateTime.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
+
+            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(minDateTime, gbh.defaults().nextCol().spanX().get());
-            label = new JLabel(bundles("Max"));
-            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(maxDateTime, gbh.defaults().nextCol().spanX().get());
         }
+
+        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
+
+            minDateTimezone = new DefaultDateTimezonePicker();
+            minDateTimezone.setVisibleNullCheck(false);
+            minDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
+
+            maxDateTimezone = new DefaultDateTimezonePicker();
+            maxDateTimezone.setVisibleNullCheck(false);
+            maxDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
+
+            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(minDateTimezone, gbh.defaults().nextCol().spanX().get());
+            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(maxDateTimezone, gbh.defaults().nextCol().spanX().get());
+        }
+
         if (col.getFormattedDataType().contains(T.CHAR)) {
             maxField = new NumberTextField(false);
             minField = new NumberTextField(false);
@@ -282,8 +320,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             if (value < 0)
                 value *= -1;
 
-            long max = maxTime.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
-            long min = minTime.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
+            long max = maxTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
+            long min = minTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
             if (min > max)
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;
@@ -333,8 +371,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             long value = new Random().nextLong();
             if (value < 0)
                 value *= -1;
-            long max = maxDateTime.getOffsetDateTime().toInstant().toEpochMilli();
-            long min = minDateTime.getOffsetDateTime().toInstant().toEpochMilli();
+            long max = maxDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
+            long min = minDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
             if (min > max)
                 throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
             long diapason = max - min;

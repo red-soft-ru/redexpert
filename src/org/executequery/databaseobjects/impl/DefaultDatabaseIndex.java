@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
@@ -216,15 +217,37 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     @Override
     public String getCreateSQLText() {
         return SQLUtils.generateCreateIndex(
-                getName(), getIndexType() == 1, isUnique(), getTableName(), null, getCondition(),
-                getIndexColumns(), getTablespace(), isActive(), getRemarks(), getHost().getDatabaseConnection());
+                getName(),
+                getIndexType() == 1,
+                isUnique(),
+                getTableName(),
+                null,
+                getCondition(),
+                getIndexColumns(),
+                getTablespace(),
+                isActive(),
+                getRemarks(),
+                true,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() {
         return SQLUtils.generateCreateIndex(
-                getName(), getIndexType() == 1, isUnique(), getTableName(), null, getCondition(),
-                getIndexColumns(), getTablespace(), isActive(), null, getHost().getDatabaseConnection());
+                getName(),
+                getIndexType() == 1,
+                isUnique(),
+                getTableName(),
+                null,
+                getCondition(),
+                getIndexColumns(),
+                getTablespace(),
+                isActive(),
+                getRemarks(),
+                false,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
@@ -234,15 +257,15 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        return (!MiscUtils.isNull(this.getConstraint_type())) ?
-                "/* Will be created with constraint defining */\n" :
-                getCreateSQLText();
+        return MiscUtils.isNull(this.getConstraint_type()) ?
+                super.getCompareCreateSQL() :
+                "/* Will be created with constraint defining */\n";
     }
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseIndex comparingIndex = (DefaultDatabaseIndex) databaseObject;
-        return SQLUtils.generateAlterIndex(this, comparingIndex);
+        return SQLUtils.generateAlterIndex(this, comparingIndex, Comparer.isCommentsNeed());
     }
 
     public String getComparedDropSQL() throws DataSourceException {

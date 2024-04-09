@@ -20,6 +20,10 @@
 
 package org.executequery.base;
 
+import org.executequery.ApplicationContext;
+import org.executequery.GUIUtilities;
+import org.executequery.gui.SystemOutputPanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -486,18 +490,19 @@ public class DesktopMediator implements DockedTabDragListener {
      * Adds the specified component as a docked tab component in the
      * specified position.
      *
-     * @param the tab title
-     * @param the tab icon
-     * @param the component
-     * @param the tab's tool tip
-     * @param the position
+     * @param title     tab title
+     * @param icon      tab icon
+     * @param component component
+     * @param tip       tab's tool tip
+     * @param position  position
      */
-    public void addDockedTab(String title,
-                             Icon icon,
-                             Component component,
-                             String tip,
-                             int position,
-                             boolean selected) {
+    public void addDockedTab(
+            String title,
+            Icon icon,
+            Component component,
+            String tip,
+            int position,
+            boolean selected) {
 
         DockedTabContainer tabContainer = null;
 
@@ -509,10 +514,8 @@ public class DesktopMediator implements DockedTabDragListener {
 
             case SwingConstants.SOUTH_WEST:
                 tabContainer = initTabContainer(SwingConstants.WEST);
-                // if there is nothing in the north pane, add there
-                if (!tabContainer.isTabPaneVisible(SwingConstants.NORTH)) {
+                if (!tabContainer.isTabPaneVisible(SwingConstants.NORTH))
                     position = SwingConstants.NORTH;
-                }
                 break;
 
             case SwingConstants.CENTER:
@@ -526,24 +529,20 @@ public class DesktopMediator implements DockedTabDragListener {
 
             case SwingConstants.SOUTH_EAST:
                 tabContainer = initTabContainer(SwingConstants.EAST);
-                // if there is nothing in the north pane, add there
-                if (!tabContainer.isTabPaneVisible(SwingConstants.NORTH)) {
+                if (!tabContainer.isTabPaneVisible(SwingConstants.NORTH))
                     position = SwingConstants.NORTH;
-                }
                 break;
-
         }
 
         if (tabContainer != null) {
-
             tabContainer.addDockedTab(title, icon, component, tip, position);
+            tabContainer.updateDividerLocation();
+            baseWindowPane.updateDividerLocation(SwingConstants.LEFT);
 
             if (selected) {
-
                 int tabCount = tabContainer.getTabCount(position);
                 tabContainer.setSelectedIndex(position, tabCount - 1);
             }
-
         }
 
     }

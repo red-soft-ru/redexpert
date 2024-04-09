@@ -1,4 +1,4 @@
-package org.underworldlabs.swing;
+package org.underworldlabs.swing.celleditor.picker;
 
 import com.github.lgooddatepicker.zinternaltools.CustomPopup;
 
@@ -9,7 +9,7 @@ import com.github.lgooddatepicker.zinternaltools.CustomPopup;
  *
  * @author Alexey Kozlov
  */
-public interface DefaultDataPicker extends CustomPopup.CustomPopupCloseListener {
+public interface DataPicker extends CustomPopup.CustomPopupCloseListener {
 
     /**
      * Open the data picker popup panel

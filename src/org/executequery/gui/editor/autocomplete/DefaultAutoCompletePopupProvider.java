@@ -903,6 +903,8 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             for (int i = 0, n = items.size(); i < n; i++) {
 
                 AutoCompleteListItem item = items.get(i);
+                if (item.getInsertionValue().equalsIgnoreCase(searchPattern))
+                    return new ArrayList<>();
                 if (item.isForPrefix(tables, searchPattern, prefixHadAlias)) {
 
                     itemsStartingWith.add(item);

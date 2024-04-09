@@ -1,73 +1,34 @@
 package org.executequery.http;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HostParams;
+import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Map;
 
 public class JSONAPI {
 
     public static JSONObject getJsonObject(String Url) throws IOException {
-
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(Url);
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream(), "utf8"));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
+        DefaultRemoteHttpClient client = new DefaultRemoteHttpClient();
+        RemoteHttpResponse rhr = client.httpGetRequest(Url);
+        String text = rhr.getResponse();
 
         if (text.length() == 0) {
-            text.append("{\n" +
+            text = "{\n" +
                     "    \"version\": \"0.0.0.0\"\n" +
-                    "}");
+                    "}";
         }
 
-        return new JSONObject(text.toString());
+        return new JSONObject(text);
     }
 
     public static JSONObject getJsonObject(String Url, Map<String, String> headers) throws IOException {
-
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(Url);
-        for (String key : headers.keySet()) {
-            get.addRequestHeader(key, headers.get(key));
-        }
-        client.executeMethod(get);
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-
-        return new JSONObject(text.toString());
+        DefaultRemoteHttpClient client = new DefaultRemoteHttpClient();
+        RemoteHttpResponse rhr = client.httpGetRequest(Url, headers);
+        String text = rhr.getResponse();
+        return new JSONObject(text);
     }
 
     public static JSONObject postJsonObjectAsJSON(String Url, Map<String, String> parameters, Map<String, String> headers) throws IOException {
@@ -75,38 +36,11 @@ public class JSONAPI {
     }
 
     public static String postJsonObject(String Url, Map<String, String> parameters, Map<String, String> headers) throws IOException {
-
+        DefaultRemoteHttpClient client = new DefaultRemoteHttpClient();
+        RemoteHttpResponse rhr = client.httpPostRequest(Url, parameters, headers);
         StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        PostMethod get = new PostMethod(Url);
-        for (String key : parameters.keySet()) {
-            get.addParameter(key, parameters.get(key));
-        }
-        if (headers != null)
-            for (String key : headers.keySet()) {
-                get.addRequestHeader(key, headers.get(key));
-            }
-        HostConfiguration config = client.getHostConfiguration();
-        HostParams hostParams = config.getParams();
-        hostParams.setParameter("http.protocol.content-charset", "UTF8");
-        int cod = client.executeMethod(get);
-        if (cod >= 300 && cod < 400) {
-            String redirectLocation = null;
-            Header locationHeader = get.getResponseHeader("location");
-            if (locationHeader != null)
-                redirectLocation = locationHeader.getValue();
-            return postJsonObject(redirectLocation, parameters, headers);
-
-        }
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-        String inputLine;
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
+        text.append(rhr.getResponse());
+        int cod = rhr.getResponseCode();
 
         if (cod < 200 || cod > 300) {
             text.insert(0, "Server return error:\n" + cod + "\n");
@@ -117,51 +51,20 @@ public class JSONAPI {
     }
 
     public static JSONArray getJsonArray(String Url, Map<String, String> headers) throws IOException {
-        StringBuilder text = new StringBuilder();
+        DefaultRemoteHttpClient client = new DefaultRemoteHttpClient();
+        RemoteHttpResponse rhr = client.httpGetRequest(Url, headers);
+        String text = rhr.getResponse();
 
-        HttpClient client = new HttpClient();
-        //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        GetMethod get = new GetMethod(Url);
-        for (String key : headers.keySet()) {
-            get.addRequestHeader(key, headers.get(key));
-        }
-        client.executeMethod(get);
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-        return new JSONArray(text.toString());
+        return new JSONArray(text);
     }
 
     public static JSONArray getJsonArray(String Url) throws IOException {
 
-        StringBuilder text = new StringBuilder();
-        HttpClient client = new HttpClient();
-        GetMethod get = new GetMethod(Url);
-        client.executeMethod(get);
+        DefaultRemoteHttpClient client = new DefaultRemoteHttpClient();
+        RemoteHttpResponse rhr = client.httpGetRequest(Url);
+        String text = rhr.getResponse();
 
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(get.getResponseBodyAsStream()));
-
-        String inputLine;
-
-
-        while ((inputLine = br.readLine()) != null) {
-            text.append(inputLine).append("\n");
-        }
-
-        br.close();
-
-        return new JSONArray(text.toString());
+        return new JSONArray(text);
     }
 
 

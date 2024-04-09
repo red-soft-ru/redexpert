@@ -112,7 +112,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
             return type == Types.CHAR || type == Types.VARCHAR || type == Types.LONGVARCHAR;
 
         } else if (value instanceof ColumnData) {
-            return ((ColumnData) value).isCharacterType();
+            return ((ColumnData) value).isChar();
         } else return value instanceof String;
     }
 
@@ -123,7 +123,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
             return type == Types.DATE || type == Types.TIME || type == Types.TIMESTAMP;
 
         } else if (value instanceof ColumnData) {
-            return ((ColumnData) value).isDateDataType();
+            return ((ColumnData) value).isDate();
         }
 
         return false;

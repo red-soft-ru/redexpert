@@ -821,10 +821,12 @@ public class DockedTabContainer extends JPanel
     private void southPaneCreated() {
         splitPane.setRightComponent(southTabPane);
         splitPane.restoreDividerLocation();
-        //splitPane.setDividerLocation(defaultDividerLocation);
-//        if (orientation == SwingConstants.CENTER && scrollingTabPane != null) {
         splitPane.setDividerSize(ApplicationConstants.SPLIT_PANE_DIVIDER_SIZE);
-//        }
+    }
+
+    public void updateDividerLocation() {
+        if (splitPane.getDividerLocation() < splitPane.getMinimumDividerLocation())
+            splitPane.setDividerLocation(splitPane.getMinimumDividerLocation());
     }
 
     /**

@@ -11,11 +11,12 @@ import org.underworldlabs.util.SQLUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
-public class DefaultDatabaseJob extends AbstractDatabaseObject{
+public class DefaultDatabaseJob extends AbstractDatabaseObject {
 
-    public static final int PSQL_TYPE=0;
-    public static final int BASH_TYPE=1;
+    public static final int PSQL_TYPE = 0;
+    public static final int BASH_TYPE = 1;
     private String id;
     private String source;
     private boolean active;
@@ -69,6 +70,7 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
     @Override
     public Object setInfoFromSingleRowResultSet(ResultSet rs, boolean first) throws SQLException {
+
         setId(getFromResultSet(rs, JOB_ID));
         setSource(getFromResultSet(rs, SOURCE));
         setCronSchedule(getFromResultSet(rs, SCHEDULE));
@@ -76,19 +78,22 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
         setRemarks(getFromResultSet(rs, DESCRIPTION));
         setJobType(rs.getInt(JOB_TYPE));
         setActive(rs.getInt(ACTIVE) == 0);
-        setStartDate(rs.getObject(START_DATE, LocalDateTime.class));
-        setEndDate(rs.getObject(END_DATE, LocalDateTime.class));
+        setStartDate(toLocalDateTime(rs.getObject(START_DATE, OffsetDateTime.class)));
+        setEndDate(toLocalDateTime(rs.getObject(END_DATE, OffsetDateTime.class)));
+
         return null;
+    }
+
+    private LocalDateTime toLocalDateTime(OffsetDateTime dateTime) {
+        return dateTime != null ? dateTime.toLocalDateTime() : null;
     }
 
     @Override
     public void prepareLoadingInfo() {
-
     }
 
     @Override
     public void finishLoadingInfo() {
-
     }
 
     @Override
@@ -108,24 +113,39 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject{
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
-                getStartDate(), getEndDate(), getJobType(), getSource(), getRemarks(), true, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateJob(
+                getName(),
+                getCronSchedule(),
+                isActive(),
+                getStartDate(),
+                getEndDate(),
+                getJobType(),
+                getSource(),
+                getRemarks(),
+                true,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return SQLUtils.generateCreateJob(getName(), getCronSchedule(), isActive(),
-                getStartDate(), getEndDate(), getJobType(), getSource(), null, true, getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateJob(
+                getName(),
+                getCronSchedule(),
+                isActive(),
+                getStartDate(),
+                getEndDate(),
+                getJobType(),
+                getSource(),
+                null,
+                true,
+                getHost().getDatabaseConnection()
+        );
     }
 
     @Override
     public String getDropSQL() throws DataSourceException {
         return SQLUtils.generateDefaultDropQuery("JOB", getName(), getHost().getDatabaseConnection());
-    }
-
-    @Override
-    public String getCompareCreateSQL() throws DataSourceException {
-        return getCreateSQLText();
     }
 
     @Override

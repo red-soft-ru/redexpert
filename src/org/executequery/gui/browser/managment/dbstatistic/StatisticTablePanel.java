@@ -256,6 +256,8 @@ public class StatisticTablePanel extends AbstractPanel {
                 else comp.setBackground(table.getSelectionBackground());
             }
             String str = String.format("%.20f", v);
+            if (v == 0)
+                str = "0";
             setValue(str);
             return comp;
         }

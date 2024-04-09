@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
@@ -185,6 +186,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 editColumnIndex(e);
             }
         });
+        columnIndexTable.setDefaultRenderer(Double.class, new DoubleCellRenderer());
 
         // --- triggersTable ---
 

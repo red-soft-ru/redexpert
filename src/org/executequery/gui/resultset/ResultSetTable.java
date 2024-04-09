@@ -25,10 +25,10 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.celleditor.*;
-import org.underworldlabs.swing.table.MultiLineStringCellEditor;
-import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.swing.celleditor.picker.MultiLineStringPicker;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.table.TableSorter;
-import org.underworldlabs.swing.table.ValidatedNumberCellEditor;
+import org.underworldlabs.swing.celleditor.picker.NumberPicker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -48,17 +48,17 @@ import java.util.Vector;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ResultSetTable extends JTable implements StandardTable {
 
-    private DefaultCellEditor defaultCellEditor;
-    private DefaultCellEditor int128CellEditor;
-    private DefaultCellEditor bigintCellEditor;
-    private DefaultCellEditor integerCellEditor;
-    private DefaultCellEditor smallintCellEditor;
-    private DefaultCellEditor multiLineCellEditor;
+    private CustomCellEditor defaultCellEditor;
+    private CustomCellEditor int128CellEditor;
+    private CustomCellEditor bigintCellEditor;
+    private CustomCellEditor integerCellEditor;
+    private CustomCellEditor smallintCellEditor;
+    private CustomCellEditor multiLineCellEditor;
     private DateCellEditor dateEditor;
-    private DateTimeCellEditor dateTimeCellEditor;
-    private DateTimezoneCellEditor dateTimezoneCellEditor;
+    private TimestampCellEditor timestampCellEditor;
+    private ZonedTimestampCellEditor zonedTimestampCellEditor;
     private TimeCellEditor timeCellEditor;
-    private TimezoneCellEditor timezoneCellEditor;
+    private ZonedTimeCellEditor zonedTimeCellEditor;
 
     private boolean isAutoResizeable;
     private List<Integer> foreignColumnsIndexes;
@@ -76,82 +76,21 @@ public class ResultSetTable extends JTable implements StandardTable {
         super();
         setDefaultOptions();
 
-        // --- stringCellEditor ---
+        defaultCellEditor = new CustomCellEditor(new StringPicker());
+        multiLineCellEditor = new CustomCellEditor(new MultiLineStringPicker());
 
-        final StringCellEditor stringCellEditor = new StringCellEditor();
-        stringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        defaultCellEditor = new DefaultCellEditor(stringCellEditor) {
-            @Override
-            public Object getCellEditorValue() {
-                return stringCellEditor.getValue();
-            }
-        };
-
-        // --- multiLineStringCellEditor ---
-
-        final MultiLineStringCellEditor multiLineStringCellEditor = new MultiLineStringCellEditor();
-        multiLineStringCellEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        multiLineCellEditor = new DefaultCellEditor(multiLineStringCellEditor) {
-            @Override
-            public Object getCellEditorValue() {
-                return multiLineStringCellEditor.getValue();
-            }
-        };
-
-        // --- int128Editor ---
-
-        final ValidatedNumberCellEditor int128Editor = new ValidatedNumberCellEditor(Types.INT128);
-        int128Editor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        int128CellEditor = new DefaultCellEditor(int128Editor) {
-            @Override
-            public Object getCellEditorValue() {
-                return int128Editor.getValue();
-            }
-        };
-
-        // --- bigintEditor ---
-
-        final ValidatedNumberCellEditor bigintEditor = new ValidatedNumberCellEditor(Types.BIGINT);
-        bigintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        bigintCellEditor = new DefaultCellEditor(bigintEditor) {
-            @Override
-            public Object getCellEditorValue() {
-                return bigintEditor.getValue();
-            }
-        };
-
-        // --- integerEditor ---
-
-        final ValidatedNumberCellEditor integerEditor = new ValidatedNumberCellEditor(Types.INTEGER);
-        integerEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        integerCellEditor = new DefaultCellEditor(integerEditor) {
-            @Override
-            public Object getCellEditorValue() {
-                return integerEditor.getValue();
-            }
-        };
-
-        // --- smallintEditor ---
-
-        final ValidatedNumberCellEditor smallintEditor = new ValidatedNumberCellEditor(Types.SMALLINT);
-        smallintEditor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        smallintCellEditor = new DefaultCellEditor(smallintEditor) {
-            @Override
-            public Object getCellEditorValue() {
-                return smallintEditor.getValue();
-            }
-        };
-
-        // ---
+        int128CellEditor = new CustomCellEditor(new NumberPicker(Types.INT128));
+        bigintCellEditor = new CustomCellEditor(new NumberPicker(Types.BIGINT));
+        integerCellEditor = new CustomCellEditor(new NumberPicker(Types.INTEGER));
+        smallintCellEditor = new CustomCellEditor(new NumberPicker(Types.SMALLINT));
 
         dateEditor = new DateCellEditor();
-        dateTimeCellEditor = new DateTimeCellEditor();
-        dateTimezoneCellEditor = new DateTimezoneCellEditor();
         timeCellEditor = new TimeCellEditor();
-        timezoneCellEditor = new TimezoneCellEditor();
+        timestampCellEditor = new TimestampCellEditor();
+        zonedTimeCellEditor = new ZonedTimeCellEditor();
+        zonedTimestampCellEditor = new ZonedTimestampCellEditor();
 
         isAutoResizeable = false;
-
     }
 
     public ResultSetTable(TableModel model) {
@@ -480,15 +419,15 @@ public class ResultSetTable extends JTable implements StandardTable {
                 break;
 
             case Types.TIMESTAMP:
-                oldCellEditor = dateTimeCellEditor;
+                oldCellEditor = timestampCellEditor;
                 break;
 
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                oldCellEditor = dateTimezoneCellEditor;
+                oldCellEditor = zonedTimestampCellEditor;
                 break;
 
             case Types.TIME_WITH_TIMEZONE:
-                oldCellEditor = timezoneCellEditor;
+                oldCellEditor = zonedTimeCellEditor;
                 break;
 
             case Types.TIME:

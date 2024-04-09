@@ -5,10 +5,10 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.T;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -25,11 +25,11 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField iterationField;
     private JTextField startValueField;
-    private DefaultTimezonePicker startValueTimezone;
-    private DefaultTimePicker startValueTime;
-    private DefaultTimePicker iterationTime;
-    private DefaultDateTimePicker startValueDateTime;
-    private DefaultDateTimezonePicker startValueDateTimezone;
+    private ZonedTimePicker startValueTimezone;
+    private TimePicker startValueTime;
+    private TimePicker iterationTime;
+    private TimestampPicker startValueDateTime;
+    private ZonedTimestampPicker startValueDateTimezone;
     private DateDifferenceSetter iterationDate;
     private DatePicker startValueDate;
     private JComboBox plusMinusBox;
@@ -106,11 +106,11 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME)) {
 
-            startValueTime = new DefaultTimePicker();
+            startValueTime = new TimePicker();
             startValueTime.setVisibleNullCheck(false);
             startValueTime.setTime(LocalTime.MIN);
 
-            iterationTime = new DefaultTimePicker();
+            iterationTime = new TimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
 
@@ -123,11 +123,11 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
 
-            startValueTimezone = new DefaultTimezonePicker();
+            startValueTimezone = new ZonedTimePicker();
             startValueTimezone.setVisibleNullCheck(false);
             startValueTimezone.setTime(LocalTime.MIN);
 
-            iterationTime = new DefaultTimePicker();
+            iterationTime = new TimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(1, 1, 1));
 
@@ -153,13 +153,13 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
-            startValueDateTime = new DefaultDateTimePicker();
+            startValueDateTime = new TimestampPicker();
             startValueDateTime.setVisibleNullCheck(false);
             startValueDateTime.setDateTime(LocalDateTime.now());
 
             iterationDate = new DateDifferenceSetter();
 
-            iterationTime = new DefaultTimePicker();
+            iterationTime = new TimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 
@@ -173,13 +173,13 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
 
-            startValueDateTimezone = new DefaultDateTimezonePicker();
+            startValueDateTimezone = new ZonedTimestampPicker();
             startValueDateTimezone.setVisibleNullCheck(false);
             startValueDateTimezone.setDateTime(LocalDateTime.now());
 
             iterationDate = new DateDifferenceSetter();
 
-            iterationTime = new DefaultTimePicker();
+            iterationTime = new TimePicker();
             iterationTime.setVisibleNullCheck(false);
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 

@@ -11,7 +11,7 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -65,8 +65,8 @@ public class AnalisePanel extends JPanel {
             "EXECUTE_FUNCTION_START", "EXECUTE_PROCEDURE_FINISH", "EXECUTE_FUNCTION_FINISH", "EXECUTE_TRIGGER_START", "EXECUTE_TRIGGER_FINISH", "COMPILE_BLR",
             "EXECUTE_BLR", "EXECUTE_DYN", "ATTACH_SERVICE", "DETACH_SERVICE", "QUERY_SERVICE", "SWEEP_START", "SWEEP_FINISH", "SWEEP_FAILED", "SWEEP_PROGRESS"};
 
-    DefaultDateTimePicker startTimePicker;
-    DefaultDateTimePicker endTimePicker;
+    TimestampPicker startTimePicker;
+    TimestampPicker endTimePicker;
     TableRowSorter rowSorter;
     JCheckBox showPlanBox;
 
@@ -340,8 +340,8 @@ public class AnalisePanel extends JPanel {
                 rebuildRows();
             }
         });
-        startTimePicker = new DefaultDateTimePicker();
-        endTimePicker = new DefaultDateTimePicker();
+        startTimePicker = new TimestampPicker();
+        endTimePicker = new TimestampPicker();
         startTimePicker.setVisibleNullCheck(false);
         endTimePicker.setVisibleNullCheck(false);
         planPanel = new LoggingOutputPanel();

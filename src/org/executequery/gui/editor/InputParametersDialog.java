@@ -7,10 +7,10 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -109,16 +109,16 @@ public class InputParametersDialog extends BaseDialog {
                     ((DatePicker) component).setDate((LocalDate) parameter.getValue());
                     break;
                 case Types.TIMESTAMP:
-                    ((DefaultDateTimePicker) component).setDateTime((LocalDateTime) parameter.getValue());
+                    ((TimestampPicker) component).setDateTime((LocalDateTime) parameter.getValue());
                     break;
                 case Types.TIMESTAMP_WITH_TIMEZONE:
-                    ((DefaultDateTimezonePicker) component).setDateTime((OffsetDateTime) parameter.getValue());
+                    ((ZonedTimestampPicker) component).setDateTime((OffsetDateTime) parameter.getValue());
                     break;
                 case Types.TIME:
-                    ((DefaultTimePicker) component).setTime((LocalTime) parameter.getValue());
+                    ((TimePicker) component).setTime((LocalTime) parameter.getValue());
                     break;
                 case Types.TIME_WITH_TIMEZONE:
-                    ((DefaultTimezonePicker) component).setTime((OffsetTime) parameter.getValue());
+                    ((ZonedTimePicker) component).setTime((OffsetTime) parameter.getValue());
                     break;
                 case Types.BOOLEAN:
                     ((RDBCheckBox) component).setStingValue((String) parameter.getValue());
@@ -146,16 +146,16 @@ public class InputParametersDialog extends BaseDialog {
                 component = new DatePicker();
                 break;
             case Types.TIMESTAMP:
-                component = new DefaultDateTimePicker();
+                component = new TimestampPicker();
                 break;
             case Types.TIMESTAMP_WITH_TIMEZONE:
-                component = new DefaultDateTimezonePicker();
+                component = new ZonedTimestampPicker();
                 break;
             case Types.TIME:
-                component = new DefaultTimePicker();
+                component = new TimePicker();
                 break;
             case Types.TIME_WITH_TIMEZONE:
-                component = new DefaultTimezonePicker();
+                component = new ZonedTimePicker();
                 break;
             case Types.BOOLEAN:
                 component = new RDBCheckBox();
@@ -191,15 +191,15 @@ public class InputParametersDialog extends BaseDialog {
                     parameter.setValue(((DatePicker) component).getDate());
                     break;
                 case Types.TIMESTAMP:
-                    parameter.setValue(((DefaultDateTimePicker) component).getDateTime());
+                    parameter.setValue(((TimestampPicker) component).getDateTime());
                     break;
                 case Types.TIMESTAMP_WITH_TIMEZONE:
-                    parameter.setValue(((DefaultDateTimezonePicker) component).getOffsetDateTime());
+                    parameter.setValue(((ZonedTimestampPicker) component).getOffsetDateTime());
                     break;
                 case Types.TIME:
-                    parameter.setValue(((DefaultTimePicker) component).getLocalTime());
+                    parameter.setValue(((TimePicker) component).getLocalTime());
                 case Types.TIME_WITH_TIMEZONE:
-                    parameter.setValue(((DefaultTimezonePicker) component).getOffsetTime());
+                    parameter.setValue(((ZonedTimePicker) component).getOffsetTime());
                     break;
                 case Types.BOOLEAN:
                     parameter.setValue(((RDBCheckBox) component).getStringValue());

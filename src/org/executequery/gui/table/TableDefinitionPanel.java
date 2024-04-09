@@ -33,7 +33,7 @@ import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.EachRowEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
-import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -65,15 +65,15 @@ public abstract class TableDefinitionPanel extends JPanel
     protected CreateTableModel _model;
 
     /** The cell editor for the column names */
-    protected static StringCellEditor colNameEditor;
+    protected static StringPicker colNameEditor;
 
-    protected static StringCellEditor checkEditor;
+    protected static StringPicker checkEditor;
 
-    protected static StringCellEditor descEditor;
+    protected static StringPicker descEditor;
 
-    protected static StringCellEditor computedEditor;
+    protected static StringPicker computedEditor;
 
-    protected static StringCellEditor defaultValueEditor;
+    protected static StringPicker defaultValueEditor;
 
     /** The cell editor for the column size */
     protected NumberCellEditor sizeEditor;
@@ -228,7 +228,7 @@ public abstract class TableDefinitionPanel extends JPanel
         // add the editors if editing
         if (editing) {
 
-            colNameEditor = new StringCellEditor();
+            colNameEditor = new StringPicker();
             DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
                 @Override
                 public Object getCellEditorValue() {
@@ -236,7 +236,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
 
-            checkEditor = new StringCellEditor();
+            checkEditor = new StringPicker();
             DefaultCellEditor checkStrEditor = new DefaultCellEditor(checkEditor) {
                 @Override
                 public Object getCellEditorValue() {
@@ -244,7 +244,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
 
-            descEditor = new StringCellEditor();
+            descEditor = new StringPicker();
             DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
                 @Override
                 public Object getCellEditorValue() {
@@ -252,7 +252,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
 
-            computedEditor = new StringCellEditor();
+            computedEditor = new StringPicker();
             DefaultCellEditor computedStrEditor = new DefaultCellEditor(computedEditor) {
                 @Override
                 public Object getCellEditorValue() {
@@ -260,7 +260,7 @@ public abstract class TableDefinitionPanel extends JPanel
                 }
             };
 
-            defaultValueEditor = new StringCellEditor();
+            defaultValueEditor = new StringPicker();
             DefaultCellEditor defaultValueStrEditor = new DefaultCellEditor(defaultValueEditor) {
                 @Override
                 public Object getCellEditorValue() {

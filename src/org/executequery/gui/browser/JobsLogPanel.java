@@ -12,7 +12,7 @@ import org.executequery.sql.sqlbuilder.Condition;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -30,8 +30,8 @@ public class JobsLogPanel extends JPanel implements TabView {
     //private JComboBox jobCombo;
     private ResultSetTable resultSetTable;
     private ResultSetTableModel tableModel;
-    private DefaultDateTimePicker startDatePicker;
-    private DefaultDateTimePicker endDatePicker;
+    private TimestampPicker startDatePicker;
+    private TimestampPicker endDatePicker;
     private JButton refreshButton;
     private DefaultStatementExecutor querySender;
     private final DatabaseConnection connection;
@@ -55,8 +55,8 @@ public class JobsLogPanel extends JPanel implements TabView {
         typesEvents.add(new JCheckBox("RUN_START"));
         typesEvents.add(new JCheckBox("RUN_FINISH"));
         typesEvents.add(new JCheckBox("RUN_ERROR"));
-        startDatePicker = new DefaultDateTimePicker();
-        endDatePicker = new DefaultDateTimePicker();
+        startDatePicker = new TimestampPicker();
+        endDatePicker = new TimestampPicker();
         refreshButton = new JButton();
         refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
         refreshButton.addActionListener(new ActionListener() {

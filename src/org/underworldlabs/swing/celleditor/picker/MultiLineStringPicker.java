@@ -18,29 +18,25 @@
  *
  */
 
-package org.underworldlabs.swing.table;
+package org.underworldlabs.swing.celleditor.picker;
 
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import java.util.Dictionary;
 
-public class MultiLineStringCellEditor extends StringCellEditor {
+public class MultiLineStringPicker extends StringPicker {
 
+    @Override
     protected Document createDefaultModel() {
-
-        Document document = new PlainDocument() {
-
+        return new PlainDocument() {
+            @Override
             public Dictionary<Object, Object> getDocumentProperties() {
 
                 Dictionary<Object, Object> dictionary = super.getDocumentProperties();
                 dictionary.put("filterNewlines", Boolean.FALSE);
+
                 return dictionary;
             }
-
         };
-
-        return document;
     }
-
 }
-

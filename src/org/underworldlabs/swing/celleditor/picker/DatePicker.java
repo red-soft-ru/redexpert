@@ -1,13 +1,12 @@
 package org.underworldlabs.swing.celleditor.picker;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.GUIUtilities;
 
 import java.awt.*;
 
-public class DefaultDatePicker extends DatePicker {
+public class DatePicker extends com.github.lgooddatepicker.components.DatePicker {
 
-    public DefaultDatePicker() {
+    public DatePicker() {
         super();
 
         getComponentToggleCalendarButton().setMargin(new Insets(0, 0, 0, 0));

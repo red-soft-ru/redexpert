@@ -7,21 +7,21 @@ import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
-public class DefaultDateTimezonePicker extends JPanel {
+public class ZonedTimestampPicker extends JPanel {
 
-    private DefaultDatePicker datePicker;
-    private DefaultTimezonePicker timezonePicker;
+    private DatePicker datePicker;
+    private ZonedTimePicker timezonePicker;
 
-    public DefaultDateTimezonePicker() {
+    public ZonedTimestampPicker() {
         init();
         arrange();
         update();
     }
 
     private void init() {
-        datePicker = new DefaultDatePicker();
+        datePicker = new DatePicker();
 
-        timezonePicker = new DefaultTimezonePicker();
+        timezonePicker = new ZonedTimePicker();
         timezonePicker.addNullCheckActionListener(e -> update());
     }
 
@@ -105,11 +105,11 @@ public class DefaultDateTimezonePicker extends JPanel {
         return timezonePicker.isNull();
     }
 
-    public DefaultDatePicker getDatePicker() {
+    public DatePicker getDatePicker() {
         return datePicker;
     }
 
-    public DefaultTimezonePicker getTimezonePicker() {
+    public ZonedTimePicker getTimezonePicker() {
         return timezonePicker;
     }
 

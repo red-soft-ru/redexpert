@@ -3,7 +3,7 @@ package org.underworldlabs.swing.celleditor;
 
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.swing.celleditor.picker.DefaultDatePicker;
+import org.underworldlabs.swing.celleditor.picker.DatePicker;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,10 +13,10 @@ import java.time.LocalDate;
 public class DateCellEditor extends AbstractAdjustableCellEditor
         implements BlockableCellEditor {
 
-    private final DefaultDatePicker picker;
+    private final DatePicker picker;
 
     public DateCellEditor() {
-        picker = new DefaultDatePicker();
+        picker = new DatePicker();
     }
 
     public void setCellEditorValue(Object value) {

@@ -1,7 +1,7 @@
 package org.underworldlabs.swing.celleditor;
 
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimePicker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -10,12 +10,12 @@ import java.sql.Time;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 
-public class TimezoneCellEditor extends AbstractAdjustableCellEditor
+public class ZonedTimeCellEditor extends AbstractAdjustableCellEditor
         implements BlockableCellEditor {
-    private final DefaultTimezonePicker picker;
+    private final ZonedTimePicker picker;
 
-    public TimezoneCellEditor() {
-        picker = new DefaultTimezonePicker();
+    public ZonedTimeCellEditor() {
+        picker = new ZonedTimePicker();
     }
 
     public void setCellEditorValue(Object value) {

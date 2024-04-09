@@ -9,7 +9,7 @@ import com.github.lgooddatepicker.zinternaltools.CustomPopup;
  *
  * @author Alexey Kozlov
  */
-public interface DataPicker extends CustomPopup.CustomPopupCloseListener {
+public interface PopupDataPicker extends CustomPopup.CustomPopupCloseListener {
 
     /**
      * Open the data picker popup panel

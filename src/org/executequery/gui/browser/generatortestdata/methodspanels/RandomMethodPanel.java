@@ -6,10 +6,10 @@ import org.executequery.databaseobjects.T;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -22,14 +22,14 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     private JPanel settingsPanel;
     private JTextField maxField;
     private JTextField minField;
-    private DefaultTimePicker minTime;
-    private DefaultTimePicker maxTime;
-    private DefaultTimezonePicker minTimezone;
-    private DefaultTimezonePicker maxTimezone;
-    private DefaultDateTimePicker minDateTime;
-    private DefaultDateTimePicker maxDateTime;
-    private DefaultDateTimezonePicker minDateTimezone;
-    private DefaultDateTimezonePicker maxDateTimezone;
+    private TimePicker minTime;
+    private TimePicker maxTime;
+    private ZonedTimePicker minTimezone;
+    private ZonedTimePicker maxTimezone;
+    private TimestampPicker minDateTime;
+    private TimestampPicker maxDateTime;
+    private ZonedTimestampPicker minDateTimezone;
+    private ZonedTimestampPicker maxDateTimezone;
     private DatePicker maxDate;
     private DatePicker minDate;
     private NumberTextField countSymbolsAfterComma;
@@ -119,11 +119,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME)) {
 
-            minTime = new DefaultTimePicker();
+            minTime = new TimePicker();
             minTime.setVisibleNullCheck(false);
             minTime.setTime(LocalTime.MIN);
 
-            maxTime = new DefaultTimePicker();
+            maxTime = new TimePicker();
             maxTime.setVisibleNullCheck(false);
             maxTime.setTime(LocalTime.MAX);
 
@@ -135,11 +135,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
 
-            minTimezone = new DefaultTimezonePicker();
+            minTimezone = new ZonedTimePicker();
             minTimezone.setVisibleNullCheck(false);
             minTimezone.setTime(LocalTime.MIN);
 
-            maxTimezone = new DefaultTimezonePicker();
+            maxTimezone = new ZonedTimePicker();
             maxTimezone.setVisibleNullCheck(false);
             maxTimezone.setTime(LocalTime.MAX);
 
@@ -164,11 +164,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
 
-            minDateTime = new DefaultDateTimePicker();
+            minDateTime = new TimestampPicker();
             minDateTime.setVisibleNullCheck(false);
             minDateTime.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
-            maxDateTime = new DefaultDateTimePicker();
+            maxDateTime = new TimestampPicker();
             maxDateTime.setVisibleNullCheck(false);
             maxDateTime.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 
@@ -180,11 +180,11 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
 
-            minDateTimezone = new DefaultDateTimezonePicker();
+            minDateTimezone = new ZonedTimestampPicker();
             minDateTimezone.setVisibleNullCheck(false);
             minDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
 
-            maxDateTimezone = new DefaultDateTimezonePicker();
+            maxDateTimezone = new ZonedTimestampPicker();
             maxDateTimezone.setVisibleNullCheck(false);
             maxDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
 

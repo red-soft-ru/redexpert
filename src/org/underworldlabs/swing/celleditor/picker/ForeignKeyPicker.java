@@ -25,7 +25,7 @@ import java.util.Vector;
  * @author Alexey Kozlov
  */
 public class ForeignKeyPicker extends JPanel
-        implements DataPicker {
+        implements PopupDataPicker {
 
     private static final Color BACKGROUND_COLOR = UserProperties.getInstance()
             .getColourProperty("editor.results.background.colour");

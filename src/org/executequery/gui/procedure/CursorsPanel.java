@@ -8,7 +8,7 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
-import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -61,9 +61,9 @@ public class CursorsPanel extends JPanel
     /**
      * The cell editor for the column names
      */
-    protected StringCellEditor colNameEditor;
-    protected StringCellEditor selectEditor;
-    protected StringCellEditor descEditor;
+    protected StringPicker colNameEditor;
+    protected StringPicker selectEditor;
+    protected StringPicker descEditor;
     DynamicComboBoxModel tableEditorModel;
 
 
@@ -132,19 +132,19 @@ public class CursorsPanel extends JPanel
 
         // add the editors if editing
         if (editing) {
-            colNameEditor = new StringCellEditor();
+            colNameEditor = new StringPicker();
             DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
                 public Object getCellEditorValue() {
                     return colNameEditor.getValue();
                 }
             };
-            selectEditor = new StringCellEditor();
+            selectEditor = new StringPicker();
             DefaultCellEditor checkStrEditor = new DefaultCellEditor(selectEditor) {
                 public Object getCellEditorValue() {
                     return selectEditor.getValue();
                 }
             };
-            descEditor = new StringCellEditor();
+            descEditor = new StringPicker();
             DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
                 public Object getCellEditorValue() {
                     return descEditor.getValue();

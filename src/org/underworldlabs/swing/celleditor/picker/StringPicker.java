@@ -18,58 +18,41 @@
  *
  */
 
-package org.underworldlabs.swing.table;
+package org.underworldlabs.swing.celleditor.picker;
 
 import org.underworldlabs.Constants;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Simple string value table column cell editor.
  *
  * @author Takis Diakoumis
  */
-public class StringCellEditor extends JTextField
-        implements TableCellEditorValue {
+public class StringPicker extends JTextField
+        implements DefaultPicker {
 
-    public StringCellEditor() {
+    public StringPicker() {
         super();
-        setBorder(null);
+
         setHorizontalAlignment(JTextField.LEFT);
+        setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
     }
 
-    /**
-     * Returns the current editor value from the component
-     * defining this object.
-     *
-     * @return the editor's value
-     */
-    public String getEditorValue() {
-        return getText();
-    }
-
-    /**
-     * Resets the editor's value to an empty string.
-     */
-    public void resetValue() {
-        setText(Constants.EMPTY);
-    }
-
-    /**
-     * Returns the current editor value string.
-     */
+    @Override
     public String getValue() {
         return getText();
     }
 
-    /**
-     * Sets the editor's value to that specified.
-     *
-     * @param value - the value to be set
-     */
-    public void setValue(String value) {
-        setText(value);
+    @Override
+    public void setValue(Object value) {
+        setText(value != null ? value.toString() : Constants.EMPTY);
+    }
+
+    @Override
+    public JTextField getEditorComponent() {
+        return this;
     }
 
 }
-

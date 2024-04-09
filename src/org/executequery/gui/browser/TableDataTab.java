@@ -45,8 +45,8 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -777,10 +777,10 @@ public class TableDataTab extends JPanel
                     component_value = ((DatePicker) component).getDateStringOrEmptyString();
                     break;
                 case Types.TIMESTAMP:
-                    component_value = ((DefaultDateTimePicker) component).getStringValue();
+                    component_value = ((TimestampPicker) component).getStringValue();
                     break;
                 case Types.TIME:
-                    component_value = ((DefaultTimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
+                    component_value = ((TimePicker) component).getStringValue();//((DateTimePicker) component).timePicker.getTimeStringOrEmptyString();
                     break;
                 case Types.BOOLEAN:
                     component_value = ((RDBCheckBox) component).getStringValue();
@@ -891,10 +891,10 @@ public class TableDataTab extends JPanel
                             field = new DatePicker();
                             break;
                         case Types.TIMESTAMP:
-                            field = new DefaultDateTimePicker();
+                            field = new TimestampPicker();
                             break;
                         case Types.TIME:
-                            field = new DefaultTimePicker();
+                            field = new TimePicker();
                             break;
                         case Types.BOOLEAN:
                             field = new RDBCheckBox();

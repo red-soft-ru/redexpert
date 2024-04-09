@@ -385,11 +385,16 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                     sql.append(") AS \"< Return Value >\" FROM rdb$database");
 
                 } else {
-                    queryType = QueryTypes.EXECUTE;
-
+                    sql = new StringBuilder();
                     DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) databaseExecutable;
-                    sql = new StringBuilder("EXECUTE PROCEDURE " + procedure.getNameForQuery());
+                    if (procedure.getProcedureType() == DefaultDatabaseProcedure.SELECTABLE) {
+                        queryType = QueryTypes.SELECT;
+                        sql.append("SELECT * FROM " + procedure.getNameForQuery());
 
+                    } else {
+                        queryType = QueryTypes.EXECUTE;
+                        sql.append("EXECUTE PROCEDURE " + procedure.getNameForQuery());
+                    }
                     if (procedure.getProcedureInputParameters().size() > 0) {
                         sql.append("(");
 

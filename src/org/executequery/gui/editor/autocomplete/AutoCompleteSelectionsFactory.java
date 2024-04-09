@@ -337,43 +337,57 @@ public class AutoCompleteSelectionsFactory {
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
-        //List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
-        List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
+
+        if (databaseHost == null)
+            return new ArrayList<>();
+
         if (tableString.startsWith("\""))
             tableString = tableString.substring(1, tableString.length() - 1);
-        List<DatabaseMetaTag> databaseMetaTags = databaseHost.getMetaObjects();
+
         NamedObject table = null;
-        for (DatabaseMetaTag databaseMetaTag : databaseMetaTags) {
-            if (databaseMetaTag.getSubType() == NamedObject.TABLE || databaseMetaTag.getSubType() == NamedObject.GLOBAL_TEMPORARY
-                    || databaseMetaTag.getSubType() == NamedObject.VIEW || databaseMetaTag.getSubType() == NamedObject.SYSTEM_TABLE
+        for (DatabaseMetaTag databaseMetaTag : databaseHost.getMetaObjects()) {
+            if (databaseMetaTag.getSubType() == NamedObject.TABLE
+                    || databaseMetaTag.getSubType() == NamedObject.GLOBAL_TEMPORARY
+                    || databaseMetaTag.getSubType() == NamedObject.VIEW
+                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_TABLE
                     || databaseMetaTag.getSubType() == NamedObject.SYSTEM_VIEW
                     || databaseMetaTag.getSubType() == NamedObject.PACKAGE
-                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_PACKAGE) {
+                    || databaseMetaTag.getSubType() == NamedObject.SYSTEM_PACKAGE
+            ) {
                 table = databaseMetaTag.getNamedObject(tableString);
                 if (table != null)
                     break;
             }
         }
-        if (table != null) {
-            List<NamedObject> cols = table.getObjects();
-            for (NamedObject col : cols) {
-                String desc = DATABASE_COLUMN_DESCRIPTION;
-                AutoCompleteListItemType colType = AutoCompleteListItemType.DATABASE_TABLE_COLUMN;
-                if (col instanceof DefaultDatabaseProcedure) {
-                    desc = DATABASE_PROCEDURE_DESCRIPTION;
-                    colType = AutoCompleteListItemType.DATABASE_PROCEDURE;
-                }
-                if (col instanceof DefaultDatabaseFunction) {
-                    desc = DATABASE_FUNCTION_DESCRIPTION;
-                    colType = AutoCompleteListItemType.DATABASE_FUNCTION;
-                }
-                list.add(new AutoCompleteListItem(col.getName(), tableString, col.getDescription(), desc,
-                        colType));
+
+        if (table == null)
+            return new ArrayList<>();
+
+        List<AutoCompleteListItem> list = new ArrayList<>();
+        for (NamedObject col : table.getObjects()) {
+
+            String description = DATABASE_COLUMN_DESCRIPTION;
+            AutoCompleteListItemType colType = AutoCompleteListItemType.DATABASE_TABLE_COLUMN;
+
+            if (col instanceof DefaultDatabaseProcedure) {
+                description = DATABASE_PROCEDURE_DESCRIPTION;
+                colType = AutoCompleteListItemType.DATABASE_PROCEDURE;
             }
+            if (col instanceof DefaultDatabaseFunction) {
+                description = DATABASE_FUNCTION_DESCRIPTION;
+                colType = AutoCompleteListItemType.DATABASE_FUNCTION;
+            }
+
+            list.add(new AutoCompleteListItem(
+                    col.getName(),
+                    tableString,
+                    col.getDescription(),
+                    description,
+                    colType
+            ));
         }
 
         return list;
-
     }
 
     static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {

@@ -256,6 +256,7 @@ test:windows:
     variables:
       - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
       - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
 repackage:
   tags:

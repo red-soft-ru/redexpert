@@ -19,7 +19,7 @@ if "rdb" in DBMS:
     if DBMS == "rdb50":
         last_stable_version = "5.0.0-Beta7"       
 
-    url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:windows-{ARCH}-enterprise:{last_stable_version}:exe"
+    url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:windows-x86_64-enterprise:{last_stable_version}:exe"
 
 else:
     if ARCH == "x86_64":

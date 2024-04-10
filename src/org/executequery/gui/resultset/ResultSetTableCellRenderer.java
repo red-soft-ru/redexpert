@@ -203,7 +203,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatForDataItem(RecordDataItem recordDataItem, boolean isSelected) {
 
         int sqlType = recordDataItem.getDataType();
-        Object value = recordDataItem.getDisplayValue();
+        Object value = recordDataItem.isChanged() ? recordDataItem.getNewValue() : recordDataItem.getValue();
 
         Color color;
         boolean isDateValue = false;

@@ -24,8 +24,10 @@ public class CustomCellEditor extends AbstractCellEditor
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 
-        if (value instanceof RecordDataItem)
-            picker.setValue(((RecordDataItem) value).getNewValue());
+        if (value instanceof RecordDataItem) {
+            RecordDataItem item = (RecordDataItem) value;
+            picker.setValue(item.isChanged() ? item.getNewValue() : item.getValue());
+        }
 
         return picker.getEditorComponent();
     }

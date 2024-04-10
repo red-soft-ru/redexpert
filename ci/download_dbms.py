@@ -27,7 +27,7 @@ else:
         ARCH = "Win32"
 
     firebird_releases_url = "https://api.github.com/repos/FirebirdSQL/firebird/releases"
-    response = requests.get(firebird_releases_url)
+    response = requests.get(firebird_releases_url, verify=False)
     releases = response.json()
     url = ""
     print(DBMS + ARCH)

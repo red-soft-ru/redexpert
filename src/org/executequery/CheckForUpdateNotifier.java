@@ -24,6 +24,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
+import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -104,6 +105,9 @@ public class CheckForUpdateNotifier implements Interruptible {
                 checkForUpdate();
                 restoreProgressDialog();
 
+                if (version == null)
+                    return Constants.WORKER_CANCEL;
+
                 if (isNewVersion(version)) {
                     displayDownloadDialog(null);
 
@@ -170,7 +174,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             } else
                 Log.info(bundledString("RedExpertUpToDate"));
 
-        } catch (UnknownHostException e) {
+        } catch (RemoteHttpClientException | UnknownHostException e) {
             String message = bundledString("noInternetMessage");
 
             Log.error(message);
@@ -207,7 +211,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             } else
                 Log.info(bundledString("RedExpertUpToDate"));
 
-        } catch (UnknownHostException e) {
+        } catch (RemoteHttpClientException | UnknownHostException e) {
             String message = bundledString("noInternetMessage");
 
             Log.error(message);
@@ -406,7 +410,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private boolean isNewVersion(ApplicationVersion version) {
-        return version.isNewerThan(System.getProperty("executequery.minor.version"));
+        return version != null && version.isNewerThan(System.getProperty("executequery.minor.version"));
     }
 
     private void restoreProgressDialog() {

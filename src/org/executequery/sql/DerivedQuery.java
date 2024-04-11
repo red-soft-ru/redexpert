@@ -227,120 +227,106 @@ public final class DerivedQuery {
 
         if (type != -1)
             return type;
+
         if (queryWithoutComments == null)
             queryWithoutComments = derivedQuery;
+
         String query = queryWithoutComments.replaceAll("\n", " ").toUpperCase().trim();
-
         if (query.indexOf("SELECT ") == 0 && query.contains(" INTO ")) {
-
             type = QueryTypes.SELECT_INTO;
 
         } else if (query.indexOf("SELECT ") == 0) {
-
             type = QueryTypes.SELECT;
 
         } else if (query.indexOf("INSERT ") == 0) {
-
             type = QueryTypes.INSERT;
 
         } else if (query.indexOf("UPDATE ") == 0) {
-
             type = QueryTypes.UPDATE;
 
         } else if (query.indexOf("DELETE ") == 0) {
-
             type = QueryTypes.DELETE;
 
         } else if (query.indexOf("GRANT ") == 0) {
-
             type = QueryTypes.GRANT;
 
         } else if (query.indexOf("EXECUTE ") == 0) {
-
             type = QueryTypes.EXECUTE;
 
         } else if (query.indexOf("CALL ") == 0) {
-
             type = QueryTypes.CALL;
 
         } else if (query.indexOf("COMMIT") == 0) {
-
             type = QueryTypes.COMMIT;
 
-        } else if (query.indexOf("ROLLBACK") == 0 && query.indexOf("ROLLBACK TO") == -1) {
-
+        } else if (query.indexOf("ROLLBACK") == 0 && !query.contains("ROLLBACK TO")) {
             type = QueryTypes.ROLLBACK;
 
         } else if (query.indexOf("EXPLAIN ") == 0) {
-
             type = QueryTypes.EXPLAIN;
 
         } else if (query.indexOf("DESC ") == 0 || query.indexOf("DESCRIBE ") == 0) {
-
             type = QueryTypes.DESCRIBE;
 
         } else if (query.indexOf("SHOW TABLES") == 0) {
-
             type = QueryTypes.SHOW_TABLES;
 
         } else if (query.indexOf("DROP ") == 0) {
-
             type = QueryTypes.DROP_OBJECT;
             setTypeObject(query, "DROP");
 
         } else if (query.indexOf("REVOKE ") == 0) {
-
             type = QueryTypes.REVOKE;
 
         } else if (query.indexOf("COMMENT") == 0) {
-
             type = QueryTypes.COMMENT;
 
         } else if (query.indexOf("CREATE DATABASE") == 0) {
-
             type = QueryTypes.CREATE_DATABASE;
 
-        } else if (query.indexOf("CREATE OR ALTER") == 0) {
+        } else if (query.indexOf("CONNECT") == 0) {
+            type = QueryTypes.CONNECT;
 
+        } else if (query.indexOf("CREATE OR ALTER") == 0) {
             type = QueryTypes.CREATE_OR_ALTER;
             setTypeObject(query, "CREATE OR ALTER");
 
         } else if (query.indexOf("CREATE") == 0) {
-
             type = QueryTypes.CREATE_OBJECT;
             setTypeObject(query, "CREATE");
 
         } else if (query.indexOf("RECREATE") == 0) {
-
             type = QueryTypes.RECREATE_OBJECT;
             setTypeObject(query, "RECREATE");
 
         } else if (query.indexOf("ALTER") == 0) {
-
             type = QueryTypes.ALTER_OBJECT;
             setTypeObject(query, "ALTER");
 
         } else if (query.indexOf("SET SQL DIALECT") == 0) {
-
             type = QueryTypes.SQL_DIALECT;
 
-        } else if (query.indexOf("SET AUTODDL ON") == 0) {
+        } else if (query.indexOf("SET NAMES") == 0) {
+            type = QueryTypes.SET_NAMES;
 
+        } else if (query.indexOf("SET BLOBFILE") == 0) {
+            type = QueryTypes.SET_NAMES;
+
+        } else if (query.indexOf("SET AUTODDL ON") == 0) {
             type = QueryTypes.SET_AUTODDL_ON;
 
         } else if (query.indexOf("SET AUTODDL OFF") == 0) {
-
             type = QueryTypes.SET_AUTODDL_OFF;
 
         } else if (query.indexOf("SET STATISTICS") == 0) {
             type = QueryTypes.SET_STATISTICS;
+
         } else if (query.indexOf("DECLARE") == 0) {
             type = QueryTypes.DECLARE_OBJECT;
             setTypeObject(query, "DECLARE");
-        } else {
 
+        } else
             type = QueryTypes.UNKNOWN;
-        }
 
         return type;
     }

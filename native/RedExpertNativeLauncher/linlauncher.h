@@ -65,6 +65,7 @@ CURLcode (*curl_global_init_)(long flags);
 CURLcode (*curl_easy_setopt_)(CURL *, CURLoption, ...);
 
 void download_java();
+std::string getSelfPath();
 
 extern "C"
 {
@@ -1051,13 +1052,19 @@ SharedLibraryHandle openJvmLibrary(bool isClient, bool isServer)
                 djava_home = line.substr(offset + 1);
 
             if (startsWith(line, "jvm"))
+            {
                 djvm = line.substr(offset + 1);
+                if (!startsWith(djvm, file_separator()))
+                    djvm = getAppPath() + file_separator() + djvm;
+            }
 
             if (startsWith(line, "path"))
                 dpath = line.substr(offset + 1);
         }
     }
     in.close();
+
+    std::cout << "djvm=" << djvm << std::endl;
 
     handler = checkParameters(true);
     if (handler != 0)
@@ -1109,6 +1116,15 @@ std::string getSelfPath()
         buff[len] = '\0';
         return std::string(buff);
     }
+}
+
+std::string getAppPath()
+{
+    std::string path = getSelfPath();
+    path = dirname((char *)path.c_str());
+    path = dirname((char *)path.c_str());
+
+    return path;
 }
 
 std::string file_separator()

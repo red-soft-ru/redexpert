@@ -31,6 +31,7 @@ import org.underworldlabs.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
 
 public class LogFileRepository implements LogRepository {
 
@@ -71,11 +72,30 @@ public class LogFileRepository implements LogRepository {
         if (logFolderPath == null || logFolderPath.isEmpty())
             logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
 
+        // TODO remove in the next release
+        // needs to get rid of the old relative path syntax
+        if (logFolderPath.startsWith("%re%")) {
+            logFolderPath = logFolderPath.replace("%re%" + FileSystems.getDefault().getSeparator(), "");
+            logFolderPath = logFolderPath.replace("%re%", "");
+            UserProperties.getInstance().setProperty("editor.logging.path", logFolderPath);
+        }
+
         try {
-            if (logFolderPath.startsWith("%re%")) {
+            boolean useRelativePath = false;
+
+            if (System.getProperty("os.name").toLowerCase().contains("lin")) {
+                if (!logFolderPath.startsWith("/"))
+                    useRelativePath = true;
+
+            } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                if (!logFolderPath.substring(1).startsWith(":\\"))
+                    useRelativePath = true;
+            }
+
+            if (useRelativePath) {
                 logFolderPath = logFolderPath.substring(4);
-                if (!logFolderPath.startsWith(System.getProperty("file.separator")))
-                    logFolderPath = System.getProperty("file.separator") + logFolderPath;
+                if (!logFolderPath.startsWith(FileSystems.getDefault().getSeparator()))
+                    logFolderPath = FileSystems.getDefault().getSeparator() + logFolderPath;
                 logFolderPath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + logFolderPath;
             }
 
@@ -83,10 +103,10 @@ public class LogFileRepository implements LogRepository {
             logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
         }
 
-        if (!logFolderPath.endsWith(System.getProperty("file.separator")))
-            logFolderPath += System.getProperty("file.separator");
+        if (!logFolderPath.endsWith(FileSystems.getDefault().getSeparator()))
+            logFolderPath += FileSystems.getDefault().getSeparator();
 
-        return logFolderPath + LOG_FILE_DIR_NAME + System.getProperty("file.separator");
+        return logFolderPath + LOG_FILE_DIR_NAME + FileSystems.getDefault().getSeparator();
     }
 
     public String getId() {

@@ -36,6 +36,7 @@ std::string runnable_command();
 std::string file_separator();
 std::string other_file_separator();
 std::string extension_exe_file();
+std::string getAppPath();
 
 std::wstring wfile_separator();
 std::wstring wother_file_separator();

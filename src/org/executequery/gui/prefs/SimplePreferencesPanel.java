@@ -44,6 +44,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -381,8 +382,17 @@ public class SimplePreferencesPanel extends JPanel
             if (preference.getType() != UserPreference.CATEGORY_TYPE) {
 
                 if (preference.getKey().equals("startup.java.path")) {
-                    if (JavaFileProperty.setValue(preference.getSaveValue()))
-                        SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+
+                    // TODO remove in the next release
+                    // needs to get rid of the old relative path syntax
+                    String pathToJava = preference.getSaveValue();
+                    if (pathToJava.startsWith("%re%")) {
+                        pathToJava = pathToJava.replace("%re%" + FileSystems.getDefault().getSeparator(), "");
+                        pathToJava = pathToJava.replace("%re%", "");
+                    }
+
+                    if (JavaFileProperty.setValue(pathToJava))
+                        SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
                 } else
                     SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
             }
@@ -572,8 +582,7 @@ public class SimplePreferencesPanel extends JPanel
 
     private static class JavaFileProperty {
 
-        private static final String CACHE_JAVA_PATH64 =
-                ApplicationContext.getInstance().getUserSettingsHome() + ".cache_java_path64";
+        private static final String CACHE_JAVA_PATH64 = ApplicationContext.getInstance().getUserSettingsHome() + ".cache_java_path64";
         private static final Path CACHE_JAVA_FILE_PATH = new File(CACHE_JAVA_PATH64).toPath();
 
         static boolean setValue(String path) {
@@ -605,17 +614,15 @@ public class SimplePreferencesPanel extends JPanel
                 return;
             }
 
-            if (pathToJava.startsWith("%re%")) {
-                pathToJava = pathToJava.substring(4);
-                if (!pathToJava.startsWith(System.getProperty("file.separator")))
-                    pathToJava = System.getProperty("file.separator") + pathToJava;
-                pathToJava = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + pathToJava;
-            }
+            String validationPathToJava =
+                    new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent()
+                            + FileSystems.getDefault().getSeparator()
+                            + pathToJava;
 
             if (System.getProperty("os.name").toLowerCase().contains("lin")) {
 
-                if (!new File(pathToJava).exists())
-                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava));
+                if (!new File(pathToJava).exists() && !new File(validationPathToJava).exists())
+                    throw new FileExistsException("Specified file doesn't exists");
 
                 value = "jvm=" + pathToJava;
 
@@ -624,11 +631,14 @@ public class SimplePreferencesPanel extends JPanel
                 if (pathToJava.endsWith("\\"))
                     pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
 
-                if (!new File(pathToJava + "\\jvm.dll").exists())
-                    throw new FileExistsException(String.format("File %s doesn't exists", pathToJava + "\\jvm.dll"));
+                pathToJava += "\\jvm.dll";
+                validationPathToJava += "\\jvm.dll";
 
-                value = "jvm=" + pathToJava + "\\jvm.dll";
-                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\"));
+                if (!new File(pathToJava).exists() && !new File(validationPathToJava).exists())
+                    throw new FileExistsException("Specified file doesn't exists");
+
+                value = "jvm=" + pathToJava;
+                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\")).replace("\\jvm.dll", "");
             }
 
             delete();

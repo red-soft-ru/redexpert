@@ -27,7 +27,7 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
-import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -61,7 +61,7 @@ public abstract class TableConstraintsPanel extends JPanel
     /**
      * The constraint name cell editor
      */
-    protected StringCellEditor conNameEditor;
+    protected StringPicker conNameEditor;
 
     /**
      * The string cell editor
@@ -97,7 +97,7 @@ public abstract class TableConstraintsPanel extends JPanel
     private void jbInit() throws Exception {
         table = new DefaultTable();
 
-        conNameEditor = new StringCellEditor();
+        conNameEditor = new StringPicker();
 
         // create the key listener to notify changes
         KeyAdapter colKeyListener = new KeyAdapter() {

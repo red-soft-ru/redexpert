@@ -1,7 +1,7 @@
 package org.underworldlabs.swing.celleditor;
 
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.swing.celleditor.picker.DefaultTimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -13,10 +13,10 @@ import java.time.OffsetTime;
 public class TimeCellEditor extends AbstractAdjustableCellEditor
         implements BlockableCellEditor {
 
-    private final DefaultTimePicker picker;
+    private final TimePicker picker;
 
     public TimeCellEditor() {
-        picker = new DefaultTimePicker();
+        picker = new TimePicker();
     }
 
     public void setCellEditorValue(Object value) {

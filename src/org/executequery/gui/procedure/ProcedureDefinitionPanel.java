@@ -12,7 +12,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
-import org.underworldlabs.swing.table.StringCellEditor;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SQLUtils;
 
@@ -108,11 +108,11 @@ public abstract class ProcedureDefinitionPanel extends JPanel
     /**
      * The cell editor for the column names
      */
-    protected StringCellEditor colNameEditor;
-    protected StringCellEditor checkEditor;
-    protected StringCellEditor descEditor;
-    protected StringCellEditor computedEditor;
-    protected StringCellEditor defaultValueEditor;
+    protected StringPicker colNameEditor;
+    protected StringPicker checkEditor;
+    protected StringPicker descEditor;
+    protected StringPicker computedEditor;
+    protected StringPicker defaultValueEditor;
     DynamicComboBoxModel tableEditorModel;
 
     private String[] domains;
@@ -214,32 +214,32 @@ public abstract class ProcedureDefinitionPanel extends JPanel
 
         // add the editors if editing
         if (editing) {
-            colNameEditor = new StringCellEditor();
+            colNameEditor = new StringPicker();
             DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
                 public Object getCellEditorValue() {
                     return colNameEditor.getValue();
                 }
             };
-            checkEditor = new StringCellEditor();
+            checkEditor = new StringPicker();
             DefaultCellEditor checkStrEditor = new DefaultCellEditor(checkEditor) {
                 public Object getCellEditorValue() {
                     return checkEditor.getValue();
                 }
             };
-            descEditor = new StringCellEditor();
+            descEditor = new StringPicker();
             DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
                 public Object getCellEditorValue() {
                     return descEditor.getValue();
                 }
             };
-            computedEditor = new StringCellEditor();
+            computedEditor = new StringPicker();
             DefaultCellEditor computedStrEditor = new DefaultCellEditor(computedEditor) {
                 @Override
                 public Object getCellEditorValue() {
                     return computedEditor.getValue();
                 }
             };
-            defaultValueEditor = new StringCellEditor();
+            defaultValueEditor = new StringPicker();
             DefaultCellEditor defaultValueStrEditor = new DefaultCellEditor(defaultValueEditor) {
                 @Override
                 public Object getCellEditorValue() {

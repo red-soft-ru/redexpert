@@ -1555,10 +1555,10 @@ public final class SQLUtils {
 
     public static String generateCreateUDF(
             String name,
-            List<UDFParameter> parameters,
-            int returnArg,
             String entryPoint,
             String moduleName,
+            List<UDFParameter> parameters,
+            int returnArg,
             boolean freeIt,
             String comment,
             boolean isCommentNeed,

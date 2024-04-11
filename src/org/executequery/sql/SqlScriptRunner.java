@@ -39,7 +39,9 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +71,7 @@ public class SqlScriptRunner {
 
         String delimiter = ";";
         String sqlDialect = "3";
+        String charset = null;
         String blobFilePath = null;
 
         DerivedQuery query;
@@ -107,8 +110,9 @@ public class SqlScriptRunner {
 
                 String derivedQuery = query.getDerivedQuery().trim();
                 if (query.getQueryType() == QueryTypes.CREATE_DATABASE) {
+                    controller.actionMessage("Creating database...");
 
-                    this.localDataSource = createDatabase(query, sqlDialect);
+                    this.localDataSource = createDatabase(query, sqlDialect, charset);
                     this.connection = localDataSource.getConnection();
                     this.connection.setAutoCommit(false);
 
@@ -116,6 +120,46 @@ public class SqlScriptRunner {
                     querySender.setConn(this.connection);
 
                     closeConnection = true;
+                    controller.actionMessage("Database created and connected");
+                    continue;
+
+                } else if (query.getQueryType() == QueryTypes.CONNECT) {
+                    controller.actionMessage("Connecting to the database...");
+
+                    this.localDataSource = connectDatabase(query, sqlDialect, charset);
+                    this.connection = localDataSource.getConnection();
+                    this.connection.setAutoCommit(false);
+
+                    querySender.setUseDatabaseConnection(false);
+                    querySender.setConn(this.connection);
+
+                    closeConnection = true;
+                    controller.actionMessage("Database connected");
+                    continue;
+
+                } else if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON) {
+                    this.connection.setAutoCommit(true);
+
+                    controller.actionMessage("Autocommit is on");
+                    continue;
+
+                } else if (query.getQueryType() == QueryTypes.SET_AUTODDL_OFF) {
+                    this.connection.setAutoCommit(false);
+
+                    controller.actionMessage("Autocommit is off");
+                    continue;
+
+                } else if (query.getQueryType() == QueryTypes.SET_NAMES) {
+
+                    Pattern pattern = Pattern.compile("SET\\s*NAMES\\s*", Pattern.CASE_INSENSITIVE);
+                    Matcher matcher = pattern.matcher(query.getQueryWithoutComments());
+                    if (matcher.find())
+                        charset = query.getQueryWithoutComments().substring(matcher.end());
+
+                    if (charset != null && charset.endsWith(delimiter))
+                        charset = charset.substring(0, charset.length() - 1);
+
+                    controller.actionMessage("Character set is " + charset);
                     continue;
 
                 } else if (query.getQueryType() == QueryTypes.SQL_DIALECT) {
@@ -125,11 +169,15 @@ public class SqlScriptRunner {
                     if (matcher.find())
                         sqlDialect = matcher.group().trim();
 
+                    controller.actionMessage("SQL dialect is " + sqlDialect);
                     continue;
 
-                } else if (derivedQuery.toUpperCase().contains("SET BLOBFILE ")) {
+                } else if (query.getQueryType() == QueryTypes.SET_BLOBFILE) {
+
                     derivedQuery = query.getQueryWithoutComments().trim();
                     blobFilePath = "blobfile=" + derivedQuery.substring(14, derivedQuery.length() - 1);
+
+                    controller.actionMessage("Blob file is " + blobFilePath.replace("blobfile=", ""));
                     continue;
                 }
 
@@ -205,98 +253,15 @@ public class SqlScriptRunner {
         return statementResult;
     }
 
-    private SimpleDataSource createDatabase(DerivedQuery query, String sqlDialect) throws SQLException {
+    private SimpleDataSource createDatabase(DerivedQuery query, String sqlDialect, String charSet) throws SQLException {
 
         String derivedQuery = query.getDerivedQuery();
-
-        String server = "localhost";
-        String port = "3050";
-        String user = null;
-        String password = null;
-        String pageSize = null;
-        String charSet = null;
-
-        Pattern pattern = Pattern.compile("create\\s+database\\s+", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(derivedQuery);
-
-        int index = -1;
-        if (matcher.find())
-            index = matcher.end();
-
-        if (index == -1)
+        Map<String, String> dbProperties = getExtractProperties(derivedQuery);
+        if (dbProperties == null)
             throw new SQLException("Cannot create database. Check creating database syntax: " + derivedQuery);
 
-        String database = derivedQuery.substring(index).trim();
-        String firstSymbol = String.valueOf(database.charAt(0));
-        database = StringUtils.substringBetween(database, firstSymbol, firstSymbol);
-
-        // --- extracting DB properties ---
-
-        int separatorIndex = database.indexOf(":");
-        if (separatorIndex != -1) {
-            if (database.charAt(separatorIndex + 1) != '\\') {
-                server = database.substring(0, separatorIndex);
-                database = database.substring(separatorIndex + 1);
-            }
-        }
-
-        separatorIndex = database.indexOf(":");
-        if (separatorIndex > 2) {
-            if (database.charAt(separatorIndex + 1) != '\\') {
-                port = database.substring(0, separatorIndex);
-                database = database.substring(separatorIndex + 1);
-            }
-        }
-
-        derivedQuery = derivedQuery.substring(derivedQuery.lastIndexOf(database) + database.length()).trim();
-
-        index = StringUtils.indexOfIgnoreCase(derivedQuery, "USER");
-        if (index != -1) {
-
-            user = derivedQuery
-                    .substring(index + "USER".length())
-                    .trim()
-                    .replaceAll("'", "")
-                    .replaceAll("\"", "");
-
-            index = getFirstWhitespaceIndex(user);
-            if (index > 0)
-                user = user.substring(0, index);
-        }
-
-        index = StringUtils.indexOfIgnoreCase(derivedQuery, "PASSWORD");
-        if (index != -1) {
-
-            password = derivedQuery
-                    .substring(index + "PASSWORD".length())
-                    .trim()
-                    .replaceAll("'", "")
-                    .replaceAll("\"", "");
-
-            index = getFirstWhitespaceIndex(password);
-            if (index > 0)
-                password = password.substring(0, index);
-        }
-
-        index = StringUtils.indexOfIgnoreCase(derivedQuery, "PAGE_SIZE");
-        if (index != -1) {
-
-            pageSize = derivedQuery.substring(index + "PAGE_SIZE".length()).trim();
-
-            index = getFirstWhitespaceIndex(pageSize);
-            if (index > 0)
-                pageSize = pageSize.substring(0, index);
-        }
-
-        index = StringUtils.indexOfIgnoreCase(derivedQuery, "DEFAULT CHARACTER SET");
-        if (index != -1) {
-
-            charSet = derivedQuery.substring(index + "DEFAULT CHARACTER SET".length()).trim();
-
-            index = getFirstWhitespaceIndex(charSet);
-            if (index > 0)
-                charSet = charSet.substring(0, index);
-        }
+        if (!MiscUtils.isNull(dbProperties.get("charSet")))
+            charSet = dbProperties.get("charSet");
 
         // --- creating new database connection ---
 
@@ -310,20 +275,19 @@ public class SqlScriptRunner {
             Log.info("Database creation via jaybird");
             Log.info("Driver version: " + driver.getMajorVersion() + "." + driver.getMinorVersion());
 
-
             IFBCreateDatabase db = (IFBCreateDatabase) DynamicLibraryLoader.loadingObjectFromClassLoader(
                     driver.getMajorVersion(),
                     connection,
                     "FBCreateDatabaseImpl"
             );
-            db.setServer(server);
-            db.setPort(Integer.parseInt(port));
-            db.setUser(user);
-            db.setPassword(password);
-            db.setDatabaseName(database);
             db.setEncoding(charSet);
-            if (StringUtils.isNotEmpty(pageSize))
-                db.setPageSize(Integer.parseInt(pageSize));
+            db.setUser(dbProperties.get("user"));
+            db.setServer(dbProperties.get("server"));
+            db.setPassword(dbProperties.get("password"));
+            db.setDatabaseName(dbProperties.get("database"));
+            db.setPort(Integer.parseInt(dbProperties.get("port")));
+            if (!MiscUtils.isNull(dbProperties.get("pageSize")))
+                db.setPageSize(Integer.parseInt(dbProperties.get("pageSize")));
 
             try {
                 db.exec();
@@ -351,21 +315,60 @@ public class SqlScriptRunner {
             Properties properties = new Properties();
             properties.setProperty("connectTimeout", String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout")));
             properties.setProperty("sqlDialect", sqlDialect);
-            if (StringUtils.isNotEmpty(charSet))
+            if (!MiscUtils.isNull(charSet))
                 properties.setProperty("lc_ctype", charSet);
 
-            temporaryConnection.setHost(server);
-            temporaryConnection.setPort(port);
-            temporaryConnection.setSourceName(database);
-            temporaryConnection.setUserName(user);
-            temporaryConnection.setPassword(password);
             temporaryConnection.setCharset(charSet);
             temporaryConnection.setJdbcProperties(properties);
+            temporaryConnection.setPort(dbProperties.get("port"));
+            temporaryConnection.setHost(dbProperties.get("server"));
+            temporaryConnection.setUserName(dbProperties.get("user"));
+            temporaryConnection.setPassword(dbProperties.get("password"));
+            temporaryConnection.setSourceName(dbProperties.get("database"));
             temporaryConnection.setJDBCDriver(DefaultDriverLoader.getDefaultDatabaseDriver());
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
         }
+
+        return new SimpleDataSource(temporaryConnection);
+    }
+
+    private SimpleDataSource connectDatabase(DerivedQuery query, String sqlDialect, String charSet) throws SQLException {
+
+        String derivedQuery = query.getDerivedQuery();
+        Map<String, String> dbProperties = getExtractProperties(derivedQuery);
+        if (dbProperties == null)
+            throw new SQLException("Cannot connect to the database. Check connection query syntax: " + derivedQuery);
+
+        if (!MiscUtils.isNull(dbProperties.get("charSet")))
+            charSet = dbProperties.get("charSet");
+
+        String numBuffers = null;
+        if (!MiscUtils.isNull(dbProperties.get("numBuffers")))
+            numBuffers = dbProperties.get("numBuffers");
+
+
+        // --- setting properties for the connection ---
+
+        Properties properties = new Properties();
+        properties.setProperty("connectTimeout", String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout")));
+        properties.setProperty("sqlDialect", sqlDialect);
+        if (!MiscUtils.isNull(charSet))
+            properties.setProperty("lc_ctype", charSet);
+        if (!MiscUtils.isNull(numBuffers))
+            properties.setProperty("num_buffers", numBuffers);
+
+        DatabaseConnection temporaryConnection = new DefaultDatabaseConnection();
+        temporaryConnection.setCharset(charSet);
+        temporaryConnection.setJdbcProperties(properties);
+        temporaryConnection.setPort(dbProperties.get("port"));
+        temporaryConnection.setRole(dbProperties.get("role"));
+        temporaryConnection.setHost(dbProperties.get("server"));
+        temporaryConnection.setUserName(dbProperties.get("user"));
+        temporaryConnection.setPassword(dbProperties.get("password"));
+        temporaryConnection.setSourceName(dbProperties.get("database"));
+        temporaryConnection.setJDBCDriver(DefaultDriverLoader.getDefaultDatabaseDriver());
 
         return new SimpleDataSource(temporaryConnection);
     }
@@ -428,6 +431,184 @@ public class SqlScriptRunner {
         }
 
         return statement;
+    }
+
+    private Map<String, String> getExtractProperties(String query) {
+        Map<String, String> properties = new HashMap<>();
+
+        String key;
+        String val;
+        int index = -1;
+        boolean isConnectQuery = true;
+
+        // --- check for the connection query ---
+
+        Pattern pattern = Pattern.compile("CONNECT\\s+", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(query);
+
+        if (matcher.find())
+            index = matcher.end();
+
+        // --- check for the create db query ---
+
+        if (index < 0) {
+            pattern = Pattern.compile("CREATE\\s+DATABASE\\s+", Pattern.CASE_INSENSITIVE);
+            matcher = pattern.matcher(query);
+
+            if (matcher.find())
+                index = matcher.end();
+
+            isConnectQuery = false;
+        }
+
+        if (index < 0)
+            return null;
+
+        // --- extrect database file ---
+
+        String database = query.substring(index).trim();
+        String firstSymbol = String.valueOf(database.charAt(0));
+        database = StringUtils.substringBetween(database, firstSymbol, firstSymbol);
+
+        // --- extract db server ---
+
+        key = "server";
+        val = "localhost";
+
+        int separatorIndex = database.indexOf(isConnectQuery ? "/" : ":");
+        if (separatorIndex != -1 && database.charAt(separatorIndex + 1) != '\\') {
+            val = database.substring(0, separatorIndex);
+            database = database.substring(separatorIndex + 1);
+        }
+
+        properties.put(key, val);
+
+        // --- extract db port ---
+
+        key = "port";
+        val = "3050";
+
+        separatorIndex = database.indexOf(":");
+        if (separatorIndex > 2 && database.charAt(separatorIndex + 1) != '\\') {
+            val = database.substring(0, separatorIndex);
+            database = database.substring(separatorIndex + 1);
+        }
+
+        properties.put(key, val);
+
+        // --- put database file ---
+
+        key = "database";
+        val = database;
+        properties.put(key, val);
+
+        query = query.substring(query.lastIndexOf(val) + val.length()).trim();
+
+        // --- extract user name ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "USER");
+        if (index != -1) {
+
+            key = "user";
+            val = query
+                    .substring(index + "USER".length())
+                    .trim()
+                    .replaceAll("'", "")
+                    .replaceAll("\"", "");
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // --- extract user password ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "PASSWORD");
+        if (index != -1) {
+
+            key = "password";
+            val = query
+                    .substring(index + "PASSWORD".length())
+                    .trim()
+                    .replaceAll("'", "")
+                    .replaceAll("\"", "");
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // --- extract user role ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "ROLE");
+        if (index != -1) {
+
+            key = "role";
+            val = query
+                    .substring(index + "ROLE".length())
+                    .trim()
+                    .replaceAll("'", "")
+                    .replaceAll("\"", "");
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // --- extract page size ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "PAGE_SIZE");
+        if (index != -1) {
+
+            key = "pageSize";
+            val = query.substring(index + "PAGE_SIZE".length()).trim();
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // --- extract character set ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "DEFAULT CHARACTER SET");
+        if (index != -1) {
+
+            key = "charSet";
+            val = query.substring(index + "DEFAULT CHARACTER SET".length()).trim();
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // --- extract character set ---
+
+        index = StringUtils.indexOfIgnoreCase(query, "CACHE");
+        if (index != -1) {
+
+            key = "numBuffers";
+            val = query.substring(index + "CACHE".length()).trim();
+
+            index = getFirstWhitespaceIndex(val);
+            if (index > 0)
+                val = val.substring(0, index);
+
+            properties.put(key, val);
+        }
+
+        // ---
+
+        return properties;
     }
 
     private int getFirstWhitespaceIndex(String text) {

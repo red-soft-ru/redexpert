@@ -27,6 +27,7 @@ import org.executequery.components.table.FileSelectionTableCell;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.table.*;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -165,7 +166,7 @@ public class SimplePreferencesPanel extends JPanel
                         rowRendererValues.add(i, comboRenderer);
                     } else {
                         rowEditor.setEditorAt(i,
-                                new DefaultCellEditor(new StringCellEditor()));
+                                new DefaultCellEditor(new StringPicker()));
                         //rowEditor.setEditorAt(i, editor);
                     }
                     break;

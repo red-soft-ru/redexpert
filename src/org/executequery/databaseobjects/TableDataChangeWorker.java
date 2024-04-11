@@ -33,23 +33,14 @@ import java.util.List;
 
 /**
  * @author Takis Diakoumis
- * @version $Revision$
- * @date $Date$
  */
 public class TableDataChangeWorker {
 
+    private final DatabaseTable table;
+    private final DatabaseTableObject tableObject;
+
     private Connection connection;
-
-    private DatabaseTable table;
-
-    private DatabaseTableObject tableObject;
-
     private PreparedStatement statement;
-
-    public TableDataChangeWorker(DatabaseTable table) {
-
-        this.table = table;
-    }
 
     public TableDataChangeWorker(DatabaseTableObject table) {
 
@@ -64,35 +55,37 @@ public class TableDataChangeWorker {
         int result = 0;
         for (TableDataChange tableDataChange : rows) {
 
-            if (connection == null) {
-
+            if (connection == null)
                 createConnection(tableObject);
-            }
 
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
+            if (row.stream().noneMatch(RecordDataItem::isChanged)) {
+                result++;
+                continue;
+            }
+
             if (row.get(0).isDeleted()) {
                 if (table != null && table.hasPrimaryKey())
                     result += executeDeletingWithPK(connection, table, row);
                 else
                     result += executedDeleting(connection, tableObject, row);
+
             } else if (row.get(0).isNew()) {
                 result += executeAdding(connection, tableObject, row);
-            } else if (table != null && table.hasPrimaryKey())
+
+            } else if (table != null && table.hasPrimaryKey()) {
                 result += executeWithPK(connection, table, row);
-            else
+
+            } else
                 result += executeChange(connection, tableObject, row);
         }
 
         if (result == rows.size()) {
-
             commit();
             return true;
 
-        } else {
-
+        } else
             return false;
-        }
-
     }
 
     private void createConnection(DatabaseTableObject table) {

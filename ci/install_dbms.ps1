@@ -1,4 +1,4 @@
-echo "Run tests"
+echo "Install and run DBMS"
 
 function die($msg)
 {

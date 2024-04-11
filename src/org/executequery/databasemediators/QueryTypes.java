@@ -22,195 +22,125 @@ package org.executequery.databasemediators;
 
 public final class QueryTypes {
 
-    public static final int ALL_UPDATES = 80;
-
-    /**
-     * An SQL INSERT statement
-     */
-    public static final int INSERT = 80;
-
-    /**
-     * An SQL UPDATE statement
-     */
-    public static final int UPDATE = 81;
-
-    /**
-     * An SQL DELETE statement
-     */
-    public static final int DELETE = 82;
-
-    /**
-     * An SQL SELECT statement
-     */
     public static final int SELECT = 10;
+    public static final int SELECT_INTO = SELECT + 1;
 
-    /**
-     * A DESCRIBE statement - table meta data
-     */
-    public static final int DESCRIBE = 16;
+    public static final int EXECUTE = SELECT_INTO + 1;
+    public static final int CALL = EXECUTE + 1;
+    public static final int COMMENT = CALL + 1;
+    public static final int COMMIT = COMMENT + 1;
+    public static final int ROLLBACK = COMMIT + 1;
 
-    /**
-     * An SQL EXPLAIN statement
-     */
-    public static final int EXPLAIN = 15;
+    public static final int CONNECT = ROLLBACK + 1;
+    public static final int CREATE_DATABASE = CONNECT + 1;
+    public static final int SHOW_TABLES = CREATE_DATABASE + 1;
+    public static final int SQL_DIALECT = SHOW_TABLES + 1;
+    public static final int SET_NAMES = SQL_DIALECT + 1;
+    public static final int SET_STATISTICS = SET_NAMES + 1;
+    public static final int SET_BLOBFILE = SET_STATISTICS + 1;
 
-    /**
-     * An SQL EXECUTE statement (procedure)
-     */
-    public static final int EXECUTE = 11;
+    public static final int SET_AUTODDL_ON = SET_BLOBFILE + 1;
+    public static final int SET_AUTODDL_OFF = SET_AUTODDL_ON + 1;
 
+    public static final int EXPLAIN = SET_AUTODDL_OFF + 1;
+    public static final int DESCRIBE = EXPLAIN + 1;
 
+    public static final int GRANT = DESCRIBE + 1;
+    public static final int REVOKE = GRANT + 1;
 
-    /**
-     * An SQL GRANT statement
-     */
-    public static final int GRANT = 27;
+    public static final int CREATE_OBJECT = REVOKE + 1;
+    public static final int CREATE_OR_ALTER = CREATE_OBJECT + 1;
+    public static final int ALTER_OBJECT = CREATE_OR_ALTER + 1;
+    public static final int RECREATE_OBJECT = ALTER_OBJECT + 1;
+    public static final int DECLARE_OBJECT = RECREATE_OBJECT + 1;
+    public static final int DROP_OBJECT = DECLARE_OBJECT + 1;
 
+    public static final int ALL_UPDATES = 80;
+    public static final int INSERT = ALL_UPDATES;
+    public static final int UPDATE = INSERT + 1;
+    public static final int DELETE = UPDATE + 1;
 
-    /**
-     * An unknown SQL statement
-     */
     public static final int UNKNOWN = 99;
 
-    /**
-     * A commit statement
-     */
-    public static final int COMMIT = 12;
-
-    /**
-     * A rollback statement
-     */
-    public static final int ROLLBACK = 13;
-
-    /**
-     * A connect statement
-     */
-    public static final int CONNECT = 14;
-
-    /**
-     * A SQL SELECT ... INTO ... statement
-     */
-    public static final int SELECT_INTO = 17;
-
-    /**
-     * show table
-     */
-    public static final int SHOW_TABLES = 30;
-
-    public static final int REVOKE = 31;
-
-    public static final int DROP_OBJECT = 33;
-
-    public static final int COMMENT = 34;
-
-    public static final int CREATE_DATABASE = 42;
-
-    public static final int SQL_DIALECT = 43;
-
-    /**
-     * An SQL CALL procedure
-     */
-    public static final int CALL = 44;
-
-    public static final int SET_AUTODDL_ON = 45;
-
-    public static final int SET_AUTODDL_OFF = 46;
-
-    public static final int CREATE_OBJECT = 47;
-
-    public static final int CREATE_OR_ALTER = 48;
-
-    public static final int ALTER_OBJECT = 49;
-
-    public static final int RECREATE_OBJECT = 50;
-
-    public static final int SET_STATISTICS = 51;
-    public static final int DECLARE_OBJECT = 52;
-
-    private QueryTypes() {
-    }
-
     public static String getResultText(int result, int type, String metaName, String objectName) {
+
         String row = " row ";
-        if (result > 1 || result == 0) {
-
+        if (result > 1 || result == 0)
             row = " rows ";
-        }
 
-        String rText = null;
+        String resultText = "";
         switch (type) {
             case QueryTypes.INSERT:
-                rText = row + "created.";
+                resultText = row + "created.";
                 break;
+
             case QueryTypes.UPDATE:
-                rText = row + "updated.";
+                resultText = row + "updated.";
                 break;
+
             case QueryTypes.DELETE:
-                rText = row + "deleted.";
+                resultText = row + "deleted.";
                 break;
+
             case QueryTypes.GRANT:
-                rText = "Grant succeeded.";
+                resultText = "Grant succeeded.";
                 break;
+
             case QueryTypes.COMMIT:
-                rText = "Commit complete.";
+                resultText = "Commit complete.";
                 break;
+
             case QueryTypes.ROLLBACK:
-                rText = "Rollback complete.";
+                resultText = "Rollback complete.";
                 break;
+
             case QueryTypes.SELECT_INTO:
             case QueryTypes.SET_STATISTICS:
-                rText = "Statement executed successfully.";
+                resultText = "Statement executed successfully.";
                 break;
+
             case QueryTypes.REVOKE:
-                rText = "Revoke succeeded.";
+                resultText = "Revoke succeeded.";
                 break;
+
             case QueryTypes.DROP_OBJECT:
-                rText = metaName + " " + objectName + " dropped.";
+                resultText = metaName + " " + objectName + " dropped.";
                 break;
+
             case QueryTypes.COMMENT:
-                rText = "Comment added";
+                resultText = "Comment added";
                 break;
+
             case QueryTypes.CREATE_OBJECT:
             case QueryTypes.CREATE_OR_ALTER:
-                rText = metaName + " " + objectName + " created";
+                resultText = metaName + " " + objectName + " created";
                 break;
+
             case QueryTypes.DECLARE_OBJECT:
-                rText = metaName + " " + objectName + " declared";
+                resultText = metaName + " " + objectName + " declared";
                 break;
+
             case QueryTypes.RECREATE_OBJECT:
-                rText = metaName + " " + objectName + " recreated";
+                resultText = metaName + " " + objectName + " recreated";
                 break;
+
             case QueryTypes.ALTER_OBJECT:
-                rText = metaName + " " + objectName + " altered";
+                resultText = metaName + " " + objectName + " altered";
                 break;
+
             case QueryTypes.UNKNOWN:
             case QueryTypes.EXECUTE:
-                if (result > -1) {
-                    rText = result + row + "affected.\nStatement executed successfully.";
-                } else {
-                    rText = "Statement executed successfully.";
-                }
+                if (result > -1)
+                    resultText = result + row + "affected.\n";
+                resultText += "Statement executed successfully.";
                 break;
         }
 
         StringBuilder sb = new StringBuilder();
-        if ((result > -1 && type >= QueryTypes.ALL_UPDATES) && type != QueryTypes.UNKNOWN) {
-
+        if ((result > -1 && type >= QueryTypes.ALL_UPDATES) && type != QueryTypes.UNKNOWN)
             sb.append(result);
-        }
-
-        sb.append(rText);
+        sb.append(resultText);
 
         return sb.toString();
-
     }
-
-
 }
-
-
-
-
-
-
-

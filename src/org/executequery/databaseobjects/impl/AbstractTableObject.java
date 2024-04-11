@@ -12,31 +12,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractTableObject extends DefaultDatabaseObject implements DatabaseTableObject {
-    public AbstractTableObject(DatabaseMetaTag metaTag, String metaDataKey) {
-        super(metaTag, metaDataKey);
-    }
+public abstract class AbstractTableObject extends DefaultDatabaseObject
+        implements DatabaseTableObject {
+
+    protected int typeTree;
+    protected String sqlSecurity;
+    protected DatabaseObject dependObject;
+    protected List<TableDataChange> tableDataChanges;
 
     public AbstractTableObject(DatabaseHost host, String metaDataKey) {
         super(host, metaDataKey);
     }
 
-    protected int typeTree;
-    protected List<TableDataChange> tableDataChanges;
-
-    protected DatabaseObject dependObject;
-
-    protected String sqlSecurity;
-
     protected List<TableDataChange> tableDataChanges() {
-
-        if (tableDataChanges == null) {
-
-            tableDataChanges = new ArrayList<TableDataChange>();
-        }
+        if (tableDataChanges == null)
+            tableDataChanges = new ArrayList<>();
         return tableDataChanges;
     }
 
+    @Override
     public void clearDataChanges() {
         if (tableDataChanges != null) {
             tableDataChanges.clear();
@@ -176,21 +170,16 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject implemen
         }
     }
 
-    TableDataChangeWorker tableDataChangeExecutor;
-
+    @Override
     public int applyTableDataChanges() {
 
-        if (!hasTableDataChanges()) {
-
+        if (!hasTableDataChanges())
             return 1;
-        }
 
-        tableDataChangeExecutor = new TableDataChangeWorker(this);
+        TableDataChangeWorker tableDataChangeExecutor = new TableDataChangeWorker(this);
         boolean success = tableDataChangeExecutor.apply(tableDataChanges);
-        if (success) {
-
+        if (success)
             clearDataChanges();
-        }
 
         return success ? 1 : 0;
     }

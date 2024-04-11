@@ -2,7 +2,7 @@ package org.underworldlabs.swing.celleditor;
 
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
 import org.executequery.gui.resultset.RecordDataItem;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimezonePicker;
+import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -11,13 +11,13 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
-public class DateTimezoneCellEditor extends AbstractAdjustableCellEditor
+public class ZonedTimestampCellEditor extends AbstractAdjustableCellEditor
         implements TableCellRenderer, BlockableCellEditor {
 
-    private final DefaultDateTimezonePicker picker;
+    private final ZonedTimestampPicker picker;
 
-    public DateTimezoneCellEditor() {
-        picker = new DefaultDateTimezonePicker();
+    public ZonedTimestampCellEditor() {
+        picker = new ZonedTimestampPicker();
     }
 
     @Override

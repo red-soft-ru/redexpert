@@ -24,6 +24,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
+import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -66,6 +67,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private boolean checkUnstable = false;
     private boolean useReleaseHub = false;
     private boolean monitorProgress = false;
+    private static boolean waitingForUpdate = false;
     private static boolean waitingForRestart = false;
 
     public void startupCheckForUpdate() {
@@ -89,15 +91,22 @@ public class CheckForUpdateNotifier implements Interruptible {
             return;
         }
 
+        progressDialog = new InterruptibleProgressDialog(
+                GUIUtilities.getParentFrame(),
+                bundledString("checkingUpdatesTitle"),
+                null,
+                this
+        );
+
         worker = new SwingWorker("forceCheckForUpdate") {
             @Override
             public Object construct() {
 
-                if (monitorProgress)
-                    runProgressDialog("checkingUpdatesMessage");
-
                 checkForUpdate();
                 restoreProgressDialog();
+
+                if (version == null)
+                    return Constants.WORKER_CANCEL;
 
                 if (isNewVersion(version)) {
                     displayDownloadDialog(null);
@@ -110,6 +119,8 @@ public class CheckForUpdateNotifier implements Interruptible {
         };
 
         worker.start();
+        if (monitorProgress)
+            progressDialog.run();
     }
 
     private void checkForUpdate() {
@@ -163,7 +174,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             } else
                 Log.info(bundledString("RedExpertUpToDate"));
 
-        } catch (UnknownHostException e) {
+        } catch (RemoteHttpClientException | UnknownHostException e) {
             String message = bundledString("noInternetMessage");
 
             Log.error(message);
@@ -200,7 +211,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             } else
                 Log.info(bundledString("RedExpertUpToDate"));
 
-        } catch (UnknownHostException e) {
+        } catch (RemoteHttpClientException | UnknownHostException e) {
             String message = bundledString("noInternetMessage");
 
             Log.error(message);
@@ -217,6 +228,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             useReleaseHub = false;
             checkFromReddatabase();
+
         } finally {
             new DefaultRemoteHttpClient().setHttp("https");
             new DefaultRemoteHttpClient().setHttpPort(443);
@@ -250,27 +262,44 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void displayReleaseNotes() {
 
-        try {
-            runProgressDialog("progressDialogForReleaseNotesLabel");
+        progressDialog = new InterruptibleProgressDialog(
+                GUIUtilities.getParentFrame(),
+                bundledString("checkingUpdatesTitle"),
+                bundledString("progressDialogForReleaseNotesLabel"),
+                this
+        );
 
-            LatestVersionRepository repository = (LatestVersionRepository) RepositoryCache.load(LatestVersionRepository.REPOSITORY_ID);
-            if (repository == null)
-                return;
+        worker = new SwingWorker("displayReleaseNotes") {
+            @Override
+            public Object construct() {
+                try {
 
-            String releaseNotes = JSONAPI.getJsonPropertyFromUrl(repository.getReleaseNotesUrl(), "body");
-            restoreProgressDialog();
+                    LatestVersionRepository repository = (LatestVersionRepository) RepositoryCache.load(LatestVersionRepository.REPOSITORY_ID);
+                    if (repository == null)
+                        return Constants.WORKER_CANCEL;
 
-            GUIUtils.invokeAndWait(() -> new InformationDialog(
-                    bundledString("latestVersionInfoTitle"),
-                    releaseNotes,
-                    InformationDialog.TEXT_CONTENT_VALUE,
-                    null
-            ));
+                    String releaseNotes = JSONAPI.getJsonPropertyFromUrl(repository.getReleaseNotesUrl(), "body");
+                    restoreProgressDialog();
 
-        } catch (Exception e) {
-            restoreProgressDialog();
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
-        }
+                    GUIUtils.invokeAndWait(() -> new InformationDialog(
+                            bundledString("latestVersionInfoTitle"),
+                            releaseNotes,
+                            InformationDialog.TEXT_CONTENT_VALUE,
+                            null
+                    ));
+
+                } catch (Exception e) {
+                    restoreProgressDialog();
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    return Constants.WORKER_FAIL;
+                }
+
+                return Constants.WORKER_SUCCESS;
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
     }
 
     private int displayNewVersionMessage(String key) {
@@ -350,6 +379,9 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private void updateDownloadNotifier() {
 
+        if (waitingForUpdate)
+            return;
+
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
         label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
@@ -357,6 +389,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));
         Log.info(bundledString("ApplicationNeedsUpdate"));
+
+        waitingForUpdate = true;
     }
 
     private void resetDownloadNotifier(MouseListener listener) {
@@ -368,6 +402,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             label.removeMouseListener(listener);
 
         GUIUtilities.getStatusBar().setThirdLabelText("");
+        waitingForUpdate = false;
     }
 
     private String newVersionAvailableText() {
@@ -375,22 +410,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private boolean isNewVersion(ApplicationVersion version) {
-        return version.isNewerThan(System.getProperty("executequery.minor.version"));
-    }
-
-    private void runProgressDialog(String labelTextKey) {
-
-        GUIUtils.invokeNewThread("Check for update progress bar", () -> {
-
-            progressDialog = new InterruptibleProgressDialog(
-                    GUIUtilities.getParentFrame(),
-                    bundledString("checkingUpdatesTitle"),
-                    bundledString(labelTextKey),
-                    this
-            );
-
-            progressDialog.run();
-        });
+        return version != null && version.isNewerThan(System.getProperty("executequery.minor.version"));
     }
 
     private void restoreProgressDialog() {
@@ -398,9 +418,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (progressDialog == null)
             return;
 
-        if (progressDialog.isVisible())
-            progressDialog.dispose();
-
+        progressDialog.dispose();
         progressDialog = null;
     }
 
@@ -419,23 +437,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            MouseListener listener = this;
 
-            worker = new SwingWorker("displayReleaseNotes") {
-                @Override
-                public Object construct() {
+            if (version.getTagValue() == ApplicationVersion.RELEASE)
+                if (displayNewVersionMessage("newVersionMessage") == JOptionPane.YES_OPTION)
+                    displayReleaseNotes();
 
-                    if (version.getTagValue() == ApplicationVersion.RELEASE)
-                        if (displayNewVersionMessage("newVersionMessage") == JOptionPane.YES_OPTION)
-                            displayReleaseNotes();
-
-                    displayDownloadDialog(listener);
-
-                    return Constants.WORKER_SUCCESS;
-                }
-            };
-
-            worker.start();
+            displayDownloadDialog(this);
         }
     }
 

@@ -7,7 +7,7 @@ import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
-import org.underworldlabs.swing.celleditor.picker.DefaultDateTimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.cron.CronPanel;
 import org.underworldlabs.util.SQLUtils;
 
@@ -25,8 +25,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     private CronPanel cronPanel;
 
-    private DefaultDateTimePicker startDatePicker;
-    private DefaultDateTimePicker endDatePicker;
+    private TimestampPicker startDatePicker;
+    private TimestampPicker endDatePicker;
 
     private JTextField idField;
     private JTextField databaseField;
@@ -75,9 +75,9 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
             }
         });
         activeBox = new JCheckBox(bundleStaticString("active"));
-        startDatePicker = new DefaultDateTimePicker();
+        startDatePicker = new TimestampPicker();
         startDatePicker.setVisibleNullCheck(true);
-        endDatePicker = new DefaultDateTimePicker();
+        endDatePicker = new TimestampPicker();
         endDatePicker.setVisibleNullCheck(true);
         cronPanel = new CronPanel(editing);
 

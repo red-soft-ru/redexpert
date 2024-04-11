@@ -6,21 +6,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDateTime;
 
-public class DefaultDateTimePicker extends JPanel {
+public class TimestampPicker extends JPanel {
 
-    private DefaultDatePicker datePicker;
-    private DefaultTimePicker timePicker;
+    private DatePicker datePicker;
+    private TimePicker timePicker;
 
-    public DefaultDateTimePicker() {
+    public TimestampPicker() {
         init();
         arrange();
         update();
     }
 
     void init() {
-        datePicker = new DefaultDatePicker();
+        datePicker = new DatePicker();
 
-        timePicker = new DefaultTimePicker();
+        timePicker = new TimePicker();
         timePicker.addNullCheckActionListener(e -> update());
     }
 
@@ -88,11 +88,11 @@ public class DefaultDateTimePicker extends JPanel {
         return timePicker.isNull();
     }
 
-    public DefaultDatePicker getDatePicker() {
+    public DatePicker getDatePicker() {
         return datePicker;
     }
 
-    public DefaultTimePicker getTimePicker() {
+    public TimePicker getTimePicker() {
         return timePicker;
     }
 

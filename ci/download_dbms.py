@@ -9,17 +9,18 @@ args = sys.argv
 DBMS = args[1]
 ARCH = args[2]
 
-if DBMS == "rdb50" or DBMS == "rdb30":
-    response = requests.get(f"http://builds.red-soft.biz/release_hub/{DBMS}/")
-    soup = bs4.BeautifulSoup(response.content, "html.parser")
-    res = soup.find_all("a", href=re.compile(r"/release_hub/.+SNAPSHOT.+"))
 
-    response = requests.get("http://builds.red-soft.biz" + res[0].attrs["href"])
-    soup = bs4.BeautifulSoup(response.content, "html.parser")
-    res = soup.find_all("a", href=re.compile(r".+windows-"+ ARCH + r".+exe"))
+print("Download DBMS")
 
-    url = "http://builds.red-soft.biz" + res[0].attrs["href"]
-    
+if "rdb" in DBMS:
+    if DBMS == "rdb30":
+        last_stable_version = "3.0.15-rc.1"
+
+    if DBMS == "rdb50":
+        last_stable_version = "5.0.0-Beta7"       
+
+    url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:windows-x86_64-enterprise:{last_stable_version}:exe"
+
 else:
     if ARCH == "x86_64":
         ARCH = "x64"
@@ -27,10 +28,9 @@ else:
         ARCH = "Win32"
 
     firebird_releases_url = "https://api.github.com/repos/FirebirdSQL/firebird/releases"
-    response = requests.get(firebird_releases_url)
+    response = requests.get(firebird_releases_url, verify=False)
     releases = response.json()
     url = ""
-    print(DBMS + ARCH)
     for release in releases:
         for asset in release["assets"]:
             name = asset["name"]
@@ -40,5 +40,5 @@ else:
                 break
         if url != "":
             break
-
+    
 urllib.request.urlretrieve(url, 'installer.exe')

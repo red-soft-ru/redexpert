@@ -66,10 +66,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
     public String getCreateSQLText() {
         return SQLUtils.generateCreateUDF(
                 getName(),
-                parameters,
-                returnArg,
                 getEntryPoint(),
                 getModuleName(),
+                parameters,
+                returnArg,
                 freeIt,
                 getRemarks(),
                 true,
@@ -81,10 +81,10 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
         return SQLUtils.generateCreateUDF(
                 getName(),
-                parameters,
-                returnArg,
                 getEntryPoint(),
                 getModuleName(),
+                parameters,
+                returnArg,
                 freeIt,
                 null,
                 false,

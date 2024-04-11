@@ -251,7 +251,12 @@ test:windows:
    - powershell -ExecutionPolicy ByPass -file test.ps1
   dependencies: ["prepare", "sources", "build:windows"]
   needs: ["prepare", "sources", "build:windows"]
-  
+  timeout: 2 hours
+  only:
+    variables:
+      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
 repackage:
   tags:

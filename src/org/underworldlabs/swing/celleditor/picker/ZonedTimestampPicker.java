@@ -4,7 +4,9 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
 public class ZonedTimestampPicker extends JPanel {
@@ -74,7 +76,23 @@ public class ZonedTimestampPicker extends JPanel {
     }
 
     public LocalDateTime getDateTime() {
-        return isNull() ? null : LocalDateTime.of(datePicker.getDate(), timezonePicker.getLocalTime());
+
+        if (isNull())
+            return null;
+
+        LocalDate date = datePicker.getDate();
+        if (date == null) {
+            date = LocalDate.now();
+            datePicker.setDate(date);
+        }
+
+        LocalTime time = timezonePicker.getLocalTime();
+        if (time == null) {
+            time = LocalTime.now();
+            timezonePicker.setTime(time);
+        }
+
+        return LocalDateTime.of(date, time);
     }
 
     public OffsetDateTime getOffsetDateTime() {

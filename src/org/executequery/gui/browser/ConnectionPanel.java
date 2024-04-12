@@ -52,7 +52,10 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -64,8 +67,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -1083,14 +1086,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
             String connectTimeout = String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout"));
             properties.setProperty("connectTimeout", connectTimeout);
         }
+        properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
 
-        if (!properties.containsKey("lc_ctype"))
-            properties.setProperty("lc_ctype", charsetsCombo.getSelectedItem().toString());
-
-        if (!properties.containsKey("useGSSAuth") && authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
+        if (authCombo.getSelectedItem().toString().equalsIgnoreCase("gss"))
             properties.setProperty("useGSSAuth", "true");
 
-        if (!properties.containsKey("roleName") && !roleField.getText().isEmpty())
+        if (!roleField.getText().isEmpty())
             properties.setProperty("roleName", roleField.getText());
 
         if (!properties.containsKey("isc_dpb_trusted_auth")

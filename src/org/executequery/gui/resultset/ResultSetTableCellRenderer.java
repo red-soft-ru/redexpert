@@ -207,6 +207,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
         Color color;
         boolean isDateValue = false;
+        boolean isBlobValue = false;
 
         if (recordDataItem.isNew() && newValueDisplayColor.getRGB() != tableBackground.getRGB()) {
             color = newValueDisplayColor;
@@ -264,6 +265,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.VARBINARY:
                 case Types.BINARY:
                 case Types.BLOB:
+                    isBlobValue = true;
                     color = blobValueDisplayColor;
                     break;
 
@@ -287,6 +289,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 setValue(timestampTimezoneFormatted((OffsetDateTime) value));
             else
                 setValue(value);
+
+        } else if (isBlobValue) {
+            setValue(recordDataItem.getDisplayValue());
 
         } else
             setValue(value);

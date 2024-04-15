@@ -1731,41 +1731,34 @@ public class ConnectionPanel extends AbstractConnectionPanel
         return (event instanceof DatabaseDriverEvent);
     }
 
-
-    class DeleteButtonEditor extends DefaultCellEditor {
+    private class DeleteButtonEditor extends DefaultCellEditor {
 
         private final JButton button;
-        private boolean isPushed;
         private final JTable table;
 
-        public DeleteButtonEditor(JTable table, JCheckBox checkBox) {
+        private boolean isPushed;
 
+        public DeleteButtonEditor(JTable table, JCheckBox checkBox) {
             super(checkBox);
+
             this.table = table;
+
             button = new DefaultButton();
             button.setOpaque(true);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                }
-            });
+            button.addActionListener(e -> fireEditingStopped());
         }
 
-        public Component getTableCellEditorComponent(JTable table,
-                                                     Object value,
-                                                     boolean isSelected,
-                                                     int row,
-                                                     int column) {
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
             isPushed = true;
             return button;
         }
 
+        @Override
         public Object getCellEditorValue() {
 
-            if (isPushed) {
-
+            if (isPushed)
                 clearValueAt(table.getEditingRow());
-            }
 
             isPushed = false;
             return Constants.EMPTY;
@@ -1773,19 +1766,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         private void clearValueAt(int row) {
 
+            String key = (String) table.getValueAt(row, 0);
+            if (key != null) {
+                Properties properties = databaseConnection.getJdbcProperties();
+                properties.remove(key);
+                databaseConnection.setJdbcProperties(properties);
+            }
+
             table.setValueAt("", row, 0);
             table.setValueAt("", row, 1);
         }
 
+        @Override
         public boolean stopCellEditing() {
-
             isPushed = false;
             return super.stopCellEditing();
-        }
-
-        protected void fireEditingStopped() {
-
-            super.fireEditingStopped();
         }
 
     } // DeleteButtonEditor

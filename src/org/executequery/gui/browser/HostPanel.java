@@ -179,15 +179,8 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         connectionPanel.setConnectionValue(host);
 
         DatabaseConnection databaseConnection = host.getDatabaseConnection();
-        if (databaseConnection.isConnected()) {
-
+        if (databaseConnection.isConnected())
             changePanelData();
-
-        } else {
-
-            //enableConnectionTabs(false);
-        }
-
     }
 
     /**

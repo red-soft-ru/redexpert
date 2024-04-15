@@ -178,6 +178,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private SSHTunnelConnectionPanel sshTunnelConnectionPanel;
 
+    boolean isDriverComboActionable = false;
+
     /**
      * Creates a new instance of ConnectionPanel
      */
@@ -746,41 +748,34 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         jdbcDrivers = loadDrivers();
 
-        int size = jdbcDrivers.size();
-
-        String[] driverNames = new String[size];
-
-        for (int i = 0; i < size; i++) {
-
+        String[] driverNames = new String[jdbcDrivers.size()];
+        for (int i = 0; i < jdbcDrivers.size(); i++)
             driverNames[i] = jdbcDrivers.get(i).toString();
-        }
 
         if (driverCombo == null) {
 
             DynamicComboBoxModel comboModel = new DynamicComboBoxModel();
             comboModel.setElements(driverNames);
+
             driverCombo = WidgetFactory.createComboBox("driverCombo", comboModel);
             driverCombo.setBorder(redBorder);
-            driverCombo.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getStateChange() == ItemEvent.SELECTED) {
-                        if (driverCombo.getSelectedIndex() >= 0)
-                            driverCombo.setBorder(null);
-                        else driverCombo.setBorder(redBorder);
-                        setNewAPI();
-                    }
+            driverCombo.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    driverCombo.setBorder(driverCombo.getSelectedIndex() >= 0 ? null : redBorder);
+                    setNewAPI();
                 }
             });
 
         } else {
+            isDriverComboActionable = false;
 
             DynamicComboBoxModel comboModel = (DynamicComboBoxModel) driverCombo.getModel();
             comboModel.setElements(driverNames);
             driverCombo.setModel(comboModel);
+
+            isDriverComboActionable = true;
             selectDriver();
         }
-
     }
 
     /**
@@ -1381,36 +1376,25 @@ public class ConnectionPanel extends AbstractConnectionPanel
      */
     private void selectDriver() {
 
-        if (databaseConnection == null) {
-
+        if (databaseConnection == null)
             return;
-        }
 
-        if (databaseConnection.getDriverId() == 0) {
-
+        long driverId = databaseConnection.getDriverId();
+        if (driverId == 0) {
             driverCombo.setSelectedIndex(0);
 
         } else {
-
-            long driverId = databaseConnection.getDriverId();
-
-            if (driverId != 0) {
-
-                DatabaseDriver driver = driverRepository().findById(driverId);
-                if (driver != null) {
-
-                    driverCombo.setSelectedItem(driver.getName());
-                }
-
-            }
-
+            DatabaseDriver driver = driverRepository().findById(driverId);
+            if (driver != null)
+                driverCombo.setSelectedItem(driver.getName());
         }
+
         try {
             setNewAPI();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -1480,26 +1464,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
         databaseConnection.setConnectionMethod((String) methodCombo.getSelectedItem());
         databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
 
-        // jdbc driver selection
-        int driverIndex = driverCombo.getSelectedIndex();
-        if (driverIndex >= jdbcDrivers.size() + 1) {
-            driverIndex = jdbcDrivers.size();
-            driverCombo.setSelectedIndex(driverIndex);
-        }
+        if (isDriverComboActionable) {
 
-        if (driverIndex >= 0) {
-            DatabaseDriver driver = jdbcDrivers.get(driverIndex);
+            int driverIndex = driverCombo.getSelectedIndex();
+            if (driverIndex >= 0) {
+                DatabaseDriver driver = jdbcDrivers.get(driverIndex);
 
-            databaseConnection.setJDBCDriver(driver);
-            databaseConnection.setDriverName(driver.getName());
-            databaseConnection.setDriverId(driver.getId());
-            databaseConnection.setDatabaseType(Integer.toString(driver.getType()));
-
-        } else {
-            databaseConnection.setDriverId(0);
-            databaseConnection.setJDBCDriver(null);
-            databaseConnection.setDriverName(null);
-            databaseConnection.setDatabaseType(null);
+                databaseConnection.setJDBCDriver(driver);
+                databaseConnection.setDriverName(driver.getName());
+                databaseConnection.setDriverId(driver.getId());
+                databaseConnection.setDatabaseType(Integer.toString(driver.getType()));
+            }
         }
 
         sshTunnelConnectionPanel.update(databaseConnection);
@@ -1551,7 +1526,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         storeJdbcProperties();
     }
-    
+
     private void processActionEvent(ActionEvent e) {
 
         if (databaseConnection == null)
@@ -1582,30 +1557,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
         } else if (Objects.equals(source, namesToUpperBox)) {
             databaseConnection.setNamesToUpperCase(namesToUpperBox.isSelected());
 
-        } else if (Objects.equals(source, driverCombo)) {
+        } else if (Objects.equals(source, driverCombo) && isDriverComboActionable) {
 
             int driverIndex = driverCombo.getSelectedIndex();
-            if (driverIndex >= jdbcDrivers.size() + 1) {
-                driverIndex = jdbcDrivers.size();
-                driverCombo.setSelectedIndex(driverIndex);
-            }
-
-            long driverId = 0;
-            String driverName = null;
-            String databaseType = null;
-            DatabaseDriver driver = null;
-
             if (driverIndex >= 0) {
-                driver = jdbcDrivers.get(driverIndex);
-                driverName = driver.getName();
-                driverId = driver.getId();
-                databaseType = Integer.toString(driver.getType());
-            }
+                DatabaseDriver driver = jdbcDrivers.get(driverIndex);
 
-            databaseConnection.setDriverId(driverId);
-            databaseConnection.setJDBCDriver(driver);
-            databaseConnection.setDriverName(driverName);
-            databaseConnection.setDatabaseType(databaseType);
+                databaseConnection.setDriverId(driver.getId());
+                databaseConnection.setJDBCDriver(driver);
+                databaseConnection.setDriverName(driver.getName());
+                databaseConnection.setDatabaseType(Integer.toString(driver.getType()));
+            }
         }
 
         storeJdbcProperties();
@@ -1758,12 +1720,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         new DialogDriverPanel();
     }
 
+    @Override
     public void driversUpdated(DatabaseDriverEvent databaseDriverEvent) {
-
         buildDriversList();
-
-        DatabaseDriver driver = (DatabaseDriver) databaseDriverEvent.getSource();
-        driverCombo.setSelectedItem(driver.getName());
+        driverCombo.setSelectedItem(((DatabaseDriver) databaseDriverEvent.getSource()).getName());
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {

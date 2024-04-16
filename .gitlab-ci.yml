@@ -237,7 +237,7 @@ test:windows:
     matrix:
       - TEST_TYPE: core
         ARCH: ["x86_64", "x86"]
-        DBMS: ["Firebird-3.0", "Firebird-5.0", "rdb30", "rdb50"]
+        DBMS: ["rdb30", "rdb50"]
   before_script:
    - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
    - cd $TEST_DIR

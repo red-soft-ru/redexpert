@@ -68,15 +68,23 @@ public class LogFileRepository implements LogRepository {
     @Override
     public String getLogFileDirectory() {
 
+        String logFolderBasePath = new UserSettingsProperties().getUserSettingsBaseHome()
+                + LOG_FILE_DIR_NAME
+                + FileSystems.getDefault().getSeparator();
+
         String logFolderPath = UserProperties.getInstance().getStringProperty("editor.logging.path");
         if (logFolderPath == null || logFolderPath.isEmpty())
-            logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
+            return logFolderBasePath;
 
         // TODO remove in the next release
         // needs to get rid of the old relative path syntax
         if (logFolderPath.startsWith("%re%")) {
             logFolderPath = logFolderPath.replace("%re%" + FileSystems.getDefault().getSeparator(), "");
             logFolderPath = logFolderPath.replace("%re%", "");
+
+            if (logFolderPath.isEmpty())
+                logFolderPath = LOG_FILE_DIR_NAME + FileSystems.getDefault().getSeparator();
+
             UserProperties.getInstance().setProperty("editor.logging.path", logFolderPath);
         }
 
@@ -93,20 +101,19 @@ public class LogFileRepository implements LogRepository {
             }
 
             if (useRelativePath) {
-                logFolderPath = logFolderPath.substring(4);
-                if (!logFolderPath.startsWith(FileSystems.getDefault().getSeparator()))
-                    logFolderPath = FileSystems.getDefault().getSeparator() + logFolderPath;
-                logFolderPath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + logFolderPath;
+                String appPath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+                logFolderPath = appPath + FileSystems.getDefault().getSeparator() + logFolderPath;
             }
 
         } catch (URISyntaxException e) {
-            logFolderPath = new UserSettingsProperties().getUserSettingsBaseHome();
+            logFolderPath = logFolderBasePath;
+            UserProperties.getInstance().setProperty("editor.logging.path", logFolderPath);
         }
 
         if (!logFolderPath.endsWith(FileSystems.getDefault().getSeparator()))
             logFolderPath += FileSystems.getDefault().getSeparator();
 
-        return logFolderPath + LOG_FILE_DIR_NAME + FileSystems.getDefault().getSeparator();
+        return logFolderPath;
     }
 
     public String getId() {

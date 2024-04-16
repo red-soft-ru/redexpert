@@ -81,15 +81,15 @@ public class HeapMemoryStatusSnippet extends JPanel
     }
 
     public void actionPerformed(ActionEvent e) {
-        int total = (int) Runtime.getRuntime().totalMemory();
-        int free = (int) Runtime.getRuntime().freeMemory();
-        int totalUsedBefore = total - free;
+        long total = Runtime.getRuntime().totalMemory();
+        long free = Runtime.getRuntime().freeMemory();
+        long totalUsedBefore = total - free;
 
         System.gc();
 
-        total = (int) Runtime.getRuntime().totalMemory();
-        free = (int) Runtime.getRuntime().freeMemory();
-        int totalUserAfter = total - free;
+        total = Runtime.getRuntime().totalMemory();
+        free = Runtime.getRuntime().freeMemory();
+        long totalUserAfter = total - free;
 
         Log.info(bundleString("GarbageCollection") +
                 ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
@@ -105,11 +105,11 @@ public class HeapMemoryStatusSnippet extends JPanel
 
         final Runnable showProgress = new Runnable() {
             public void run() {
-                int total = (int) Runtime.getRuntime().totalMemory();
-                int free = (int) Runtime.getRuntime().freeMemory();
-                int used = total - free;
-                progModel.setMaximum(total);
-                progModel.setValue(used);
+                long total = Runtime.getRuntime().totalMemory();
+                long free = Runtime.getRuntime().freeMemory();
+                long used = total - free;
+                progModel.setMaximum((int) total / million);
+                progModel.setValue((int) used / million);
                 memProgress.setString((used / million) + mb_slash + (total / million) + mb);
             }
         };

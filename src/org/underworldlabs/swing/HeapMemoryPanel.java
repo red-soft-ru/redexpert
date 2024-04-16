@@ -20,7 +20,6 @@
 
 package org.underworldlabs.swing;
 
-import org.executequery.gui.AboutPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -161,17 +160,17 @@ public class HeapMemoryPanel extends JPanel
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
-        final String used_s = bundledString("Kb-used");
-        final String total_s = bundledString("Kb-total");
-        final int thou = 1000;
+        final String used_s = bundledString("Mb-used");
+        final String total_s = bundledString("Mb-total");
+        final int thou = 1024 * 1024;
 
         final Runnable showProgress = new Runnable() {
             public void run() {
-                int total = (int) Runtime.getRuntime().totalMemory();
-                int free = (int) Runtime.getRuntime().freeMemory();
-                int used = total - free;
-                progModel.setMaximum(total);
-                progModel.setValue(used);
+                long total = Runtime.getRuntime().totalMemory();
+                long free = Runtime.getRuntime().freeMemory();
+                long used = total - free;
+                progModel.setMaximum((int) total / thou);
+                progModel.setValue((int) used / thou);
                 memProgress.setString((used / thou) + used_s +
                         (total / thou) + total_s);
             }
@@ -223,11 +222,16 @@ public class HeapMemoryPanel extends JPanel
             fireStateChanged();
         }
 
+        public void setLongValue(long i) {
+
+        }
+
     } // ProgressModel
 
     public static String bundledString(String key) {
         return Bundles.get(HeapMemoryPanel.class, key);
     }
+
 
 }
 

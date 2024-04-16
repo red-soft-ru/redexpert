@@ -608,37 +608,22 @@ public class SimplePreferencesPanel extends JPanel
 
         private static void rewrite(String pathToJava) throws Exception {
 
-            String value = "";
             if (pathToJava.isEmpty()) {
                 delete();
                 return;
             }
 
-            String validationPathToJava =
-                    new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent()
-                            + FileSystems.getDefault().getSeparator()
-                            + pathToJava;
+            String appPath = new File(ExecuteQuery.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+            String validationPathToJava = appPath + FileSystems.getDefault().getSeparator() + pathToJava;
 
-            if (System.getProperty("os.name").toLowerCase().contains("lin")) {
+            if (!new File(pathToJava).exists() && !new File(validationPathToJava).exists())
+                throw new FileExistsException("Specified file doesn't exists");
 
-                if (!new File(pathToJava).exists() && !new File(validationPathToJava).exists())
-                    throw new FileExistsException("Specified file doesn't exists");
+            String value = "jvm=" + pathToJava;
 
-                value = "jvm=" + pathToJava;
-
-            } else if (System.getProperty("os.name").toLowerCase().contains("win")) {
-
-                if (pathToJava.endsWith("\\"))
-                    pathToJava = pathToJava.substring(0, pathToJava.lastIndexOf("\\") - 1);
-
-                pathToJava += "\\jvm.dll";
-                validationPathToJava += "\\jvm.dll";
-
-                if (!new File(pathToJava).exists() && !new File(validationPathToJava).exists())
-                    throw new FileExistsException("Specified file doesn't exists");
-
-                value = "jvm=" + pathToJava;
-                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf("\\")).replace("\\jvm.dll", "");
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                pathToJava = pathToJava.replace("\\jvm.dll", "");
+                value += "\npath=" + pathToJava.substring(0, pathToJava.lastIndexOf(FileSystems.getDefault().getSeparator()));
             }
 
             delete();

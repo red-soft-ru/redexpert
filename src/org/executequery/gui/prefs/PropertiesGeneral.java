@@ -119,7 +119,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
 
         key = "startup.java.path";
         list.add(new UserPreference(
-                System.getProperty("os.name").toLowerCase().contains("win") ? UserPreference.DIR_TYPE : UserPreference.FILE_TYPE,
+                UserPreference.FILE_TYPE,
                 key,
                 bundledString("JavaPath"),
                 stringUserProperty(key)));

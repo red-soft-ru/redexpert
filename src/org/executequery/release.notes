@@ -1,4 +1,43 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2024.04
+----------------------------------------
+Added:
+1.  Ability to set display format for table data with types "TIME WITH TIMEZONE" and "TIMESTAMP WITH TIMEZONE"
+2.  Connection to the selected database by pressing the Enter key in the connection tree
+3.  Expand/collapse selected node by pressing the Enter key in the connection tree
+4.  Index selectivity display when editing a table
+5.  Closing ResultSet and statistics tabs by clicking on the mouse wheel
+6.  Connection to database from the SQL script in the "Execute SQL script" panel
+Fixed:
+1.  Attempting to run an application in a minimal Java runtime environment (headless)
+2.  Application updating using automatically downloaded Java
+3.  Updating by proxy
+4.  Updating the list of indexes when editing table
+5.  Root tree node display in the profiler panel
+6.  Restoring cell dimensions after editing it in the table "Data" tab
+7.  Determining the size of columns in a dataset according to the width of its contents
+8.  Cell editors for data with Date/Time types
+9.  Action of the "Switch data display" button and similar functionality in the drop-down menu on the table "Data" tab
+10. Domains comparing
+11. Display format changing of a field with the TIMESTAMP type when editing it
+12. SQL scripts generation when extracting metadata for domains, exceptions, roles, indexes, external functions and jobs
+13. "Metadata Export" tool behavior when objects to be extracted were not detected by the program
+14. Retrieving information about objects with JOB type during metadata extraction
+15. Connection tree refresh when automatically connecting to the database from other program modules
+16. Ignoring the last query when executing SQL script if it does not have a delimiter character
+17. New Query Editor panel opening for an automatically connected database
+18. Application panels size adjusting when open new ones
+19. Database connection properties saving
+20. NPE when switching from the table "Data" tab without applying changes
+21. "Find and Replace" tool behavior
+22. Page Up/Page Down key actions when working with statistics
+23. BLOB parameters recognizing in the UDF
+24. Connection error output in the Database Statistics tool
+25. Autocomplete in the Query Editor
+26. Updating in the object tree when changes are made in the query editor
+27. Changing the cursor position when ESC is pressed
+
+--- RedExpert  - RELEASE NOTES -
 Major changes - v2024.03
 ----------------------------------------
 Added:

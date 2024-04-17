@@ -87,8 +87,8 @@ public class ForeignKeyPicker extends JPanel
 
         setPreferredSize(new Dimension(
                 getWidth() + toggleButton.getMinimumSize().width,
-                toggleButton.getPreferredSize().height)
-        );
+                toggleButton.getPreferredSize().height
+        ));
     }
 
     private void setPopupLocation(
@@ -251,8 +251,12 @@ public class ForeignKeyPicker extends JPanel
             );
 
             if (selectedIndex > -1) {
+
+                int rowToView = selectedIndex;
+                rowToView += foreignTable.getVisibleRect().height / foreignTable.getRowHeight() / 2;
+
                 foreignTable.setRowSelectionInterval(selectedIndex, selectedIndex);
-                foreignTable.scrollRectToVisible(new Rectangle(foreignTable.getCellRect(selectedIndex, 0, true)));
+                foreignTable.scrollRectToVisible(foreignTable.getCellRect(rowToView, 0, true));
             }
 
             int defaultX = this.toggleButton.getLocationOnScreen().x + this.toggleButton.getBounds().width - this.popup.getBounds().width - 2;

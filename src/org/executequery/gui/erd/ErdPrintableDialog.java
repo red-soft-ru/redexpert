@@ -106,7 +106,7 @@ public class ErdPrintableDialog extends BaseDialog
      */
     public void keywordsAdded(KeywordEvent e) {
         if (sqlText != null) {
-            sqlText.setSQLKeywords(true);
+            sqlText.setSQLKeywords();
         }
     }
 
@@ -115,7 +115,7 @@ public class ErdPrintableDialog extends BaseDialog
      */
     public void keywordsRemoved(KeywordEvent e) {
         if (sqlText != null) {
-            sqlText.setSQLKeywords(true);
+            sqlText.setSQLKeywords();
         }
     }
 

@@ -359,7 +359,7 @@ public class CreateIndexPanel extends ActionPanel
      */
     public void keywordsAdded(KeywordEvent e) {
 
-        sqlText.setSQLKeywords(true);
+        sqlText.setSQLKeywords();
     }
 
     /**
@@ -367,7 +367,7 @@ public class CreateIndexPanel extends ActionPanel
      */
     public void keywordsRemoved(KeywordEvent e) {
 
-        sqlText.setSQLKeywords(true);
+        sqlText.setSQLKeywords();
     }
 
     /**

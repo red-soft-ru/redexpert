@@ -349,12 +349,12 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
     @Override
     public void keywordsAdded(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords(true);
+        sqlTextPanel.setSQLKeywords();
     }
 
     @Override
     public void keywordsRemoved(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords(true);
+        sqlTextPanel.setSQLKeywords();
     }
 
     @Override

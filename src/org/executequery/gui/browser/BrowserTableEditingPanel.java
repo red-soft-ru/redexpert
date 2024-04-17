@@ -614,8 +614,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     @Override
     public void keywordsAdded(KeywordEvent e) {
-        alterSqlText.setSQLKeywords(true);
-        createSqlText.setSQLKeywords(true);
+        alterSqlText.setSQLKeywords();
+        createSqlText.setSQLKeywords();
     }
 
     /**
@@ -623,8 +623,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     @Override
     public void keywordsRemoved(KeywordEvent e) {
-        alterSqlText.setSQLKeywords(true);
-        createSqlText.setSQLKeywords(true);
+        alterSqlText.setSQLKeywords();
+        createSqlText.setSQLKeywords();
     }
 
     @Override

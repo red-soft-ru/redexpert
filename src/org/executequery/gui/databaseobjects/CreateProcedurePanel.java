@@ -179,7 +179,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      * Notification of a new keyword added to the list.
      */
     public void keywordsAdded(KeywordEvent e) {
-        outSqlText.setSQLKeywords(true);
+        outSqlText.setSQLKeywords();
     }
 
     public boolean canHandleEvent(ApplicationEvent event) {
@@ -190,7 +190,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
      * Notification of a keyword removed from the list.
      */
     public void keywordsRemoved(KeywordEvent e) {
-        outSqlText.setSQLKeywords(true);
+        outSqlText.setSQLKeywords();
     }
 
 

@@ -27,6 +27,7 @@ import org.executequery.event.KeywordListener;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -35,11 +36,10 @@ import java.io.File;
 
 /**
  * This panel is used within those components that display
- * SQL text. Typically this will be used within functions that
+ * SQL text. Typically, this will be used within functions that
  * modify the database schema and the SQL produced as a result
  * will be displayed here with complete syntax highlighting and
- * other associated visual enhancements.<br>
- * <p>
+ * other associated visual enhancements.<p>
  * Examples of use include within the Create Table and Browser
  * Panel features where table modifications are reflected in
  * executable SQL.
@@ -49,36 +49,18 @@ import java.io.File;
 public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         implements KeywordListener {
 
-    /**
-     * The SQL text pane
-     */
-    protected SQLTextArea textPane;
-
-    /**
-     * Whether test is to be appended
-     */
-    private boolean appending;
-
-    /**
-     * The StringBuffer if appending
-     */
-    private final StringBuffer sqlBuffer;
-
-    /**
-     * The text area's scroll
-     */
-    private RTextScrollPane queryScroll;
-
-    /**
-     * The default border
-     */
-    private Border defaultBorder;
-
-    private SimpleTextComponentPopUpMenu popup;
     private final boolean autocompleteOnlyHotKey;
 
+    protected SQLTextArea textPane;
+
+    private boolean appending;
+    private Border defaultBorder;
+    private StringBuffer sqlBuffer;
+    private RTextScrollPane queryScroll;
+    private SimpleTextComponentPopUpMenu popup;
+
     public SimpleSqlTextPanel() {
-        this(false, false, "SQL");
+        this("SQL");
     }
 
     public SimpleSqlTextPanel(String title) {
@@ -91,66 +73,70 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public SimpleSqlTextPanel(boolean appending, boolean autocompleteOnlyHotKey, String title) {
         super(new BorderLayout());
-        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
-        try {
-            init(title);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        sqlBuffer = new StringBuffer();
         this.appending = appending;
+        this.autocompleteOnlyHotKey = autocompleteOnlyHotKey;
+
+        if (!MiscUtils.isNull(title))
+            setBorder(BorderFactory.createTitledBorder(title));
+
+        init();
     }
 
-    private void init(String title) throws Exception {
-
-        setBorder(BorderFactory.createTitledBorder(title));
+    private void init() {
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
         textPane.setFont(QueryEditorSettings.getEditorFont());
-//        textPane.setBackground(null);
         textPane.setDragEnabled(true);
         textComponent = textPane;
 
-        popup = new SimpleTextComponentPopUpMenu(textPane);
-
         queryScroll = new RTextScrollPane(textPane);
-        queryScroll.setLineNumbersEnabled(true);
         queryScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        queryScroll.setLineNumbersEnabled(true);
+
+        popup = new SimpleTextComponentPopUpMenu(textPane);
         defaultBorder = queryScroll.getBorder();
+        sqlBuffer = new StringBuffer();
 
         add(queryScroll, BorderLayout.CENTER);
-        add(textPane.getCaretPositionLabel(),BorderLayout.SOUTH);
+        add(textPane.getCaretPositionLabel(), BorderLayout.SOUTH);
+    }
+
+    public void setSQLText(String text) {
+        textPane.deleteAll();
+        textPane.setText(text == null ? Constants.EMPTY : text);
+
+        if (appending) {
+            sqlBuffer.setLength(0);
+            sqlBuffer.append(text);
+        }
+    }
+
+    public void appendSQLText(String text) {
+        textPane.deleteAll();
+
+        if (text == null)
+            text = Constants.EMPTY;
+
+        if (appending) {
+            sqlBuffer.append(text);
+            textPane.setText(sqlBuffer.toString());
+
+        } else
+            textPane.setText(text);
+    }
+
+    public int save(File file) {
+        String path = file != null ? file.getAbsolutePath() : Constants.EMPTY;
+        return new TextFileWriter(textPane.getText(), path).write();
     }
 
     public JPopupMenu getPopup() {
         return popup;
     }
 
-    public void addPopupMenuItem(JMenuItem menuItem, int index) {
-        popup.add(menuItem, index);
-    }
-
-    public void setSQLKeywords(boolean reset) {
+    public void setSQLKeywords() {
         textPane.setSQLKeywords(true);
-    }
-
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    public void keywordsAdded(KeywordEvent e) {
-        textPane.setSQLKeywords(true);
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    public void keywordsRemoved(KeywordEvent e) {
-        textPane.setSQLKeywords(true);
-    }
-
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof KeywordEvent);
     }
 
     public void setDefaultBorder() {
@@ -161,136 +147,62 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         queryScroll.setBorder(border);
     }
 
-    public void setSQLText(String text) {
-        textPane.deleteAll();
-        textPane.setText(text == null ? Constants.EMPTY : text);
-
-        if (appending) {
-            sqlBuffer.setLength(0);
-            //sqlBuffer.delete(0, sqlBuffer.length());
-            sqlBuffer.append(text);
-        }
-
-    }
-
-    public void disableUpdates(boolean disable) {
-        textPane.disableUpdates(disable);
-    }
-
     public void setCaretPosition(int position) {
         textPane.setCaretPosition(position);
     }
 
-    /**
-     * <p>Sets the SQL text pane's background colour
-     * to the specified value.
-     *
-     * @param the background colour to apply
-     */
-    public void setSQLTextBackground(Color background) {
-        textPane.setBackground(background);
-    }
-
-    /**
-     * <p>Appends the specified text to the SQL text pane.
-     *
-     * @param the text to append
-     */
-    public void appendSQLText(String text) {
-        textPane.deleteAll();
-
-        if (text == null) {
-            text = Constants.EMPTY;
-        }
-
-        if (appending) {
-            sqlBuffer.append(text);
-            textPane.setText(sqlBuffer.toString());
-        } else {
-            textPane.setText(text);
-        }
-    }
-
-    /**
-     * <p>Retrieves the SQL text as contained
-     * within the SQL text pane.
-     *
-     * @return the SQL text
-     */
     public String getSQLText() {
         return textPane.getText();
     }
 
-    /**
-     * <p>Returns wether the text pane contains any text.
-     *
-     * @return <code>true</code> if the text pane has text |
-     * <code>false</code> otherwise
-     */
     public boolean isEmpty() {
-        return textPane.getText().length() == 0;
+        return textPane.getText().isEmpty();
     }
 
-    /**
-     * <p>Sets the SQL text pane to be editable or not
-     * as specified by the passed in value.
-     *
-     * @param <code>true</code> to be editable |
-     *                          <code>false</code> otherwise
-     */
     public void setSQLTextEditable(boolean editable) {
         textPane.setEditable(editable);
     }
 
-    /**
-     * <p>Sets the SQL text pane appending as specified.
-     *
-     * @param <code>true</code> to append |
-     *                          <code>false</code> otherwise
-     */
     public void setAppending(boolean appending) {
         this.appending = appending;
-    }
-
-    public String getPrintJobName() {
-        return "Red Expert - SQL Editor";
     }
 
     public SQLTextArea getTextPane() {
         return textPane;
     }
 
-    public int save(File file) {
-
-        String text = textPane.getText();
-
-        TextFileWriter writer = null;
-
-        if (file != null) {
-
-            writer = new TextFileWriter(text, file.getAbsolutePath());
-
-        } else {
-
-            writer = new TextFileWriter(text, Constants.EMPTY);
-        }
-
-        return writer.write();
-    }
-
-    public boolean contentCanBeSaved() {
-
-        return true;
-    }
-
     public void cleanup() {
         textPane.cleanup();
     }
 
+    @Override
+    public void keywordsAdded(KeywordEvent e) {
+        setSQLKeywords();
+    }
+
+    @Override
+    public void keywordsRemoved(KeywordEvent e) {
+        setSQLKeywords();
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof KeywordEvent;
+    }
+
+    @Override
+    public void disableUpdates(boolean disable) {
+        textPane.disableUpdates(disable);
+    }
+
+    @Override
+    public String getPrintJobName() {
+        return "Red Expert - SQL Editor";
+    }
+
+    @Override
+    public boolean contentCanBeSaved() {
+        return true;
+    }
+
 }
-
-
-
-
-
-

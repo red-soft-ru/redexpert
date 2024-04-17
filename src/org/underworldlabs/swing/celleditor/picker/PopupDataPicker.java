@@ -1,7 +1,5 @@
 package org.underworldlabs.swing.celleditor.picker;
 
-import com.github.lgooddatepicker.zinternaltools.CustomPopup;
-
 /**
  * Default DataPicker interface based on the
  * <code>com.github.lgooddatepicker.zinternaltools.CustomPopup</code> dependency
@@ -9,7 +7,7 @@ import com.github.lgooddatepicker.zinternaltools.CustomPopup;
  *
  * @author Alexey Kozlov
  */
-public interface PopupDataPicker extends CustomPopup.CustomPopupCloseListener {
+public interface PopupDataPicker {
 
     /**
      * Open the data picker popup panel
@@ -20,6 +18,11 @@ public interface PopupDataPicker extends CustomPopup.CustomPopupCloseListener {
      * Close the data picker popup panel
      */
     void closePopup();
+
+    /**
+     * Restores popup panel to null
+     */
+    void disposePopup();
 
     /**
      * Show if the data picker popup panel is active

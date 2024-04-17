@@ -1,6 +1,5 @@
 package org.underworldlabs.swing.celleditor.picker;
 
-import com.github.lgooddatepicker.zinternaltools.CustomPopup;
 import com.github.lgooddatepicker.zinternaltools.InternalUtilities;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -12,12 +11,9 @@ import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.border.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Map;
 import java.util.Vector;
 
@@ -40,7 +36,7 @@ public class ForeignKeyPicker extends JPanel
     private int selectedIndex;
     private boolean isPopupOpen = true;
 
-    private CustomPopup popup;
+    private PickerPopup popup;
     private JPanel editorPanel;
     private JTextField textField;
     private JButton toggleButton;
@@ -72,7 +68,6 @@ public class ForeignKeyPicker extends JPanel
 
         toggleButton = WidgetFactory.createButton("toggleButton", "...");
         toggleButton.addActionListener(e -> togglePopup());
-
     }
 
     private void arrange() {
@@ -92,7 +87,7 @@ public class ForeignKeyPicker extends JPanel
     }
 
     private void setPopupLocation(
-            CustomPopup popup, int defaultX, int defaultY,
+            PickerPopup popup, int defaultX, int defaultY,
             JComponent picker, JComponent verticalFlipReference) {
 
         Window topWindowOrNull = SwingUtilities.getWindowAncestor(picker);
@@ -243,11 +238,10 @@ public class ForeignKeyPicker extends JPanel
             editorPanel = new JPanel(new GridBagLayout());
             editorPanel.add(scroller);
 
-            popup = new CustomPopup(
+            popup = new PickerPopup(
                     this.editorPanel,
                     SwingUtilities.getWindowAncestor(this),
-                    this,
-                    BorderFactory.createLineBorder(Color.BLACK)
+                    this
             );
 
             if (selectedIndex > -1) {
@@ -280,6 +274,12 @@ public class ForeignKeyPicker extends JPanel
     }
 
     @Override
+    public void disposePopup() {
+        popup = null;
+        editorPanel = null;
+    }
+
+    @Override
     public String getText() {
         return selectedValue != null ? selectedValue.toString() : "";
     }
@@ -297,10 +297,124 @@ public class ForeignKeyPicker extends JPanel
         setText(null);
     }
 
-    @Override
-    public void zEventCustomPopupWasClosed(CustomPopup customPopup) {
-        popup = null;
-        editorPanel = null;
-    }
+    private static class PickerPopup extends Popup
+            implements WindowFocusListener,
+            ComponentListener {
+
+        private Window topWindow;
+        private JWindow displayWindow;
+        private ForeignKeyPicker optionalPanel;
+        private boolean enableHideWhenFocusIsLost = false;
+
+        public PickerPopup(
+                Component contentsComponent,
+                Window topWindow,
+                ForeignKeyPicker optionalPanel) {
+
+            this.topWindow = topWindow;
+            this.optionalPanel = optionalPanel;
+
+            JPanel mainPanel = new JPanel();
+            mainPanel.setLayout(new BorderLayout());
+            mainPanel.add(contentsComponent, "Center");
+            mainPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+            displayWindow = new JWindow(topWindow);
+            displayWindow.getContentPane().add(mainPanel);
+            displayWindow.setFocusable(true);
+            displayWindow.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    enableHideWhenFocusIsLost = true;
+                }
+            });
+            displayWindow.pack();
+
+            String cancelName = "cancel";
+            InputMap inputMap = mainPanel.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            inputMap.put(KeyStroke.getKeyStroke(27, 0), cancelName);
+            mainPanel.getActionMap().put(cancelName, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    hide();
+                }
+            });
+
+            this.topWindow.addComponentListener(this);
+            this.displayWindow.addWindowFocusListener(this);
+        }
+
+        @Override
+        public void show() {
+            this.displayWindow.setVisible(true);
+        }
+
+        @Override
+        public void hide() {
+
+            if (this.displayWindow != null) {
+                this.displayWindow.setVisible(false);
+                this.displayWindow.removeWindowFocusListener(this);
+                this.displayWindow = null;
+            }
+
+            if (this.topWindow != null) {
+                this.topWindow.removeComponentListener(this);
+                this.topWindow = null;
+            }
+
+            if (this.optionalPanel != null) {
+                this.optionalPanel.disposePopup();
+                this.optionalPanel = null;
+            }
+        }
+
+        public Rectangle getBounds() {
+            return displayWindow.getBounds();
+        }
+
+        public void setLocation(int xPos, int yPos) {
+            displayWindow.setLocation(xPos, yPos);
+        }
+
+        // --- component listener impl ---
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+            hide();
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {
+            hide();
+        }
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            hide();
+        }
+
+        @Override
+        public void componentShown(ComponentEvent e) {
+        }
+
+        // --- window focus listener impl ---
+
+        @Override
+        public void windowGainedFocus(WindowEvent e) {
+        }
+
+        @Override
+        public void windowLostFocus(WindowEvent e) {
+
+            if (!this.enableHideWhenFocusIsLost) {
+                e.getWindow().requestFocus();
+                return;
+            }
+
+            this.hide();
+        }
+
+    } // ForeignKeyPickerPopup class
 
 }

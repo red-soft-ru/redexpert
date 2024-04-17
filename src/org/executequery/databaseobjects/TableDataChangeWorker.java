@@ -59,7 +59,7 @@ public class TableDataChangeWorker {
                 createConnection(tableObject);
 
             List<RecordDataItem> row = tableDataChange.getRowDataForRow();
-            if (row.stream().noneMatch(RecordDataItem::isChanged)) {
+            if (row.stream().noneMatch(RecordDataItem::isModificated)) {
                 result++;
                 continue;
             }

@@ -21,6 +21,7 @@
 package org.executequery.components.table;
 
 import org.executequery.Constants;
+import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.table.TableCellEditorValue;
 
 import javax.swing.*;
@@ -49,16 +50,14 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         ActionListener,
         FocusListener {
 
-    private final int BUTTON_WIDTH = 16;
-
+    protected EditorDelegate delegate;
     protected transient ChangeEvent changeEvent = null;
     protected EventListenerList listenerList = new EventListenerList();
-    protected EditorDelegate delegate;
 
     /**
      * the selection button
      */
-    protected BrowseButton browseButton;
+    protected JButton browseButton;
 
     /**
      * the editor component
@@ -114,7 +113,6 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
 
         super(new CellTextField());
 
-        base = new RendererBasePanel();
         delegate = new EditorDelegate();
 
         textField = (CellTextField) editorComponent;
@@ -124,9 +122,14 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         textField.addActionListener(delegate);
         textField.addFocusListener(this);
 
-        browseButton = new BrowseButton();
-        browseButton.addActionListener(this);
+        browseButton = WidgetFactory.createButton("browseButton", this, "...");
+        browseButton.setPreferredSize(new Dimension(browseButton.getHeight(), browseButton.getHeight()));
+        browseButton.setVerticalAlignment(SwingConstants.TOP);
+        browseButton.setBackground(buttonBackground);
+        browseButton.setBorderPainted(false);
+        browseButton.setFocusPainted(false);
 
+        base = new RendererBasePanel();
         base.add(textField, BorderLayout.CENTER);
         base.add(browseButton, BorderLayout.EAST);
     }
@@ -342,90 +345,6 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
 
     } // CellTextField class
 
-    protected class BrowseButton extends JButton
-            implements MouseListener {
-
-        public BrowseButton() {
-
-            setFocusPainted(false);
-            setBorderPainted(false);
-            setOpaque(true);
-
-            try {
-                setUI(new javax.swing.plaf.basic.BasicButtonUI());
-            } catch (NullPointerException e) {
-                e.printStackTrace(System.out);
-            }
-        }
-
-        @Override
-        public void paintComponent(Graphics g) {
-
-            int width = getWidth();
-            int height = getHeight();
-
-            g.setColor(buttonBackground);
-            g.fillRect(1, 1, width - 2, height - 1);
-            g.setColor(iconColor);
-            g.drawRect(2, 3, width - 5, height - 5);
-
-            int y = height - 5;
-            int x = ((width - (width - 4)) / 2) + 4;
-
-            g.setColor(Color.BLACK);
-            g.drawLine(x, y, x, y);
-            g.drawLine(x + 3, y, x + 3, y);
-            g.drawLine(x + 6, y, x + 6, y);
-        }
-
-        @Override
-        public boolean isFocusTraversable() {
-            return false;
-        }
-
-        @Override
-        public int getHeight() {
-            return super.getHeight() - 2;
-        }
-
-        @Override
-        public Dimension getMaximumSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(BUTTON_WIDTH + 2, getHeight());
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            actionPerformed(new ActionEvent(this, -1, Constants.EMPTY));
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-        }
-
-        @Override
-        public void requestFocus() {
-        }
-
-    } // BrowseButton class
-
-
     // ----------------------------------------------------------
     // borrowed from javax.swing.DefaultCellEditor.EditorDelegate
     // ----------------------------------------------------------
@@ -477,10 +396,9 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
 
                 Point point = mEvent.getPoint();
                 JTable table = (JTable) mEvent.getSource();
-                Rectangle cellRect = table.getCellRect(
-                        table.rowAtPoint(point), table.columnAtPoint(point),true);
+                Rectangle cellRect = table.getCellRect(table.rowAtPoint(point), table.columnAtPoint(point), true);
 
-                if (mEvent.getX() >= (cellRect.x + cellRect.width - BUTTON_WIDTH))
+                if (mEvent.getX() >= (cellRect.x + cellRect.width - browseButton.getWidth()))
                     return true;
 
                 return mEvent.getClickCount() >= 2;

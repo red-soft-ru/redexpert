@@ -71,12 +71,8 @@ public interface RecordDataItem extends TableCellValue, Comparable {
 
     boolean isBlob();
 
+    boolean isModificated();
+
     boolean valueContains(String pattern);
 
 }
-
-
-
-
-
-

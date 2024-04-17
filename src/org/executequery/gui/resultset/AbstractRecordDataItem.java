@@ -189,6 +189,11 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
     }
 
     @Override
+    public boolean isModificated() {
+        return isNew() || isDeleted() || isChanged() || isValueNull() || isNewValueNull();
+    }
+
+    @Override
     public String getName() {
         return name;
     }

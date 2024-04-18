@@ -280,7 +280,7 @@ public class BrowserController {
                 case NamedObject.SYSTEM_FUNCTION: {
 
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
-                            .getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
+                            .getEditPanelFromType(type, connection, node.getDatabaseObject());
 
                     if (!viewPanel.containsPanel(Objects.requireNonNull(objectPanel).getLayoutName())) {
                         viewPanel.addToLayout(objectPanel);
@@ -387,7 +387,7 @@ public class BrowserController {
                     if (node.getParent() != null && ((DatabaseObjectNode) node.getParent()).getDatabaseObject() instanceof DatabaseTable) {
 
                         AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
-                                .getEditPanelFromType(type, connection, node.getDatabaseObject(), null);
+                                .getEditPanelFromType(type, connection, node.getDatabaseObject());
 
                         if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
                             viewPanel.addToLayout(objectPanel);

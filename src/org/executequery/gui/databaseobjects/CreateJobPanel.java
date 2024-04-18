@@ -1,37 +1,47 @@
 package org.executequery.gui.databaseobjects;
 
+import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.cron.CronPanel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.*;
 
-public class CreateJobPanel extends AbstractCreateObjectPanel{
-    public static final String CREATE_TITLE=getCreateTitle(NamedObject.JOB);
-    public static final String EDIT_TITLE=getEditTitle(NamedObject.JOB);
-    private SimpleSqlTextPanel sqlTextPanel;
-    private SimpleTextArea bashTextPanel;
-    private JComboBox jobTypeCombo;
-    private JCheckBox activeBox;
+public class CreateJobPanel extends AbstractCreateObjectPanel {
 
-    private CronPanel cronPanel;
+    public static final String CREATE_TITLE = getCreateTitle(NamedObject.JOB);
+    public static final String EDIT_TITLE = getEditTitle(NamedObject.JOB);
+
+    private DefaultDatabaseJob job;
+
+    // --- GUI ccomponents ---
 
     private TimestampPicker startDatePicker;
     private TimestampPicker endDatePicker;
 
-    private JTextField idField;
-    private JTextField databaseField;
+    private SimpleSqlTextPanel sqlTextPanel;
+    private SimpleTextArea bashTextPanel;
+    private CronPanel cronPanel;
+    private JPanel taskPanel;
 
-    private DefaultDatabaseJob job;
+    private JComboBox<?> jobTypeCombo;
+    private JTextField databaseField;
+    private JCheckBox activeCheck;
+    private JTextField idField;
+
+    // ---
+
     public CreateJobPanel(DatabaseConnection dc, ActionContainer dialog) {
         this(dc, dialog, null);
     }
@@ -45,80 +55,119 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
     }
 
     @Override
-    protected void reset() {
-        nameField.setText(job.getName());
-        cronPanel.setCron(job.getCronSchedule());
-        jobTypeCombo.setSelectedIndex(job.getJobType());
-        if(job.getJobType()==DefaultDatabaseJob.PSQL_TYPE)
-            sqlTextPanel.setSQLText(job.getSource());
-        else bashTextPanel.getTextAreaComponent().setText(job.getSource());
-        startDatePicker.setDateTime(job.getStartDate());
-        endDatePicker.setDateTime(job.getEndDate());
-        activeBox.setSelected(job.isActive());
-        idField.setText(job.getId());
-        databaseField.setText(job.getDatabase());
-    }
-
-    @Override
     protected void init() {
         centralPanel.setVisible(false);
-        sqlTextPanel = new SimpleSqlTextPanel();
-        sqlTextPanel.getTextPane().setDatabaseConnection(connection);
-        bashTextPanel = new SimpleTextArea();
-        jobTypeCombo = new JComboBox(new String[]{"PSQL","BASH"});
-        jobTypeCombo.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    checkJobType();
-                }
-            }
-        });
-        activeBox = new JCheckBox(bundleStaticString("active"));
+        connectionsCombo.setEnabled(false);
+
         startDatePicker = new TimestampPicker();
-        startDatePicker.setVisibleNullCheck(true);
         endDatePicker = new TimestampPicker();
-        endDatePicker.setVisibleNullCheck(true);
+
+        taskPanel = new JPanel(new GridBagLayout());
         cronPanel = new CronPanel(editing);
 
-        topGbh.addLabelFieldPair(topPanel, bundleString("startDate"), startDatePicker, null, true, false);
-        topGbh.addLabelFieldPair(topPanel, bundleString("endDate"), endDatePicker, null, false, true);
-        topGbh.addLabelFieldPair(topPanel, bundleString("jobType"), jobTypeCombo, null, true, false);
-        topPanel.add(activeBox, topGbh.nextCol().setLabelDefault().get());
-        tabbedPane.add("SQL", sqlTextPanel);
-        tabbedPane.add(bundleString("Schedule"), cronPanel);
-        addCommentTab(null);
-    }
+        sqlTextPanel = new SimpleSqlTextPanel();
+        sqlTextPanel.getTextPane().setDatabaseConnection(connection);
 
-    private void checkJobType()
-    {
-        if (jobTypeCombo.getSelectedIndex()== DefaultDatabaseJob.PSQL_TYPE) {
-                tabbedPane.remove(0);
-                tabbedPane.insertTab("SQL", null, sqlTextPanel, null, 0);
-            } else {
-                tabbedPane.remove(0);
-                tabbedPane.insertTab("Bash", null, bashTextPanel, null, 0);
-            }
-            tabbedPane.setSelectedIndex(0);
+        bashTextPanel = new SimpleTextArea("BASH");
+        bashTextPanel.setFont(sqlTextPanel.getFont());
+        bashTextPanel.setVisible(false);
+
+        activeCheck = WidgetFactory.createCheckBox("activeCheck", bundleStaticString("active"));
+
+        jobTypeCombo = WidgetFactory.createComboBox("jobTypeCombo", new String[]{"PSQL", "BASH"});
+        jobTypeCombo.setPreferredSize(new Dimension(100, jobTypeCombo.getPreferredSize().height));
+        jobTypeCombo.addItemListener(e -> checkJobType());
+
+        tabbedPane.add(bundleString("Task"), taskPanel);
+        tabbedPane.add(bundleString("Schedule"), cronPanel);
+//        addCommentTab(null); RDB doesn't support adding comments on the JOBs
+
+        if (!editing)
+            arrange();
     }
 
     @Override
     protected void initEdited() {
-        simpleCommentPanel.setDatabaseObject(job);
-        idField = new JTextField();
+
+        idField = WidgetFactory.createTextField("idField");
         idField.setEditable(false);
-        databaseField = new JTextField();
+
+        databaseField = WidgetFactory.createTextField("databaseField");
         databaseField.setEditable(false);
-        topGbh.addLabelFieldPair(topPanel, bundleString("ID"), idField, null, false, false);
-        topGbh.addLabelFieldPair(topPanel, bundleString("Database"), databaseField, null, false, true);
+
         reset();
+        arrange();
+
+//        simpleCommentPanel.setDatabaseObject(job); RDB doesn't support adding comments on the JOBs
+        nameField.setEditable(false);
         tabbedPane.addTab(bundleString("Log"), new JobsLogPanel(job));
         addCreateSqlTab(job);
     }
 
     @Override
+    protected void reset() {
+
+        jobTypeCombo.setSelectedIndex(job.getJobType());
+        startDatePicker.setDateTime(job.getStartDate());
+        endDatePicker.setDateTime(job.getEndDate());
+        cronPanel.setCron(job.getCronSchedule());
+        databaseField.setText(job.getDatabase());
+        activeCheck.setSelected(job.isActive());
+        nameField.setText(job.getName());
+        idField.setText(job.getId());
+
+        if (job.getJobType() == DefaultDatabaseJob.PSQL_TYPE)
+            sqlTextPanel.setSQLText(job.getSource());
+        else
+            bashTextPanel.getTextAreaComponent().setText(job.getSource());
+    }
+
+    private void arrange() {
+
+        // --- task panel ---
+
+        GridBagHelper gbh = new GridBagHelper().fillBoth();
+
+        taskPanel.removeAll();
+        taskPanel.add(sqlTextPanel, gbh.setMaxWeightY().spanX().get());
+        taskPanel.add(bashTextPanel, gbh.get());
+        gbh.setWidth(1).setMinWeightY().setMinWeightX().leftGap(5).fillNone();
+        taskPanel.add(new JLabel(bundleString("jobType")), gbh.nextRowFirstCol().get());
+        taskPanel.add(jobTypeCombo, gbh.nextCol().get());
+        taskPanel.add(activeCheck, gbh.nextCol().anchorNorthEast().spanX().get());
+
+        // --- top panel ---
+
+        topGbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillHorizontally().anchorNorthWest();
+
+        topPanel.removeAll();
+        topPanel.add(new JLabel(Bundles.getCommon("connection")), topGbh.setMinWeightX().topGap(4).rightGap(0).get());
+        topPanel.add(connectionsCombo, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
+        topPanel.add(new JLabel(Bundles.getCommon("name")), topGbh.nextCol().setMinWeightX().topGap(4).rightGap(0).get());
+        topPanel.add(nameField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
+        if (editing) {
+            topPanel.add(new JLabel(bundleString("ID")), topGbh.nextCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).get());
+            topPanel.add(idField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
+            topPanel.add(new JLabel(bundleString("Database")), topGbh.nextCol().setMinWeightX().topGap(4).rightGap(0).get());
+            topPanel.add(databaseField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
+        }
+
+        topPanel.add(new JLabel(bundleString("startDate")), topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).get());
+        topPanel.add(startDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
+        topPanel.add(new JLabel(bundleString("endDate")), topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).get());
+        topPanel.add(endDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
+    }
+
+    private void checkJobType() {
+        boolean sqlTaskSelected = jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE;
+
+        sqlTextPanel.setVisible(sqlTaskSelected);
+        bashTextPanel.setVisible(!sqlTaskSelected);
+    }
+
+    @Override
     public void createObject() {
-        displayExecuteQueryDialog(generateQuery(),"^");
+        displayExecuteQueryDialog(generateQuery(), "^");
     }
 
     @Override
@@ -138,43 +187,58 @@ public class CreateJobPanel extends AbstractCreateObjectPanel{
 
     @Override
     public void setDatabaseObject(Object databaseObject) {
-        job=(DefaultDatabaseJob) databaseObject;
-    }
-
-    @Override
-    public void setParameters(Object[] params) {
-
+        job = (DefaultDatabaseJob) databaseObject;
     }
 
     @Override
     protected String generateQuery() {
+        return editing ? getGenerateAlterQuery() : getGenerateCreateQuery();
+    }
 
-        if (!editing) {
+    private String getGenerateCreateQuery() {
+        return SQLUtils.generateCreateJob(
+                nameField.getText(),
+                cronPanel.getCron(),
+                activeCheck.isSelected(),
+                startDatePicker.isNull() ?
+                        null :
+                        startDatePicker.getDateTime(),
+                endDatePicker.isNull() ?
+                        null :
+                        endDatePicker.getDateTime(),
+                jobTypeCombo.getSelectedIndex(),
+                jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
+                        sqlTextPanel.getSQLText() :
+                        bashTextPanel.getTextAreaComponent().getText(),
+                Constants.EMPTY,
+                false,
+                getDatabaseConnection()
+        );
+    }
 
-            return SQLUtils.generateCreateJob(
-                    nameField.getText(),
-                    cronPanel.getCron(),
-                    activeBox.isSelected(),
-                    startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
-                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(),
-                    jobTypeCombo.getSelectedIndex(),
-                    jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
-                            sqlTextPanel.getSQLText() :
-                            bashTextPanel.getTextAreaComponent().getText(),
-                    simpleCommentPanel.getComment(), false, getDatabaseConnection());
+    private String getGenerateAlterQuery() {
+        return SQLUtils.generateAlterJob(
+                job,
+                nameField.getText(),
+                cronPanel.getCron(),
+                activeCheck.isSelected(),
+                startDatePicker.isNull() ?
+                        null :
+                        startDatePicker.getDateTime(),
+                endDatePicker.isNull() ?
+                        null :
+                        endDatePicker.getDateTime(),
+                jobTypeCombo.getSelectedIndex(),
+                jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
+                        sqlTextPanel.getSQLText() :
+                        bashTextPanel.getTextAreaComponent().getText(),
+                Constants.EMPTY,
+                false
+        );
+    }
 
-        } else {
-
-            return SQLUtils.generateAlterJob(
-                    job, nameField.getText(), cronPanel.getCron(), activeBox.isSelected(),
-                    startDatePicker.isNull() ? null : startDatePicker.getDateTime(),
-                    endDatePicker.isNull() ? null : endDatePicker.getDateTime(),
-                    jobTypeCombo.getSelectedIndex(),
-                    jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
-                            sqlTextPanel.getSQLText() :
-                            bashTextPanel.getTextAreaComponent().getText(),
-                    simpleCommentPanel.getComment(), false);
-        }
+    @Override
+    public void setParameters(Object[] params) {
     }
 
 }

@@ -45,6 +45,8 @@ public class SqlParser {
         displayParameters = new ArrayList<>();
         StringBuilder parameter = new StringBuilder();
         StringBuilder blobParameter = new StringBuilder();
+        boolean afterExecuteBlock = false;
+        boolean paramsExecuteBlock = false;
         parameters = new ArrayList<>();
         int state = DEFAULT_STATE;
         int len = sql.length();
@@ -68,17 +70,18 @@ public class SqlParser {
                                 state = QUOTE_STATE;
                                 openChar = curChar;
                                 first = false;
+                                afterExecuteBlock = false;
                                 break;
                             case '-':
                                 if (nextChar == '-') {
                                     state = COMMENT_LINE_STATE;
-                                }
+                                } else afterExecuteBlock = false;
                                 processed.append(curChar);
                                 break;
                             case '/':
                                 if (nextChar == '*') {
                                     state = COMMENT_MULTILINE_STATE;
-                                }
+                                } else afterExecuteBlock = false;
                                 processed.append(curChar);
                                 break;
                             case '[':
@@ -86,6 +89,7 @@ public class SqlParser {
                                 state = ARRAY_STATE;
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                             case '?':
                                 if (nextChar == '\'') {
@@ -98,6 +102,7 @@ public class SqlParser {
                                 processed.append(curChar);
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                             case ':':
                                 if (Character.isAlphabetic(nextChar) || Character.isDigit(nextChar) || nextChar == '$' || nextChar == '_') {
@@ -107,6 +112,7 @@ public class SqlParser {
                                 } else processed.append(curChar);
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                             case 'e':
                             case 'E':
@@ -116,6 +122,7 @@ public class SqlParser {
                                 processed.append(curChar);
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                             case 'b':
                             case 'B':
@@ -125,6 +132,7 @@ public class SqlParser {
                                 processed.append(curChar);
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                             case ' ':
                             case '\n':
@@ -132,10 +140,23 @@ public class SqlParser {
                             case '\r':
                                 processed.append(curChar);
                                 break;
+                            case '(':
+                                if (afterExecuteBlock) {
+                                    paramsExecuteBlock = true;
+                                }
+                                processed.append(curChar);
+                                afterExecuteBlock = false;
+                                break;
+                            case ')':
+                                paramsExecuteBlock = false;
+                                processed.append(curChar);
+                                afterExecuteBlock = false;
+                                break;
                             default:
                                 processed.append(curChar);
                                 first = false;
                                 second = false;
+                                afterExecuteBlock = false;
                                 break;
                         }
                         break;
@@ -169,11 +190,11 @@ public class SqlParser {
                         if (Character.isDigit(curChar) || Character.isAlphabetic(curChar) || curChar == '_' || curChar == '$') {
                             parameter.append(curChar);
                             if (i == len - 1) {
-                                createParameter(parameter, processed);
+                                createParameter(parameter, processed, paramsExecuteBlock);
                             }
                         } else {
                             state = DEFAULT_STATE;
-                            createParameter(parameter, processed);
+                            createParameter(parameter, processed, paramsExecuteBlock);
                             i--;
                         }
                         break;
@@ -208,6 +229,7 @@ public class SqlParser {
                             if (cur_exec == block.length()) {
                                 executeBlock = true;
                                 state = DEFAULT_STATE;
+                                afterExecuteBlock = true;
                             }
                         } else state = DEFAULT_STATE;
                         break;
@@ -237,10 +259,10 @@ public class SqlParser {
         return processedSql;
     }
 
-    private void createParameter(StringBuilder parameter, StringBuilder processed) {
+    private void createParameter(StringBuilder parameter, StringBuilder processed, boolean executeBlockParameter) {
 
         String name = parameter.toString();
-        if (variables.toLowerCase().contains("<" + name.toLowerCase() + ">")) {
+        if (variables.toLowerCase().contains("<" + name.toLowerCase() + ">") && !executeBlockParameter) {
             processed.replace(processed.length() - 1, processed.length(), ":" + name);
 
         } else if (variables.contains("blobfile=")) {

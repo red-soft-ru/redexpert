@@ -1,63 +1,69 @@
 package org.underworldlabs.swing.cron;
 
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class CronPanel extends JPanel {
-   private JTextField cronField;
-   private JTabbedPane tabbedPane;
-   private WindowsSchedulerPanel windowsSchedulerPanel;
-   private JCheckBox advancedCheckBox;
-   private boolean advanced;
 
-   public CronPanel(boolean advanced) {
-      this.advanced=advanced;
-      init();
-   }
+    private JTextField cronField;
+    private JCheckBox advancedCheck;
+    private WindowsSchedulerPanel windowsSchedulerPanel;
+    private AdvancedSchedulePanel advancedSchedulePanel;
 
-   private void init() {
-      tabbedPane = new JTabbedPane();
-      tabbedPane.setTabPlacement(SwingConstants.LEFT);
-      cronField = new JTextField("* * * * *");
-      cronField.setColumns(15);
-      windowsSchedulerPanel = new WindowsSchedulerPanel(cronField);
-      advancedCheckBox = new JCheckBox(Bundles.getCommon("advanced"));
-      advancedCheckBox.addItemListener(new ItemListener() {
-         @Override
-         public void itemStateChanged(ItemEvent e) {
-            tabbedPane.setVisible(advancedCheckBox.isSelected());
-            windowsSchedulerPanel.setVisible(!advancedCheckBox.isSelected());
-         }
-      });
-      setLayout(new GridBagLayout());
-      GridBagHelper gbh = new GridBagHelper();
-      gbh.setDefaultsStatic();
-      gbh.defaults();
-      gbh.addLabelFieldPair(this, "Cron", cronField, null, true, false);
-      if(!advanced)
-      add(advancedCheckBox,gbh.setLabelDefault().nextCol().get());
+    public CronPanel(boolean advanced) {
+        init(advanced);
+        arrange();
+    }
 
-      for (int i = 0; i < CronTab.CRON_NAMES.length; i++) {
-         tabbedPane.addTab(Bundles.get(CronTab.class, CronTab.CRON_NAMES[i] + "s"), new CronTab(i, cronField));
-      }
+    private void init(boolean advanced) {
 
-      add(tabbedPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
-      if(!advanced)
-      add(windowsSchedulerPanel, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
-      tabbedPane.setVisible(advanced);
-   }
+        // --- crone textField ---
 
-   public String getCron() {
-      return cronField.getText();
-   }
+        cronField = WidgetFactory.createTextField("cronField", "* * * * *");
+        cronField.setMinimumSize(new Dimension(cronField.getMinimumSize().width, cronField.getPreferredSize().height));
 
-   public void setCron(String cron) {
-      cronField.setText(cron);
-   }
+        // --- schedule panels ---
+
+        windowsSchedulerPanel = new WindowsSchedulerPanel(cronField);
+        windowsSchedulerPanel.setVisible(!advanced);
+
+        advancedSchedulePanel = new AdvancedSchedulePanel(cronField);
+        advancedSchedulePanel.setVisible(advanced);
+
+        // --- advanced checkBox ---
+
+        advancedCheck = WidgetFactory.createCheckBox("advancedCheck", Bundles.getCommon("advanced"));
+        advancedCheck.addItemListener(e -> toggleShedulePanels());
+        advancedCheck.setSelected(advanced);
+        advancedCheck.setEnabled(!advanced);
+    }
+
+    private void arrange() {
+        setLayout(new GridBagLayout());
+
+        GridBagHelper gbh = new GridBagHelper().setInsets(10, 14, 0, 5).fillHorizontally().anchorNorthWest();
+        add(new JLabel("Cron"), gbh.setMinWeightX().rightGap(0).get());
+        add(cronField, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(10).rightGap(5).get());
+        add(advancedCheck, gbh.nextCol().rightGap(10).setMinWeightX().get());
+        add(advancedSchedulePanel, gbh.nextRowFirstCol().topGap(5).bottomGap(10).fillBoth().spanX().spanY().get());
+        add(windowsSchedulerPanel, gbh.get());
+    }
+
+    private void toggleShedulePanels() {
+        advancedSchedulePanel.setVisible(advancedCheck.isSelected());
+        windowsSchedulerPanel.setVisible(!advancedCheck.isSelected());
+    }
+
+    public String getCronString() {
+        return cronField.getText();
+    }
+
+    public void setCronString(String value) {
+        cronField.setText(value);
+    }
+
 }
-

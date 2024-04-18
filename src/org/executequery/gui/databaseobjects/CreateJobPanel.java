@@ -110,7 +110,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         jobTypeCombo.setSelectedIndex(job.getJobType());
         startDatePicker.setDateTime(job.getStartDate());
         endDatePicker.setDateTime(job.getEndDate());
-        cronPanel.setCron(job.getCronSchedule());
+        cronPanel.setCronString(job.getCronSchedule());
         databaseField.setText(job.getDatabase());
         activeCheck.setSelected(job.isActive());
         nameField.setText(job.getName());
@@ -198,7 +198,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
     private String getGenerateCreateQuery() {
         return SQLUtils.generateCreateJob(
                 nameField.getText(),
-                cronPanel.getCron(),
+                cronPanel.getCronString(),
                 activeCheck.isSelected(),
                 startDatePicker.isNull() ?
                         null :
@@ -220,7 +220,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         return SQLUtils.generateAlterJob(
                 job,
                 nameField.getText(),
-                cronPanel.getCron(),
+                cronPanel.getCronString(),
                 activeCheck.isSelected(),
                 startDatePicker.isNull() ?
                         null :

@@ -22,16 +22,14 @@ package org.executequery.gui;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
-import org.underworldlabs.swing.DefaultButton;
-import org.underworldlabs.swing.LinkButton;
-import org.underworldlabs.swing.NumberTextField;
-import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
@@ -508,9 +506,66 @@ public final class WidgetFactory {
     public static NumberTextField createNumberTextField(String name) {
 
         NumberTextField numberTextField = new NumberTextField();
+        numberTextField.setPreferredSize(getPreferredSize(numberTextField));
         numberTextField.setName(name);
 
         return numberTextField;
+    }
+
+    /**
+     * Create named NumberTextField class instance
+     *
+     * @param name the component's name
+     * @param text the text to be set
+     */
+    public static NumberTextField createNumberTextField(String name, String text) {
+
+        NumberTextField numberTextField = createNumberTextField(name);
+        numberTextField.setText(text);
+
+        return numberTextField;
+    }
+
+    /**
+     * Create named NumberTextField class instance
+     *
+     * @param name    the component's name
+     * @param text    the text to be set
+     * @param columns the number of columns
+     */
+    public static NumberTextField createNumberTextField(String name, String text, int columns) {
+
+        NumberTextField numberTextField = createNumberTextField(name, text);
+        numberTextField.setColumns(columns);
+
+        return numberTextField;
+    }
+
+    /**
+     * Create named EQCheckCombox class instance
+     *
+     * @param name the component's name
+     */
+    public static EQCheckCombox createCheckComboBox(String name) {
+
+        EQCheckCombox checkCombox = new EQCheckCombox();
+        checkCombox.setPreferredSize(getPreferredSize(checkCombox));
+        checkCombox.setName(name);
+
+        return checkCombox;
+    }
+
+    /**
+     * Create named EQCheckCombox class instance
+     *
+     * @param name  the component's name
+     * @param items the data array to insert into the combo box
+     */
+    public static EQCheckCombox createCheckComboBox(String name, Object[] items) {
+        EQCheckCombox checkCombox = createCheckComboBox(name);
+        Arrays.stream(items).forEach(e -> checkCombox.getModel().addElement(e));
+
+        return checkCombox;
     }
 
 

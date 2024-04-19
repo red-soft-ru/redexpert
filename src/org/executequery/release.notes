@@ -1,4 +1,11 @@
 --- RedExpert  - RELEASE NOTES -
+Major changes - v2024.04.1
+----------------------------------------
+Fixed:
+1.  Adding NULL records to a table from the "Data" tab
+2.  Deleting table records from the "Data" tab
+3.  Incorrect memory display in the "Memory Status" window
+
 Major changes - v2024.04
 ----------------------------------------
 Added:

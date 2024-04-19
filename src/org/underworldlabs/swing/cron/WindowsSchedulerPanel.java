@@ -1,329 +1,363 @@
 package org.underworldlabs.swing.cron;
 
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
-import org.underworldlabs.swing.CheckBoxPanel;
 import org.underworldlabs.swing.EQCheckCombox;
-import org.underworldlabs.swing.celleditor.picker.DatePicker;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.celleditor.picker.TimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.text.DateFormatSymbols;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
+import java.util.stream.IntStream;
 
-public class WindowsSchedulerPanel extends JPanel {
-    ButtonGroup radioButtons;
+public class WindowsSchedulerPanel extends JPanel
+        implements DocumentListener,
+        ListCheckListener {
 
-    JRadioButton oneTimeButton;
-    JRadioButton everyDayButton;
-    JRadioButton everyWeekDayButton;
-    JRadioButton everyMonthButton;
-    DatePicker datePicker;
-    JSpinner timeSpinner;
-    JSpinner.DateEditor timeEditor;
-    EQCheckCombox monthCheckBox;
-    EQCheckCombox daysCheckBox;
-    CheckBoxPanel weekDaysPanel;
+    private final JTextField cronField;
 
-    NumberTextField intervalTextField;
-    JLabel everyLabel;
-    JLabel unitLabel;
+    private JRadioButton everyDayRadio;
+    private JRadioButton everyWeekdayRadio;
+    private JRadioButton everyMonthRadio;
+    private JRadioButton everyYearRadio;
 
-    JCheckBox repeatCheckBox;
-    ItemListener itemListener;
-    JComboBox intervalBox;
-    List<String> weekdays;
-    private JTextField cronField;
-    public WindowsSchedulerPanel(JTextField cronField)
-    {
-        this.cronField=cronField;
+    private TimePicker timePicker;
+    private TimestampPicker timestampPicker;
+
+    private JCheckBox repeatCheck;
+    private EQCheckCombox daysCheckCombo;
+    private EQCheckCombox monthCheckCombo;
+    private JComboBox<String> intervalCombo;
+    private EQCheckCombox weekdaysCheckCombo;
+
+    private NumberTextField intervalField;
+    private JPanel propertiessPanel;
+    private JLabel everyLabel;
+    private JLabel unitLabel;
+
+    private List<String> months;
+    private List<String> weekdays;
+
+    public WindowsSchedulerPanel(JTextField cronField) {
+        this.cronField = cronField;
+
         init();
+        arrange();
+        updateVisibile();
     }
-    private void init()
-    {
-        itemListener=new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkVisible();
-                generateCron();
-            }
-        };
-        radioButtons = new ButtonGroup();
-        oneTimeButton = new JRadioButton(bundleString("once"));
-        oneTimeButton.addItemListener(itemListener);
-        radioButtons.add(oneTimeButton);
-        everyDayButton = new JRadioButton(bundleString("EveryDay"));
-        everyDayButton.addItemListener(itemListener);
-        radioButtons.add(everyDayButton);
-        everyWeekDayButton = new JRadioButton(bundleString("EveryWeek"));
-        everyWeekDayButton.addItemListener(itemListener);
-        radioButtons.add(everyWeekDayButton);
-        everyMonthButton = new JRadioButton(bundleString("EveryMonth"));
-        everyMonthButton.addItemListener(itemListener);
-        radioButtons.add(everyMonthButton);
 
-        intervalTextField = new NumberTextField();
-        intervalTextField.setText("1");
-        intervalTextField.setColumns(2);
-        intervalTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                generateCron();
-            }
+    private void init() {
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                generateCron();
-            }
+        months = new ArrayList<>();
+        months.addAll(Arrays.asList(ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault())));
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                generateCron();
-            }
-        });
-
-        timeSpinner = new JSpinner(new SpinnerDateModel());
-        timeEditor = new JSpinner.DateEditor(timeSpinner, "HH:mm");
-        timeSpinner.setEditor(timeEditor);
-        timeSpinner.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                generateCron();
-            }
-        });
-        datePicker = new DatePicker();
-        datePicker.getComponentDateTextField().getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                generateCron();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                generateCron();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                generateCron();
-            }
-        });
-        weekdays=new ArrayList<>();
-        Collections.addAll(weekdays, new DateFormatSymbols(Locale.getDefault()).getWeekdays());
+        weekdays = new ArrayList<>();
+        weekdays.addAll(Arrays.asList(new DateFormatSymbols(Locale.getDefault()).getWeekdays()));
         weekdays.remove(0);
-        weekDaysPanel = new CheckBoxPanel(weekdays.toArray(new String[0]), 4, false);
-        for(JCheckBox checkBox:weekDaysPanel.getCheckBoxMap().values())
-        {
-            checkBox.addItemListener(itemListener);
-        }
-        weekDaysPanel.setVisibleAllCheckBox(false);
-        monthCheckBox = new EQCheckCombox();
-        for(String month: ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault()))
-            monthCheckBox.getModel().addElement(month);
-        monthCheckBox.getModel().addListCheckListener(new ListCheckListener() {
-            @Override
-            public void removeCheck(ListEvent listEvent) {
-                generateCron();
-            }
 
-            @Override
-            public void addCheck(ListEvent listEvent) {
-                generateCron();
-            }
-        });
-        daysCheckBox = new EQCheckCombox();
-        for(int i=1;i<=31;i++)
-            daysCheckBox.getModel().addElement(i);
-        daysCheckBox.getModel().addListCheckListener(new ListCheckListener() {
-            @Override
-            public void removeCheck(ListEvent listEvent) {
-                generateCron();
-            }
+        List<String> intervalItems = Arrays.asList(
+                bundleString("min", 5),
+                bundleString("min", 10),
+                bundleString("min", 15),
+                bundleString("min", 30),
+                bundleString("h", 1)
+        );
 
-            @Override
-            public void addCheck(ListEvent listEvent) {
-                generateCron();
-            }
-        });
-        everyLabel=new JLabel(bundleString("Every"));
-        unitLabel=new JLabel(bundleString("Day/s"));
-        repeatCheckBox = new JCheckBox(bundleString("repeat"));
-        repeatCheckBox.addItemListener(itemListener);
-        intervalBox = new JComboBox();
-        intervalBox.addItem(bundleString("min",5));
-        intervalBox.addItem(bundleString("min",10));
-        intervalBox.addItem(bundleString("min",15));
-        intervalBox.addItem(bundleString("min",30));
-        intervalBox.addItem(bundleString("h",1));
-        intervalBox.addItemListener(itemListener);
+        // --- radio buttons ---
+
+        everyDayRadio = WidgetFactory.createRadioButton("everyDayRadio", bundleString("EveryDay"), true);
+        everyDayRadio.addItemListener(e -> update());
+
+        everyWeekdayRadio = WidgetFactory.createRadioButton("everyWeekdayRadio", bundleString("EveryWeek"));
+        everyWeekdayRadio.addItemListener(e -> update());
+
+        everyMonthRadio = WidgetFactory.createRadioButton("everyMonthRadio", bundleString("EveryMonth"));
+        everyMonthRadio.addItemListener(e -> update());
+
+        everyYearRadio = WidgetFactory.createRadioButton("everyYearRadio", bundleString("once"));
+        everyYearRadio.addItemListener(e -> update());
+
+        ButtonGroup radioButtons = new ButtonGroup();
+        radioButtons.add(everyDayRadio);
+        radioButtons.add(everyWeekdayRadio);
+        radioButtons.add(everyMonthRadio);
+        radioButtons.add(everyYearRadio);
+
+        // --- date/time pickers ---
+
+        timePicker = new TimePicker();
+        timePicker.setVisibleNullCheck(false);
+        timePicker.setDisplayPattern("HH:mm");
+        timePicker.addChangeListener(e -> generateCron());
+
+        timestampPicker = new TimestampPicker();
+        timestampPicker.setVisibleNullCheck(false);
+        timestampPicker.getTimePicker().setDisplayPattern("HH:mm");
+        timestampPicker.getTimePicker().addChangeListener(e -> generateCron());
+        timestampPicker.getDatePicker().addDocumentListener(this);
+
+        // --- check-combo boxes ---
+
+        daysCheckCombo = WidgetFactory.createCheckComboBox("daysCheckCombo", IntStream.range(1, 32).mapToObj(Integer::toString).toArray());
+        daysCheckCombo.getModel().addListCheckListener(this);
+
+        weekdaysCheckCombo = WidgetFactory.createCheckComboBox("weekdaysCheckCombo", weekdays.toArray());
+        weekdaysCheckCombo.getModel().addListCheckListener(this);
+
+        monthCheckCombo = WidgetFactory.createCheckComboBox("monthCheckCombo", months.toArray());
+        monthCheckCombo.getModel().addListCheckListener(this);
+
+        // --- interval components  ---
+
+        //noinspection unchecked
+        intervalCombo = WidgetFactory.createComboBox("intervalCombo", new Vector<>(intervalItems));
+        intervalCombo.setPreferredSize(new Dimension(70, intervalCombo.getPreferredSize().height));
+        intervalCombo.addItemListener(e -> update());
+
+        intervalField = WidgetFactory.createNumberTextField("intervalField", "1", 2);
+        intervalField.getDocument().addDocumentListener(this);
+
+        // --- repeat checkBox ---
+
+        repeatCheck = WidgetFactory.createCheckBox("repeatCheck", bundleString("repeat"));
+        repeatCheck.addItemListener(e -> update());
+
+        // ---
+
+        everyLabel = new JLabel(bundleString("Every"));
+        unitLabel = new JLabel(bundleString("Day/s"));
+    }
+
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- buttons panel ---
+
+        JPanel buttonsPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        buttonsPanel.add(everyDayRadio, gbh.get());
+        buttonsPanel.add(everyWeekdayRadio, gbh.nextRowFirstCol().get());
+        buttonsPanel.add(everyMonthRadio, gbh.nextRowFirstCol().get());
+        buttonsPanel.add(everyYearRadio, gbh.nextRowFirstCol().get());
+
+        // --- repeat panel ---
+
+        JPanel repeatPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest();
+        repeatPanel.add(repeatCheck, gbh.setMinWeightX().get());
+        repeatPanel.add(intervalCombo, gbh.nextCol().leftGap(5).setMaxWeightX().get());
+
+        // --- properties panel ---
+
+        propertiessPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        propertiessPanel.add(timePicker, gbh.spanX().get());
+        propertiessPanel.add(timestampPicker, gbh.get());
+        propertiessPanel.add(everyLabel, gbh.nextRowFirstCol().setWidth(1).topGap(9).setMinWeightX().get());
+        propertiessPanel.add(intervalField, gbh.nextCol().topGap(5).get());
+        propertiessPanel.add(unitLabel, gbh.nextCol().topGap(9).get());
+        propertiessPanel.add(new JLabel(bundleString("Weekdays")), gbh.nextRowFirstCol().setMinWeightX().get());
+        propertiessPanel.add(weekdaysCheckCombo, gbh.nextCol().topGap(5).setMaxWeightX().spanX().get());
+        propertiessPanel.add(new JLabel(bundleString("Months")), gbh.nextRowFirstCol().topGap(9).setWidth(1).setMinWeightX().get());
+        propertiessPanel.add(monthCheckCombo, gbh.nextCol().topGap(5).setMaxWeightX().spanX().get());
+        propertiessPanel.add(new JLabel(bundleString("Days")), gbh.nextRowFirstCol().topGap(9).setWidth(1).setMinWeightX().get());
+        propertiessPanel.add(daysCheckCombo, gbh.nextCol().setMaxWeightX().topGap(5).spanX().get());
+        propertiessPanel.add(repeatPanel, gbh.nextRowFirstCol().get());
+
+        // --- base ---
 
         setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper().setDefaultsStatic();
-        gbh.defaults();
 
-        add(oneTimeButton, gbh.fillHorizontally().setLabelDefault().get());
-        add(everyDayButton, gbh.nextRowFirstCol().setLabelDefault().get());
-        add(everyWeekDayButton, gbh.nextRowFirstCol().setLabelDefault().get());
-        add(everyMonthButton, gbh.nextRowFirstCol().setLabelDefault().get());
-        add(new JSeparator(SwingConstants.VERTICAL),gbh.nextCol().setY(0).setHeight(4).setWidth(1).fillVertical().get());
-        add(timeSpinner,gbh.nextCol().setLabelDefault().fillHorizontally().setWidth(3).setMaxWeightX().makeCurrentXTheDefaultForNewline().get());
-        add(datePicker,gbh.nextCol().setWidth(1).spanX().get());
-        add(everyLabel,gbh.nextRowFirstCol().setLabelDefault().get());
-        add(intervalTextField,gbh.nextCol().setLabelDefault().get());
-        add(unitLabel,gbh.nextCol().setLabelDefault().get());
-        add(weekDaysPanel,gbh.nextRowFirstCol().fillBoth().spanX().setHeight(2).get());
-        gbh.setY(0);
-        gbh.addLabelFieldPair(this,bundleString("Months"),monthCheckBox,null);
-        gbh.addLabelFieldPair(this,bundleString("Days"),daysCheckBox,null);
-        gbh.setXY(0,4).makeCurrentXTheDefaultForNewline();
-        add(repeatCheckBox,gbh.setLabelDefault().setWidth(2).get());
-        add(intervalBox,gbh.nextCol().setLabelDefault().get());
-        add(new JPanel(),gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
-        oneTimeButton.setSelected(true);
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth();
+        add(buttonsPanel, gbh.setMinWeightX().get());
+        add(new JSeparator(SwingConstants.VERTICAL), gbh.nextCol().get());
+        add(propertiessPanel, gbh.nextCol().setMaxWeightX().spanX().get());
     }
 
-    private void checkVisible(){
-        datePicker.setVisible(oneTimeButton.isSelected());
-        everyLabel.setVisible(everyDayButton.isSelected()||everyWeekDayButton.isSelected());
-        intervalTextField.setVisible(everyDayButton.isSelected()||everyWeekDayButton.isSelected());
-        unitLabel.setVisible(everyDayButton.isSelected()||everyWeekDayButton.isSelected());
-        if(everyDayButton.isSelected())
-            unitLabel.setText(bundleString("Day/s"));
-        if(everyWeekDayButton.isSelected())
-            unitLabel.setText(bundleString("Week/s"));
-        weekDaysPanel.setVisible(everyWeekDayButton.isSelected());
-        monthCheckBox.setVisible(everyMonthButton.isSelected());
-        this.getComponent(this.getComponentZOrder(monthCheckBox)-1).setVisible(everyMonthButton.isSelected());
-        daysCheckBox.setVisible(everyMonthButton.isSelected());
-        this.getComponent(this.getComponentZOrder(daysCheckBox)-1).setVisible(everyMonthButton.isSelected());
-        intervalBox.setEnabled(repeatCheckBox.isSelected());
+    private void updateVisibile() {
+
+        timePicker.setVisible(!everyYearRadio.isSelected());
+        timestampPicker.setVisible(everyYearRadio.isSelected());
+
+        unitLabel.setVisible(everyDayRadio.isSelected() || everyWeekdayRadio.isSelected());
+        everyLabel.setVisible(everyDayRadio.isSelected() || everyWeekdayRadio.isSelected());
+        intervalField.setVisible(everyDayRadio.isSelected() || everyWeekdayRadio.isSelected());
+
+        daysCheckCombo.setVisible(everyMonthRadio.isSelected());
+        monthCheckCombo.setVisible(everyMonthRadio.isSelected());
+        weekdaysCheckCombo.setVisible(everyWeekdayRadio.isSelected());
+
+        intervalCombo.setEnabled(repeatCheck.isSelected());
+        unitLabel.setText(bundleString(everyDayRadio.isSelected() ? "Day/s" : "Week/s"));
+
+        propertiessPanel.getComponent(propertiessPanel.getComponentZOrder(weekdaysCheckCombo) - 1).setVisible(everyWeekdayRadio.isSelected());
+        propertiessPanel.getComponent(propertiessPanel.getComponentZOrder(monthCheckCombo) - 1).setVisible(everyMonthRadio.isSelected());
+        propertiessPanel.getComponent(propertiessPanel.getComponentZOrder(daysCheckCombo) - 1).setVisible(everyMonthRadio.isSelected());
     }
-    private void generateCron(){
+
+    private void generateCron() {
         String[] crons = new String[5];
-        crons[0]=((Date)timeSpinner.getModel().getValue()).getMinutes()+"";
-        crons[1]=((Date)timeSpinner.getModel().getValue()).getHours()+"";
-        if(oneTimeButton.isSelected())
-        {
-            LocalDate localDate =datePicker.getDate();
-            if(localDate!=null) {
+
+        if (everyYearRadio.isSelected()) {
+            LocalDateTime localDate = timestampPicker.getDateTime();
+            if (localDate != null) {
+                crons[0] = localDate.getMinute() + "";
+                crons[1] = localDate.getHour() + "";
                 crons[2] = localDate.getDayOfMonth() + "";
                 crons[3] = localDate.getMonthValue() + "";
             }
-            crons[4]="*";
+            crons[4] = "*";
+
+        } else {
+            LocalTime localTime = timePicker.getLocalTime();
+            if (localTime != null) {
+                crons[0] = localTime.getMinute() + "";
+                crons[1] = localTime.getHour() + "";
+            }
         }
-        if(everyDayButton.isSelected())
-        {
-            crons[2]="*/"+intervalTextField.getStringValue();
-            crons[3]="*";
-            crons[4]="*";
+
+        if (everyDayRadio.isSelected()) {
+            crons[2] = "*/" + intervalField.getStringValue();
+            crons[3] = "*";
+            crons[4] = "*";
         }
-        if(everyWeekDayButton.isSelected())
-        {
-            crons[2]="*";
-            crons[3]="*";
-            StringBuilder sb = new StringBuilder();
+
+        if (everyWeekdayRadio.isSelected()) {
+
             boolean first = true;
-            for(int i=0;i<weekDaysPanel.getCheckBoxMap().size();i++)
-            {
-                if(weekDaysPanel.getCheckBoxMap().get(weekdays.get(i)).isSelected()) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < weekdays.size(); i++) {
+                if (weekdaysCheckCombo.getModel().isChecked(weekdays.get(i))) {
                     if (!first)
                         sb.append(",");
-                    first=false;
+                    first = false;
                     sb.append(i);
                 }
             }
-            crons[4]=sb.toString();
-            if(MiscUtils.isNull(crons[4]))
-                crons[4]="*";
-            crons[4]=crons[4]+"/"+intervalTextField.getStringValue();
+
+            crons[2] = "*";
+            crons[3] = "*";
+            crons[4] = sb.toString();
+            if (MiscUtils.isNull(crons[4]))
+                crons[4] = "*";
+            crons[4] = crons[4] + "/" + intervalField.getStringValue();
         }
-        if(everyMonthButton.isSelected())
-        {
-            String[] months = ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault());
-            StringBuilder cron = new StringBuilder();
+
+        if (everyMonthRadio.isSelected()) {
+
             boolean first = true;
-            for(int i=0;i<months.length;i++)
-            {
-
-                if(monthCheckBox.getModel().isChecked(months[i]))
-                {
-                        if (!first)
-                            cron.append(",");
-                        first = false;
-                        cron.append(i+1);
-                }
-            }
-            crons[3]=cron.toString();
-
-            if(MiscUtils.isNull(crons[3]))
-            {
-                crons[3]="*";
-            }
-            cron=new StringBuilder();
-            first=true;
-            for(int i=1;i<=31;i++)
-            {
-
-                if(daysCheckBox.getModel().isChecked(i))
-                {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < months.size(); i++) {
+                if (monthCheckCombo.getModel().isChecked(months.get(i))) {
                     if (!first)
-                        cron.append(",");
+                        sb.append(",");
                     first = false;
-                    cron.append(i);
+                    sb.append(i + 1);
                 }
             }
-            crons[2]=cron.toString();
-            if(MiscUtils.isNull(crons[2]))
-            {
-                crons[2]="*";
+
+            crons[3] = sb.toString();
+            if (MiscUtils.isNull(crons[3]))
+                crons[3] = "*";
+
+            first = true;
+            sb = new StringBuilder();
+            for (int i = 1; i <= 31; i++) {
+                if (daysCheckCombo.getModel().isChecked(i)) {
+                    if (!first)
+                        sb.append(",");
+                    first = false;
+                    sb.append(i);
+                }
             }
+
+            crons[2] = sb.toString();
+            if (MiscUtils.isNull(crons[2]))
+                crons[2] = "*";
         }
-        if(repeatCheckBox.isSelected())
-        {
-            switch (intervalBox.getSelectedIndex())
-            {
+
+        if (repeatCheck.isSelected()) {
+            switch (intervalCombo.getSelectedIndex()) {
                 case 0:
-                    crons[0]+="/5";
+                    crons[0] += "/5";
                     break;
                 case 1:
-                    crons[0]+="/10";
+                    crons[0] += "/10";
                     break;
                 case 2:
-                    crons[0]+="/15";
+                    crons[0] += "/15";
                     break;
                 case 3:
-                    crons[0]+="/30";
+                    crons[0] += "/30";
                     break;
                 case 4:
-                    crons[1]+="/1";
+                    crons[1] += "/1";
                     break;
             }
-
         }
+
         StringBuilder sb = new StringBuilder();
-        for(int i=0;i<crons.length;i++) {
+        for (int i = 0; i < crons.length; i++) {
             if (crons[i] == null)
                 crons[i] = "*";
             sb.append(crons[i]).append(" ");
         }
+
         cronField.setText(sb.toString());
     }
 
-    private String bundleString(String key,Object... args)
-    {
-        return Bundles.get(WindowsSchedulerPanel.class,key,args);
+    private void update() {
+        updateVisibile();
+        generateCron();
     }
+
+    private String bundleString(String key, Object... args) {
+        return Bundles.get(WindowsSchedulerPanel.class, key, args);
+    }
+
+    // --- DocumentListener impl ---
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        generateCron();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        generateCron();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        generateCron();
+    }
+
+    // --- ListCheckListener impl ---
+
+    @Override
+    public void removeCheck(ListEvent listEvent) {
+        generateCron();
+    }
+
+    @Override
+    public void addCheck(ListEvent listEvent) {
+        generateCron();
+    }
+
 }

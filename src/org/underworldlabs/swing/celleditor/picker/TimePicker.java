@@ -5,6 +5,7 @@ import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.time.*;
@@ -102,6 +103,14 @@ public class TimePicker extends JPanel {
 
     public void addNullCheckActionListener(ActionListener l) {
         isNullCheck.addActionListener(l);
+    }
+
+    public void setDisplayPattern(String pattern) {
+        timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, pattern));
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        timeSpinner.addChangeListener(l);
     }
 
 }

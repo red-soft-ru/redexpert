@@ -2,6 +2,7 @@ package org.underworldlabs.swing.celleditor.picker;
 
 import org.executequery.GUIUtilities;
 
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 public class DatePicker extends com.github.lgooddatepicker.components.DatePicker {
@@ -17,4 +18,9 @@ public class DatePicker extends com.github.lgooddatepicker.components.DatePicker
 
         repaint();
     }
+
+    public void addDocumentListener(DocumentListener l) {
+        getComponentDateTextField().getDocument().addDocumentListener(l);
+    }
+
 }

@@ -145,9 +145,9 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         topPanel.add(new JLabel(Bundles.getCommon("connection")), topGbh.setMinWeightX().topGap(4).rightGap(0).get());
         topPanel.add(connectionsCombo, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
         topPanel.add(new JLabel(Bundles.getCommon("name")), topGbh.nextCol().setMinWeightX().topGap(4).rightGap(0).get());
-        topPanel.add(nameField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
+        topPanel.add(nameField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).fillBoth().get());
         if (editing) {
-            topPanel.add(new JLabel(bundleString("ID")), topGbh.nextCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).get());
+            topPanel.add(new JLabel(bundleString("ID")), topGbh.nextCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).fillHorizontally().get());
             topPanel.add(idField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
             topPanel.add(new JLabel(bundleString("Database")), topGbh.nextCol().setMinWeightX().topGap(4).rightGap(0).get());
             topPanel.add(databaseField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());

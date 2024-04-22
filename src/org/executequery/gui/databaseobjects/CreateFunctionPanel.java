@@ -53,7 +53,9 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         selectTypePanel = new SelectTypePanel(connection.getDataTypesArray(),
                 connection.getIntDataTypesArray(), returnType, true);
         if (function != null && function.getReturnArgument() != null)
-            returnType.setDomain(function.getReturnArgument().getSystemDomain());
+            if (function.getReturnArgument().getDomain() == null)
+                returnType.setDomain(function.getReturnArgument().getSystemDomain());
+            else returnType.setDomain(function.getReturnArgument().getDomain());
         selectTypePanel.refresh();
         domainPanel = new DomainPanel(returnType, returnType.getDomain());
         returnTypeTabPane = new JTabbedPane();

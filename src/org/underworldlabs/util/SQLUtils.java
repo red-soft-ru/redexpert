@@ -527,7 +527,7 @@ public final class SQLUtils {
             sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null, dc));
-        sb.append("\nRETURNS ").append(returnType.getFormattedDataType());
+        sb.append("\nRETURNS ").append(formattedParameter(returnType, false));
 
         if (deterministic)
             sb.append(" DETERMINISTIC");
@@ -727,9 +727,15 @@ public final class SQLUtils {
     }
 
     public static String formattedParameter(ColumnData cd) {
+        return formattedParameter(cd, true);
+    }
+
+    public static String formattedParameter(ColumnData cd, boolean appendName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName(), cd.getConnection())).
-                append(" ");
+        if (appendName) {
+            sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName(), cd.getConnection())).
+                    append(" ");
+        }
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
                 if (cd.getTypeName() != null || cd.isTypeOf()) {

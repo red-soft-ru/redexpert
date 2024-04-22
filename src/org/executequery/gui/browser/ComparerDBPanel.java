@@ -590,7 +590,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
         }
 
-        if (isPropertySelected(CHECK_ALTER) && !isCanceled()) {
+        if (isPropertySelected(CHECK_DROP) && !isCanceled()) {
 
             rootTreeNode.add(new ComparerTreeNode(ComparerTreeNode.DROP, bundleString("DropObjects")));
 

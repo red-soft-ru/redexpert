@@ -34,7 +34,7 @@ public class BaseRootPane extends JRootPane {
     /**
      * The glass pane to trap mouse events
      */
-    private Component glassPane;
+    private final Component glassPane;
 
     /**
      * Creates a new instance of BaseRootPane
@@ -68,11 +68,12 @@ public class BaseRootPane extends JRootPane {
         protected void retargetMouseEvent(int id, MouseEvent e, Component target) {
             super.retargetMouseEvent(id, e, target);
             // if its a focus type event, focus the tab panel
-            if (id == MouseEvent.MOUSE_CLICKED ||
-                    id == MouseEvent.MOUSE_CLICKED ||
-                    id == MouseEvent.MOUSE_PRESSED ||
-                    id == MouseEvent.MOUSE_RELEASED) {
 
+
+                /*if (id == MouseEvent.MOUSE_CLICKED ||
+                        id == MouseEvent.MOUSE_PRESSED ||
+                        id == MouseEvent.MOUSE_RELEASED) */
+            {
                 final int x = e.getX();
                 final int y = e.getY();
                 SwingUtilities.invokeLater(new Runnable() {
@@ -80,8 +81,8 @@ public class BaseRootPane extends JRootPane {
                         findTabContainerAt(x, y);
                     }
                 });
-
             }
+
         }
 
         private void findTabContainerAt(int x, int y) {

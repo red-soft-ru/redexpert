@@ -34,7 +34,7 @@ public class ForeignKeyPicker extends JPanel
     private ResultSetTable foreignTable;
     private Object selectedValue;
     private int selectedIndex;
-    private boolean isPopupOpen = true;
+    protected boolean isPopupOpen;
 
     private PickerPopup popup;
     private JPanel editorPanel;
@@ -52,6 +52,7 @@ public class ForeignKeyPicker extends JPanel
         this.foreignKeysItems = foreignKeysItems;
         this.foreignKeysNames = foreignKeysNames;
         this.selectedValues = selectedValues;
+        this.isPopupOpen = false;
 
         init();
         arrange();
@@ -257,8 +258,8 @@ public class ForeignKeyPicker extends JPanel
             int defaultY = this.toggleButton.getLocationOnScreen().y + this.toggleButton.getBounds().height + 2;
             setPopupLocation(this.popup, defaultX, defaultY, this, this.textField);
 
-            popup.show();
             editorPanel.requestFocus();
+            popup.show();
         }
     }
 
@@ -297,7 +298,14 @@ public class ForeignKeyPicker extends JPanel
         setText(null);
     }
 
-    private static class PickerPopup extends Popup
+    @Override
+    public void setEnabled(boolean enabled) {
+        toggleButton.setEnabled(enabled);
+        textField.setEnabled(enabled);
+        super.setEnabled(enabled);
+    }
+
+    private class PickerPopup extends Popup
             implements WindowFocusListener,
             ComponentListener {
 
@@ -412,7 +420,10 @@ public class ForeignKeyPicker extends JPanel
                 return;
             }
 
-            this.hide();
+            if (e.getOppositeWindow() == null)
+                isPopupOpen = false;
+
+            hide();
         }
 
     } // ForeignKeyPickerPopup class

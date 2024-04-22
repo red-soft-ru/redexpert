@@ -1584,6 +1584,15 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                         "FROM RDB$PROCEDURE_PARAMETERS P\n" +
                         "WHERE (P.RDB$FIELD_SOURCE = '" + dependedObject.getName() + "')\n";
         }
+        if (dependedObject instanceof DefaultDatabasePackage) {
+            query += "UNION ALL\n" +
+                    "SELECT DISTINCT D1.RDB$DEPENDENT_NAME\n" +
+                    "FROM RDB$DEPENDENCIES D1\n" +
+                    "LEFT JOIN RDB$RELATIONS R1 ON ((D1.RDB$DEPENDENT_NAME = R1.RDB$RELATION_NAME) AND (NOT (R1.RDB$VIEW_BLR IS NULL)))\n" +
+                    "WHERE (D1.RDB$DEPENDENT_TYPE = " + typeObject + ")\n" +
+                    "AND (D1.RDB$DEPENDENT_TYPE <> 3)\n" +
+                    "AND (D1.RDB$PACKAGE_NAME = '" + dependedObject.getName() + "')\n";
+        }
 
         if (typeObject == 0)
             query += tableQuery;

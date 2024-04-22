@@ -1464,23 +1464,28 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "AND (A.RDB$INDEX_NAME = I.RDB$INDEX_NAME)\n" +
                 "AND (A.RDB$RELATION_NAME = '" + dependedObject.getName() + "')\n" +
                 "UNION ALL\n";
-
+        String comparingCondition = "AND (";
+        for (int i = 0; i < list.size(); i++) {
+            if (i != 0) comparingCondition += " OR ";
+            comparingCondition += "(T2.RDB$DEPENDENT_TYPE = " + list.get(i) + ")";
+        }
+        comparingCondition += ")";
         String packageQuery = "SELECT DISTINCT\n" +
                 "T2.RDB$PACKAGE_NAME," +
                 "CAST(T2.RDB$FIELD_NAME AS VARCHAR(64))," +
                 "CAST(19 AS INTEGER)\n" +
                 "FROM RDB$DEPENDENCIES T2\n" +
-                "WHERE (T2.RDB$DEPENDENT_NAME = 'COUNTRY') AND (T2.RDB$DEPENDENT_TYPE = 0)\n" +
-                ((version > 2) ? "AND (T2.RDB$PACKAGE_NAME IS NULL)\n" : "") +
+                "WHERE (T2.RDB$DEPENDENT_NAME = '" + dependedObject.getName() + "')\n" +
+                comparingCondition +
                 "UNION ALL\n";
 
-        String comparingCondition = "AND (";
+
+        comparingCondition = "AND (";
         for (int i = 0; i < list.size(); i++) {
             if (i != 0) comparingCondition += " OR ";
             comparingCondition += "(T1.RDB$DEPENDENT_TYPE = " + list.get(i) + ")";
         }
         comparingCondition += ")";
-
         query = "SELECT DISTINCT\n" +
                 "T1.RDB$DEPENDED_ON_NAME," +
                 "NULL," +

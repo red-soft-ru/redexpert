@@ -35,16 +35,18 @@ public class EQCheckCombox extends CheckComboBox {
         if (modelSize < 1)
             return;
 
+        setVisibleRowCount(Math.min(getVisibleRowCount(), modelSize));
+
         Dimension componentSize = getSize();
-        Dimension invokerSize = this.getSize();
+        Dimension invokerSize = getParent().getSize();
         Dimension popupSize = getPopup().getPreferredSize();
+        popupSize = new Dimension(componentSize.width, popupSize.height);
 
         int yPos = componentSize.height;
         if (invokerSize.height < getLocation().y + popupSize.height)
             yPos = -popupSize.height;
 
-        setVisibleRowCount(Math.min(getVisibleRowCount(), modelSize));
-        getPopup().setPreferredSize(new Dimension(componentSize.width, popupSize.height));
+        getPopup().setPreferredSize(popupSize);
         getPopup().show(this, 0, yPos);
     }
 

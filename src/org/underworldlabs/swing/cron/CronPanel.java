@@ -56,6 +56,11 @@ public class CronPanel extends JPanel {
     private void toggleShedulePanels() {
         advancedSchedulePanel.setVisible(advancedCheck.isSelected());
         windowsSchedulerPanel.setVisible(!advancedCheck.isSelected());
+
+        if (advancedCheck.isSelected())
+            advancedSchedulePanel.update();
+        else
+            windowsSchedulerPanel.update();
     }
 
     public String getCronString() {

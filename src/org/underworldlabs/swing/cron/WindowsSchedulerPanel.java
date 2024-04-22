@@ -322,7 +322,7 @@ public class WindowsSchedulerPanel extends JPanel
         cronField.setText(sb.toString());
     }
 
-    private void update() {
+    public void update() {
         updateVisibile();
         generateCron();
     }

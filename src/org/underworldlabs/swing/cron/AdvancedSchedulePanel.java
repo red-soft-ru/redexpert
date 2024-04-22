@@ -1,6 +1,7 @@
 package org.underworldlabs.swing.cron;
 
 import com.github.lgooddatepicker.zinternaltools.ExtraDateStrings;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.japura.gui.event.ListCheckListener;
@@ -14,238 +15,163 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.text.DateFormatSymbols;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.stream.IntStream;
 
 public class AdvancedSchedulePanel extends JTabbedPane {
 
     public static final int MINUTES = 0;
     public static final int HOURS = MINUTES + 1;
     public static final int DAYS = HOURS + 1;
-    public static final int MONTHS = DAYS + 1;
-    public static final int WEEKDAYS = MONTHS + 1;
+    public static final int WEEKDAYS = DAYS + 1;
+    public static final int MONTHS = WEEKDAYS + 1;
 
-    public static final String[] CRON_NAMES = {"minute", "hour", "day", "month", "weekday"};
+    public static final String[] CRON_NAMES = {"minute", "hour", "day", "weekday", "month"};
 
     public AdvancedSchedulePanel(JTextField cronField) {
         super();
+
         for (int i = 0; i < CRON_NAMES.length; i++)
             addTab(bundleString(CRON_NAMES[i] + "s"), new CronTab(i, cronField));
     }
 
-    private static class CronTab extends JPanel {
+    private static class CronTab extends JPanel
+            implements ListCheckListener,
+            DocumentListener {
 
-        ButtonGroup radioButtons;
-        JRadioButton eachUnitButton;
-        JRadioButton intervalUnitsButton;
-        JRadioButton specificUnitsButton;
-        JRadioButton eachUnitBetweenButton;
-        JRadioButton useTextFieldButton;
-        JComboBox intervalCombo;
-        JCheckBox beginCheck;
-        JComboBox beginCombo;
-        JCheckBox endCheck;
-        JComboBox endCombo;
-        EQCheckCombox checkBoxPanel;
-        JComboBox betweenBeginCombo;
-        JComboBox betweenEndCombo;
-        private boolean fillValues = false;
-        private boolean generatingCron = false;
-        private Vector<String> units;
+        private final int typeCronTab;
+        private final JTextField cronField;
+
+        private boolean fillValues;
+        private boolean generatingCron;
+
+        private JRadioButton eachUnitRadio;
+        private JRadioButton intervalUnitRadio;
+        private JRadioButton specificUnitRadio;
+        private JRadioButton betweenUnitRadio;
+
+        private JCheckBox endCheck;
+        private JCheckBox beginCheck;
+
+        private JComboBox<?> endCombo;
+        private JComboBox<?> beginCombo;
+        private JComboBox<?> intervalCombo;
+        private JComboBox<?> betweenEndCombo;
+        private JComboBox<?> betweenBeginCombo;
+        private EQCheckCombox specificUnitComboCheck;
+
+        private Vector<String> baseUnits;
         private Vector<Integer> intervalUnits;
-        private int typeCronTab;
-        private JTextField cronField;
-        private ItemListener itemListener;
 
         public CronTab(int typeCronTab, JTextField cronField) {
+
             this.typeCronTab = typeCronTab;
             this.cronField = cronField;
+            this.fillValues = false;
+            this.generatingCron = false;
+
+            updateUnits();
             init();
+            arrange();
+            update();
         }
 
         private void init() {
-            radioButtons = new ButtonGroup();
-            eachUnitButton = new JRadioButton(bundleString("each_" + CRON_NAMES[typeCronTab]));
-            radioButtons.add(eachUnitButton);
-            intervalUnitsButton = new JRadioButton(bundleString("interval"));
-            radioButtons.add(intervalUnitsButton);
-            eachUnitBetweenButton = new JRadioButton(bundleString("each_between_" + CRON_NAMES[typeCronTab]));
-            radioButtons.add(eachUnitBetweenButton);
-            specificUnitsButton = new JRadioButton(Bundles.get(CronTab.class, "specific", bundleString(CRON_NAMES[typeCronTab] + "s")));
-            radioButtons.add(specificUnitsButton);
-            useTextFieldButton = new JRadioButton(bundleString("use_textField"));
-            radioButtons.add(useTextFieldButton);
 
-            units = new Vector<>();
-            intervalUnits = new Vector<>();
-            DateFormatSymbols dfs = new DateFormatSymbols(Locale.getDefault());
-            int countOnRow = 12;
+            // --- radio buttons ---
 
-            switch (typeCronTab) {
-                case MINUTES:
-                    for (int i = 0; i < 60; i++) {
-                        String unit;
-                        if (i < 10)
-                            unit = "0" + i;
-                        else unit = i + "";
-                        units.add(unit);
-                        intervalUnits.add(i + 1);
-                    }
-                    break;
-                case HOURS:
-                    for (int i = 0; i < 24; i++) {
-                        String unit;
-                        if (i < 10)
-                            unit = "0" + i;
-                        else unit = i + "";
-                        units.add(unit);
-                        intervalUnits.add(i + 1);
-                        countOnRow = 6;
-                    }
-                    break;
-                case DAYS:
-                    for (int i = 1; i <= 31; i++) {
-                        String unit = i + "";
-                        units.add(unit);
-                        intervalUnits.add(i);
-                    }
-                    break;
-                case MONTHS:
-                    String[] months = ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault());
-                    for (int i = 0; i < months.length; i++) {
-                        String unit = months[i];
-                        units.add(unit);
-                        intervalUnits.add(i + 1);
-                        countOnRow = 6;
-                    }
-                    break;
-                case WEEKDAYS:
-                    String[] weekdays = dfs.getWeekdays();
-                    for (int i = 1; i < weekdays.length; i++) {
-                        String unit = weekdays[i];
-                        units.add(unit);
-                        intervalUnits.add(i);
-                    }
-                    break;
-                default:
-                    break;
-            }
-            intervalCombo = new JComboBox(intervalUnits);
-            beginCheck = new JCheckBox(bundleString("begin_with"));
-            beginCombo = new JComboBox<>(units);
-            endCheck = new JCheckBox(bundleString("end_with"));
-            endCombo = new JComboBox<>(units);
-            betweenBeginCombo = new JComboBox<>(units);
-            betweenEndCombo = new JComboBox<>(units);
-            checkBoxPanel = new EQCheckCombox();
+            eachUnitRadio = WidgetFactory.createRadioButton("eachUnitRadio", bundleStringF("each_"), true);
+            eachUnitRadio.addItemListener(this::update);
 
-            for (String unit : units) {
-                checkBoxPanel.getModel().addElement(unit);
-            }
+            betweenUnitRadio = WidgetFactory.createRadioButton("betweenUnitRadio", bundleStringF("each_between_"));
+            betweenUnitRadio.addItemListener(this::update);
 
-            //checkBoxPanel.setVisibleAllCheckBox(false);
+            String buttonText = String.format(bundleString("specific"), bundleString(CRON_NAMES[typeCronTab] + "s").split(" ")[0]);
+            specificUnitRadio = WidgetFactory.createRadioButton("specificUnitRadio", buttonText);
+            specificUnitRadio.addItemListener(this::update);
 
+            intervalUnitRadio = WidgetFactory.createRadioButton("intervalUnitRadio", bundleString("interval"));
+            intervalUnitRadio.addItemListener(this::update);
+
+            ButtonGroup radioButtons = new ButtonGroup();
+            radioButtons.add(eachUnitRadio);
+            radioButtons.add(betweenUnitRadio);
+            radioButtons.add(intervalUnitRadio);
+            radioButtons.add(specificUnitRadio);
+
+            // --- check boxes ---
+
+            beginCheck = WidgetFactory.createCheckBox("beginCheck", bundleString("begin_with"));
+            beginCheck.addItemListener(this::update);
+
+            endCheck = WidgetFactory.createCheckBox("endCheck", bundleString("end_with"));
+            endCheck.addItemListener(this::update);
+
+            // --- combo boxes ---
+
+            int width = typeCronTab < MONTHS ? 50 : 110;
+
+            endCombo = WidgetFactory.createComboBox("endCombo", baseUnits, this::update);
+            endCombo.setPreferredSize(new Dimension(width, endCombo.getPreferredSize().height));
+
+            beginCombo = WidgetFactory.createComboBox("beginCombo", baseUnits, this::update);
+            beginCombo.setPreferredSize(new Dimension(width, beginCombo.getPreferredSize().height));
+
+            intervalCombo = WidgetFactory.createComboBox("intervalCombo", intervalUnits, this::update);
+            intervalCombo.setPreferredSize(new Dimension(50, intervalCombo.getPreferredSize().height));
+
+            betweenEndCombo = WidgetFactory.createComboBox("betweenEndCombo", baseUnits, this::update);
+            betweenEndCombo.setPreferredSize(new Dimension(width, betweenEndCombo.getPreferredSize().height));
+
+            betweenBeginCombo = WidgetFactory.createComboBox("betweenBeginCombo", baseUnits, this::update);
+            betweenBeginCombo.setPreferredSize(new Dimension(width, betweenBeginCombo.getPreferredSize().height));
+
+            // --- check-combo box ---
+
+            specificUnitComboCheck = WidgetFactory.createCheckComboBox("specificUnitComboCheck", baseUnits.toArray());
+            specificUnitComboCheck.setPreferredSize(new Dimension(width + 30, specificUnitComboCheck.getPreferredSize().height));
+            specificUnitComboCheck.getModel().addListCheckListener(this);
+
+            // ---
+
+            cronField.getDocument().addDocumentListener(this);
+        }
+
+        private void arrange() {
+            GridBagHelper gbh;
+
+            // --- interval selector panel ---
+
+            JPanel intervalSelectorPanel = new JPanel(new GridBagLayout());
+            JLabel label = new JLabel(bundleString(CRON_NAMES[typeCronTab] + "/s"));
+
+            gbh = new GridBagHelper().anchorNorthWest().rightGap(5);
+            intervalSelectorPanel.add(intervalUnitRadio, gbh.get());
+            intervalSelectorPanel.add(intervalCombo, gbh.nextCol().get());
+            intervalSelectorPanel.add(label, gbh.nextCol().topGap(4).get());
+
+            // --- base ---
 
             setLayout(new GridBagLayout());
 
-            GridBagHelper gbh = new GridBagHelper();
-            gbh.setDefaultsStatic();
-            gbh.defaults();
+            gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+            add(eachUnitRadio, gbh.get());
 
-            add(useTextFieldButton, gbh.fillHorizontally().spanX().get());
-            add(eachUnitButton, gbh.nextRowFirstCol().setLabelDefault().get());
-            add(intervalUnitsButton, gbh.nextRowFirstCol().setLabelDefault().get());
-            add(intervalCombo, gbh.nextCol().setLabelDefault().get());
-            add(new JLabel(bundleString(CRON_NAMES[typeCronTab] + "/s")), gbh.nextCol().setLabelDefault().get());
-            add(beginCheck, gbh.nextCol().setLabelDefault().get());
-            add(beginCombo, gbh.nextCol().setLabelDefault().get());
-            add(endCheck, gbh.nextCol().setLabelDefault().get());
-            add(endCombo, gbh.nextCol().setLabelDefault().get());
-            add(eachUnitBetweenButton, gbh.nextRowFirstCol().setLabelDefault().get());
-            add(betweenBeginCombo, gbh.nextCol().setLabelDefault().get());
-            add(new JLabel(bundleString("and")), gbh.nextCol().setLabelDefault().get());
-            add(betweenEndCombo, gbh.nextCol().setLabelDefault().get());
-            add(specificUnitsButton, gbh.nextRowFirstCol().fillHorizontally().setLabelDefault().get());
-            add(checkBoxPanel, gbh.nextCol().fillHorizontally().spanX().spanY().get());
+            add(intervalSelectorPanel, gbh.nextRowFirstCol().setMinWeightX().get());
+            add(beginCheck, gbh.nextCol().get());
+            add(beginCombo, gbh.nextCol().setWeightX(0.3).get());
+            add(endCheck, gbh.nextCol().setMinWeightX().get());
+            add(endCombo, gbh.nextCol().setWeightX(0.3).get());
 
-            itemListener = new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    if (e.getSource() == endCheck && endCheck.isSelected())
-                        beginCheck.setSelected(true);
-                    if (e.getSource() == beginCheck && !beginCheck.isSelected())
-                        endCheck.setSelected(false);
-                    checkEnabled();
-                    generateCron();
-                }
-            };
-            eachUnitButton.addItemListener(itemListener);
-            intervalUnitsButton.addItemListener(itemListener);
-            eachUnitBetweenButton.addItemListener(itemListener);
-            specificUnitsButton.addItemListener(itemListener);
-            useTextFieldButton.addItemListener(itemListener);
-            intervalCombo.addItemListener(itemListener);
-            beginCheck.addItemListener(itemListener);
-            beginCombo.addItemListener(itemListener);
-            endCheck.addItemListener(itemListener);
-            endCombo.addItemListener(itemListener);
-            betweenBeginCombo.addItemListener(itemListener);
-            betweenEndCombo.addItemListener(itemListener);
-            checkBoxPanel.getModel().addListCheckListener(new ListCheckListener() {
-                @Override
-                public void removeCheck(ListEvent listEvent) {
-                    checkEnabled();
-                    generateCron();
-                }
+            add(betweenUnitRadio, gbh.nextRowFirstCol().setMinWeightX().get());
+            add(betweenBeginCombo, gbh.nextCol().setWidth(2).setWeightX(0.3).get());
+            add(new JLabel(bundleString("and"), SwingConstants.CENTER), gbh.nextCol().setWidth(1).setMinWeightX().topGap(9).get());
+            add(betweenEndCombo, gbh.nextCol().setWeightX(0.3).topGap(5).get());
 
-                @Override
-                public void addCheck(ListEvent listEvent) {
-                    checkEnabled();
-                    generateCron();
-                }
-            });
-            cronField.getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    fillValuesFromField();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    fillValuesFromField();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                    fillValuesFromField();
-                }
-            });
-            fillValuesFromField();
-        }
-
-        private void checkEnabled() {
-            intervalCombo.setEnabled(intervalUnitsButton.isSelected());
-            beginCheck.setEnabled(intervalUnitsButton.isSelected());
-            endCheck.setEnabled(intervalUnitsButton.isSelected());
-            beginCombo.setEnabled(beginCheck.isSelected());
-            endCombo.setEnabled(endCheck.isSelected());
-            betweenBeginCombo.setEnabled(eachUnitBetweenButton.isSelected());
-            betweenEndCombo.setEnabled(eachUnitBetweenButton.isSelected());
-            checkBoxPanel.setEnabled(specificUnitsButton.isSelected());
-        }
-
-        private int getValueFromIndex(int index) {
-            if (typeCronTab == MINUTES || typeCronTab == HOURS || typeCronTab == WEEKDAYS)
-                return index;
-            else return index + 1;
-        }
-
-        private int getIndexFromValue(int value) {
-            if (typeCronTab == MINUTES || typeCronTab == HOURS || typeCronTab == WEEKDAYS)
-                return value;
-            else return value - 1;
+            add(specificUnitRadio, gbh.nextRowFirstCol().setMinWeightX().spanY().get());
+            add(specificUnitComboCheck, gbh.nextCol().setWidth(4).setWeightX(0.3).get());
         }
 
         private void generateCron() {
@@ -255,9 +181,9 @@ public class AdvancedSchedulePanel extends JTabbedPane {
                 if (crons.length != 5)
                     crons = new String[]{"*", "*", "*", "*", "*"};
                 String cronRes = crons[typeCronTab];
-                if (eachUnitButton.isSelected()) {
+                if (eachUnitRadio.isSelected()) {
                     cronRes = "*";
-                } else if (intervalUnitsButton.isSelected()) {
+                } else if (intervalUnitRadio.isSelected()) {
                     StringBuilder cron = new StringBuilder();
                     if (beginCheck.isSelected())
                         cron.append(getValueFromIndex(beginCombo.getSelectedIndex()));
@@ -268,13 +194,13 @@ public class AdvancedSchedulePanel extends JTabbedPane {
                     cron.append("/").append(intervalCombo.getSelectedItem());
                     cronRes = cron.toString();
 
-                } else if (eachUnitBetweenButton.isSelected()) {
+                } else if (betweenUnitRadio.isSelected()) {
                     cronRes = getValueFromIndex(betweenBeginCombo.getSelectedIndex()) + "-" + getValueFromIndex(betweenEndCombo.getSelectedIndex());
-                } else if (specificUnitsButton.isSelected()) {
+                } else if (specificUnitRadio.isSelected()) {
                     StringBuilder cron = new StringBuilder();
                     boolean first = true;
-                    for (int i = 0; i < units.size(); i++) {
-                        if (checkBoxPanel.getModel().isChecked(units.get(i))) {
+                    for (int i = 0; i < baseUnits.size(); i++) {
+                        if (specificUnitComboCheck.getModel().isChecked(baseUnits.get(i))) {
                             if (!first)
                                 cron.append(",");
                             first = false;
@@ -310,18 +236,18 @@ public class AdvancedSchedulePanel extends JTabbedPane {
                     else {
                         String cron = crons[typeCronTab];
                         if (cron.trim().equalsIgnoreCase("*"))
-                            eachUnitButton.setSelected(true);
+                            eachUnitRadio.setSelected(true);
                         else if (cron.contains(",") && !(cron.contains("-") || cron.contains("/")) || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))) {
-                            specificUnitsButton.setSelected(true);
+                            specificUnitRadio.setSelected(true);
                             String[] qs = cron.split(",");
-                            checkBoxPanel.getModel().removeChecks();
+                            specificUnitComboCheck.getModel().removeChecks();
                             for (String q : qs) {
                                 int index = getIndexFromValue(Integer.parseInt(q));
-                                checkBoxPanel.getModel().addCheck(units.get(index));
+                                specificUnitComboCheck.getModel().addCheck(baseUnits.get(index));
                             }
 
                         } else if (cron.contains("/") && !cron.contains(",")) {
-                            intervalUnitsButton.setSelected(true);
+                            intervalUnitRadio.setSelected(true);
                             String interval = cron.substring(cron.indexOf("/") + 1);
                             intervalCombo.setSelectedIndex(Integer.parseInt(interval) - 1);
                             interval = cron.substring(0, cron.indexOf("/"));
@@ -343,21 +269,19 @@ public class AdvancedSchedulePanel extends JTabbedPane {
                                 beginCombo.setSelectedItem(getIndexFromValue(ind));
                             }
                         } else if (cron.contains("-") && !cron.contains(",")) {
-                            eachUnitBetweenButton.setSelected(true);
+                            betweenUnitRadio.setSelected(true);
                             String[] qs = cron.split("-");
                             if (qs.length > 2)
                                 validValue = false;
                             betweenBeginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[0])));
                             betweenEndCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[1])));
-                        } else {
-                            useTextFieldButton.setSelected(true);
                         }
                     }
 
 
                 } catch (Exception e) {
                     if (Log.isDebugEnabled())
-                        e.printStackTrace();
+                        Log.error(e.getMessage(), e);
                     validValue = false;
                 }
                 if (!validValue)
@@ -367,6 +291,116 @@ public class AdvancedSchedulePanel extends JTabbedPane {
             }
         }
 
+        protected void update() {
+            checkEnabled();
+            generateCron();
+        }
+
+        private void updateUnits() {
+
+            baseUnits = new Vector<>();
+            intervalUnits = new Vector<>();
+
+            Object[] units = new Object[0];
+            switch (typeCronTab) {
+                case MINUTES:
+                    units = IntStream.range(1, 60).mapToObj(Integer::toString).toArray();
+                    break;
+                case HOURS:
+                    units = IntStream.range(1, 24).mapToObj(Integer::toString).toArray();
+                    break;
+                case DAYS:
+                    units = IntStream.range(1, 32).mapToObj(Integer::toString).toArray();
+                    break;
+                case MONTHS:
+                    units = ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault());
+                    break;
+                case WEEKDAYS:
+                    units = new Object[7];
+                    System.arraycopy(new DateFormatSymbols(Locale.getDefault()).getWeekdays(), 1, units, 0, 7);
+            }
+
+            for (int i = 0; i < units.length; i++) {
+                baseUnits.add(units[i].toString());
+                intervalUnits.add(i + 1);
+            }
+        }
+
+        private void update(ItemEvent e) {
+
+            if (e.getSource() == endCheck && endCheck.isSelected())
+                beginCheck.setSelected(true);
+
+            if (e.getSource() == beginCheck && !beginCheck.isSelected())
+                endCheck.setSelected(false);
+
+            update();
+        }
+
+        private void checkEnabled() {
+
+            endCheck.setEnabled(intervalUnitRadio.isSelected());
+            beginCheck.setEnabled(intervalUnitRadio.isSelected());
+            intervalCombo.setEnabled(intervalUnitRadio.isSelected());
+
+            endCombo.setEnabled(endCheck.isSelected() && intervalUnitRadio.isSelected());
+            beginCombo.setEnabled(beginCheck.isSelected() && intervalUnitRadio.isSelected());
+
+            betweenEndCombo.setEnabled(betweenUnitRadio.isSelected());
+            betweenBeginCombo.setEnabled(betweenUnitRadio.isSelected());
+
+            specificUnitComboCheck.setEnabled(specificUnitRadio.isSelected());
+        }
+
+        private int getValueFromIndex(int index) {
+            if (typeCronTab == MINUTES || typeCronTab == HOURS || typeCronTab == WEEKDAYS)
+                return index;
+            return index + 1;
+        }
+
+        private int getIndexFromValue(int value) {
+            if (typeCronTab == MINUTES || typeCronTab == HOURS || typeCronTab == WEEKDAYS)
+                return value;
+            return value - 1;
+        }
+
+        private String bundleStringF(String key) {
+            return bundleString(key + CRON_NAMES[typeCronTab]);
+        }
+
+        // --- ListCheckListener impl ---
+
+        @Override
+        public void removeCheck(ListEvent listEvent) {
+            update();
+        }
+
+        @Override
+        public void addCheck(ListEvent listEvent) {
+            update();
+        }
+
+        // --- DocumentListener impl --
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            fillValuesFromField();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            fillValuesFromField();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            fillValuesFromField();
+        }
+
+    } // CronTab class
+
+    public void update() {
+        ((CronTab) getSelectedComponent()).update();
     }
 
     private static String bundleString(String key) {

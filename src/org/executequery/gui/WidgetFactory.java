@@ -29,6 +29,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -158,11 +159,37 @@ public final class WidgetFactory {
     /**
      * Create named JComboBox class instance
      *
+     * @param name     the component's name
+     * @param model    the ComboBoxModel that provides the displayed list of items
+     * @param listener the ItemListener that is to be notified
+     */
+    public static JComboBox createComboBox(String name, ComboBoxModel model, ItemListener listener) {
+
+        JComboBox comboBox = createComboBox(name, model);
+        comboBox.addItemListener(listener);
+
+        return comboBox;
+    }
+
+    /**
+     * Create named JComboBox class instance
+     *
      * @param name  the component's name
      * @param items the data vector to insert into the combo box
      */
     public static JComboBox createComboBox(String name, Vector<?> items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
+    }
+
+    /**
+     * Create named JComboBox class instance
+     *
+     * @param name     the component's name
+     * @param items    the data vector to insert into the combo box
+     * @param listener the ItemListener that is to be notified
+     */
+    public static JComboBox createComboBox(String name, Vector<?> items, ItemListener listener) {
+        return createComboBox(name, new DefaultComboBoxModel<>(items), listener);
     }
 
     /**

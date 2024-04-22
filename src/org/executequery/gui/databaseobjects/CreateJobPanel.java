@@ -5,6 +5,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.JobsLogPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -156,6 +157,11 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         topPanel.add(startDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
         topPanel.add(new JLabel(bundleString("endDate")), topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().topGap(4).rightGap(0).get());
         topPanel.add(endDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
+
+        if (parent != null) {
+            ((BaseDialog) parent).setPreferredSize(new Dimension(700, 420));
+            ((BaseDialog) parent).setResizable(false);
+        }
     }
 
     private void checkJobType() {

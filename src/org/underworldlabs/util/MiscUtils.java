@@ -779,7 +779,7 @@ public final class MiscUtils {
     }
 
     public static String trimEnd(String str) {
-        return str.replaceAll("\\s+$", "");
+        return str != null ? str.replaceAll("\\s+$", "") : null;
     }
 
     public static String getFormattedObject(String obj, DatabaseConnection dc) {

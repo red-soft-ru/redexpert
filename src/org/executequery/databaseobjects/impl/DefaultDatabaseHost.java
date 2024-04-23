@@ -1286,6 +1286,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             Log.error("Error occurred loading database properties", e);
         }
 
+        databaseProperties.values().removeAll(Collections.singleton(null));
         return databaseProperties;
     }
 

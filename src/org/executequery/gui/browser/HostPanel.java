@@ -188,20 +188,15 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     protected void updateDatabaseProperties() {
 
-        if (!host.getDatabaseConnection().isConnected()) {
-
+        if (!host.getDatabaseConnection().isConnected())
             return;
-        }
 
         try {
-
             databasePropertiesPanel.setDatabaseProperties(host.getDatabaseProperties());
 
         } catch (DataSourceException e) {
-
+            databasePropertiesPanel.setDatabaseProperties(new HashMap<>(0));
             controller.handleException(e);
-            databasePropertiesPanel.setDatabaseProperties(
-                    new HashMap<Object, Object>(0));
         }
 
     }

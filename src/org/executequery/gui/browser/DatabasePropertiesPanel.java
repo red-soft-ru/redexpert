@@ -66,7 +66,6 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
     }
 
     public void setDatabaseProperties(Map<Object, Object> properties) {
-
         model.setValues(properties, true);
     }
 

@@ -1533,7 +1533,8 @@ public final class SQLUtils {
     public static String generateCreateException(String name, String exceptionText, String comment, boolean isCommentNeed, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
-
+        if (exceptionText != null)
+            exceptionText = exceptionText.replaceAll("'", "''");
         sb.append("CREATE EXCEPTION ").append(format(name, dc));
         sb.append("\n\t'").append(exceptionText).append("';\n");
 

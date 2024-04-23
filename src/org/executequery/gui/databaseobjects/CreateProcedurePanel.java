@@ -124,13 +124,13 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel
                     nameField.getText(), externalField.getText(), engineField.getText(),
                     inputParametersPanel.getProcedureParameterModel().getTableVector(),
                     outputParametersPanel.getProcedureParameterModel().getTableVector(),
-                    vars, (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                    vars, (String) securityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
                     sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
         } else return SQLUtils.generateCreateProcedure(
                 nameField.getText(), externalField.getText(), engineField.getText(),
                 inputParametersPanel.getProcedureParameterModel().getTableVector(),
                 outputParametersPanel.getProcedureParameterModel().getTableVector(),
-                (String) sqlSecurityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
+                (String) securityCombo.getSelectedItem(), (String) authidCombo.getSelectedItem(),
                 sqlBodyText.getSQLText(), simpleCommentPanel.getComment(), false, true, getDatabaseConnection());
     }
 

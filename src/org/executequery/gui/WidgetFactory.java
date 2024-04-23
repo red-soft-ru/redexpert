@@ -262,6 +262,36 @@ public final class WidgetFactory {
     /**
      * Create named JCheckBox class instance
      *
+     * @param name     the component's name
+     * @param text     the text of the checkbox
+     * @param selected true if check should be selected
+     */
+    public static JCheckBox createCheckBox(String name, String text, boolean selected) {
+
+        JCheckBox checkBox = createCheckBox(name, text);
+        checkBox.setSelected(selected);
+
+        return checkBox;
+    }
+
+    /**
+     * Create named JCheckBox class instance
+     *
+     * @param name     the component's name
+     * @param text     the text of the checkbox
+     * @param listener the <code>ActionListener</code> to be added
+     */
+    public static JCheckBox createCheckBox(String name, String text, ActionListener listener) {
+
+        JCheckBox checkBox = createCheckBox(name, text);
+        checkBox.addActionListener(listener);
+
+        return checkBox;
+    }
+
+    /**
+     * Create named JCheckBox class instance
+     *
      * @param name the component's name
      */
     public static JSpinner createSpinner(String name) {

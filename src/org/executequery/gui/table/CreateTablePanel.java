@@ -132,7 +132,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     protected void init() {
 
         initSQLSecurity(false);
-        sqlSecurityCombo.addActionListener(actionEvent -> setSQLText());
+        securityCombo.addActionListener(actionEvent -> setSQLText());
 
         connectionsCombo.addItemListener(this);
         colTools = new CreateTableToolBar(this);
@@ -330,7 +330,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
                 nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
                 false, this instanceof CreateGlobalTemporaryTable, true, true, true,
                 "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, (String) sqlSecurityCombo.getSelectedItem(), tablespace, comment, "^");
+                externalFile, adapter, (String) securityCombo.getSelectedItem(), tablespace, comment, "^");
     }
 
     private void externalTablePropsChanged() {

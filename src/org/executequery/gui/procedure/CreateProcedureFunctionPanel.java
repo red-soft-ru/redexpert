@@ -162,7 +162,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
 
         if (!MiscUtils.isNull(executable.getEntryPoint())) {
-            useExternalBox.setSelected(true);
+            useExternalCheck.setSelected(true);
             engineField.setText(executable.getEngine());
             externalField.setText(executable.getEntryPoint());
         }
@@ -171,7 +171,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             authidCombo.setSelectedItem(executable.getAuthid());
 
         if (!MiscUtils.isNull(executable.getSqlSecurity()))
-            sqlSecurityCombo.setSelectedItem(executable.getSqlSecurity());
+            securityCombo.setSelectedItem(executable.getSqlSecurity());
 
         topPanel.add(executeButton, topGbh.setLabelDefault().get());
         addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
@@ -389,7 +389,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         super.checkExternal();
 
-        if (useExternalBox.isSelected()) {
+        if (useExternalCheck.isSelected()) {
 
             parametersTabs.remove(sqlBodyText);
             parseVariablesBox.setVisible(false);

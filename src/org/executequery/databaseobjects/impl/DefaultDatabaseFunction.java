@@ -222,7 +222,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         sb.appendField(buildSqlSecurityField(functions));
         sb.appendFields(FA, arguments, PARAMETER_NAME, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION, PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);
         sb.appendFields(fields, FIELD_NAME, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, SEGMENT_LENGTH, DIMENSIONS, FIELD_PRECISION, DEFAULT_SOURCE);
-        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
+        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME, BYTES_PER_CHARACTER);
         sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));

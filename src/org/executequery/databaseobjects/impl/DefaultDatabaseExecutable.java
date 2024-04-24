@@ -276,6 +276,8 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         pp.setSubType(rs.getInt(FIELD_SUB_TYPE));
         pp.setDataType(DatabaseTypeConverter.getSqlTypeFromRDBType(rs.getInt(FIELD_TYPE), pp.getSubType()));
         pp.setSize(rs.getInt(FIELD_LENGTH));
+        if (rs.getInt(BYTES_PER_CHARACTER) > 0)
+            pp.setSize(rs.getInt(FIELD_LENGTH) / rs.getInt(BYTES_PER_CHARACTER));
         pp.setPosition(rs.getInt(prefixLabel() + positionLabel()));
         final short fieldScale = rs.getShort(FIELD_SCALE);
         pp.setScale(fieldScale);

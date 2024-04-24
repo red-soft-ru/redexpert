@@ -199,7 +199,7 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         sb.appendField(authid);
         sb.appendFields(PP, parameters, PARAMETER_NAME, PARAMETER_TYPE, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION);
         sb.appendFields(fields, FIELD_NAME, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, SEGMENT_LENGTH, DIMENSIONS, FIELD_PRECISION, DEFAULT_SOURCE);
-        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
+        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME, BYTES_PER_CHARACTER);
         sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME));

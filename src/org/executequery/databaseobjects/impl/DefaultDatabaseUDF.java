@@ -126,7 +126,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
         sb.appendFields(FA, arguments, PARAMETER_NUMBER);
         sb.appendFields(arguments, getDatabaseMajorVersion() < 3 && !isRDB(), DEFAULT_SOURCE, FIELD_NAME);
         sb.appendFields(arguments, FIELD_TYPE, FIELD_LENGTH, FIELD_SCALE, FIELD_SUB_TYPE, FIELD_PRECISION);
-        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME);
+        sb.appendFields(charsets, CHARACTER_SET_NAME, DEFAULT_COLLATE_NAME, BYTES_PER_CHARACTER);
         sb.appendField(Field.createField(arguments, "CHARACTER_LENGTH").setAlias(CHARACTER_LENGTH));
         sb.appendField(Field.createField(collations1, COLLATION_NAME).setAlias("CO1_" + COLLATION_NAME).setNull(getDatabaseMajorVersion() < 3 && !isRDB()));
         sb.appendField(Field.createField(collations2, COLLATION_NAME).setAlias("CO2_" + COLLATION_NAME).setNull(getDatabaseMajorVersion() < 3 && !isRDB()));

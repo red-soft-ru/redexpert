@@ -94,6 +94,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected final static String FIELD_SCALE = "FIELD_SCALE";
     protected final static String FIELD_LENGTH = "FIELD_LENGTH";
     protected final static String CHARACTER_LENGTH = "CHAR_LEN";
+    protected final static String BYTES_PER_CHARACTER = "BYTES_PER_CHARACTER";
     protected final static String DESCRIPTION = "DESCRIPTION";
     protected final static String DEFAULT_SOURCE = "DEFAULT_SOURCE";
     protected final static String DOMAIN_DEFAULT_SOURCE = "DOMAIN_DEFAULT_SOURCE";
@@ -719,6 +720,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(Field.createField().setNull(true).setAlias(CHARACTER_SET_ID));
         sb.appendField(Field.createField().setNull(true).setAlias(COMPUTED_SOURCE));
         sb.appendField(Field.createField().setNull(true).setAlias(CHARACTER_SET_NAME));
+        sb.appendField(Field.createField().setNull(true).setAlias(BYTES_PER_CHARACTER));
         sb.appendField(Field.createField().setNull(true).setAlias(COLLATION_NAME));
         sb.appendField(Field.createField().setNull(true).setAlias(DEFAULT_SOURCE));
         sb.appendField(Field.createField().setNull(true).setAlias(NULL_FLAG));
@@ -785,6 +787,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(Field.createField(fields, CHARACTER_SET_ID));
         sb.appendField(Field.createField(fields, COMPUTED_SOURCE));
         sb.appendField(Field.createField(charsets, CHARACTER_SET_NAME));
+        sb.appendField(Field.createField(charsets, BYTES_PER_CHARACTER));
         sb.appendField(Field.createField(collations, COLLATION_NAME));
         sb.appendField(Field.createField(relationFields, DEFAULT_SOURCE));
         sb.appendField(Field.createField(relationFields, NULL_FLAG));
@@ -1003,11 +1006,12 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                     break;
             }
             column.setColumnSize(rs.getInt(FIELD_LENGTH));
+            if (rs.getInt(BYTES_PER_CHARACTER) > 0)
+                column.setColumnSize(rs.getInt(FIELD_LENGTH) / rs.getInt(BYTES_PER_CHARACTER));
             if (rs.getInt(FIELD_PRECISION) != 0)
                 column.setColumnSize(rs.getInt(FIELD_PRECISION));
             if (rs.getInt(CHARACTER_LENGTH) != 0)
                 column.setColumnSize(rs.getInt(CHARACTER_LENGTH));
-
             final short nullFlag = rs.getShort(NULL_FLAG);
             final short sourceNullFlag = rs.getShort(DOMAIN_NULL_FLAG);
             column.setRemarks(rs.getString(DESCRIPTION));

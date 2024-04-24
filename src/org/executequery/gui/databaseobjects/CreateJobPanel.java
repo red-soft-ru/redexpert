@@ -159,7 +159,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         topPanel.add(endDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
 
         if (parent != null) {
-            ((BaseDialog) parent).setPreferredSize(new Dimension(700, 420));
+            int height = System.getProperty("os.name").toLowerCase().contains("win") ? 450 : 420;
+            ((BaseDialog) parent).setPreferredSize(new Dimension(700, height));
             ((BaseDialog) parent).setResizable(false);
         }
     }

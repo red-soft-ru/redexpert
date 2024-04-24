@@ -17,7 +17,7 @@ public abstract class AbstractSQLSecurityObjectPanel extends AbstractCreateObjec
         super(dc, dialog, databaseObject, params);
     }
 
-    protected void initSQLSecurity(boolean spanX) {
+    protected void initSQLSecurity() {
 
         sqlSecurityLabel = new JLabel();
         authidCombo = WidgetFactory.createComboBox("authidCombo", new String[]{"", "OWNER", "CALLER"});
@@ -25,11 +25,13 @@ public abstract class AbstractSQLSecurityObjectPanel extends AbstractCreateObjec
 
         if (getDatabaseVersion() <= 2 && this instanceof CreateProcedurePanel) {
             sqlSecurityLabel.setText("AUTHID");
-            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, authidCombo, null);
+            topPanel.add(sqlSecurityLabel, topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().topGap(3).rightGap(0).get());
+            topPanel.add(authidCombo, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
 
         } else if (getDatabaseVersion() >= 3) {
             sqlSecurityLabel.setText("SQL SECURITY");
-            topGbh.addLabelFieldPair(topPanel, sqlSecurityLabel, securityCombo, null, true, spanX);
+            topPanel.add(sqlSecurityLabel, topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().topGap(3).rightGap(0).get());
+            topPanel.add(securityCombo, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
         }
     }
 

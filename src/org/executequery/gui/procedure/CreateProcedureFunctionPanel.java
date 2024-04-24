@@ -13,10 +13,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
-import org.executequery.gui.ActionContainer;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.ExecuteProcedurePanel;
-import org.executequery.gui.FocusComponentPanel;
+import org.executequery.gui.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractCreateExternalObjectPanel;
@@ -24,12 +21,12 @@ import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -55,18 +52,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected String procedureName;
     private Object oldSelectedTab = null;
 
-    protected JTabbedPane parametersTabs;
-    protected NewProcedurePanel inputParametersPanel;
-    protected NewProcedurePanel outputParametersPanel;
+    // --- GUI components ---
+
+    protected NewProcedurePanel outputParamsPanel;
+    protected NewProcedurePanel inputParamsPanel;
     protected NewProcedurePanel variablesPanel;
-
-    protected SimpleSqlTextPanel sqlBodyText;
-    protected SimpleSqlTextPanel outSqlText;
+    protected SimpleSqlTextPanel bodyTextPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
-
-    private JPanel ddlPanel;
+    protected JCheckBox parseVariablesCheck;
     protected CursorsPanel cursorsPanel;
-    protected JCheckBox parseVariablesBox;
+
+    // ---
 
     protected abstract String getEmptySqlBody();
 
@@ -84,82 +80,63 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     @Override
     protected void init() {
-
         initExternal();
 
-        parseVariablesBox = new JCheckBox(bundleString("parseVariables"));
-        parseVariablesBox.addItemListener(e -> fillSqlBody());
-
-        inputParametersPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
-        outputParametersPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
-        variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
         cursorsPanel = new CursorsPanel();
-        ddlPanel = new JPanel(new GridBagLayout());
 
-        sqlBodyText = new SimpleSqlTextPanel();
-        sqlBodyText.appendSQLText(getEmptySqlBody());
-        sqlBodyText.getTextPane().setDatabaseConnection(connection);
+        parseVariablesCheck = WidgetFactory.createCheckBox("parseVariablesCheck", bundleString("parseVariables"), true);
+        parseVariablesCheck.addItemListener(e -> fillSqlBody());
 
-        parametersTabs = new JTabbedPane();
-        parametersTabs.add(bundleString("InputParameters"), inputParametersPanel);
-        parametersTabs.add(bundleString("OutputParameters"), outputParametersPanel);
-        parametersTabs.add(bundleString("Variables"), variablesPanel);
-        parametersTabs.add(bundleString("Cursors"), cursorsPanel);
-        parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
-        parametersTabs.addChangeListener(e -> fillCustomKeyWords());
+        inputParamsPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
+        inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+        inputParamsPanel.setDomains(getDomains());
+        inputParamsPanel.setDatabaseConnection(connection);
 
-        outSqlText = new SimpleSqlTextPanel();
-        outSqlText.getTextPane().setDatabaseConnection(connection);
+        outputParamsPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
+        outputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+        outputParamsPanel.setDomains(getDomains());
+        outputParamsPanel.setDatabaseConnection(connection);
 
-        ddlTextPanel = new SimpleSqlTextPanel();
-        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
-
-        topPanel.add(ddlPanel, topGbh.nextRowFirstCol().setLabelDefault().get());
-
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.anchorNorthWest().fillHorizontally().setInsets(5, 5, 5, 5);
-
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.add(parseVariablesBox, gridBagHelper.get());
-        mainPanel.add(parametersTabs, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
-        tabbedPane.insertTab(bundleString("Edit"), null, mainPanel, null, 0);
-
-        addCommentTab(null);
-
-        ddlPanel.add(ddlTextPanel, gridBagHelper.get());
-        tabbedPane.insertTab(bundleString("DDL"), null, ddlPanel, null, 2);
-        tabbedPane.addChangeListener(e -> generateScript());
-
-        // check initial values for possible value init
-        inputParametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
-        inputParametersPanel.setDomains(getDomains());
-        inputParametersPanel.setDatabaseConnection(connection);
-
-        outputParametersPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
-        outputParametersPanel.setDomains(getDomains());
-        outputParametersPanel.setDatabaseConnection(connection);
-
+        variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
 
-        //metaData
-        topGbh.nextRowFirstCol();
+        bodyTextPanel = new SimpleSqlTextPanel();
+        bodyTextPanel.appendSQLText(getEmptySqlBody());
+        bodyTextPanel.getTextPane().setDatabaseConnection(connection);
+
+        ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel.getTextPane().setDatabaseConnection(connection);
+
+        tabbedPane.add(bundleString("InputParameters"), inputParamsPanel);
+        tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
+        tabbedPane.add(bundleString("Variables"), variablesPanel);
+        tabbedPane.add(bundleString("Cursors"), cursorsPanel);
+        addCommentTab(null);
+        tabbedPane.add(bundleString("Body", bundleString(getTypeObject())), bodyTextPanel);
+        tabbedPane.add(bundleString("DDL"), ddlTextPanel);
+
+        tabbedPane.addChangeListener(e -> {
+            fillVariablesAndParameters();
+            generateScript();
+        });
+
+        arrange();
         checkExternal();
         fillSqlBody();
-
-        centralPanel.setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
     protected void initEditing() {
-
         initEditedExternal();
 
-        JButton executeButton = new JButton(Bundles.getCommon("execute"));
-        executeButton.addActionListener(e -> displayExecuteDialog());
+        actionButton.setVisible(true);
+        actionButton.setPreferredSize(null);
+        actionButton.setText(Bundles.getCommon("execute"));
+        actionButton.addActionListener(e -> displayExecuteDialog());
 
-        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
+        NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
+        DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) namedObject;
 
         if (!MiscUtils.isNull(executable.getEntryPoint())) {
             useExternalCheck.setSelected(true);
@@ -173,14 +150,19 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         if (!MiscUtils.isNull(executable.getSqlSecurity()))
             securityCombo.setSelectedItem(executable.getSqlSecurity());
 
-        topPanel.add(executeButton, topGbh.setLabelDefault().get());
-        addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
-        addDependenciesTab((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
+        simpleCommentPanel.setDatabaseObject((DatabaseObject) namedObject);
+        addPrivilegesTab(tabbedPane, (AbstractDatabaseObject) namedObject);
+        addDependenciesTab((DatabaseObject) namedObject);
 
-        simpleCommentPanel.setDatabaseObject((DatabaseObject) ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName));
-        generateScript();
         reset();
-        fillCustomKeyWords();
+        generateScript();
+        fillVariablesAndParameters();
+    }
+
+    private void arrange() {
+        centralPanel.setVisible(false);
+        topPanel.add(parseVariablesCheck, topGbh.nextRowFirstCol().leftGap(0).spanX().get());
+        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
     }
 
     private void loadVariables() {
@@ -209,7 +191,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
 
                     ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
-                    sqlBodyText.setSQLText(bodyContext.getText());
+                    bodyTextPanel.setSQLText(bodyContext.getText());
 
                     List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
                     if (!vars.isEmpty()) {
@@ -221,8 +203,13 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                             if (var.cursor() == null) {
 
                                 ProcedureParameter variable = new ProcedureParameter(
-                                        var.variable_name().getText(), DatabaseMetaData.procedureColumnUnknown,
-                                        0, "", 0, 0);
+                                        var.variable_name().getText(),
+                                        DatabaseMetaData.procedureColumnUnknown,
+                                        0,
+                                        "",
+                                        0,
+                                        0
+                                );
 
                                 ProcedureParserParser.DatatypeContext type = var.datatype();
                                 if (type != null && !type.isEmpty()) {
@@ -289,6 +276,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                     if (description.startsWith("--")) {
                                         description = description.substring(2);
                                         variable.setDescriptionAsSingleComment(true);
+
                                     } else if (description.startsWith("/*"))
                                         description = description.substring(2, description.length() - 2);
 
@@ -323,6 +311,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                                     if (description.startsWith("--")) {
                                         description = description.substring(2);
                                         cursor.setRemarkAsSingleComment(true);
+
                                     } else if (description.startsWith("/*"))
                                         description = description.substring(2, description.length() - 2);
 
@@ -337,26 +326,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                             }
                         }
                     }
+
                 }
             }, tree);
         }
     }
 
-    protected void fillCustomKeyWords() {
+    @SuppressWarnings({"ReassignedVariable", "DataFlowIssue"})
+    protected void fillVariablesAndParameters() {
 
-        TreeSet<String> vars = new TreeSet<>();
-        vars = fillTreeSetFromTableVector(vars, variablesPanel.tableVector);
-        vars = fillTreeSetFromTableVector(vars, cursorsPanel.tableVector);
+        TreeSet<String> variables = new TreeSet<>();
+        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
+        variables = fillTreeSetFromTableVector(variables, cursorsPanel.tableVector);
 
-        sqlBodyText.getTextPane().setVariables(vars);
-        ddlTextPanel.getTextPane().setVariables(vars);
+        TreeSet<String> parameters = new TreeSet<>();
+        parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
+        parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
 
-        TreeSet<String> pars = new TreeSet<>();
-        pars = fillTreeSetFromTableVector(pars, inputParametersPanel.tableVector);
-        pars = fillTreeSetFromTableVector(pars, outputParametersPanel.tableVector);
-
-        sqlBodyText.getTextPane().setParameters(pars);
-        ddlTextPanel.getTextPane().setParameters(pars);
+        bodyTextPanel.getTextPane().setVariables(variables);
+        ddlTextPanel.getTextPane().setVariables(variables);
+        bodyTextPanel.getTextPane().setParameters(parameters);
+        ddlTextPanel.getTextPane().setParameters(parameters);
     }
 
     private TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet, List<ColumnData> tableVector) {
@@ -370,11 +360,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void generateScript() {
 
-        if (tabbedPane.getSelectedComponent() != ddlPanel && oldSelectedTab == ddlPanel) {
+        if (tabbedPane.getSelectedComponent() != ddlTextPanel && oldSelectedTab == ddlTextPanel) {
 
             String ddlText = ddlTextPanel.getSQLText();
             if (GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange")) != JOptionPane.YES_OPTION) {
-                tabbedPane.setSelectedComponent(ddlPanel);
+                tabbedPane.setSelectedComponent(ddlTextPanel);
                 ddlTextPanel.setSQLText(ddlText);
             }
 
@@ -391,22 +381,20 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         if (useExternalCheck.isSelected()) {
 
-            parametersTabs.remove(sqlBodyText);
-            parseVariablesBox.setVisible(false);
+            tabbedPane.remove(bodyTextPanel);
+            parseVariablesCheck.setVisible(false);
 
-            if (parametersTabs.indexOfComponent(variablesPanel) > 0) {
-                parametersTabs.remove(variablesPanel);
-                parametersTabs.remove(cursorsPanel);
+            if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
+                tabbedPane.remove(variablesPanel);
+                tabbedPane.remove(cursorsPanel);
             }
 
-            sqlBodyText.setSQLText(null);
+            bodyTextPanel.setSQLText(null);
 
         } else {
-            parametersTabs.insertTab(bundleString("Body", bundleString(getTypeObject())), null, sqlBodyText, null, 0);
-            parametersTabs.setSelectedComponent(sqlBodyText);
-            parseVariablesBox.setVisible(true);
-
-            sqlBodyText.appendSQLText(getEmptySqlBody());
+            tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, tabbedPane.getTabCount() - 1);
+            bodyTextPanel.appendSQLText(getEmptySqlBody());
+            parseVariablesCheck.setVisible(true);
             fillSqlBody();
         }
     }
@@ -447,16 +435,15 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     @Override
     public void itemStateChanged(ItemEvent event) {
 
-        // interested in selections only
         if (event.getStateChange() == ItemEvent.DESELECTED)
             return;
 
-        final Object source = event.getSource();
         GUIUtils.startWorker(() -> {
             try {
                 setInProcess(true);
-                if (source == connectionsCombo)
+                if (event.getSource() == connectionsCombo)
                     connectionChanged();
+
             } finally {
                 setInProcess(false);
             }
@@ -465,30 +452,27 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     private void columnChangeConnection(DatabaseConnection dc) {
 
-        Vector<ColumnData> columnDataVector = inputParametersPanel.getTableColumnDataVector();
+        Vector<ColumnData> columnDataVector = inputParamsPanel.getTableColumnDataVector();
         columnDataVector.forEach(c -> c.setConnection(dc));
 
-        columnDataVector = outputParametersPanel.getTableColumnDataVector();
+        columnDataVector = outputParamsPanel.getTableColumnDataVector();
         columnDataVector.forEach(c -> c.setConnection(dc));
 
         columnDataVector = variablesPanel.getTableColumnDataVector();
         columnDataVector.forEach(c -> c.setConnection(dc));
-
     }
 
     private void connectionChanged() {
-
         DatabaseConnection connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
 
         // reset meta data
-        inputParametersPanel.setDatabaseConnection(connection);
-        outputParametersPanel.setDatabaseConnection(connection);
+        inputParamsPanel.setDatabaseConnection(connection);
+        outputParamsPanel.setDatabaseConnection(connection);
         variablesPanel.setDatabaseConnection(connection);
         columnChangeConnection(connection);
 
         // reset data types
         try {
-
             if (connection != null)
                 populateDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
             else
@@ -498,18 +482,16 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e);
             populateDataTypes(new String[0], new int[0]);
         }
-
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
-
         GUIUtils.invokeAndWait(() -> {
 
-            inputParametersPanel.setDataTypes(dataTypes, intDataTypes);
-            inputParametersPanel.setDomains(getDomains());
+            inputParamsPanel.setDataTypes(dataTypes, intDataTypes);
+            inputParamsPanel.setDomains(getDomains());
 
-            outputParametersPanel.setDataTypes(dataTypes, intDataTypes);
-            outputParametersPanel.setDomains(getDomains());
+            outputParamsPanel.setDataTypes(dataTypes, intDataTypes);
+            outputParamsPanel.setDomains(getDomains());
 
             variablesPanel.setDataTypes(dataTypes, intDataTypes);
             variablesPanel.setDomains(getDomains());
@@ -521,19 +503,16 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         nameField.selectAll();
     }
 
-    protected void addButtonsPanel(JPanel buttonsPanel) {
-        add(buttonsPanel, BorderLayout.SOUTH);
-    }
-
     public void fireEditingStopped() {
-        inputParametersPanel.fireEditingStopped();
-        outputParametersPanel.fireEditingStopped();
+        inputParamsPanel.fireEditingStopped();
+        outputParamsPanel.fireEditingStopped();
         variablesPanel.fireEditingStopped();
     }
 
     public String getSQLText() {
-        if (tabbedPane.getSelectedComponent() != ddlPanel)
+        if (tabbedPane.getSelectedComponent() != ddlTextPanel)
             generateScript();
+
         return ddlTextPanel.getSQLText();
     }
 
@@ -547,35 +526,38 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void releaseResources(ResultSet rs) {
 
-        try {
-            if (rs != null) {
-                Statement statement = rs.getStatement();
-                if (statement != null && !statement.isClosed())
-                    statement.close();
-            }
+        if (rs == null)
+            return;
 
-        } catch (SQLException ignored) {
+        try {
+            Statement statement = rs.getStatement();
+            if (statement != null && !statement.isClosed())
+                statement.close();
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
         }
     }
 
     protected void fillSqlBody() {
 
-        if (parseVariablesBox.isSelected()) {
+        if (parseVariablesCheck.isSelected()) {
 
-            if (parametersTabs.indexOfComponent(variablesPanel) < 0) {
-                parametersTabs.add(bundleString("Variables"), variablesPanel);
-                parametersTabs.add(bundleString("Cursors"), cursorsPanel);
+            if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
+                tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 2);
+                tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 3);
             }
             loadVariables();
 
         } else {
 
-            if (parametersTabs.indexOfComponent(variablesPanel) > 0) {
-                parametersTabs.remove(variablesPanel);
-                parametersTabs.remove(cursorsPanel);
+            if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
+                tabbedPane.remove(variablesPanel);
+                tabbedPane.remove(cursorsPanel);
             }
+
             if (procedureName != null)
-                sqlBodyText.setSQLText(getFullSourceBody());
+                bodyTextPanel.setSQLText(getFullSourceBody());
         }
     }
 
@@ -595,16 +577,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
      */
     @Override
     public TextEditor getTextEditor() {
-        return outSqlText;
+        return ddlTextPanel;
     }
 
     @Override
     protected void reset() {
-        nameField.setText(this.procedureName);
+        simpleCommentPanel.resetComment();
+        nameField.setText(procedureName);
         nameField.setEditable(false);
+
         loadParameters();
         fillSqlBody();
-        simpleCommentPanel.resetComment();
     }
 
     @Override

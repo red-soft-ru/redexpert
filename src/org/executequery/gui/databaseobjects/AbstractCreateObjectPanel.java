@@ -48,6 +48,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected JPanel centralPanel;
     protected JTabbedPane tabbedPane;
 
+    protected JButton actionButton;
     protected JButton submitButton;
     protected JButton cancelButton;
     protected JTextField nameField;
@@ -131,6 +132,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         // --- name textField ---
 
         nameField = WidgetFactory.createTextField("nameField");
+        nameField.setMinimumSize(nameField.getPreferredSize());
+
         if (connection != null) {
             nameField.setText(SQLUtils.generateNameForDBObject(getTypeObject(), connection));
             if (connection.isNamesToUpperCase() && !editing) {
@@ -148,6 +151,9 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         topPanel = new JPanel(new GridBagLayout());
 
         // --- buttons ---
+
+        actionButton = WidgetFactory.createButton("actionButton", "action");
+        actionButton.setVisible(false);
 
         submitButton = WidgetFactory.createButton("submitButton", Bundles.getCommon("apply.button"));
         submitButton.addActionListener(e -> submitClick());
@@ -186,7 +192,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
         gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally().anchorNorthEast();
         buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
-        buttonPanel.add(submitButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(actionButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(submitButton, gbh.nextCol().get());
         buttonPanel.add(cancelButton, gbh.nextCol().get());
 
         // --- main panel ---

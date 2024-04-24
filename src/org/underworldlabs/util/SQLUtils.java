@@ -527,10 +527,7 @@ public final class SQLUtils {
             sb.append("SET TERM ^;\n");
 
         sb.append(generateCreateProcedureOrFunctionHeader(name, inputArguments, NamedObject.META_TYPES[FUNCTION], null, dc));
-        sb.append("\nRETURNS ").append(formattedParameter(returnType, false));
-
-        if (deterministic)
-            sb.append(" DETERMINISTIC");
+        sb.append("\nRETURNS ").append(formattedReturnType(returnType, deterministic));
 
         if (!MiscUtils.isNull(entryPoint)) {
             sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
@@ -738,9 +735,10 @@ public final class SQLUtils {
         }
         if (MiscUtils.isNull(cd.getComputedBy())) {
             if (MiscUtils.isNull(cd.getDomain())) {
-                if (cd.getTypeName() != null || cd.isTypeOf()) {
+
+                if (cd.getTypeName() != null || cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
-                }
+
             } else {
                 if (cd.isTypeOf())
                     sb.append(cd.getFormattedDataType());
@@ -757,9 +755,29 @@ public final class SQLUtils {
             if (!MiscUtils.isNull(cd.getCheck())) {
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
             }
-        } else {
+
+        } else
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
-        }
+
+        return sb.toString();
+    }
+
+    public static String formattedReturnType(ColumnData cd, boolean deterministic) {
+        StringBuilder sb = new StringBuilder();
+
+        if (MiscUtils.isNull(cd.getDomain())) {
+
+            if (cd.getTypeName() != null || cd.isTypeOf())
+                sb.append(cd.getFormattedDataType());
+
+        } else
+            sb.append(cd.isTypeOf() ? cd.getFormattedDataType() : cd.getFormattedDomain());
+
+        if (!MiscUtils.isNull(cd.getCollate()))
+            sb.append(" COLLATE ").append(cd.getCollate());
+        if (deterministic)
+            sb.append(" DETERMINISTIC");
+
         return sb.toString();
     }
 

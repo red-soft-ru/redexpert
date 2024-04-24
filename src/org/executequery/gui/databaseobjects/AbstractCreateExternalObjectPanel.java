@@ -17,17 +17,22 @@ public abstract class AbstractCreateExternalObjectPanel extends AbstractSQLSecur
     }
 
     protected void initExternal() {
-        initSQLSecurity(false);
+        initSQLSecurity();
 
         useExternalCheck = WidgetFactory.createCheckBox("useExternalCheck", bundleStaticString("useExternal"));
         useExternalCheck.addItemListener(e -> checkExternal());
 
         externalField = WidgetFactory.createTextField("externalField");
-        engineField = WidgetFactory.createTextField("engineField");
+        externalField.setMinimumSize(externalField.getPreferredSize());
 
-        topPanel.add(useExternalCheck, topGbh.nextCol().setLabelDefault().setWidth(2).get());
-        topGbh.addLabelFieldPair(topPanel, bundleStaticString("EntryPoint"), externalField, null, true, false);
-        topGbh.addLabelFieldPair(topPanel, bundleStaticString("Engine"), engineField, null, false);
+        engineField = WidgetFactory.createTextField("engineField");
+        engineField.setMinimumSize(engineField.getPreferredSize());
+
+        topPanel.add(useExternalCheck, topGbh.nextCol().leftGap(0).fillBoth().spanX().get());
+        topPanel.add(new JLabel(bundleStaticString("EntryPoint")), topGbh.nextRowFirstCol().setWidth(1).setMinWeightX().leftGap(5).topGap(1).rightGap(0).get());
+        topPanel.add(externalField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
+        topPanel.add(new JLabel(bundleStaticString("Engine")), topGbh.nextCol().setMinWeightX().topGap(1).rightGap(0).get());
+        topPanel.add(engineField, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).get());
     }
 
     protected void initEditedExternal() {

@@ -131,7 +131,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     protected void init() {
 
-        initSQLSecurity(false);
+        initSQLSecurity();
         securityCombo.addActionListener(actionEvent -> setSQLText());
 
         connectionsCombo.addItemListener(this);

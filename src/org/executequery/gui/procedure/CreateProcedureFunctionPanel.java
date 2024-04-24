@@ -109,12 +109,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         ddlTextPanel = new SimpleSqlTextPanel();
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
+        tabbedPane.add(bundleString("Body", bundleString(getTypeObject())), bodyTextPanel);
         tabbedPane.add(bundleString("InputParameters"), inputParamsPanel);
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
-        tabbedPane.add(bundleString("Body", bundleString(getTypeObject())), bodyTextPanel);
         tabbedPane.add(bundleString("DDL"), ddlTextPanel);
 
         tabbedPane.addChangeListener(e -> {
@@ -392,9 +392,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             bodyTextPanel.setSQLText(null);
 
         } else {
-            tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, tabbedPane.getTabCount() - 1);
+            tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, 0);
             bodyTextPanel.appendSQLText(getEmptySqlBody());
             parseVariablesCheck.setVisible(true);
+            tabbedPane.setSelectedIndex(0);
             fillSqlBody();
         }
     }
@@ -544,8 +545,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         if (parseVariablesCheck.isSelected()) {
 
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
-                tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 2);
-                tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 3);
+                tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
+                tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 4);
             }
             loadVariables();
 

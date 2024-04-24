@@ -108,7 +108,7 @@ public class DatabaseStatisticCommand {
             statisticManager.setPort(dc.getPortInt());
             statisticManager.setUser(dc.getUserName());
             if (!MiscUtils.isNull(dc.getCharset()) && !Objects.equals(dc.getCharset(), "NONE"))
-                statisticManager.setCharSet(dc.getCharset());
+                statisticManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset(dc.getCharset()));
             statisticManager.setDatabase(dc.getSourceName());
             statisticManager.setPassword(dc.getUnencryptedPassword());
 

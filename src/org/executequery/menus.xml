@@ -11,38 +11,6 @@
 
 <menus>
 
-    <menu name="Search"
-          key="menu.search"
-          class="org.underworldlabs.swing.menu.MainMenu"
-          mnemonic="S">
-
-        <menu-item id="find-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="find-next-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="find-previous-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="replace-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="replace-next-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="goto-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="find-in-files"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-    </menu>
-
     <menu name="View"
           key="menu.view"
           mnemonic="V"
@@ -78,13 +46,6 @@
               key="menu.view.tool-bars"
               class="org.executequery.gui.menu.ToolBarsViewMenu"
               mnemonic="T">
-
-            <menu-item name="Search Tool Bar"
-                       key="menu.view.tool-bars.search-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="S"
-                       action-command="viewSearchTools"
-                       tool-tip="Displays the View tool bar"/>
 
             <menu-item name="Database Tool Bar"
                        key="menu.view.tool-bars.database-tool-bar"

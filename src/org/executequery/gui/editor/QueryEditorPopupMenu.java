@@ -70,12 +70,21 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
         addSeparator();
 
+        JMenu findMenu = MenuItemFactory.createMenu(Bundles.get("menu.search"));
+        findMenu.add(createMenuItem("find-command", Bundles.get("action.find-command")));
+        findMenu.add(createMenuItem("find-next-command", Bundles.get("action.find-next-command")));
+        findMenu.add(createMenuItem("find-previous-command", Bundles.get("action.find-previous-command")));
+        findMenu.add(createMenuItem("find-in-files", Bundles.get("action.find-in-files")));
+        findMenu.add(createMenuItem("replace-command", Bundles.get("action.replace-command")));
+        findMenu.add(createMenuItem("replace-next-command", Bundles.get("action.replace-next-command")));
+
         JMenu changeCaseMenu = MenuItemFactory.createMenu(Bundles.get("menu.edit.change-case"));
         changeCaseMenu.add(createMenuItem("to-upper-case-command", Bundles.get("action.to-upper-case-command")));
         changeCaseMenu.add(createMenuItem("to-lower-case-command", Bundles.get("action.to-lower-case-command")));
         changeCaseMenu.add(createMenuItem("to-camel-case-command", Bundles.get("action.to-camel-case-command")));
         changeCaseMenu.add(createMenuItem("to-underscore-command", Bundles.get("action.to-underscore-command")));
 
+        add(findMenu);
         add(changeCaseMenu);
         add(createFormatSqlMenuItem());
         add(createDuplicateRowUpMenuItem());
@@ -84,6 +93,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createMoveRowDownMenuItem());
         addSeparator();
 
+        add(createMenuItem("goto-command", Bundles.get("action.goto-command")));
         add(createClearOutputMenuItem());
         add(createAddToUserDefinedKeywordsMenuItem());
         add(createUseKeywordAutoComplete());

@@ -96,6 +96,12 @@ class QueryEditorToolBar extends PanelToolBar {
     private static final String SAVE_AS_COMMAND = "save-as-command";
     private static final String PRINT_COMMAND = "print-command";
 
+    private static final String FIND_COMMAND = "find-command";
+    private static final String FIND_NEXT_COMMAND = "find-next-command";
+    private static final String REPLACE_COMMAND = "replace-command";
+    private static final String GOTO_COMMAND = "goto-command";
+    private static final String FIND_IN_FILES_COMMAND = "find-in-files";
+
     private static final String EXECUTE_IN_ANY_CONNECTIONS_COMMAND = "execute-in-any-connections-command";
 
     private static final String PRINT_PLAN_COMMAND = "print-plan-command";
@@ -237,6 +243,23 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(PRINT_COMMAND,
                 bundleString(PRINT_COMMAND)));
+
+        addSeparator();
+
+        addButton(createButton(FIND_COMMAND,
+                bundleString(FIND_COMMAND)));
+
+        addButton(createButton(FIND_NEXT_COMMAND,
+                bundleString(FIND_NEXT_COMMAND)));
+
+        addButton(createButton(REPLACE_COMMAND,
+                bundleString(REPLACE_COMMAND)));
+
+        addButton(createButton(GOTO_COMMAND,
+                bundleString(GOTO_COMMAND)));
+
+        addButton(createButton(FIND_IN_FILES_COMMAND,
+                bundleString(FIND_IN_FILES_COMMAND)));
 
         addSeparator();
 

@@ -68,14 +68,7 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                 bundledString("Visibility"),
                 null));
 
-        String key = ToolBarManager.SEARCH_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SearchToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-        key = ToolBarManager.DATABASE_TOOLS;
+        String key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,

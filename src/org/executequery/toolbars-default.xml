@@ -23,51 +23,6 @@
 
 <system-toolbars>
 
-    <toolbar name="Search Tools" visible="false">
-
-        <constraints>
-
-            <row>-1</row>
-            <position>-1</position>
-            <loc-x>-1</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="17" action-id="find-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="30" action-id="find-next-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="19" action-id="replace-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-            <button id="28" action-id="goto-command">
-                <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="35" action-id="find-in-files">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-        </buttons>
-
-    </toolbar>
-
     <toolbar name="Database Tools" visible="true">
 
         <constraints>

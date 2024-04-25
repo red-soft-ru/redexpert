@@ -39,10 +39,6 @@ public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
         setToolBarVisible(ToolBarManager.BROWSER_TOOLS, selectionFromEvent(e));
     }
 
-    public void viewSearchTools(ActionEvent e) {
-        setToolBarVisible(ToolBarManager.SEARCH_TOOLS, selectionFromEvent(e));
-    }
-
     public void viewDatabaseTools(ActionEvent e) {
         setToolBarVisible(ToolBarManager.DATABASE_TOOLS, selectionFromEvent(e));
     }

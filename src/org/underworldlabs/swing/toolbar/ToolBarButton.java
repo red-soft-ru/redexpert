@@ -32,17 +32,14 @@ import java.io.Serializable;
  */
 public class ToolBarButton implements Serializable, Cloneable {
 
-    private int id;
-    private Action action;
-    private String actionId;
-    private ImageIcon icon;
-    private boolean visible;
-    private int order;
-
-    /**
-     * Defines a tool bar separator
-     */
     public static final int SEPARATOR_ID = 29;
+
+    private int id;
+    private int order;
+    private Action action;
+    private ImageIcon icon;
+    private String actionId;
+    private boolean visible;
 
     public ToolBarButton(int id) {
         this.id = id;
@@ -51,12 +48,7 @@ public class ToolBarButton implements Serializable, Cloneable {
     public ToolBarButton(int id, String actionId) {
         this.id = id;
         this.actionId = actionId;
-        action = ActionBuilder.get(actionId);
-    }
-
-    public void setActionId(String actionId) {
-        this.actionId = actionId;
-        action = ActionBuilder.get(actionId);
+        this.action = ActionBuilder.get(actionId);
     }
 
     public String getActionId() {
@@ -79,24 +71,19 @@ public class ToolBarButton implements Serializable, Cloneable {
         this.visible = visible;
     }
 
-    public void invertSelected() {
-        visible = !visible;
-    }
-
     public boolean isVisible() {
         return visible;
     }
 
     public ImageIcon getIcon() {
-        if (icon == null) {
-            if (id == SEPARATOR_ID) {
-                icon = IconUtilities.loadDefaultIconResource("Blank16.png", true);
-            } else {
-                if (action != null) {
-                    icon = (ImageIcon) action.getValue(Action.SMALL_ICON);
-                }
-            }
-        }
+
+        if (icon != null)
+            return icon;
+
+        if (id == SEPARATOR_ID)
+            icon = IconUtilities.loadDefaultIconResource("Blank16.png", true);
+        else if (action != null)
+            icon = (ImageIcon) action.getValue(Action.SMALL_ICON);
 
         return icon;
     }
@@ -113,17 +100,19 @@ public class ToolBarButton implements Serializable, Cloneable {
         return id;
     }
 
-    public String toString() {
-        return getName();
-    }
-
+    @Override
     public Object clone() {
         try {
-            ToolBarButton button = (ToolBarButton) super.clone();
-            return button;
+            return super.clone();
+
         } catch (CloneNotSupportedException e) {
             throw new InternalError();
         }
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     public static String bundleString(String key) {
@@ -131,10 +120,3 @@ public class ToolBarButton implements Serializable, Cloneable {
     }
 
 }
-
-
-
-
-
-
-

@@ -38,7 +38,6 @@ public class ToolBarManager extends DefaultToolBarManager
 
     private static final String TOOLBARS_XML = "toolbars.xml";
 
-    public static final String EDIT_TOOLS = "Edit Tools";
     public static final String SEARCH_TOOLS = "Search Tools";
     public static final String DATABASE_TOOLS = "Database Tools";
     public static final String BROWSER_TOOLS = "Browser Tools";
@@ -76,7 +75,6 @@ public class ToolBarManager extends DefaultToolBarManager
             reset();
 
         initToolBar();
-        buildToolBar(EDIT_TOOLS, rebuild);
         buildToolBar(SEARCH_TOOLS, rebuild);
         buildToolBar(DATABASE_TOOLS, rebuild);
         buildToolBar(IMPORT_EXPORT_TOOLS, rebuild);

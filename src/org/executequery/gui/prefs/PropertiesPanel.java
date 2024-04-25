@@ -180,7 +180,6 @@ public class PropertiesPanel extends JPanel
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_EDIT, bundledString("EditTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
         //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
         //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, bundledString("ImportExportTools")));
@@ -327,10 +326,6 @@ public class PropertiesPanel extends JPanel
 
             case PropertyTypes.TOOLBAR_GENERAL:
                 panel = new PropertiesToolBarGeneral();
-                break;
-
-            case PropertyTypes.TOOLBAR_EDIT:
-                panel = new PropertiesToolBar("Edit Tools");
                 break;
 
             case PropertyTypes.TOOLBAR_SEARCH:

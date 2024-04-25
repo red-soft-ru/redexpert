@@ -23,56 +23,6 @@
 
 <system-toolbars>
 
-    <toolbar name="Edit Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>1</position>
-            <loc-x>-1</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="5" action-id="cut-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="11" action-id="copy-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="6" action-id="paste-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-            <button id="29">
-                <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="7" action-id="undo-command">
-                <visible>true</visible>
-                <order>4</order>
-            </button>
-
-            <button id="8" action-id="redo-command">
-                <visible>true</visible>
-                <order>5</order>
-            </button>
-
-        </buttons>
-
-    </toolbar>
-
     <toolbar name="Search Tools" visible="false">
 
         <constraints>

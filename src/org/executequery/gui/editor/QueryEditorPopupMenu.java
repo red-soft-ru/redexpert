@@ -56,9 +56,6 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createPasteMenuItem());
 
         addSeparator();
-        add(createMenuItem("to-upper-case-command", Bundles.get("action.to-upper-case-command")));
-        add(createMenuItem("to-lower-case-command", Bundles.get("action.to-lower-case-command")));
-        addSeparator();
 
         add(createExecuteMenuItem());
         //add(createPartialExecuteMenuItem());
@@ -73,6 +70,13 @@ public class QueryEditorPopupMenu extends JPopupMenu
 
         addSeparator();
 
+        JMenu changeCaseMenu = MenuItemFactory.createMenu(Bundles.get("menu.edit.change-case"));
+        changeCaseMenu.add(createMenuItem("to-upper-case-command", Bundles.get("action.to-upper-case-command")));
+        changeCaseMenu.add(createMenuItem("to-lower-case-command", Bundles.get("action.to-lower-case-command")));
+        changeCaseMenu.add(createMenuItem("to-camel-case-command", Bundles.get("action.to-camel-case-command")));
+        changeCaseMenu.add(createMenuItem("to-underscore-command", Bundles.get("action.to-underscore-command")));
+
+        add(changeCaseMenu);
         add(createFormatSqlMenuItem());
         add(createDuplicateRowUpMenuItem());
         add(createDuplicateRowDownMenuItem());

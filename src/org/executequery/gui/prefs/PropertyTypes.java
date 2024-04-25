@@ -41,7 +41,6 @@ public class PropertyTypes {
     public static final int TOOLBAR_GENERAL = 4;
     public static final int LOOK_PLUGIN = 14;
     public static final int EDITOR_BACKGROUND = 15;
-    public static final int TOOLBAR_EDIT = 17;
     public static final int TOOLBAR_SEARCH = 18;
     public static final int TOOLBAR_DATABASE = 19;
     public static final int TOOLBAR_SYSTEM = 20;

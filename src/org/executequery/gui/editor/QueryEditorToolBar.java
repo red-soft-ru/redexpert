@@ -91,6 +91,11 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String EXECUTE_COMMAND = "execute-command";
 
+    private static final String OPEN_COMMAND = "open-command";
+    private static final String SAVE_COMMAND = "save-command";
+    private static final String SAVE_AS_COMMAND = "save-as-command";
+    private static final String PRINT_COMMAND = "print-command";
+
     private static final String EXECUTE_IN_ANY_CONNECTIONS_COMMAND = "execute-in-any-connections-command";
 
     private static final String PRINT_PLAN_COMMAND = "print-plan-command";
@@ -218,6 +223,20 @@ class QueryEditorToolBar extends PanelToolBar {
 
         addButton(createButton(SHIFT_TEXT_RIGHT_COMMAND,
                 bundleString(SHIFT_TEXT_RIGHT_COMMAND)));
+
+        addSeparator();
+
+        addButton(createButton(OPEN_COMMAND,
+                bundleString(OPEN_COMMAND)));
+
+        addButton(createButton(SAVE_COMMAND,
+                bundleString(SAVE_COMMAND)));
+
+        addButton(createButton(SAVE_AS_COMMAND,
+                bundleString(SAVE_AS_COMMAND)));
+
+        addButton(createButton(PRINT_COMMAND,
+                bundleString(PRINT_COMMAND)));
 
         addSeparator();
 

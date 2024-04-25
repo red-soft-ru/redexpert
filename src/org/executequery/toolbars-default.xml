@@ -23,66 +23,6 @@
 
 <system-toolbars>
 
-    <toolbar name="File Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>0</position>
-            <loc-x>0</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="0" action-id="new-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="1" action-id="open-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="2" action-id="save-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-            <button id="29">
-                <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="3" action-id="print-command">
-                <visible>true</visible>
-                <order>4</order>
-            </button>
-
-            <button id="4" action-id="print-preview-command">
-                <visible>true</visible>
-                <order>5</order>
-            </button>
-
-            <button id="20" action-id="save-as-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="18" action-id="page-setup-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-        </buttons>
-
-    </toolbar>
-
     <toolbar name="Edit Tools" visible="true">
 
         <constraints>

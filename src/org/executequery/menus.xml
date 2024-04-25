@@ -11,46 +11,6 @@
 
 <menus>
 
-    <menu name="File"
-          key="menu.file"
-          mnemonic="F"
-          class="org.underworldlabs.swing.menu.MainMenu">
-
-        <menu-item id="new-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="open-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu name="Recent Files"
-              key="menu.file.recent-files"
-              mnemonic="R"
-              class="org.executequery.gui.menu.RecentFilesMenu">
-
-            <menu-item id="separator"/>
-
-            <menu-item id="clear-recent-files-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        </menu>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="save-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="save-as-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="print-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="page-setup-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="print-preview-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="exit-program-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-    </menu>
-
     <menu name="Edit"
           key="menu.edit"
           class="org.underworldlabs.swing.menu.MainMenu"
@@ -244,13 +204,6 @@
               key="menu.view.tool-bars"
               class="org.executequery.gui.menu.ToolBarsViewMenu"
               mnemonic="T">
-
-            <menu-item name="File Tool Bar"
-                       key="menu.view.tool-bars.file-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="F"
-                       action-command="viewFileTools"
-                       tool-tip="Displays the File tool bar"/>
 
             <menu-item name="Edit Tool Bar"
                        key="menu.view.tool-bars.edit-tool-bar"

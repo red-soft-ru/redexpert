@@ -10,16 +10,6 @@
 
 <actions>
 
-    <action id="new-command"
-            name="New..."
-            mnemonic="N"
-            small-icon="/org/executequery/icons/New16.png"
-            large-icon="/org/executequery/icons/New24.png"
-            accel-key="shift F12"
-            accel-editable="true"
-            description="Open a New Editor"
-            execute-class="org.executequery.actions.filecommands.NewCommand"/>
-
     <action id="open-command"
             name="Open..."
             mnemonic="O"
@@ -123,22 +113,6 @@
             accel-key="control P"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.PrintCommand"/>
-
-    <action id="print-preview-command"
-            name="Print Preview"
-            mnemonic="v"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/PrintPreview16.png"
-            large-icon="/org/executequery/icons/PrintPreview24.png"
-            execute-class="org.executequery.actions.filecommands.PrintPreviewCommand"/>
-
-    <action id="page-setup-command"
-            name="Page Setup"
-            mnemonic="u"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/PageSetup16.png"
-            large-icon="/org/executequery/icons/PageSetup24.png"
-            execute-class="org.executequery.actions.filecommands.PageSetupCommand"/>
 
     <action id="to-upper-case-command"
             name="Upper Case"
@@ -270,16 +244,6 @@
             description="Go to line number..."
             execute-class="org.executequery.actions.searchcommands.GotoCommand"/>
 
-    <!--
-      <action id="database-properties-command"
-              name="Database Properties"
-              mnemonic="P"
-              accel-editable="true"
-              small-icon="/org/executequery/icons/Database16.png"
-              large-icon="/org/executequery/icons/Database24.png"
-              description="Displays the open connection's properties"
-              execute-class="org.executequery.actions.databasecommands.DatabasePropertiesCommand"/>
-    -->
     <action id="create-database-command"
             name="Create Database"
             mnemonic="control C"

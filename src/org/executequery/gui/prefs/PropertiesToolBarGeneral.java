@@ -68,14 +68,7 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                 bundledString("Visibility"),
                 null));
 
-        String key = ToolBarManager.FILE_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("FileToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-        key = ToolBarManager.EDIT_TOOLS;
+        String key = ToolBarManager.EDIT_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,

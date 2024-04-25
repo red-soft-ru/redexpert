@@ -44,7 +44,6 @@ public class ToolBarsViewMenu extends AbstractOptionsMenu
         menuItemListener = new ToolBarViewOptionsCommand();
 
         toolbarActionCommands = new HashMap<>();
-        toolbarActionCommands.put("viewFileTools", ToolBarManager.FILE_TOOLS);
         toolbarActionCommands.put("viewEditTools", ToolBarManager.EDIT_TOOLS);
         toolbarActionCommands.put("viewSearchTools", ToolBarManager.SEARCH_TOOLS);
         toolbarActionCommands.put("viewDatabaseTools", ToolBarManager.DATABASE_TOOLS);

@@ -45,7 +45,6 @@ public class ToolBarsViewMenu extends AbstractOptionsMenu
 
         toolbarActionCommands = new HashMap<>();
         toolbarActionCommands.put("viewDatabaseTools", ToolBarManager.DATABASE_TOOLS);
-        toolbarActionCommands.put("viewImportExportTools", ToolBarManager.IMPORT_EXPORT_TOOLS);
         toolbarActionCommands.put("viewSystemTools", ToolBarManager.SYSTEM_TOOLS);
 
         EventMediator.registerListener(this);

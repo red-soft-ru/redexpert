@@ -49,8 +49,6 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private static final String FORMAT_SQL_COMMAND = "editor-format-sql-command";
 
-//    private static final String REMOVE_COMMENT_LINES_COMMAND = "remove-comment-lines-command";
-
     private static final String COMMENT_LINES_COMMAND = "comment-lines-command";
 
     private static final String SHIFT_TEXT_RIGHT_COMMAND = "shift-text-right-command";

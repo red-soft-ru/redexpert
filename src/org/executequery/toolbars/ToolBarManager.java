@@ -26,7 +26,6 @@ import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
-import org.executequery.util.UserSettingsProperties;
 import org.underworldlabs.swing.toolbar.DefaultToolBarManager;
 import org.underworldlabs.util.SystemProperties;
 
@@ -39,19 +38,10 @@ public class ToolBarManager extends DefaultToolBarManager
     private static final String TOOLBARS_XML = "toolbars.xml";
 
     public static final String DATABASE_TOOLS = "Database Tools";
-    public static final String BROWSER_TOOLS = "Browser Tools";
-    public static final String IMPORT_EXPORT_TOOLS = "Import/Export Tools";
     public static final String SYSTEM_TOOLS = "System Tools";
 
-    private static final String DEFINITION_FILE;
-
-    static {
-        UserSettingsProperties settings = new UserSettingsProperties();
-        DEFINITION_FILE = settings.getUserSettingsDirectory() + TOOLBARS_XML;
-    }
-
     public ToolBarManager() {
-        super(DEFINITION_FILE, SystemProperties.getProperty("system", "toolbars.defaults"));
+        super(TOOLBARS_XML, SystemProperties.getProperty("system", "toolbars.defaults"));
 
         try {
             buildToolbars(false);
@@ -74,9 +64,8 @@ public class ToolBarManager extends DefaultToolBarManager
             reset();
 
         initToolBar();
-        buildToolBar(DATABASE_TOOLS, rebuild);
-        buildToolBar(IMPORT_EXPORT_TOOLS, rebuild);
-        buildToolBar(SYSTEM_TOOLS, rebuild);
+        buildToolBar(DATABASE_TOOLS);
+        buildToolBar(SYSTEM_TOOLS);
 
         if (rebuild)
             fireToolbarsChanged();

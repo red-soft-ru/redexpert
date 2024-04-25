@@ -35,16 +35,8 @@ import java.awt.event.ActionEvent;
 @SuppressWarnings("unused")
 public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
 
-    public void viewBrowserTools(ActionEvent e) {
-        setToolBarVisible(ToolBarManager.BROWSER_TOOLS, selectionFromEvent(e));
-    }
-
     public void viewDatabaseTools(ActionEvent e) {
         setToolBarVisible(ToolBarManager.DATABASE_TOOLS, selectionFromEvent(e));
-    }
-
-    public void viewImportExportTools(ActionEvent e) {
-        setToolBarVisible(ToolBarManager.IMPORT_EXPORT_TOOLS, selectionFromEvent(e));
     }
 
     public void viewSystemTools(ActionEvent e) {

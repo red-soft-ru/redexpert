@@ -27,16 +27,9 @@ import java.util.Comparator;
  */
 public class ButtonComparator implements Comparator<ToolBarButton> {
 
+    @Override
     public int compare(ToolBarButton obj1, ToolBarButton obj2) {
-
         return obj1.getOrder() - obj2.getOrder();
     }
 
 }
-
-
-
-
-
-
-

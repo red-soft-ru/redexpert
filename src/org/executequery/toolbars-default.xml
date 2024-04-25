@@ -196,21 +196,6 @@
                 <order>1</order>
             </button>
 
-            <button id="16" action-id="about-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-            <button id="44" action-id="visit-eq-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="32" action-id="heap-memory-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
         </buttons>
 
     </toolbar>

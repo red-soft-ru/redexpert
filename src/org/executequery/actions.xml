@@ -249,7 +249,6 @@
             large-icon="/org/executequery/icons/NewErd24.png"
             execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
 
-
     <action id="execute-command"
             name="Execute"
             accel-key="control shift ENTER"
@@ -271,7 +270,6 @@
             accel-key="control shift F5"
             accel-editable="true"
             execute-class="org.executequery.actions.queryeditor.ExecuteAsBlockCommand"/>
-
 
     <action id="editor-refresh-autocomplete-command"
             name=" Query Editor Refresh Autocomplete List"
@@ -463,15 +461,6 @@
             small-icon="/org/executequery/icons/AddComment16.png"
             execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
 
-    <!--
-      <action id="remove-comment-lines-command"
-              name="Uncomment"
-              accel-key="control SLASH"
-              accel-editable="true"
-              small-icon="/org/executequery/icons/RemoveComment16.png"
-              execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
-    -->
-
     <action id="commit-command"
             name="Commit"
             accel-key="control shift C"
@@ -521,15 +510,6 @@
             description="Create a new database table index"
             execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
 
-    <!--action id="create-table-command"
-            name="Create Table"
-            mnemonic="T"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/NewTable16.png"
-            large-icon="/org/executequery/icons/NewTable24.png"
-            description="Create a new database table"
-            execute-class="org.executequery.actions.databasecommands.CreateTableCommand"/-->
-
     <action id="create-sequence-command"
             name="Create Sequence"
             mnemonic="T"
@@ -564,7 +544,7 @@
             large-icon="/org/executequery/icons/Information24.png"
             execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
 
-    <action id="visit-eq-command"
+    <action id="visit-redsoft-command"
             name="Visit red-soft.biz online"
             mnemonic="V"
             small-icon="/org/executequery/icons/WebComponent16.png"
@@ -581,8 +561,7 @@
     <action id="drivers-command"
             name="Drivers"
             accel-editable="true"
-            execute-class="org.executequery.actions.toolscommands.DriversCommand"
-    />
+            execute-class="org.executequery.actions.toolscommands.DriversCommand"/>
 
     <action id="editor-command"
             name="Query Editor"
@@ -599,15 +578,6 @@
             small-icon="/org/executequery/icons/Shortcut16.png"
             execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
 
-    <!--
-      <action id="browser-command"
-              name="Database Browser"
-              mnemonic="B"
-              accel-editable="true"
-              small-icon="/org/executequery/icons/DBmag16.png"
-              large-icon="/org/executequery/icons/DBmag24.png"
-              execute-class="org.executequery.actions.toolscommands.BrowserCommand"/>
-    -->
     <action id="scratch-pad-command"
             name="Scratch Pad"
             mnemonic="P"
@@ -748,12 +718,13 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/ExportExcel16.png"
             execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
-  <action id="export-dbunit-command"
-          name="Export as DBUnit Dataset"
-          mnemonic="Q"
-          accel-editable="true"
-          small-icon="/org/executequery/icons/ExportXML16.png"
-          execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
+
+    <action id="export-dbunit-command"
+            name="Export as DBUnit Dataset"
+            mnemonic="Q"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExportXML16.png"
+            execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
 
     <action id="export-sql-command"
             name="Export as SQL"

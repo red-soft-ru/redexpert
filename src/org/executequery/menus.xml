@@ -11,102 +11,6 @@
 
 <menus>
 
-    <menu name="View"
-          key="menu.view"
-          mnemonic="V"
-          class="org.executequery.gui.menu.ViewMenu">
-
-        <menu-item name="Output Console"
-                   key="menu.view.output-console"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="C"
-                   action-command="viewConsole"
-                   property-key="system.display.console"
-                   tool-tip="Opens the system output console"/>
-
-        <menu-item name="Connections"
-                   key="menu.view.connections"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="N"
-                   action-command="viewConnections"
-                   property-key="system.display.connections"
-                   tool-tip="Opens the saved connections panel"/>
-
-        <menu-item name="Status Bar"
-                   key="menu.view.status-bar"
-                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                   mnemonic="S"
-                   action-command="viewStatusBar"
-                   property-key="system.display.statusbar"
-                   tool-tip="Displays the system status bar"/>
-
-        <menu-item id="separator"/>
-
-        <menu name="Tool Bars"
-              key="menu.view.tool-bars"
-              class="org.executequery.gui.menu.ToolBarsViewMenu"
-              mnemonic="T">
-
-            <menu-item name="Database Tool Bar"
-                       key="menu.view.tool-bars.database-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="D"
-                       action-command="viewDatabaseTools"
-                       tool-tip="Displays the database tool bar"/>
-
-            <!--<menu-item name="Browser Tool Bar"
-                       key="menu.view.tool-bars.browser-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="B"
-                       action-command="viewBrowserTools"
-                       cache-name="viewBrowserTools"
-                       tool-tip="Displays the browser tool bar"/>
-
-            <menu-item name="Import/Export Tool Bar"
-                       key="menu.view.tool-bars.import-export-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="X"
-                       action-command="viewImportExportTools"
-                       tool-tip="Displays the import/export tool bar"/>-->
-
-            <menu-item name="System Tool Bar"
-                       key="menu.view.system-tool-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="S"
-                       action-command="viewSystemTools"
-                       tool-tip="Displays the System tool bar"/>
-
-            <menu-item id="separator"/>
-
-            <menu-item id="customise-tool-bars-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-            />
-
-        </menu>
-
-        <menu name="Query Editor"
-              key="menu.view.query-editor"
-              class="org.executequery.gui.menu.QueryEditorViewMenu"
-              mnemonic="Q">
-
-            <menu-item name="Status Bar"
-                       key="menu.view.query-editor.status-bar"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="S"
-                       action-command="viewEditorStatusBar"
-                       tool-tip="Display the editor's status bar"/>
-
-            <menu-item name="Line Numbers"
-                       key="menu.view.query-editor.line-numbers"
-                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
-                       mnemonic="L"
-                       action-command="viewEditorLineNumbers"
-                       tool-tip="Display the editor's line numbers"/>
-
-        </menu>
-
-    </menu>
-
     <menu name="Database"
           key="menu.database"
           class="org.underworldlabs.swing.menu.MainMenu"
@@ -179,7 +83,6 @@
         </menu>
 
     </menu>
-
 
     <menu name="Tools"
           key="menu.tools"
@@ -320,8 +223,91 @@
 
         <menu-item id="separator"/>
 
+        <menu-item id="check-update-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="preferences-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+    </menu>
+
+    <menu name="View"
+          key="menu.view"
+          mnemonic="V"
+          class="org.executequery.gui.menu.ViewMenu">
+
+        <menu-item name="Output Console"
+                   key="menu.view.output-console"
+                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                   mnemonic="C"
+                   action-command="viewConsole"
+                   property-key="system.display.console"
+                   tool-tip="Opens the system output console"/>
+
+        <menu-item name="Connections"
+                   key="menu.view.connections"
+                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                   mnemonic="N"
+                   action-command="viewConnections"
+                   property-key="system.display.connections"
+                   tool-tip="Opens the saved connections panel"/>
+
+        <menu-item name="Status Bar"
+                   key="menu.view.status-bar"
+                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                   mnemonic="S"
+                   action-command="viewStatusBar"
+                   property-key="system.display.statusbar"
+                   tool-tip="Displays the system status bar"/>
+
+        <menu-item id="separator"/>
+
+        <menu name="Tool Bars"
+              key="menu.view.tool-bars"
+              class="org.executequery.gui.menu.ToolBarsViewMenu"
+              mnemonic="T">
+
+            <menu-item name="Database Tool Bar"
+                       key="menu.view.tool-bars.database-tool-bar"
+                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                       mnemonic="D"
+                       action-command="viewDatabaseTools"
+                       tool-tip="Displays the database tool bar"/>
+
+            <menu-item name="System Tool Bar"
+                       key="menu.view.system-tool-bar"
+                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                       mnemonic="S"
+                       action-command="viewSystemTools"
+                       tool-tip="Displays the System tool bar"/>
+
+            <menu-item id="separator"/>
+
+            <menu-item id="customise-tool-bars-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        </menu>
+
+        <menu name="Query Editor"
+              key="menu.view.query-editor"
+              class="org.executequery.gui.menu.QueryEditorViewMenu"
+              mnemonic="Q">
+
+            <menu-item name="Status Bar"
+                       key="menu.view.query-editor.status-bar"
+                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                       mnemonic="S"
+                       action-command="viewEditorStatusBar"
+                       tool-tip="Display the editor's status bar"/>
+
+            <menu-item name="Line Numbers"
+                       key="menu.view.query-editor.line-numbers"
+                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                       mnemonic="L"
+                       action-command="viewEditorLineNumbers"
+                       tool-tip="Display the editor's line numbers"/>
+
+        </menu>
 
     </menu>
 
@@ -342,16 +328,13 @@
         <menu-item id="license-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="about-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="release-notes-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
-
-        <menu-item id="check-update-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="visit-eq-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Feedback"
               key="menu.help.feedback"
@@ -381,11 +364,9 @@
 
         </menu>
 
-        <menu-item id="separator"/>
-
-        <menu-item id="about-command" class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="visit-redsoft-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
     </menu>
-
 
 </menus>

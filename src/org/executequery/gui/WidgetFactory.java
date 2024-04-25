@@ -20,6 +20,7 @@
 
 package org.executequery.gui;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.*;
@@ -536,6 +537,23 @@ public final class WidgetFactory {
         button.setIcon(GUIUtilities.loadIcon(icon));
         button.setMouseEnteredContentAreaFill(false);
         button.setToolTipText(toolTip);
+        button.setName(name);
+
+        return button;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
+     * @param name    the component's name
+     * @param action  action to be added
+     * @param toolTip the tool tip text for this component
+     */
+    public static RolloverButton createRolloverButton(String name, Action action, String toolTip) {
+
+        RolloverButton button = new RolloverButton(action, toolTip);
+        button.setMouseEnteredContentAreaFill(false);
+        button.setText(Constants.EMPTY);
         button.setName(name);
 
         return button;

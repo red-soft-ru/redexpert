@@ -33,20 +33,8 @@ import java.awt.event.ActionEvent;
  */
 public class SelectPreviousTabAction extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
         GUIUtilities.selectPreviousTab();
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-

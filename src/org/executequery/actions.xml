@@ -19,18 +19,6 @@
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
 
-    <action id="close-selected-tab-1"
-            name="Close Selected Tab"
-            accel-key="control W"
-            description="Closes the selected central tab component"
-            execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
-
-    <action id="close-selected-tab-2"
-            name="Close Selected Tab"
-            accel-key="control W"
-            description="Closes the selected central tab component"
-            execute-class="org.executequery.actions.CloseSelectedCentralPaneCommand"/>
-
     <action id="select-next-tab"
             name="Select Next Tab"
             accel-key="alt RIGHT"
@@ -43,27 +31,11 @@
             accel-editable="false"
             execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
 
-    <action id="select-next-tab-container"
-            name="Select Next Tab Container"
-            accel-key="control F5"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.SelectNextTabContainerAction"/>
-
     <action id="close-selected-tab"
             name="Close Selected Tab"
             accel-key="control W"
             accel-editable="false"
             execute-class="org.executequery.actions.windowcommands.CloseSelectedTabAction"/>
-
-    <action id="close-all-tabs"
-            name="Close All Tabs"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.CloseAllTabsAction"/>
-
-    <action id="close-all-tabs-in-container"
-            name="Close All Tabs in Selected Tab Container"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.CloseAllTabsInSelectedContainerAction"/>
 
     <action id="save-command"
             name="Save"

@@ -415,14 +415,6 @@ public final class GUIUtilities {
             closeDockedComponent(tabComponent.getTitle(), SwingConstants.CENTER);
     }
 
-    public static void closeAllTabs() {
-        desktopMediator.closeAllTabs();
-    }
-
-    public static void closeAllTabsInSelectedContainer() {
-        desktopMediator.closeAllTabsInSelectedContainer();
-    }
-
     public static void closeSelectedTab() {
         desktopMediator.closeSelectedTab();
     }
@@ -477,13 +469,6 @@ public final class GUIUtilities {
      */
     public static void selectNextTab() {
         desktopMediator.selectNextTab();
-    }
-
-    /**
-     * Selects the next tab from the current selection.
-     */
-    public static void selectNextTabContainer() {
-        desktopMediator.selectNextTabContainer();
     }
 
     /**

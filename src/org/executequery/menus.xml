@@ -325,33 +325,6 @@
 
     </menu>
 
-    <menu name="Window"
-          key="menu.window"
-          class="org.underworldlabs.swing.menu.MainMenu"
-          mnemonic="W">
-
-        <menu-item id="select-next-tab"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="select-previous-tab"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="select-next-tab-container"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="close-all-tabs"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="close-selected-tab"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="close-all-tabs-in-container"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-    </menu>
-
     <menu name="Help"
           key="menu.help"
           class="org.underworldlabs.swing.menu.MainMenu"

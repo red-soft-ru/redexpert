@@ -74,7 +74,6 @@ public class QueryEditorPopupMenu extends JPopupMenu
         findMenu.add(createMenuItem("find-command", Bundles.get("action.find-command")));
         findMenu.add(createMenuItem("find-next-command", Bundles.get("action.find-next-command")));
         findMenu.add(createMenuItem("find-previous-command", Bundles.get("action.find-previous-command")));
-        findMenu.add(createMenuItem("find-in-files", Bundles.get("action.find-in-files")));
         findMenu.add(createMenuItem("replace-command", Bundles.get("action.replace-command")));
         findMenu.add(createMenuItem("replace-next-command", Bundles.get("action.replace-next-command")));
 

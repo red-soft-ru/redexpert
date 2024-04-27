@@ -640,10 +640,6 @@ public class QueryEditor extends DefaultTabView
             new ExportDataPanel(resultSet, getDisplayName());
     }
 
-    public void destroyTable() {
-        resultsPanel.destroyTable();
-    }
-
     /**
      * Sets to display the result set metadata for the
      * currently selected result set tab.
@@ -809,11 +805,6 @@ public class QueryEditor extends DefaultTabView
 
     private QueryEditorToolBar getTools() {
         return toolBar;
-    }
-
-    public void destroyConnection() {
-        delegate.destroyConnection();
-        editorPanel.getQueryArea().resetAutocomplete();
     }
 
     public void toggleCommitMode() {
@@ -1501,10 +1492,6 @@ public class QueryEditor extends DefaultTabView
     @Override
     public void queryShortcutRemoved(QueryShortcutEvent e) {
         editorPanel.editorShortcutsUpdated();
-    }
-
-    public void refreshAutocompleteList() {
-        editorPanel.getQueryArea().resetAutocomplete();
     }
 
     public void allResultTabsClosed() {

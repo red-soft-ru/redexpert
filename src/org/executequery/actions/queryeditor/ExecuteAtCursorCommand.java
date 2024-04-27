@@ -27,30 +27,11 @@ import java.awt.event.ActionEvent;
  *
  * @author Takis Diakoumis
  */
-public class PartialExecuteCommand extends AbstractQueryEditorCommand {
+public class ExecuteAtCursorCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
+        if (isQueryEditorTheCentralPanel())
             queryEditor().executeSQLAtCursor();
-        }
-
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

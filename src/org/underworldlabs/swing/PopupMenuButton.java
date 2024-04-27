@@ -28,24 +28,21 @@ import java.awt.event.KeyEvent;
 
 public class PopupMenuButton extends RolloverButton {
 
-    private JPopupMenu menu;
+    private final JPopupMenu menu;
 
     public PopupMenuButton(Icon icon, String toolTipText) {
-
         super();
 
         menu = createMenu();
         menu.addMenuKeyListener(new PopupMenuKeyListener());
 
         Action action = new PopupMenuAction();
-
-        if (icon != null) {
-
+        if (icon != null)
             action.putValue(Action.SMALL_ICON, icon);
-        }
 
         setAction(action);
         setToolTipText(toolTipText);
+        setText(null);
     }
 
     public void addSeparator() {
@@ -65,14 +62,10 @@ public class PopupMenuButton extends RolloverButton {
     }
 
     private void showMenu() {
-
-        if (menu == null) {
-
-            return;
+        if (menu != null) {
+            menu.show(this, calculatePopupMenuX(), calculatePopupMenuY());
+            menu.requestFocus();
         }
-
-        menu.show(this, calculatePopupMenuX(), calculatePopupMenuY());
-        menu.requestFocus();
     }
 
     private int calculatePopupMenuY() {
@@ -83,69 +76,47 @@ public class PopupMenuButton extends RolloverButton {
         return 0;
     }
 
+    public void setKeyStroke(KeyStroke keyStroke) {
+        if (getAction() != null)
+            getAction().putValue(Action.ACCELERATOR_KEY, keyStroke);
+    }
+
     class PopupMenuKeyListener implements MenuKeyListener {
 
+        @Override
         public void menuKeyReleased(MenuKeyEvent e) {
 
-            if (e.getKeyCode() != KeyEvent.VK_ENTER) {
-
+            if (e.getKeyCode() != KeyEvent.VK_ENTER)
                 return;
-            }
 
             MenuElement[] menuElements = e.getMenuSelectionManager().getSelectedPath();
-
-            if (menuElements.length == 2
-                    && (menuElements[1] instanceof JMenuItem)) {
+            if (menuElements.length == 2 && (menuElements[1] instanceof JMenuItem)) {
 
                 JMenuItem menuItem = (JMenuItem) menuElements[1];
-
-                menuItem.getAction().actionPerformed(actionEventForMenuItem(menuItem));
+                ActionEvent action = new ActionEvent(menuItem, ActionEvent.ACTION_FIRST, menuItem.getActionCommand());
+                menuItem.getAction().actionPerformed(action);
 
                 menu.setVisible(false);
             }
-
         }
 
-        private ActionEvent actionEventForMenuItem(JMenuItem menuItem) {
-
-            return new ActionEvent(menuItem, ActionEvent.ACTION_FIRST,
-                    menuItem.getActionCommand());
-        }
-
+        @Override
         public void menuKeyPressed(MenuKeyEvent e) {
         }
 
+        @Override
         public void menuKeyTyped(MenuKeyEvent e) {
         }
 
-    }
+    } // PopupMenuKeyListener class
 
-    class PopupMenuAction extends AbstractAction {
+    private class PopupMenuAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
-
             showMenu();
         }
 
-    }
-
-    public void setKeyStroke(KeyStroke keyStroke) {
-
-        if (getAction() != null) {
-
-            getAction().putValue(Action.ACCELERATOR_KEY, keyStroke);
-        }
-    }
+    } // PopupMenuAction class
 
 }
-
-
-
-
-
-
-
-
-
-
-

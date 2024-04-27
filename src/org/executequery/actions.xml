@@ -13,8 +13,7 @@
     <action id="open-command"
             name="Open..."
             mnemonic="O"
-            small-icon="/org/executequery/icons/Open16.png"
-            large-icon="/org/executequery/icons/Open24.png"
+            small-icon="/org/executequery/icons/New16.png"
             accel-key="control L"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
@@ -176,12 +175,6 @@
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.FindNextCommand"/>
 
-    <action id="find-in-files"
-            name="Search Files"
-            mnemonic="L"
-            small-icon="/org/executequery/icons/FindInFiles16.png"
-            execute-class="org.executequery.actions.searchcommands.FindInFilesCommand"/>
-
     <action id="find-previous-command"
             name="Find Previous"
             mnemonic="P"
@@ -262,13 +255,6 @@
             accel-key="control shift F5"
             accel-editable="true"
             execute-class="org.executequery.actions.queryeditor.ExecuteAsBlockCommand"/>
-
-    <action id="editor-refresh-autocomplete-command"
-            name=" Query Editor Refresh Autocomplete List"
-            accel-key="shift alt R"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/TableRefresh16.png"
-            execute-class="org.executequery.actions.queryeditor.RefreshAutocompleteListCommand"/>
 
     <action id="editor-format-sql-command"
             name="Format SQL"
@@ -440,12 +426,6 @@
             small-icon="/org/executequery/icons/RSMetaData16.png"
             execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>
 
-    <action id="editor-conn-change-command"
-            name="Recycle Editor Connection"
-            accel-editable="false"
-            small-icon="/org/executequery/icons/RecycleConnection16.png"
-            execute-class="org.executequery.actions.queryeditor.ChangeEditorConnectionCommand"/>
-
     <action id="comment-lines-command"
             name="Comment/Uncomment"
             accel-key="control SLASH"
@@ -482,9 +462,8 @@
             name="Execute at Cursor"
             accel-key="control ENTER"
             accel-editable="true"
-            small-icon="/org/executequery/icons/PartialExecute16.png"
-            large-icon="/org/executequery/icons/PartialExecute24.png"
-            execute-class="org.executequery.actions.queryeditor.PartialExecuteCommand"/>
+            small-icon="/org/executequery/icons/ExecuteAtCursor16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteAtCursorCommand"/>
 
     <action id="change-split-orientation-command"
             name="Change Split Orientation"

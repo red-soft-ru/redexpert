@@ -101,43 +101,21 @@ public class PanelToolBar extends AbstractToolBarPanel {
         add(button);
     }
 
-    private class PanelToolBarSeparator extends JLabel {
+    private static class PanelToolBarSeparator extends JSeparator {
 
         private static final int DEFAULT_WIDTH = 4;
-
-        private int preferredWidth;
 
         public PanelToolBarSeparator() {
             this(DEFAULT_WIDTH);
         }
 
         public PanelToolBarSeparator(int preferredWidth) {
-            this.preferredWidth = preferredWidth;
+            super();
+            setOrientation(JSeparator.VERTICAL);
+            setPreferredSize(new Dimension(preferredWidth, 16));
+            setMinimumSize(getPreferredSize());
+            setMaximumSize(getPreferredSize());
         }
-
-        public boolean isOpaque() {
-            return !GUIUtils.isDefaultLookAndFeel();
-        }
-
-        public Dimension getPreferredSize() {
-            return new Dimension(preferredWidth, 1);
-        }
-
-        public Dimension getMaximumSize() {
-            return getPreferredSize();
-        }
-
-        public Dimension getMinimumSize() {
-            return getPreferredSize();
-        }
-
     }
 
 }
-
-
-
-
-
-
-

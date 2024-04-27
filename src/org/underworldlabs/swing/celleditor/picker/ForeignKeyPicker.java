@@ -11,7 +11,9 @@ import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Map;
@@ -33,7 +35,8 @@ public class ForeignKeyPicker extends JPanel
 
     private ResultSetTable foreignTable;
     private Object selectedValue;
-    private int selectedIndex;
+    private int selectedIndex = -1;
+    private final int foreignIndex;
     protected boolean isPopupOpen;
 
     private PickerPopup popup;
@@ -46,13 +49,16 @@ public class ForeignKeyPicker extends JPanel
             Vector<Vector<Object>> foreignKeysItems,
             Map<Integer, String> foreignKeysNames,
             Object selectedValue, Map<Integer,
-            String> selectedValues) {
+            String> selectedValues,
+            int foreignIndex
+    ) {
 
         this.foreignKeyTableModel = foreignKeysTableModel;
         this.foreignKeysItems = foreignKeysItems;
         this.foreignKeysNames = foreignKeysNames;
         this.selectedValues = selectedValues;
         this.isPopupOpen = false;
+        this.foreignIndex = foreignIndex;
 
         init();
         arrange();
@@ -191,7 +197,7 @@ public class ForeignKeyPicker extends JPanel
                 if (e.getClickCount() > 1) {
                     selectedIndex = ((TableSorter) foreignTable.getModel()).modelIndex(foreignTable.getSelectedRow());
                     if (selectedIndex > -1) {
-                        setText(foreignKeysItems.get(0).get(selectedIndex).toString());
+                        setText(foreignKeysItems.get(foreignIndex).get(selectedIndex).toString());
                         closePopup();
                     }
                 }

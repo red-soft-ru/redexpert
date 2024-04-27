@@ -45,8 +45,8 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.celleditor.picker.TimePicker;
+import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
@@ -584,10 +584,14 @@ public class TableDataTab extends JPanel
                     @Override
                     public Object construct() {
                         for (org.executequery.databaseobjects.impl.ColumnConstraint key : foreigns) {
+                            int i = 0;
+                            for (String columnName : key.getColumnDisplayList()) {
+                                int columnIndex = tableModel.getColumnIndex(columnName);
+                                if (columnIndex > -1)
+                                    table.setForeignKeyTable(columnIndex, i, tableForeign(key), allItemsForeign(key), namesForeign(key), tableForeignChildren(key));
 
-                            int columnIndex = tableModel.getColumnIndex(key.getColumnName());
-                            if (columnIndex > -1)
-                                table.setForeignKeyTable(columnIndex, tableForeign(key), allItemsForeign(key), namesForeign(key), tableForeignChildren(key));
+                                i++;
+                            }
                         }
                         return null;
                     }

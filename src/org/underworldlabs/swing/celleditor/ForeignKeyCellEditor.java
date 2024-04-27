@@ -29,7 +29,8 @@ public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor
             Vector<String> foreignKeysNames,
             Object selectedValue,
             int selectedRow,
-            int[] childColumnIndices) {
+            int[] childColumnIndices,
+            int foreignIndex) {
 
         this.resultSetTableModel = resultSetTableModel;
         this.childColumnIndices = childColumnIndices;
@@ -40,7 +41,8 @@ public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor
                 foreignKeysItems,
                 getForeignNames(foreignKeysNames),
                 selectedValue,
-                getForeignSelectedValues()
+                getForeignSelectedValues(),
+                foreignIndex
         );
     }
 
@@ -80,13 +82,14 @@ public class ForeignKeyCellEditor extends AbstractAdjustableCellEditor
 
     @Override
     public Object getCellEditorValue() {
+        if (picker.getSelectedIndex() != -1) {
+            if (childColumnIndices.length > 0) {
+                for (int i = 0; i < childColumnIndices.length; i++) {
 
-        if (childColumnIndices.length > 0) {
-            for (int i = 0; i < childColumnIndices.length; i++) {
-
-                String newValue = picker.getValueAt(i);
-                if (newValue != null)
-                    resultSetTableModel.setValueAt(newValue, selectedRow, childColumnIndices[i]);
+                    String newValue = picker.getValueAt(i);
+                    if (newValue != null)
+                        resultSetTableModel.setValueAt(newValue, selectedRow, childColumnIndices[i]);
+                }
             }
         }
 

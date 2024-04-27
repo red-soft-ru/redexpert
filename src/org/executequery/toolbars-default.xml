@@ -39,7 +39,7 @@
 
         <buttons>
 
-            <button id="9" action-id="connect-command">
+            <button id="9" action-id="new-connection-command">
                 <visible>false</visible>
                 <order>0</order>
             </button>
@@ -65,10 +65,10 @@
                 <order>9</order>
             </button>
 
-            <!--<button id="47" action-id="comparerDB-command">
+            <button id="47" action-id="comparerDB-command">
                 <visible>true</visible>
                 <order>9</order>
-            </button>-->
+            </button>
 
             <button id="48" action-id="execute-sql-script-command">
                 <visible>true</visible>
@@ -120,36 +120,6 @@
 
         <!--<buttons>
 
-            <button id="45" action-id="export-sql-command">
-                >
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="24" action-id="import-delimited-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="26" action-id="export-delimited-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="25" action-id="import-xml-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="27" action-id="export-xml-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="36" action-id="export-excel-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
 
             <button id="29">
                 <visible>false</visible>
@@ -157,11 +127,6 @@
             </button>
 
             <button id="46" action-id="export-connections-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="47" action-id="import-connections-from-file-command">
                 <visible>false</visible>
                 <order>1000</order>
             </button>

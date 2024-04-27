@@ -35,15 +35,10 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
-import org.executequery.gui.importexport.ImportExportDataProcess;
-import org.executequery.gui.importexport.ImportExportDelimitedPanel;
-import org.executequery.gui.importexport.ImportExportExcelPanel;
-import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.util.MiscUtils;
 
@@ -739,49 +734,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     }
 
-    public void exportExcel(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXCEL);
-    }
-
-    public void importXml(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.IMPORT_XML);
-    }
-
-    public void exportXml(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXPORT_XML);
-    }
-
-    public void importDelimited(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.IMPORT_DELIMITED);
-    }
-
-    public void exportDelimited(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXPORT_DELIMITED);
-    }
-
-    public void exportDbunit(ActionEvent e) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-
-        if (object != null && (object instanceof DatabaseTable)) {
-
-            Action action = ActionBuilder.get("export-dbunit-command");
-            action.actionPerformed(new ActionEvent(object, e.getID(), e.getActionCommand()));
-        }
-
-    }
-
-    public void exportSQL(ActionEvent e) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-
-        if (object != null && (object instanceof DatabaseTable)) {
-
-            Action action = ActionBuilder.get("export-sql-command");
-            action.actionPerformed(new ActionEvent(object, e.getID(), e.getActionCommand()));
-        }
-    }
-
     public void moveToFolder(ActionEvent e) {
         treePanel.moveToFolder(currentSelection);
     }
@@ -793,74 +745,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     public void connect(ActionEvent e) {
         treePanel.connect(currentSelection);
-    }
-
-    private void importExportDialog(int transferType) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-        if (object == null || !(object instanceof DatabaseObject)) {
-            return;
-        }
-
-        DatabaseConnection dc = treePanel.getSelectedDatabaseConnection();
-
-        DatabaseObject _object = (DatabaseObject) object;
-        String schemaName = _object.getNamePrefix(); // _object.getSchemaName();
-        String tableName = _object.getName();
-
-        BaseDialog dialog = null;
-        JPanel panel = null;
-
-        try {
-            GUIUtilities.showWaitCursor();
-            switch (transferType) {
-
-                case ImportExportDataProcess.EXPORT_DELIMITED:
-                    dialog = new BaseDialog(bundledString("ExportData"), false, false);
-                    panel = new ImportExportDelimitedPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.IMPORT_DELIMITED:
-                    dialog = new BaseDialog(bundledString("ImportData"), false, false);
-                    panel = new ImportExportDelimitedPanel(
-                            dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.EXPORT_XML:
-                    dialog = new BaseDialog(bundledString("exportXml"), false, false);
-                    panel = new ImportExportXMLPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.IMPORT_XML:
-                    dialog = new BaseDialog(bundledString("importXml"), false, false);
-                    panel = new ImportExportXMLPanel(
-                            dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.EXCEL:
-                    dialog = new BaseDialog(bundledString("exportExcel"), false, false);
-                    panel = new ImportExportExcelPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-            }
-
-            if (dialog != null) {
-                dialog.addDisplayComponent(panel);
-            }
-            if (dialog != null) {
-                dialog.display();
-            }
-        } finally {
-            GUIUtilities.showNormalCursor();
-        }
     }
 
     private DatabaseTable getSelectedTable() {

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    =======================================================================
+=======================================================================
     File:         actions.xml
     Author:       Takis Diakoumis
     Description:  Action definitions file for menus, toolbars, etc.
-    =======================================================================
+=======================================================================
 -->
 
 <actions>
@@ -224,14 +224,6 @@
             large-icon="/org/executequery/icons/create_database32.png"
             description="Create Database"
             execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
-
-    <action id="database-disconnect-command"
-            name="Close Connection"
-            mnemonic="C"
-            accel-editable="true"
-            large-icon="/org/executequery/icons/DatabaseDisconnect24.png"
-            description="Close the database connection associated with the current selection"
-            execute-class="org.executequery.actions.databasecommands.DisconnectCommand"/>
 
     <action id="create-erd-command"
             name="Create New ERD"
@@ -602,22 +594,6 @@
             description="Virtual machine heap size"
             execute-class="org.executequery.actions.toolscommands.HeapStatusCommand"/>
 
-    <action id="import-delimited-command"
-            name="Import from Delimited File"
-            mnemonic="D"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ImportDelimited16.png"
-            large-icon="/org/executequery/icons/ImportDelimited24.png"
-            execute-class="org.executequery.actions.toolscommands.ImportDelimitedCommand"/>
-
-    <action id="export-delimited-command"
-            name="Export to Delimited File"
-            mnemonic="D"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportDelimited16.png"
-            large-icon="/org/executequery/icons/ExportDelimited24.png"
-            execute-class="org.executequery.actions.toolscommands.ExportDelimitedCommand"/>
-
     <action id="import-data-from-file-command"
             name="Import data from file"
             description="Import data into database from local files (*.csv, *.xlsx, ...)"
@@ -653,22 +629,6 @@
             description="Compare data types across different database products"
             execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
 
-    <action id="import-xml-command"
-            name="Import from XML"
-            mnemonic="X"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ImportXml16.png"
-            large-icon="/org/executequery/icons/ImportXML24.png"
-            execute-class="org.executequery.actions.toolscommands.ImportXMLCommand"/>
-
-    <action id="export-xml-command"
-            name="Export to XML"
-            mnemonic="X"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportXml16.png"
-            large-icon="/org/executequery/icons/ExportXML24.png"
-            execute-class="org.executequery.actions.toolscommands.ExportXMLCommand"/>
-
     <action id="preferences-command"
             name="Preferences"
             mnemonic="P"
@@ -677,7 +637,7 @@
             large-icon="/org/executequery/icons/Preferences24.png"
             execute-class="org.executequery.actions.toolscommands.PreferencesCommand"/>
 
-    <action id="connect-command"
+    <action id="new-connection-command"
             name="New Connection"
             mnemonic="N"
             accel-editable="true"
@@ -711,27 +671,6 @@
             small-icon="/org/executequery/icons/SystemConsole16.png"
             large-icon="/org/executequery/icons/SystemConsole24.png"
             execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
-
-    <action id="export-excel-command"
-            name="Export to Excel Spreadsheet"
-            mnemonic="S"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportExcel16.png"
-            execute-class="org.executequery.actions.toolscommands.ExportExcelCommand"/>
-
-    <action id="export-dbunit-command"
-            name="Export as DBUnit Dataset"
-            mnemonic="Q"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportXML16.png"
-            execute-class="org.executequery.actions.toolscommands.ExportDBUnitCommand"/>
-
-    <action id="export-sql-command"
-            name="Export as SQL"
-            mnemonic="Q"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExportSQL16.png"
-            execute-class="org.executequery.actions.toolscommands.ExportSQLCommand"/>
 
     <action id="insert-row-command"
             name="Create a new table column after the current selection"

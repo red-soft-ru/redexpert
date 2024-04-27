@@ -71,8 +71,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private JMenu active;
     private JMenu sqlTable;
     private JMenu sqlView;
-    private JMenu exportData;
-    private JMenu importData;
 
     private final BrowserTreePopupMenuActionListener listener;
 
@@ -142,8 +140,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         createActiveInactiveMenu(listener);
         createTableSqlMenu(listener);
         createViewSqlMenu(listener);
-        createExportMenu(listener);
-        createImportMenu(listener);
         moveToFolder = createMenuItem(bundleString("moveToFolder"), "moveToFolder", listener);
         add(moveToFolder);
         dataBaseInformation = createMenuItem("dataBaseInformation", "dataBaseInformation", listener);
@@ -204,8 +200,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     active.setVisible(false);
                     sqlTable.setVisible(false);
                     sqlView.setVisible(false);
-                    exportData.setVisible(false);
-                    importData.setVisible(false);
 
                     recycleConnection.setVisible(!canConnect);
                     deleteObject.setVisible(false);
@@ -354,8 +348,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             dataBaseInformation.setVisible(false);
             sqlTable.setVisible(false);
             sqlView.setVisible(false);
-            exportData.setVisible(false);
-            importData.setVisible(false);
         }
     }
 
@@ -382,23 +374,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private boolean isCatalog(DefaultMutableTreeNode currentPathComponent) {
 
         return currentPathComponent instanceof DatabaseCatalogNode;
-    }
-
-    private void createImportMenu(ActionListener listener) {
-        importData = MenuItemFactory.createMenu(bundleString("ImportData"));
-        importData.add(createMenuItem(bundleString("importXml"), "importXml", listener));
-        importData.add(createMenuItem(bundleString("importDelimited"), "importDelimited", listener));
-        //add(importData);
-    }
-
-    private void createExportMenu(ActionListener listener) {
-        exportData = MenuItemFactory.createMenu(bundleString("ExportData"));
-        exportData.add(createMenuItem(bundleString("exportSQL"), "exportSQL", listener));
-        exportData.add(createMenuItem(bundleString("exportXml"), "exportXml", listener));
-        exportData.add(createMenuItem(bundleString("exportDbunit"), "exportDbunit", listener));
-        exportData.add(createMenuItem(bundleString("exportDelimited"), "exportDelimited", listener));
-        exportData.add(createMenuItem(bundleString("exportExcel"), "exportExcel", listener));
-        //add(exportData);
     }
 
     private void createTableSqlMenu(ActionListener listener) {

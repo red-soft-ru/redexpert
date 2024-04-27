@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    =======================================================================
-    File:         menus.xml
-    Author:       Takis Diakoumis
-    Description:  Menu and menu item definitions
-    =======================================================================
+=======================================================================
+            File:         menus.xml
+            Author:       Takis Diakoumis
+            Description:  Menu and menu item definitions
+=======================================================================
 -->
-
 
 <menus>
 
@@ -20,13 +19,8 @@
               key="menu.database.connections"
               class="org.executequery.gui.menu.ConnectionsMenu">
 
-            <menu-item id="connect-command"
-                       index="0"
+            <menu-item id="new-connection-command"
                        class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <!--<menu-item id="export-connections-command"
-                       index="1"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>-->
 
             <menu name="Import Connections"
                   key="menu.database.connections.import"
@@ -34,39 +28,31 @@
                   class="org.underworldlabs.swing.menu.MainMenu">
 
                 <menu-item id="import-connections-from-DB-command"
-                           index="0"
                            class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-                <!--<menu-item id="import-connections-from-file-command"
-                           index="1"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"/>-->
+                <menu-item id="import-connections-from-file-command"
+                           class="org.underworldlabs.swing.menu.MainMenuItem"/>
             </menu>
 
-            <menu-item id="separator"
-                       index="1"/>
+            <menu-item id="export-connections-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         </menu>
 
         <menu-item id="create-database-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="database-disconnect-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="separator"/>
+
+        <menu-item id="execute-sql-script-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="execute-object"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="compare-data-types"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="separator"/>
 
-        <menu-item id="import-data-from-file-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="execute-sql-script-command"
+        <menu-item id="compare-data-types"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Generate ERD"
@@ -97,65 +83,39 @@
 
         <menu-item id="scratch-pad-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="manage-shortcuts-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="user-keywords-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="user-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="grant-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="trace-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="database-statistic-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="profiler-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="generator-test-data-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="table-validation-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <!--<menu-item id="separator"/>
-
-        <menu name="Import Data"
-              key="menu.tools.import-data"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="I">
-
-            <menu-item id="import-xml-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <menu-item id="import-delimited-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        </menu>
-
-        <menu name="Export Data"
-              key="menu.tools.export-data"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="X">
-
-            <menu-item id="export-xml-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <menu-item id="export-delimited-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <menu-item id="export-sql-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <menu-item id="export-excel-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-              <menu-item id="export-excel-command"
-                         class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        </menu>
-
-        <menu-item id="separator"/>-->
+        <menu-item id="import-data-from-file-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="System Logs"
               key="menu.tools.system-logs"

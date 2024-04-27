@@ -1,10 +1,15 @@
 package org.executequery.gui.exportData;
 
 import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.importexport.DefaultExcelWorkbookBuilder;
-import org.executequery.gui.importexport.ExcelWorkbookBuilder;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
 
@@ -38,7 +43,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
             List<ColumnData> columns = getCreateColumnData(metaData);
             int columnCount = metaData.getColumnCount();
 
-            ExcelWorkbookBuilder builder = new DefaultExcelWorkbookBuilder();
+            ExcelBookBuilder builder = new ExcelBookBuilder();
             builder.createSheet("Exported Data");
 
             if (addHeaders) {
@@ -118,7 +123,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
                 rowCount = SpreadsheetVersion.EXCEL2007.getLastRowIndex();
             }
 
-            ExcelWorkbookBuilder builder = new DefaultExcelWorkbookBuilder();
+            ExcelBookBuilder builder = new ExcelBookBuilder();
             builder.createSheet("Exported Data");
 
             if (addHeaders) {
@@ -176,5 +181,68 @@ public class ExportHelperXLSX extends AbstractExportHelper {
             displayErrorMessage(e);
         }
     }
+
+    private static class ExcelBookBuilder {
+
+        private final SXSSFWorkbook workbook;
+        private final CellStyle defaultCellStyle;
+
+        private int currentRow;
+        private SXSSFSheet sheet;
+
+        public ExcelBookBuilder() {
+            workbook = new SXSSFWorkbook();
+            defaultCellStyle = createStyle();
+        }
+
+        public void writeTo(OutputStream outputStream) throws IOException {
+            workbook.write(outputStream);
+        }
+
+        public void createSheet(String sheetName) {
+            sheet = workbook.createSheet(sheetName);
+        }
+
+        public void addRow(List<String> values) {
+            fillRow(values, createRow(++currentRow), defaultCellStyle);
+        }
+
+        public void addRowHeader(List<String> values) {
+
+            if (currentRow > 0)
+                currentRow++;
+
+            Font font = workbook.createFont();
+            font.setBold(true);
+
+            CellStyle style = createStyle();
+            style.setFont(font);
+
+            fillRow(values, createRow(currentRow), style);
+        }
+
+        private SXSSFRow createRow(int rowNumber) {
+            return sheet.createRow(rowNumber);
+        }
+
+        private void fillRow(List<String> values, SXSSFRow row, CellStyle style) {
+
+            for (int i = 0, n = values.size(); i < n; i++) {
+                SXSSFCell cell = row.createCell(i);
+                cell.setCellStyle(style);
+                try {
+                    double doubleValue = Double.parseDouble(values.get(i));
+                    cell.setCellValue(doubleValue);
+                } catch (Exception e) {
+                    cell.setCellValue(new XSSFRichTextString(values.get(i)));
+                }
+            }
+        }
+
+        private CellStyle createStyle() {
+            return workbook.createCellStyle();
+        }
+
+    } // ExcelBookBuilder class
 
 }

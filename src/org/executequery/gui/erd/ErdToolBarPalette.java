@@ -56,6 +56,7 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton erdTitleButton;
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
+    private RolloverButton openButton;
     private RolloverButton saveButton;
     private RolloverButton printButton;
 
@@ -163,6 +164,12 @@ public class ErdToolBarPalette extends PanelToolBar
                 this
         );
 
+        openButton = WidgetFactory.createRolloverButton(
+                "openButton",
+                ActionBuilder.get("open-command"),
+                Bundles.get("action.open-command")
+        );
+
         saveButton = WidgetFactory.createRolloverButton(
                 "saveButton",
                 ActionBuilder.get("save-command"),
@@ -197,6 +204,7 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(zoomInButton);
 
         addSeparator();
+        addButton(openButton);
         addButton(saveButton);
         addButton(printButton);
     }

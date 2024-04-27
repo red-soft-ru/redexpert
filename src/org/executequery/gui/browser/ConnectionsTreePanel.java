@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.databasecommands.CreateDatabaseCommand;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -213,15 +214,6 @@ public class ConnectionsTreePanel extends TreePanel
 
     private void enableButtons(boolean enableUpButton, boolean enableDownButton, boolean enableReloadButton, boolean enableDeleteButton, boolean enableConnect) {
         toolBar.enableButtons(enableUpButton, enableDownButton, enableReloadButton, enableDeleteButton, enableConnect, enableReloadButton);
-    }
-
-    public void collapseAll() {
-
-        for (Enumeration<TreeNode> i = tree.getRootNode().children(); i.hasMoreElements(); ) {
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) i.nextElement();
-            tree.collapsePath(new TreePath(node.getPath()));
-        }
-
     }
 
     /**
@@ -749,6 +741,10 @@ public class ConnectionsTreePanel extends TreePanel
         String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
 
         newConnection(databaseConnectionFactory().create(name, sourceName, tdc));
+    }
+
+    public void newDatabase() {
+        new CreateDatabaseCommand().execute(null);
     }
 
     /**

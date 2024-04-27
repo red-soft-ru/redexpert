@@ -1,32 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    =======================================================================
-    File:         toolbars-default.xml
-    Author:       Takis Diakoumis
-    Description:  Toolbar buttons and layout defaults file
-    =======================================================================
+=======================================================================
+        File:         toolbars-default.xml
+        Author:       Takis Diakoumis
+        Description:  Toolbar buttons and layout defaults file
+=======================================================================
 -->
-
-<!-- 
-
-    separator definition:
-    
-    <button id="29">
-        <visible>false</visible>
-        <order>3</order>
-    </button>
-
- -->
-
-<!-- next id = 48 -->
 
 <system-toolbars>
 
     <toolbar name="Database Tools" visible="true">
 
         <constraints>
-
             <row>0</row>
             <position>2</position>
             <loc-x>-1</loc-x>
@@ -34,25 +20,13 @@
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
-
         </constraints>
 
         <buttons>
 
-            <button id="9" action-id="new-connection-command">
-                <visible>false</visible>
-                <order>0</order>
-            </button>
-
             <button id="12" action-id="editor-command">
                 <visible>true</visible>
                 <order>1</order>
-            </button>
-
-            <button id="20" action-id="create-database-command">
-                <visible>true</visible>
-                <order>2</order>
-
             </button>
 
             <button id="24" action-id="user-manager-command">
@@ -101,44 +75,11 @@
             </button>
 
         </buttons>
-
-    </toolbar>
-
-    <toolbar name="Import/Export Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>6</position>
-            <loc-x>346</loc-x>
-            <resize-offset-x>341</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <!--<buttons>
-
-
-            <button id="29">
-                <visible>false</visible>
-                <order>3</order>
-            </button>
-
-            <button id="46" action-id="export-connections-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-        </buttons>-->
-
     </toolbar>
 
     <toolbar name="System Tools" visible="true">
 
         <constraints>
-
             <row>0</row>
             <position>3</position>
             <loc-x>489</loc-x>
@@ -146,7 +87,6 @@
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
-
         </constraints>
 
         <buttons>
@@ -162,7 +102,6 @@
             </button>
 
         </buttons>
-
     </toolbar>
 
 </system-toolbars>

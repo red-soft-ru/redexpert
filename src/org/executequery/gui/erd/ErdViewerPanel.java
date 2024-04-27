@@ -1158,7 +1158,7 @@ public class ErdViewerPanel extends DefaultTabView
         if (!editable)
             return;
 
-        tools.setScaleComboValue(value);
+        tools.setScale(value);
     }
 
     protected void setPopupMenuScaleValue(int index) {
@@ -1221,7 +1221,7 @@ public class ErdViewerPanel extends DefaultTabView
             if (scale < 2.0) {
                 scale += 0.25;
                 if (tools != null) {
-                    tools.incrementScaleCombo(1);
+                    tools.incrementScale(1);
                 }
             } else
                 return;
@@ -1231,7 +1231,7 @@ public class ErdViewerPanel extends DefaultTabView
             if (scale > 0.25) {
                 scale -= 0.25;
                 if (tools != null) {
-                    tools.incrementScaleCombo(-1);
+                    tools.incrementScale(-1);
                 }
             } else {
                 return;

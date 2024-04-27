@@ -545,6 +545,22 @@ public final class WidgetFactory {
     /**
      * Create named RolloverButton class instance
      *
+     * @param name     the component's name
+     * @param toolTip  the tool tip text for this component
+     * @param icon     the icon file name used as the default image
+     * @param listener <code>ActionListener</code> to be added
+     */
+    public static RolloverButton createRolloverButton(String name, String toolTip, String icon, ActionListener listener) {
+
+        RolloverButton button = createRolloverButton(name, toolTip, icon);
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
      * @param name    the component's name
      * @param action  action to be added
      * @param toolTip the tool tip text for this component

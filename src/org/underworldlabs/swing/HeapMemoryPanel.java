@@ -120,20 +120,7 @@ public class HeapMemoryPanel extends JPanel
                 new Insets(3, 3, 3, 3), 0, 0));
     }
 
-    public void actionPerformed(ActionEvent e) {
-        int total = (int) Runtime.getRuntime().totalMemory();
-        int free = (int) Runtime.getRuntime().freeMemory();
-        int totalUsedBefore = total - free;
-
-        System.gc();
-
-        total = (int) Runtime.getRuntime().totalMemory();
-        free = (int) Runtime.getRuntime().freeMemory();
-        int totalUserAfter = total - free;
-
-        System.err.println(bundledString("Garbage-collection-released") +
-                ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
-    }
+    public static final int thou = 1024 * 1024;
 
     /**
      * Stops the timer controlling the heap bar.
@@ -157,20 +144,36 @@ public class HeapMemoryPanel extends JPanel
         }
     }
 
+    public void actionPerformed(ActionEvent e) {
+        long total = Runtime.getRuntime().totalMemory();
+        long free = Runtime.getRuntime().freeMemory();
+        long totalUsedBefore = total - free;
+
+        System.gc();
+
+        total = Runtime.getRuntime().totalMemory();
+        free = Runtime.getRuntime().freeMemory();
+        long totalUserAfter = total - free;
+
+        System.err.println(bundledString("Garbage-collection-released") +
+                ((totalUsedBefore - totalUserAfter) / 1000) + "Kb.");
+    }
+
     private void startMeasure(final ProgressModel progModel,
                               final JProgressBar memProgress) {
         memProgress.setStringPainted(true);
         final String used_s = bundledString("Mb-used");
         final String total_s = bundledString("Mb-total");
-        final int thou = 1024 * 1024;
 
         final Runnable showProgress = new Runnable() {
             public void run() {
                 long total = Runtime.getRuntime().totalMemory();
                 long free = Runtime.getRuntime().freeMemory();
                 long used = total - free;
-                progModel.setMaximum((int) total / thou);
-                progModel.setValue((int) used / thou);
+                int max = (int) (total / thou);
+                int value = (int) (used / thou);
+                progModel.setMaximum(max);
+                progModel.setValue(value);
                 memProgress.setString((used / thou) + used_s +
                         (total / thou) + total_s);
             }
@@ -206,7 +209,7 @@ public class HeapMemoryPanel extends JPanel
         }
 
         public int getValue() {
-            return getMaximum() - (int) Runtime.getRuntime().freeMemory();
+            return getMaximum() - (int) (Runtime.getRuntime().freeMemory() / thou);
         }
 
         public void setMaximum(int i) {

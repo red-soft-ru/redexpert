@@ -28,6 +28,7 @@ import org.executequery.gui.text.DefaultTextEditorContainer;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
@@ -54,6 +55,9 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
     private RolloverButton editorButton;
     private RolloverButton newButton;
     private RolloverButton trashButton;
+    private RolloverButton openButton;
+    private RolloverButton saveButton;
+    private RolloverButton printButton;
 
     private static int count = 1;
 
@@ -89,6 +93,24 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
         trashButton = new RolloverButton("/org/executequery/icons/Delete16.png",
                 bundleString("clear"));
 
+        openButton = WidgetFactory.createRolloverButton(
+                "openButton",
+                ActionBuilder.get("open-command"),
+                Bundles.get("action.open-command")
+        );
+
+        saveButton = WidgetFactory.createRolloverButton(
+                "saveButton",
+                ActionBuilder.get("save-command"),
+                Bundles.get("action.save-command")
+        );
+
+        printButton = WidgetFactory.createRolloverButton(
+                "printButton",
+                ActionBuilder.get("print-command"),
+                Bundles.get("action.print-command")
+        );
+
         editorButton.addActionListener(this);
         trashButton.addActionListener(this);
         newButton.addActionListener(this);
@@ -102,6 +124,9 @@ public class ScratchPadPanel extends DefaultTextEditorContainer
         tools.addButton(newButton);
         tools.addButton(editorButton);
         tools.addButton(trashButton);
+        tools.addButton(openButton);
+        tools.addButton(saveButton);
+        tools.addButton(printButton);
 
         JPanel base = new JPanel(new BorderLayout());
         base.add(tools, BorderLayout.NORTH);

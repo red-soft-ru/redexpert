@@ -55,6 +55,8 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton canvasBgButton;
     private RolloverButton canvasFgButton;
     private RolloverButton erdTitleButton;
+    private RolloverButton saveButton;
+    private RolloverButton printButton;
 
     /**
      * The zoom in button
@@ -118,6 +120,12 @@ public class ErdToolBarPalette extends PanelToolBar
         erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
                 bundleString("erdTitle"));
 
+        saveButton = new RolloverButton(ActionBuilder.get("save-command"), Bundles.get("action.save-command"));
+        saveButton.setText(Constants.EMPTY);
+
+        printButton = new RolloverButton(ActionBuilder.get("print-command"), Bundles.get("action.print-command"));
+        printButton.setText(Constants.EMPTY);
+
         genScriptsButton.addActionListener(this);
         canvasFgButton.addActionListener(this);
         canvasBgButton.addActionListener(this);
@@ -165,6 +173,10 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(zoomOutButton);
         //addComboBox(scaleCombo);
         addButton(zoomInButton);
+
+        addSeparator();
+        addButton(saveButton);
+        addButton(printButton);
 
     }
 

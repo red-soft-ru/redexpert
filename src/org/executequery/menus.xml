@@ -44,6 +44,9 @@
 
         <menu-item id="separator"/>
 
+        <menu-item id="compare-data-types"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="execute-sql-script-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
@@ -51,9 +54,6 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
-
-        <menu-item id="compare-data-types"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu name="Generate ERD"
               key="menu.database.generate-erd"
@@ -68,6 +68,12 @@
 
         </menu>
 
+        <menu-item id="manage-shortcuts-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="user-keywords-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
     </menu>
 
     <menu name="Tools"
@@ -75,37 +81,29 @@
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="T">
 
-        <menu-item id="drivers-command"
+        <menu-item id="scratch-pad-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="editor-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="scratch-pad-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+        <menu-item id="separator"/>
 
-        <menu-item id="manage-shortcuts-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="user-keywords-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="user-manager-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="grant-manager-command"
+        <menu-item id="database-statistic-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="trace-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="database-statistic-command"
+        <menu-item id="grant-manager-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="user-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
 
         <menu-item id="profiler-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="generator-test-data-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="comparerDB-command"
@@ -114,72 +112,80 @@
         <menu-item id="table-validation-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="separator"/>
+
         <menu-item id="import-data-from-file-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu name="System Logs"
-              key="menu.tools.system-logs"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="L">
+        <menu-item id="generator-test-data-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-            <menu-item id="application-logs-command"
-                       key="menu.tools.system-logs.application"
-                       name="System Output Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="S"
-                       action-command="viewSystemLog"
-                       tool-tip="View the system output log"/>
+    </menu>
 
-            <menu-item id="separator"/>
+    <menu name="System"
+          key="menu.system"
+          class="org.underworldlabs.swing.menu.MainMenu"
+          mnemonic="T">
 
-            <menu name="Reset Logs"
-                  key="menu.tools.system-logs-reset-logs"
-                  class="org.underworldlabs.swing.menu.MainMenu"
-                  mnemonic="R">
-
-                <menu-item id="application-logs-command"
-                           key="menu.tools.system-logs-reset-logs.application"
-                           name="System Output Log"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"
-                           mnemonic="S"
-                           action-command="resetSystemLog"
-                           tool-tip="Reset the system output log"/>
-
-                <menu-item id="application-logs-command"
-                           key="menu.tools.system-logs-reset-logs.export"
-                           name="Data Export Log"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"
-                           mnemonic="X"
-                           action-command="resetExportLog"
-                           tool-tip="Reset the data export log"/>
-
-                <menu-item id="application-logs-command"
-                           key="menu.tools.system-logs-reset-logs.import"
-                           name="Data Import Log"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"
-                           mnemonic="I"
-                           action-command="resetImportLog"
-                           tool-tip="Reset the data import log"/>
-
-                <menu-item id="separator"/>
-
-                <menu-item id="application-logs-command"
-                           key="menu.tools.system-logs-reset-logs.all"
-                           name="Reset All"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"
-                           mnemonic="A"
-                           action-command="resetAllLogs"
-                           tool-tip="Reset all logs"/>
-
-            </menu>
-
-        </menu>
-
-        <menu-item id="console-command"
+        <menu-item id="drivers-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="heap-memory-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="console-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="application-logs-command"
+                   key="menu.system.logs"
+                   name="System Output Log"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"
+                   mnemonic="S"
+                   action-command="viewSystemLog"
+                   tool-tip="View the system output log"/>
+
+        <menu name="Reset Logs"
+              key="menu.system.reset-logs"
+              class="org.underworldlabs.swing.menu.MainMenu"
+              mnemonic="R">
+
+            <menu-item id="application-logs-command"
+                       key="menu.system.reset-logs.application"
+                       name="System Output Log"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"
+                       mnemonic="S"
+                       action-command="resetSystemLog"
+                       tool-tip="Reset the system output log"/>
+
+            <menu-item id="application-logs-command"
+                       key="menu.system.reset-logs.export"
+                       name="Data Export Log"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"
+                       mnemonic="X"
+                       action-command="resetExportLog"
+                       tool-tip="Reset the data export log"/>
+
+            <menu-item id="application-logs-command"
+                       key="menu.system.reset-logs.import"
+                       name="Data Import Log"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"
+                       mnemonic="I"
+                       action-command="resetImportLog"
+                       tool-tip="Reset the data import log"/>
+
+            <menu-item id="separator"/>
+
+            <menu-item id="application-logs-command"
+                       key="menu.system.reset-logs.all"
+                       name="Reset All"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"
+                       mnemonic="A"
+                       action-command="resetAllLogs"
+                       tool-tip="Reset all logs"/>
+
+        </menu>
 
         <menu-item id="separator"/>
 

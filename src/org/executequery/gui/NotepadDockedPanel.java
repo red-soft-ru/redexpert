@@ -37,7 +37,7 @@ public class NotepadDockedPanel extends AbstractDockedTabActionPanel {
         super(new BorderLayout());
 
         scratchPadPanel = new ScratchPadPanel();
-        scratchPadPanel.getPanelToolBar().remove(0);
+        scratchPadPanel.getToolbar().remove(0);
         add(scratchPadPanel, BorderLayout.CENTER);
     }
 

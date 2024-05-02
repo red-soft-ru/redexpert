@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -170,7 +169,7 @@ class DefaultFileView extends FileView {
     private ImageIcon JAR_ICON;
     private ImageIcon TEXT_ICON;
     private ImageIcon SQL_ICON;
-    private ImageIcon EQ_ICON;
+    private ImageIcon RE_ICON;
     private ImageIcon JPEG_ICON;
     private ImageIcon GIF_ICON;
     private ImageIcon XML_ICON;
@@ -184,7 +183,7 @@ class DefaultFileView extends FileView {
         SQL_ICON = GUIUtilities.loadIcon("DBImage16.png", true);
         JAR_ICON = GUIUtilities.loadIcon("Jar16.png", true);
         LOG_ICON = GUIUtilities.loadIcon("LogFile16.png", true);
-        EQ_ICON = GUIUtilities.loadIcon("ApplicationIcon48.png", true);
+        RE_ICON = GUIUtilities.loadIcon("ApplicationIcon.png", true);
 
         if (isEQLookAndFeel()) {
             ZIP_ICON = GUIUtilities.loadIcon("ZipFile16.png", true);
@@ -265,7 +264,7 @@ class DefaultFileView extends FileView {
             icon = SQL_ICON;
 
         else if (name.endsWith(".eqd"))
-            icon = EQ_ICON;
+            icon = RE_ICON;
 
         else if (name.endsWith(".log"))
             icon = LOG_ICON;

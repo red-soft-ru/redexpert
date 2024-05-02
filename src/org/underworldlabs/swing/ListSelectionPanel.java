@@ -111,7 +111,6 @@ public class ListSelectionPanel extends ActionPanel
         JButton selectOneButton = ActionUtilities.createButton(
                 this,
                 "selectOneAction",
-//                    IconUtilities.loadDefaultIconResource("SelectOne16.png", true),
                 IconUtilities.loadDefaultIconResource("Forward16.png", true),
                 bundleString("selectOneAction"));
 
@@ -124,7 +123,6 @@ public class ListSelectionPanel extends ActionPanel
         JButton removeOneButton = ActionUtilities.createButton(
                 this,
                 "removeOneAction",
-//                    IconUtilities.loadDefaultIconResource("RemoveOne16.png", true),
                 IconUtilities.loadDefaultIconResource("Previous16.png", true),
                 bundleString("removeOneAction"));
 

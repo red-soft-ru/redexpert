@@ -40,7 +40,6 @@
             name="Save"
             mnemonic="S"
             small-icon="/org/executequery/icons/Save16.png"
-            large-icon="/org/executequery/icons/Save24.png"
             accel-key="control S"
             accel-editable="true"
             description="Save an open document"
@@ -66,7 +65,6 @@
             accel-editable="true"
             accel-key="control shift S"
             small-icon="/org/executequery/icons/SaveAs16.png"
-            large-icon="/org/executequery/icons/SaveAs24.png"
             execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
 
     <action id="exit-program-command"
@@ -80,7 +78,6 @@
             name="Print"
             mnemonic="P"
             small-icon="/org/executequery/icons/Print16.png"
-            large-icon="/org/executequery/icons/Print24.png"
             accel-key="control P"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.PrintCommand"/>
@@ -115,7 +112,6 @@
             name="Cut"
             mnemonic="T"
             small-icon="/org/executequery/icons/Cut16.png"
-            large-icon="/org/executequery/icons/Cut24.png"
             accel-key="control X"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.CutCommand"/>
@@ -124,7 +120,6 @@
             name="Copy"
             mnemonic="C"
             small-icon="/org/executequery/icons/Copy16.png"
-            large-icon="/org/executequery/icons/Copy24.png"
             accel-key="control C"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.CopyCommand"/>
@@ -133,7 +128,6 @@
             name="Paste"
             mnemonic="P"
             small-icon="/org/executequery/icons/Paste16.png"
-            large-icon="/org/executequery/icons/Paste24.png"
             accel-key="control V"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.PasteCommand"/>
@@ -142,7 +136,6 @@
             name="Redo"
             mnemonic="R"
             small-icon="/org/executequery/icons/Redo16.png"
-            large-icon="/org/executequery/icons/Redo24.png"
             accel-key="control Y"
             accel-editable="false"
             description="Redo the last action"
@@ -152,7 +145,6 @@
             name="Undo"
             mnemonic="U"
             small-icon="/org/executequery/icons/Undo16.png"
-            large-icon="/org/executequery/icons/Undo24.png"
             accel-key="control Z"
             accel-editable="false"
             description="Undo the last action"
@@ -162,7 +154,6 @@
             name="Find..."
             mnemonic="F"
             small-icon="/org/executequery/icons/Find16.png"
-            large-icon="/org/executequery/icons/Find24.png"
             accel-key="control F"
             execute-class="org.executequery.actions.searchcommands.FindCommand"/>
 
@@ -170,7 +161,6 @@
             name="Find Next"
             mnemonic="N"
             small-icon="/org/executequery/icons/FindAgain16.png"
-            large-icon="/org/executequery/icons/FindAgain24.png"
             accel-key="F3"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.FindNextCommand"/>
@@ -178,7 +168,6 @@
     <action id="find-previous-command"
             name="Find Previous"
             mnemonic="P"
-            large-icon="/org/executequery/icons/FindPrevious24.png"
             accel-key="shift F3"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.FindPreviousCommand"/>
@@ -187,7 +176,6 @@
             name="Replace..."
             mnemonic="E"
             small-icon="/org/executequery/icons/Replace16.png"
-            large-icon="/org/executequery/icons/Replace24.png"
             accel-key="control R"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.ReplaceCommand"/>
@@ -196,14 +184,12 @@
             name="Replace Next"
             mnemonic="X"
             small-icon="/org/executequery/icons/FindAgain16.png"
-            large-icon="/org/executequery/icons/FindAgain24.png"
             execute-class="org.executequery.actions.searchcommands.ReplaceNextCommand"/>
 
     <action id="goto-command"
             name="Go To..."
             mnemonic="G"
             small-icon="/org/executequery/icons/GoTo16.png"
-            large-icon="/org/executequery/icons/GoTo24.png"
             accel-key="control G"
             accel-editable="true"
             description="Go to line number..."
@@ -214,7 +200,6 @@
             mnemonic="control C"
             accel-editable="true"
             small-icon="/org/executequery/icons/create_database16.png"
-            large-icon="/org/executequery/icons/create_database32.png"
             description="Create Database"
             execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
 
@@ -223,7 +208,6 @@
             mnemonic="N"
             accel-editable="true"
             small-icon="/org/executequery/icons/ErdPanel16.png"
-            large-icon="/org/executequery/icons/NewErd24.png"
             execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
 
     <action id="map-erd-command"
@@ -231,7 +215,6 @@
             mnemonic="M"
             accel-editable="true"
             small-icon="/org/executequery/icons/ErdPanel16.png"
-            large-icon="/org/executequery/icons/NewErd24.png"
             execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
 
     <action id="execute-command"
@@ -239,7 +222,6 @@
             accel-key="control shift ENTER"
             accel-editable="true"
             small-icon="/org/executequery/icons/Execute16.png"
-            large-icon="/org/executequery/icons/Execute24.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
 
     <action id="execute-in-any-connections-command"
@@ -247,7 +229,6 @@
             accel-key="control shift ENTER"
             accel-editable="true"
             small-icon="/org/executequery/icons/Executings16.png"
-            large-icon="/org/executequery/icons/Execute24.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteInAnyConnectionsCommand"/>
 
     <action id="execute-as-block-command"
@@ -438,7 +419,6 @@
             accel-key="control shift C"
             accel-editable="true"
             small-icon="/org/executequery/icons/Commit16.png"
-            large-icon="/org/executequery/icons/Commit24.png"
             execute-class="org.executequery.actions.queryeditor.CommitCommand"/>
 
     <action id="rollback-command"
@@ -446,7 +426,6 @@
             accel-key="control shift R"
             accel-editable="true"
             small-icon="/org/executequery/icons/Rollback16.png"
-            large-icon="/org/executequery/icons/Rollback24.png"
             execute-class="org.executequery.actions.queryeditor.RollbackCommand"/>
 
     <action id="sql-history-command"
@@ -455,7 +434,6 @@
             accel-editable="true"
             mnemonic="H"
             small-icon="/org/executequery/icons/History16.png"
-            large-icon="/org/executequery/icons/History16.png"
             execute-class="org.executequery.actions.queryeditor.HistoryCommand"/>
 
     <action id="execute-at-cursor-command"
@@ -477,7 +455,6 @@
             mnemonic="I"
             accel-editable="true"
             small-icon="/org/executequery/icons/NewIndex16.png"
-            large-icon="/org/executequery/icons/NewIndex24.png"
             description="Create a new database table index"
             execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
 
@@ -493,7 +470,6 @@
             mnemonic="S"
             accel-editable="true"
             small-icon="/org/executequery/icons/CreateScripts16.png"
-            large-icon="/org/executequery/icons/CreateScripts24.png"
             description="Extract database metadata into SQL script"
             execute-class="org.executequery.actions.toolscommands.ExportDbMetadataCommands"/>
 
@@ -501,7 +477,6 @@
             name="Help Topics"
             mnemonic="H"
             small-icon="/org/executequery/icons/Help16.png"
-            large-icon="/org/executequery/icons/Help24.png"
             accel-key="F1"
             accel-editable="true"
             description="Displays the help topics"
@@ -512,7 +487,6 @@
             mnemonic="A"
             accel-editable="true"
             small-icon="/org/executequery/icons/Information16.png"
-            large-icon="/org/executequery/icons/Information24.png"
             execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
 
     <action id="visit-redsoft-command"
@@ -540,7 +514,6 @@
             mnemonic="Q"
             accel-editable="true"
             small-icon="/org/executequery/icons/Edit16.png"
-            large-icon="/org/executequery/icons/Edit24.png"
             execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
 
     <action id="manage-shortcuts-command"
@@ -555,7 +528,6 @@
             mnemonic="P"
             accel-editable="true"
             small-icon="/org/executequery/icons/ScratchPad16.png"
-            large-icon="/org/executequery/icons/ScratchPad24.png"
             execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
 
     <action id="user-keywords-command"
@@ -563,7 +535,6 @@
             mnemonic="K"
             accel-editable="true"
             small-icon="/org/executequery/icons/Keywords16.png"
-            large-icon="/org/executequery/icons/KeyWords24.png"
             execute-class="org.executequery.actions.toolscommands.KeyWordsCommand"/>
 
     <action id="heap-memory-command"
@@ -599,7 +570,6 @@
             mnemonic="B"
             accel-editable="true"
             small-icon="/org/executequery/icons/Procedure16.png"
-            large-icon="/org/executequery/icons/Procedure24.png"
             description="View and execute stored procedures and functions"
             execute-class="org.executequery.actions.databasecommands.ExecuteStoredObjectCommand"/>
 
@@ -616,7 +586,6 @@
             mnemonic="P"
             accel-editable="true"
             small-icon="/org/executequery/icons/Preferences16.png"
-            large-icon="/org/executequery/icons/Preferences24.png"
             execute-class="org.executequery.actions.toolscommands.PreferencesCommand"/>
 
     <action id="new-connection-command"
@@ -625,7 +594,6 @@
             accel-editable="true"
             accel-key="control shift N"
             small-icon="/org/executequery/icons/DatabaseConnect16.png"
-            large-icon="/org/executequery/icons/DatabaseConnect24.png"
             execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
 
     <action id="import-connections-from-file-command"
@@ -651,7 +619,6 @@
             mnemonic="N"
             accel-editable="true"
             small-icon="/org/executequery/icons/SystemConsole16.png"
-            large-icon="/org/executequery/icons/SystemConsole24.png"
             execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
 
     <action id="insert-row-command"
@@ -670,7 +637,6 @@
             name="Drop the selected object"
             accel-editable="false"
             small-icon="/org/executequery/icons/DropTable16.png"
-            large-icon="/org/executequery/icons/DropTable24.png"
             execute-class="org.executequery.actions.othercommands.DropDatabaseObjectCommand"/>
 
     <action id="select-editor-connection-combo-command"
@@ -717,7 +683,6 @@
             mnemonic="U"
             accel-editable="true"
             small-icon="/org/executequery/icons/user_manager_16.png"
-            large-icon="/org/executequery/icons/user_manager_32.png"
             description="User Manager"
             execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
 
@@ -726,7 +691,6 @@
             mnemonic="GM"
             accel-editable="true"
             small-icon="/org/executequery/icons/grant_manager_16.png"
-            large-icon="/org/executequery/icons/grant_manager_32.png"
             description="Grant Manager"
             execute-class="org.executequery.actions.toolscommands.GrantManagerCommands"/>
 
@@ -743,7 +707,6 @@
             mnemonic="CDB"
             accel-editable="true"
             small-icon="/org/executequery/icons/ComparerDB_16.png"
-            large-icon="/org/executequery/icons/ComparerDB_32.png"
             description="Comparer DB"
             execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
 

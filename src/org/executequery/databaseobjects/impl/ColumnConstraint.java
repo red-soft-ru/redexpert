@@ -182,7 +182,8 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     void setColumn(DatabaseTableColumn databaseTableColumn);
 
     void addColumnToDisplayList(DatabaseTableColumn column);
-    void addReferenceColumnToDisplayList(DatabaseTableColumn column);
+
+    void addReferenceColumnToDisplayList(String column);
 
     /**
      * Detaches this constraint from the owner column

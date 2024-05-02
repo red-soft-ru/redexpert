@@ -122,7 +122,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
     public void valueChanged(Object newValue) {
 
         if (valuesEqual(this.value, newValue)) {
-
+            this.newValue = newValue;
             changed = false;
             return;
         }

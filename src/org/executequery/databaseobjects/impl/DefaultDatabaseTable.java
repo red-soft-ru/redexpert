@@ -217,7 +217,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
                                 getConstraintByName(name).addColumnToDisplayList(constraint.getColumn());
                                 if (Objects.equals(constraint.getTypeName(), "FOREIGN"))
-                                    getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getColumn());
+                                    getConstraintByName(name).addReferenceColumnToDisplayList(constraint.getReferencedColumn());
 
                             } else
                                 constraints.add(constraint);

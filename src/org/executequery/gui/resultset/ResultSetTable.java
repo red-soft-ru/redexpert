@@ -26,9 +26,9 @@ import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.celleditor.*;
 import org.underworldlabs.swing.celleditor.picker.MultiLineStringPicker;
+import org.underworldlabs.swing.celleditor.picker.NumberPicker;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.table.TableSorter;
-import org.underworldlabs.swing.celleditor.picker.NumberPicker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -380,7 +380,8 @@ public class ResultSetTable extends JTable implements StandardTable {
                     foreignColumnsData.get(columnIndex).getItems(),
                     foreignColumnsData.get(columnIndex).getNames(),
                     value.getValue(), row,
-                    foreignColumnsData.get(columnIndex).getChildColumnIndexes()
+                    foreignColumnsData.get(columnIndex).getChildColumnIndexes(),
+                    foreignColumnsData.get(columnIndex).getForeignIndex()
             );
 
             return oldCellEditor;
@@ -554,11 +555,11 @@ public class ResultSetTable extends JTable implements StandardTable {
     }
 
     public void setForeignKeyTable(
-            int ind, ResultSetTableModel defaultTableModel, Vector<Vector<Object>> items,
+            int ind, int foreignIndex, ResultSetTableModel defaultTableModel, Vector<Vector<Object>> items,
             Vector<String> names, int[] childColumnIndexes) {
 
         foreignColumnsIndexes.add(ind);
-        foreignColumnsData.add(new ForeignData(ind, defaultTableModel, items, names, childColumnIndexes));
+        foreignColumnsData.add(new ForeignData(ind, foreignIndex, defaultTableModel, items, names, childColumnIndexes));
         columnModel.setColumn(new TableColumn(), ind);
     }
 
@@ -610,16 +611,18 @@ public class ResultSetTable extends JTable implements StandardTable {
     private static class ForeignData {
 
         private final int columnIndex;
+        private final int foreignIndex;
         private final int[] childColumnIndexes;
         private final ResultSetTableModel tableModel;
         private final Vector<Vector<Object>> items;
         private final Vector<String> names;
 
         public ForeignData(
-                int columnIndex, ResultSetTableModel tableModel, Vector<Vector<Object>> items,
+                int columnIndex, int foreignIndex, ResultSetTableModel tableModel, Vector<Vector<Object>> items,
                 Vector<String> names, int[] childColumnIndexes) {
 
             this.columnIndex = columnIndex;
+            this.foreignIndex = foreignIndex;
             this.tableModel = tableModel;
             this.items = items;
             this.names = names;
@@ -646,6 +649,9 @@ public class ResultSetTable extends JTable implements StandardTable {
             return childColumnIndexes;
         }
 
+        public int getForeignIndex() {
+            return foreignIndex;
+        }
     } // class ForeignData
 
 }

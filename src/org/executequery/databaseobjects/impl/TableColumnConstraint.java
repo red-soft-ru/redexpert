@@ -21,7 +21,10 @@
 package org.executequery.databaseobjects.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
 
@@ -329,9 +332,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     }
 
     @Override
-    public void addReferenceColumnToDisplayList(DatabaseTableColumn column) {
-        if (!referenceColumnsDisplayList.contains(column.getName()))
-            referenceColumnsDisplayList.add(column.getName().trim());
+    public void addReferenceColumnToDisplayList(String column) {
+        if (!referenceColumnsDisplayList.contains(column))
+            referenceColumnsDisplayList.add(column.trim());
     }
 
     /**
@@ -548,13 +551,12 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      * Returns the ALTER TABLE statement to create this constraint.
      */
     public String getCreateSQLText() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("ALTER TABLE ");
-        sb.append(getTableName());
-        sb.append(" ADD ");
-        sb.append(getConstraintSQLText());
-        sb.append(";");
-        return sb.toString();
+        String sb = "ALTER TABLE " +
+                getTableName() +
+                " ADD " +
+                getConstraintSQLText() +
+                ";";
+        return sb;
     }
 
     /**

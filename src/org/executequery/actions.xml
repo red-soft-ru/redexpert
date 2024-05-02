@@ -18,24 +18,6 @@
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
 
-    <action id="select-next-tab"
-            name="Select Next Tab"
-            accel-key="alt RIGHT"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.SelectNextTabAction"/>
-
-    <action id="select-previous-tab"
-            name="Select Previous Tab"
-            accel-key="alt LEFT"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
-
-    <action id="close-selected-tab"
-            name="Close Selected Tab"
-            accel-key="control W"
-            accel-editable="false"
-            execute-class="org.executequery.actions.windowcommands.CloseSelectedTabAction"/>
-
     <action id="save-command"
             name="Save"
             mnemonic="S"
@@ -66,13 +48,6 @@
             accel-key="control shift S"
             small-icon="/org/executequery/icons/SaveAs16.png"
             execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
-
-    <action id="exit-program-command"
-            name="Exit"
-            mnemonic="X"
-            accel-key="alt F4"
-            accel-editable="false"
-            execute-class="org.executequery.actions.filecommands.ExitCommand"/>
 
     <action id="print-command"
             name="Print"
@@ -274,7 +249,6 @@
             execute-class="org.executequery.actions.queryeditor.AddBookmarkCommand"/>
 
     <action id="select-bookmark-command"
-            accel-key=""
             accel-editable="false"
             execute-class="org.executequery.actions.queryeditor.SelectBookmarkCommand"/>
 
@@ -311,20 +285,6 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/explained_plan.png"
             execute-class="org.executequery.actions.queryeditor.PrintExplainedPlanCommand"/>
-
-    <action id="shift-text-right-command"
-            name="Shift Text Right"
-            accel-key="control shift T"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ShiftTextRight16.png"
-            execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
-
-    <action id="shift-text-left-command"
-            name="Shift Text Left"
-            accel-key="control shift D"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ShiftTextLeft16.png"
-            execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
 
     <action id="move-row-up-command"
             name="Move text up"
@@ -407,13 +367,6 @@
             small-icon="/org/executequery/icons/RSMetaData16.png"
             execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>
 
-    <action id="comment-lines-command"
-            name="Comment/Uncomment"
-            accel-key="control SLASH"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/AddComment16.png"
-            execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
-
     <action id="commit-command"
             name="Commit"
             accel-key="control shift C"
@@ -449,21 +402,6 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/split.png"
             execute-class="org.executequery.actions.queryeditor.ChangeSplitOrientationCommand"/>
-
-    <action id="create-index-command"
-            name="Create Index"
-            mnemonic="I"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/NewIndex16.png"
-            description="Create a new database table index"
-            execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
-
-    <action id="create-sequence-command"
-            name="Create Sequence"
-            mnemonic="T"
-            accel-editable="true"
-            description="Create a new database sequence"
-            execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
 
     <action id="extract-metadata-command"
             name="Extract database metadata"
@@ -621,36 +559,6 @@
             small-icon="/org/executequery/icons/SystemConsole16.png"
             execute-class="org.executequery.actions.toolscommands.ConsoleCommand"/>
 
-    <action id="insert-row-command"
-            name="Create a new table column after the current selection"
-            accel-editable="false"
-            small-icon="/org/executequery/icons/ColumnInsert16.png"
-            execute-class="org.executequery.actions.othercommands.InsertRowAfterCommand"/>
-
-    <action id="delete-row-command"
-            name="Drop the selected table column"
-            accel-editable="false"
-            small-icon="/org/executequery/icons/ColumnDelete16.png"
-            execute-class="org.executequery.actions.othercommands.DeleteColumnCommand"/>
-
-    <action id="drop-object-command"
-            name="Drop the selected object"
-            accel-editable="false"
-            small-icon="/org/executequery/icons/DropTable16.png"
-            execute-class="org.executequery.actions.othercommands.DropDatabaseObjectCommand"/>
-
-    <action id="select-editor-connection-combo-command"
-            name="Select connection combo box"
-            accel-editable="false"
-            accel-key="alt C"
-            execute-class="org.executequery.actions.othercommands.FocusEditorConnectionComboCommand"/>
-
-    <action id="clear-recent-files-command"
-            name="Clear recent files list"
-            accel-editable="false"
-            mnemonic="C"
-            execute-class="org.executequery.actions.filecommands.ClearRecentFilesCommand"/>
-
     <action id="customise-tool-bars-command"
             name="Customise"
             accel-editable="false"
@@ -673,10 +581,6 @@
             accel-editable="false"
             small-icon="/org/executequery/icons/FrameIcon16.png"
             execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
-
-    <action id="text-selection-command"
-            accel-editable="false"
-            execute-class="org.executequery.actions.editcommands.TextSelectionCommand"/>
 
     <action id="user-manager-command"
             name="User Manager"
@@ -709,13 +613,6 @@
             small-icon="/org/executequery/icons/ComparerDB_16.png"
             description="Comparer DB"
             execute-class="org.executequery.actions.toolscommands.ComparerDBCommands"/>
-
-    <action id="create-view-command"
-            name="Create View"
-            mnemonic="T"
-            accel-editable="true"
-            description="Create a new database view"
-            execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
 
     <action id="trace-manager-command"
             name="Trace Manager"
@@ -754,5 +651,79 @@
             accel-editable="true"
             description="Log In Account"
             execute-class="org.executequery.actions.helpcommands.LogInAccountCommand"/>
+
+    <!-- do not remove, that's actions called by hotkeys -->
+
+    <action id="comment-lines-command"
+            name="Comment/Uncomment"
+            accel-key="control SLASH"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/AddComment16.png"
+            execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
+
+    <action id="select-editor-connection-combo-command"
+            name="Select connection combo box"
+            accel-editable="false"
+            accel-key="alt C"
+            execute-class="org.executequery.actions.othercommands.FocusEditorConnectionComboCommand"/>
+
+    <action id="create-view-command"
+            name="Create View"
+            mnemonic="T"
+            accel-editable="true"
+            description="Create a new database view"
+            execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
+
+    <action id="create-index-command"
+            name="Create Index"
+            mnemonic="I"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/NewIndex16.png"
+            description="Create a new database table index"
+            execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
+
+    <action id="create-sequence-command"
+            name="Create Sequence"
+            mnemonic="T"
+            accel-editable="true"
+            description="Create a new database sequence"
+            execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
+
+    <action id="shift-text-right-command"
+            name="Shift Text Right"
+            accel-key="control shift T"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
+
+    <action id="shift-text-left-command"
+            name="Shift Text Left"
+            accel-key="control shift D"
+            accel-editable="true"
+            execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
+
+    <action id="exit-program-command"
+            name="Exit"
+            mnemonic="X"
+            accel-key="alt F4"
+            accel-editable="false"
+            execute-class="org.executequery.actions.filecommands.ExitCommand"/>
+
+    <action id="select-next-tab"
+            name="Select Next Tab"
+            accel-key="alt RIGHT"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.SelectNextTabAction"/>
+
+    <action id="select-previous-tab"
+            name="Select Previous Tab"
+            accel-key="alt LEFT"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.SelectPreviousTabAction"/>
+
+    <action id="close-selected-tab"
+            name="Close Selected Tab"
+            accel-key="control W"
+            accel-editable="false"
+            execute-class="org.executequery.actions.windowcommands.CloseSelectedTabAction"/>
 
 </actions>

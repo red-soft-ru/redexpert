@@ -26,6 +26,7 @@ import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /* ----------------------------------------------------------
@@ -75,13 +76,12 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
                 bundledString("DatabaseToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
-
-        /*key = ToolBarManager.IMPORT_EXPORT_TOOLS;
+        key = ToolBarManager.APPLICATION_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ImportExportToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));*/
+                bundledString("ApplicationToolBar"),
+                Objects.requireNonNull(ToolBarProperties.getToolBar(key)).isVisible()));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(

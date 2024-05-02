@@ -14,7 +14,7 @@
 
         <constraints>
             <row>0</row>
-            <position>2</position>
+            <position>0</position>
             <loc-x>-1</loc-x>
             <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
@@ -24,54 +24,116 @@
 
         <buttons>
 
-            <button id="12" action-id="editor-command">
+            <button id="0" action-id="compare-data-types">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
+
+            <button id="1" action-id="execute-sql-script-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="24" action-id="user-manager-command">
+            <button id="2" action-id="execute-object">
                 <visible>true</visible>
-                <order>8</order>
+                <order>2</order>
             </button>
 
-            <button id="46" action-id="grant-manager-command">
+            <button id="3" action-id="extract-metadata-command">
                 <visible>true</visible>
-                <order>9</order>
+                <order>3</order>
             </button>
 
-            <button id="47" action-id="comparerDB-command">
+            <button id="4" action-id="create-erd-command">
                 <visible>true</visible>
-                <order>9</order>
+                <order>4</order>
             </button>
 
-            <button id="48" action-id="execute-sql-script-command">
-                <visible>true</visible>
-                <order>6</order>
-            </button>
-
-            <button id="22" action-id="generate-scripts-command">
+            <button id="5" action-id="map-erd-command">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-            <button id="41" action-id="execute-object">
+            <button id="6" action-id="manage-shortcuts-command">
+                <visible>true</visible>
+                <order>6</order>
+            </button>
+
+            <button id="7" action-id="user-keywords-command">
                 <visible>true</visible>
                 <order>7</order>
             </button>
 
-            <button id="42" action-id="compare-data-types">
-                <visible>false</visible>
-                <order>1000</order>
+        </buttons>
+    </toolbar>
+
+    <toolbar name="Application Tools" visible="true">
+
+        <constraints>
+            <row>0</row>
+            <position>1</position>
+            <loc-x>-1</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
+        </constraints>
+
+        <buttons>
+
+            <button id="8" action-id="scratch-pad-command">
+                <visible>true</visible>
+                <order>0</order>
             </button>
 
-            <button id="31" action-id="user-keywords-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="9" action-id="editor-command">
+                <visible>true</visible>
+                <order>1</order>
             </button>
 
-            <button id="34" action-id="console-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="10" action-id="database-statistic-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
+
+            <button id="11" action-id="trace-manager-command">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
+
+            <button id="12" action-id="grant-manager-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
+
+            <button id="13" action-id="user-manager-command">
+                <visible>true</visible>
+                <order>5</order>
+            </button>
+
+            <button id="14" action-id="profiler-command">
+                <visible>true</visible>
+                <order>6</order>
+            </button>
+
+            <button id="15" action-id="comparerDB-command">
+                <visible>true</visible>
+                <order>7</order>
+            </button>
+
+            <button id="16" action-id="table-validation-command">
+                <visible>true</visible>
+                <order>8</order>
+            </button>
+
+            <button id="17" action-id="import-data-from-file-command">
+                <visible>true</visible>
+                <order>9</order>
+            </button>
+
+            <button id="18" action-id="generator-test-data-command">
+                <visible>true</visible>
+                <order>10</order>
             </button>
 
         </buttons>
@@ -81,7 +143,7 @@
 
         <constraints>
             <row>0</row>
-            <position>3</position>
+            <position>2</position>
             <loc-x>489</loc-x>
             <resize-offset-x>477</resize-offset-x>
             <minimum-width>-1</minimum-width>
@@ -91,14 +153,34 @@
 
         <buttons>
 
-            <button id="14" action-id="preferences-command">
+            <button id="19" action-id="drivers-command">
                 <visible>true</visible>
                 <order>0</order>
             </button>
 
-            <button id="15" action-id="help-command">
+            <button id="20" action-id="heap-memory-command">
                 <visible>true</visible>
                 <order>1</order>
+            </button>
+
+            <button id="21" action-id="console-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
+
+            <button id="22" action-id="application-logs-command"  >
+                <visible>true</visible>
+                <order>3</order>
+            </button>
+
+            <button id="23" action-id="preferences-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
+
+            <button id="24" action-id="help-command">
+                <visible>true</visible>
+                <order>5</order>
             </button>
 
         </buttons>

@@ -181,16 +181,13 @@ public class PropertiesPanel extends JPanel
 
         node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
-        //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
-        //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, bundledString("ImportExportTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_APPLICATION, bundledString("ApplicationTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.EDITOR_GENERAL, bundledString("Editor"));
         node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, bundledString("Fonts")));
-//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_BACKGROUND, "Colours"));
         node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, bundledString("Colours")));
-//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_GENERAL, bundledString("TreeConnections"));
@@ -331,12 +328,8 @@ public class PropertiesPanel extends JPanel
                 panel = new PropertiesToolBar("Database Tools");
                 break;
 
-            case PropertyTypes.TOOLBAR_BROWSER:
-                panel = new PropertiesToolBar("Browser Tools");
-                break;
-
-            case PropertyTypes.TOOLBAR_IMPORT_EXPORT:
-                panel = new PropertiesToolBar("Import/Export Tools");
+            case PropertyTypes.TOOLBAR_APPLICATION:
+                panel = new PropertiesToolBar("Application Tools");
                 break;
 
             case PropertyTypes.TOOLBAR_SYSTEM:

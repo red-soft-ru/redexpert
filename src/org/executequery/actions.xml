@@ -488,7 +488,7 @@
             description="Create a new database sequence"
             execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
 
-    <action id="generate-scripts-command"
+    <action id="extract-metadata-command"
             name="Extract database metadata"
             mnemonic="S"
             accel-editable="true"
@@ -532,6 +532,7 @@
     <action id="drivers-command"
             name="Drivers"
             accel-editable="true"
+            small-icon="/org/executequery/icons/DatabaseDrivers16.png"
             execute-class="org.executequery.actions.toolscommands.DriversCommand"/>
 
     <action id="editor-command"
@@ -553,7 +554,7 @@
             name="Scratch Pad"
             mnemonic="P"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ScratchPad16"
+            small-icon="/org/executequery/icons/ScratchPad16.png"
             large-icon="/org/executequery/icons/ScratchPad24.png"
             execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
 
@@ -575,11 +576,13 @@
 
     <action id="import-data-from-file-command"
             name="Import data from file"
+            small-icon="/org/executequery/icons/ImportDelimited16.png"
             description="Import data into database from local files (*.csv, *.xlsx, ...)"
             execute-class="org.executequery.actions.databasecommands.ImportDataCommand"/>
 
     <action id="table-validation-command"
             name="Table Validation"
+            small-icon="/org/executequery/icons/AddTable16.png"
             description="Allows online validation of DB tables"
             execute-class="org.executequery.actions.databasecommands.TableValidationCommand"/>
 
@@ -702,6 +705,7 @@
 
     <action id="application-logs-command"
             accel-editable="false"
+            small-icon="/org/executequery/icons/FrameIcon16.png"
             execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
 
     <action id="text-selection-command"
@@ -730,6 +734,7 @@
             name="Generator Test Data"
             mnemonic="GT"
             accel-editable="true"
+            small-icon="/org/executequery/icons/GlobalTable16.png"
             description="Generator Test Data"
             execute-class="org.executequery.actions.toolscommands.GeneratorTestDataCommands"/>
 
@@ -753,6 +758,7 @@
             name="Trace Manager"
             mnemonic="TM"
             accel-editable="true"
+            small-icon="/org/executequery/icons/FolderColumns16.png"
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
@@ -760,6 +766,7 @@
             name="Database Statistic"
             mnemonic="DS"
             accel-editable="true"
+            small-icon="/org/executequery/icons/ExeFile16.png"
             description="Database Statistic"
             execute-class="org.executequery.actions.toolscommands.DatabaseStatisticCommands"/>
 
@@ -767,6 +774,7 @@
             name="Profiler"
             mnemonic="PF"
             accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteInProfiler16.png"
             description="Profiler"
             execute-class="org.executequery.actions.toolscommands.ProfilerCommand"/>
 

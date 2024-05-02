@@ -53,6 +53,9 @@
         <menu-item id="execute-object"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="extract-metadata-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="separator"/>
 
         <menu name="Generate ERD"
@@ -239,6 +242,13 @@
                        mnemonic="D"
                        action-command="viewDatabaseTools"
                        tool-tip="Displays the database tool bar"/>
+
+            <menu-item name="Application Tool Bar"
+                       key="menu.view.tool-bars.application-tool-bar"
+                       class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                       mnemonic="D"
+                       action-command="viewApplicationTools"
+                       tool-tip="Displays the application tool bar"/>
 
             <menu-item name="System Tool Bar"
                        key="menu.view.system-tool-bar"

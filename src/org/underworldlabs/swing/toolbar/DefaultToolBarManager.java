@@ -75,6 +75,10 @@ public class DefaultToolBarManager {
         toolbarBase.addToolBar(toolBar, new ToolBarConstraints(0, 0));
     }
 
+    protected void setToolbarVisible(boolean visible) {
+        toolbarBase.setVisible(visible);
+    }
+
     public ToolBarBase getToolBarBasePanel() {
         return toolbarBase;
     }

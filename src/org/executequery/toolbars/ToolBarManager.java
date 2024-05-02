@@ -27,6 +27,7 @@ import org.executequery.event.UserPreferenceListener;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.toolbar.DefaultToolBarManager;
+import org.underworldlabs.swing.toolbar.ToolBarProperties;
 import org.underworldlabs.util.SystemProperties;
 
 /**
@@ -68,6 +69,11 @@ public class ToolBarManager extends DefaultToolBarManager
         buildToolBar(DATABASE_TOOLS);
         buildToolBar(APPLICATION_TOOLS);
         buildToolBar(SYSTEM_TOOLS);
+
+        setToolbarVisible(ToolBarProperties.isToolBarVisible(DATABASE_TOOLS)
+                || ToolBarProperties.isToolBarVisible(APPLICATION_TOOLS)
+                || ToolBarProperties.isToolBarVisible(SYSTEM_TOOLS)
+        );
 
         if (rebuild)
             fireToolbarsChanged();

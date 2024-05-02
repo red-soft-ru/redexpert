@@ -34,6 +34,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
@@ -167,12 +168,15 @@ public class ToolBarProperties {
 
     public static void setToolBarVisible(String name, boolean visible) {
         ToolBarWrapper toolBar = getToolBar(name);
-        toolBar.setVisible(visible);
+        if (toolBar != null)
+            toolBar.setVisible(visible);
     }
 
     public static boolean isToolBarVisible(String name) {
         ToolBarWrapper toolBar = getToolBar(name);
-        return toolBar.isVisible();
+        return toolBar != null
+                && toolBar.isVisible()
+                && Arrays.stream(toolBar.getButtonsArray()).anyMatch(ToolBarButton::isVisible);
     }
 
     public static ToolBarWrapper getDefaultToolBar(String name) {

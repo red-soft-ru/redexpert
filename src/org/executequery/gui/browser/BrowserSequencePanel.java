@@ -56,6 +56,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     private void init() {
 
+        cache = new HashMap<>();
         dependenciesPanel = new DependenciesPanel();
 
         JPanel panel = new JPanel();
@@ -138,11 +139,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
 
-        setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence24.png", true));
         setContentPanel(base);
-        cache = new HashMap();
-
     }
 
     public void setDatabaseObjectNode(DatabaseObjectNode node) {

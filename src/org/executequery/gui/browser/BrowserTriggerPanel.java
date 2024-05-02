@@ -62,6 +62,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
 
+        cache = new HashMap<>();
         dependenciesPanel = new DependenciesPanel();
         JPanel panel = new JPanel();
 
@@ -163,11 +164,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
         //base.add(schemaNameField, gbc);
 
-        setHeaderText("Database Procedure");
-        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
         setContentPanel(base);
-        cache = new HashMap();
-
     }
 
     public String getLayoutName() {

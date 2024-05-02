@@ -130,8 +130,6 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         panel.add(tablePanel, gbc);
 
-        setHeaderText("JDBC Drivers");
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.png"));
         setContentPanel(panel);
     }
 

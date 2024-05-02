@@ -39,11 +39,7 @@ public class TabViewDriverPanel extends AbstractFormObjectViewPanel {
     public TabViewDriverPanel(DriverViewPanel parent) {
 
         this.parent = parent;
-
-        panel = new DriverFieldsPanel();
-
-        setHeaderText("Database Driver");
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseDriver24.png"));
+        this.panel = new DriverFieldsPanel();
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setBorder(null);

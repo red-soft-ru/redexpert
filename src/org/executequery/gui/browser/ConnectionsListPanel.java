@@ -153,8 +153,6 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         panel.add(tablePanel, gbc);
 
-        setHeaderText(Bundles.getCommon("database-connections"));
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseConnect24.png"));
         setContentPanel(panel);
 
         // register with the event listener

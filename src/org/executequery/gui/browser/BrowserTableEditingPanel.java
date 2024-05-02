@@ -508,8 +508,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // --- base ---
 
         setContentPanel(mainPanel);
-        setHeaderText(bundleString("db-table"));
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
         EventMediator.registerListener(this);
     }
 

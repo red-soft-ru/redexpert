@@ -34,68 +34,52 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unchecked")
 public class ToolBarProperties {
 
-    /**
-     * The user defined tools
-     */
-    private static Vector tools;
+    private static Vector<ToolBarWrapper> userTools;
+    private static Vector<ToolBarWrapper> defaultTools;
 
-    /**
-     * The default tools
-     */
-    private static Vector defaultTools;
-
-    /**
-     * the tools XML conf file path
-     */
     private static String toolsConfPath;
-
-    /**
-     * the default tools XML conf resource file path
-     */
     private static String defaultToolsConfPath;
 
-    // -----------------------------------
     // --- XML elements and attributes ---
-    // -----------------------------------
-    private static final String EQ_TOOLBARS = "system-toolbars";
-    private static final String TOOLBAR = "toolbar";
-    private static final String ROW = "row";
-    private static final String POSITION = "position";
-    private static final String LOC_X = "loc-x";
-    private static final String RESIZE_OFFSET_X = "resize-offset-x";
-    private static final String MINIMUM_WIDTH = "minimum-width";
-    private static final String PREFERRED_WIDTH = "preferred-width";
-    private static final String CURRENT_WIDTH = "current-width";
-    private static final String BUTTONS = "buttons";
-    private static final String CONSTRAINTS = "constraints";
-    private static final String BUTTON = "button";
-    private static final String NAME = "name";
-    private static final String ACTION_ID = "action-id";
+
     private static final String ID = "id";
-    private static final String VISIBLE = "visible";
-    private static final String ORDER = "order";
-    // -----------------------------------
-
     private static final String EMPTY = "";
+    private static final String ROW = "row";
+    private static final String NAME = "name";
+    private static final String ORDER = "order";
+    private static final String LOC_X = "loc-x";
+    private static final String BUTTON = "button";
+    private static final String VISIBLE = "visible";
+    private static final String BUTTONS = "buttons";
+    private static final String TOOLBAR = "toolbar";
+    private static final String POSITION = "position";
+    private static final String ACTION_ID = "action-id";
+    private static final String CONSTRAINTS = "constraints";
+    private static final String MINIMUM_WIDTH = "minimum-width";
+    private static final String EQ_TOOLBARS = "system-toolbars";
+    private static final String CURRENT_WIDTH = "current-width";
+    private static final String PREFERRED_WIDTH = "preferred-width";
+    private static final String RESIZE_OFFSET_X = "resize-offset-x";
 
-    public static void init(String _toolsConfPath, String _defaultToolsConfPath) {
-        toolsConfPath = _toolsConfPath;
-        defaultToolsConfPath = _defaultToolsConfPath;
+    // ---
 
-        // TODO: do we allow null conf files with defaults only???
+    public static void init(String toolsConfPath, String defaultToolsConfPath) {
+        ToolBarProperties.toolsConfPath = toolsConfPath;
+        ToolBarProperties.defaultToolsConfPath = defaultToolsConfPath;
 
-        if (toolsConfPath != null) {
+        if (toolsConfPath != null)
             loadTools();
-        }
-
     }
 
     private static void checkInit() {
@@ -103,7 +87,8 @@ public class ToolBarProperties {
             throw new RuntimeException(
                     "Tool configuration XML file is NULL or failed to load. " +
                             "Ensure the init() method is run prior to retrieving " +
-                            "any tool conf information");
+                            "any tool conf information"
+            );
         }
     }
 
@@ -112,58 +97,38 @@ public class ToolBarProperties {
             throw new RuntimeException(
                     "Default Tool configuration XML file resource is NULL " +
                             "Ensure the init(...) method is called prior to retrieving " +
-                            "any tool conf information");
+                            "any tool conf information"
+            );
         }
-    }
-
-    public static Vector getToolbarButtonsVector() {
-        checkInit();
-        if (tools == null || tools.size() == 0) {
-            loadTools();
-        }
-
-        return tools;
     }
 
     public static ToolBarWrapper[] getToolbarButtonsArray() {
         checkInit();
-        if (tools == null || tools.size() == 0) {
+
+        if (userTools == null || userTools.isEmpty())
             loadTools();
-        }
 
-        return (ToolBarWrapper[]) tools.toArray(new ToolBarWrapper[]{});
-    }
-
-    public static Vector getDefaultToolbarButtonsVector() {
-        checkDefaultInit();
-        if (defaultTools == null || defaultTools.size() == 0) {
-            loadDefaults(false);
-        }
-
-        return defaultTools;
+        return userTools.toArray(new ToolBarWrapper[]{});
     }
 
     public static ToolBarWrapper[] getDefaultToolbarButtonsArray() {
         checkDefaultInit();
-        if (defaultTools == null || defaultTools.size() == 0) {
-            loadDefaults(false);
-        }
 
-        return (ToolBarWrapper[]) defaultTools.toArray(new ToolBarWrapper[]{});
+        if (defaultTools == null || defaultTools.isEmpty())
+            loadDefaults(false);
+
+        return defaultTools.toArray(new ToolBarWrapper[]{});
     }
 
     public static void setToolBarConstraints(String name, ToolBarConstraints tbc) {
         ToolBarWrapper toolBar = getToolBar(name);
-        toolBar.setConstraints(tbc);
-    }
-
-    public static void removeToolBar(String name) {
-        tools.remove(getToolBar(name));
+        if (toolBar != null)
+            toolBar.setConstraints(tbc);
     }
 
     public static void resetToolBar(String name, ToolBarWrapper toolBar) {
-        tools.remove(getToolBar(name));
-        tools.add(toolBar);
+        userTools.remove(getToolBar(name));
+        userTools.add(toolBar);
     }
 
     public static void setToolBarVisible(String name, boolean visible) {
@@ -181,36 +146,28 @@ public class ToolBarProperties {
 
     public static ToolBarWrapper getDefaultToolBar(String name) {
         checkDefaultInit();
-        if (defaultTools == null || defaultTools.isEmpty()) {
+
+        if (defaultTools == null || defaultTools.isEmpty())
             loadDefaults(false);
-        }
 
-        ToolBarWrapper toolBar = null;
         for (int i = 0, k = defaultTools.size(); i < k; i++) {
-            toolBar = (ToolBarWrapper) defaultTools.elementAt(i);
-
-            if (name.compareTo(toolBar.getName()) == 0) {
+            ToolBarWrapper toolBar = (ToolBarWrapper) defaultTools.elementAt(i);
+            if (name.compareTo(toolBar.getName()) == 0)
                 break;
-            }
-
         }
 
-        return toolBar;
+        return null;
     }
 
     public static int getNextToolbarRow() {
-        int row;
         int currentMaxRow = -1;
-        ToolBarWrapper[] toolBars = getToolbarButtonsArray();
 
-        for (int i = 0; i < toolBars.length; i++) {
-            row = toolBars[i].getConstraints().getRow();
-
-            if (row > currentMaxRow) {
+        for (ToolBarWrapper toolBar : getToolbarButtonsArray()) {
+            int row = toolBar.getConstraints().getRow();
+            if (row > currentMaxRow)
                 currentMaxRow = row;
-            }
-
         }
+
         if (currentMaxRow > 0)
             currentMaxRow = 0;
 
@@ -218,72 +175,47 @@ public class ToolBarProperties {
     }
 
     public static ToolBarWrapper getToolBar(String name) {
-        if (tools == null || tools.size() == 0) {
-            loadTools();
-        }
 
-        for (int i = 0, k = tools.size(); i < k; i++) {
-            ToolBarWrapper toolBar = (ToolBarWrapper) tools.elementAt(i);
-            if (name.compareTo(toolBar.getName()) == 0) {
+        if (userTools == null || userTools.isEmpty())
+            loadTools();
+
+        for (int i = 0, k = userTools.size(); i < k; i++) {
+            ToolBarWrapper toolBar = userTools.elementAt(i);
+            if (name.compareTo(toolBar.getName()) == 0)
                 return toolBar;
-            }
         }
 
         return null;
     }
 
-    public static int saveTools() {
-        OutputStream os = null;
-        try {
+    public static void saveTools() {
+
+        try (OutputStream os = Files.newOutputStream(new File(toolsConfPath).toPath())) {
+
+            SAXSource source = new SAXSource(new ToolsParser(), new ToolbarButtonsSource());
+            StreamResult streamResult = new StreamResult(os);
+
             TransformerFactory transFactory = TransformerFactory.newInstance();
             Transformer transformer = transFactory.newTransformer();
-            ToolsParser cp = new ToolsParser();
+            transformer.transform(source, streamResult);
 
-            File file = new File(toolsConfPath);
-
-            os = new FileOutputStream(file);
-            SAXSource source = new SAXSource(cp, new ToolbarButtonsSource());
-            StreamResult r = new StreamResult(os);
-            transformer.transform(source, r);
-            return 1;
         } catch (Exception e) {
             Log.error("Error method saveTools in class ToolBarProperties:", e);
-            return 0;
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                }
-            }
-        }
-    }
-
-    public static void reloadTools(boolean loadDefaults) {
-        if (loadDefaults) {
-            defaultTools = null;
-            loadDefaults(false);
-        } else {
-            loadTools();
         }
     }
 
     private static synchronized void loadDefaults(boolean setDefaults) {
 
-        if (defaultTools != null && defaultTools.size() > 0) {
+        if (defaultTools != null && !defaultTools.isEmpty())
             return;
-        }
 
-        InputStream input = null;
-        ClassLoader cl = ToolBarProperties.class.getClassLoader();
+        ClassLoader classLoader = ToolBarProperties.class.getClassLoader();
+        try (
+                InputStream input = classLoader != null ?
+                        classLoader.getResourceAsStream(defaultToolsConfPath) :
+                        ClassLoader.getSystemResourceAsStream(defaultToolsConfPath)
+        ) {
 
-        if (cl != null) {
-            input = cl.getResourceAsStream(defaultToolsConfPath);
-        } else {
-            input = ClassLoader.getSystemResourceAsStream(defaultToolsConfPath);
-        }
-
-        try {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
 
@@ -294,27 +226,15 @@ public class ToolBarProperties {
 
             if (setDefaults) {
                 int size = defaultTools.size();
-                tools = new Vector(size);
-                ToolBarWrapper toolBar = null;
-                for (int i = 0; i < size; i++) {
-                    toolBar = (ToolBarWrapper) defaultTools.elementAt(i);
-                    tools.add(toolBar.clone());
-                }
-
+                userTools = new Vector<>(size);
+                for (int i = 0; i < size; i++)
+                    userTools.add((ToolBarWrapper) defaultTools.elementAt(i).clone());
             }
+
         } catch (Exception e) {
             Log.error("Error method loadDefaults in class ToolBarProperties:", e);
-            GUIUtils.displayErrorMessage(
-                    null, "Error opening default tools definitions.");
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
+            GUIUtils.displayErrorMessage(null, "Error opening default tools definitions.");
         }
-
     }
 
     // checks for new tools added from the defaults
@@ -328,33 +248,30 @@ public class ToolBarProperties {
 
         ToolBarWrapper currentToolBar = null;
 
-        for (int i = 0; i < defaultsArray.length; i++) {
-            String name = defaultsArray[i].getName();
+        for (ToolBarWrapper toolBarWrapper : defaultsArray) {
+            String name = toolBarWrapper.getName();
 
-            ToolBarButton[] buttons = defaultsArray[i].getButtonsArray();
-            if (buttons == null) {
+            ToolBarButton[] buttons = toolBarWrapper.getButtonsArray();
+            if (buttons == null)
                 continue;
-            }
 
-            for (int j = 0; j < toolsArray.length; j++) {
-
-                if (toolsArray[j].getName().compareTo(name) == 0) {
-                    currentToolBar = toolsArray[j];
+            for (ToolBarWrapper barWrapper : toolsArray) {
+                if (barWrapper.getName().compareTo(name) == 0) {
+                    currentToolBar = barWrapper;
                     break;
                 }
-
             }
+
+            if (currentToolBar == null)
+                continue;
 
             ToolBarButton[] _buttons = currentToolBar.getButtonsArray();
-            if (_buttons == null) {
+            if (_buttons == null)
                 continue;
-            }
 
-            for (int k = 0; k < buttons.length; k++) {
-                int id = buttons[k].getId();
-
-                for (int m = 0; m < _buttons.length; m++) {
-                    if (_buttons[m].getId() == id) {
+            for (ToolBarButton button : buttons) {
+                for (ToolBarButton toolBarButton : _buttons) {
+                    if (toolBarButton.getId() == button.getId()) {
                         hasButton = true;
                         break;
                     }
@@ -363,170 +280,176 @@ public class ToolBarProperties {
 
                 if (!hasButton) {
                     rebuild = true;
-                    ToolBarButton newButton = (ToolBarButton) buttons[k].clone();
+
+                    ToolBarButton newButton = (ToolBarButton) button.clone();
                     newButton.setVisible(false);
                     newButton.setOrder(1000);
+
                     currentToolBar.addButton(newButton);
                 }
-
             }
-
         }
 
         // regenerate the saved file if required
         if (rebuild) {
-            tools = new Vector(toolsArray.length);
-            for (int i = 0; i < toolsArray.length; i++) {
-                tools.add(toolsArray[i]);
-            }
+            userTools = new Vector<>(toolsArray.length);
+            Collections.addAll(userTools, toolsArray);
             saveTools();
         }
-
     }
 
     private static synchronized void loadTools() {
 
         File file = new File(toolsConfPath);
-
-        if (file.exists()) {
-            InputStream in = null;
-            try {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-
-                SAXParser parser = factory.newSAXParser();
-                XMLToolHandler handler = new XMLToolHandler();
-
-                in = new FileInputStream(file);
-                parser.parse(in, handler);
-                tools = handler.getToolsVector();
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        compareTools();
-                    }
-                });
-
-            } catch (Exception e) {
-                Log.error("Error method loadTools in class ToolBarProperties:", e);
-                GUIUtils.displayErrorMessage(
-                        null,
-                        "Error opening tools definitions.\nResorting to system defaults.");
-                loadDefaults(true);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
-
-        } else {
-            GUIUtils.displayErrorMessage(
-                    null,
+        if (!file.exists()) {
+            GUIUtils.displayErrorMessage(null,
                     "Tool buttons definition XML file not found.\n" +
-                            "Ensure the file toolbars.xml is in the conf " +
-                            "directory of this distribution.");
+                            "Ensure the file toolbars.xml is in the conf directory of this distribution."
+            );
+            return;
+        }
+
+
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+
+            XMLToolHandler handler = new XMLToolHandler();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+
+            SAXParser parser = factory.newSAXParser();
+            parser.parse(inputStream, handler);
+            userTools = handler.getToolsVector();
+
+            SwingUtilities.invokeLater(ToolBarProperties::compareTools);
+
+        } catch (Exception e) {
+            Log.error("Error method loadTools in class ToolBarProperties:", e);
+            GUIUtils.displayErrorMessage(null, "Error opening tools definitions.\nResorting to system defaults.");
+            loadDefaults(true);
         }
     }
 
-    static class XMLToolHandler extends DefaultHandler {
+    private static class XMLToolHandler extends DefaultHandler {
 
+        private ToolBarButton button;
         private ToolBarWrapper toolBar;
-        private ToolBarButton tb;
         private ToolBarConstraints tbc;
-        private CharArrayWriter contents = new CharArrayWriter();
-        private Vector toolBars = new Vector();
+
+        private final CharArrayWriter contents;
+        private final Vector<ToolBarWrapper> toolBars;
 
         public XMLToolHandler() {
+            toolBars = new Vector<>();
+            contents = new CharArrayWriter();
         }
 
-        public void startElement(String nameSpaceURI, String localName,
-                                 String qName, Attributes attrs) {
+        @Override
+        public void startElement(String nameSpaceURI, String localName, String qName, Attributes attrs) {
             contents.reset();
+
             if (localName.equals(TOOLBAR)) {
-                toolBar = new ToolBarWrapper(attrs.getValue(NAME),
-                        Boolean.valueOf(attrs.getValue(VISIBLE)).booleanValue());
-            } else if (localName.equals(CONSTRAINTS)) {
-                tbc = new ToolBarConstraints();
+                toolBar = new ToolBarWrapper(
+                        attrs.getValue(NAME),
+                        Boolean.parseBoolean(attrs.getValue(VISIBLE))
+                );
+
             } else if (localName.equals(BUTTON)) {
-                tb = new ToolBarButton(Integer.parseInt(attrs.getValue(ID)),
-                        attrs.getValue(ACTION_ID));
-            }
+                button = new ToolBarButton(
+                        Integer.parseInt(attrs.getValue(ID)),
+                        attrs.getValue(ACTION_ID)
+                );
+
+            } else if (localName.equals(CONSTRAINTS))
+                tbc = new ToolBarConstraints();
         }
 
+        @Override
         public void endElement(String nameSpaceURI, String localName, String qName) {
 
-            if (localName.equals(ROW))
-                tbc.setRow(Integer.parseInt(contents.toString()));
+            switch (localName) {
+                case ROW:
+                    tbc.setRow(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(POSITION))
-                tbc.setPosition(Integer.parseInt(contents.toString()));
+                case POSITION:
+                    tbc.setPosition(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(LOC_X))
-                tbc.setLocX(Integer.parseInt(contents.toString()));
+                case LOC_X:
+                    tbc.setLocX(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(RESIZE_OFFSET_X))
-                tbc.setResizeOffsetX(Integer.parseInt(contents.toString()));
+                case RESIZE_OFFSET_X:
+                    tbc.setResizeOffsetX(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(MINIMUM_WIDTH))
-                tbc.setMinimumWidth(Integer.parseInt(contents.toString()));
+                case MINIMUM_WIDTH:
+                    tbc.setMinimumWidth(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(PREFERRED_WIDTH))
-                tbc.setPreferredWidth(Integer.parseInt(contents.toString()));
+                case PREFERRED_WIDTH:
+                    tbc.setPreferredWidth(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(CURRENT_WIDTH))
-                tbc.setCurrentWidth(Integer.parseInt(contents.toString()));
+                case CURRENT_WIDTH:
+                    tbc.setCurrentWidth(Integer.parseInt(contents.toString()));
+                    break;
 
-            else if (localName.equals(VISIBLE))
-                tb.setVisible(Boolean.valueOf(contents.toString()).booleanValue());
+                case VISIBLE:
+                    button.setVisible(Boolean.parseBoolean(contents.toString()));
+                    break;
 
-            else if (localName.equals(ORDER)) {
-                tb.setOrder(Integer.parseInt(contents.toString()));
-                toolBar.addButton(tb);
-                tb = null;
-            } else if (localName.equals(TOOLBAR)) {
-                toolBar.setConstraints(tbc);
-                toolBars.add(toolBar);
-                tbc = null;
+                case ORDER:
+                    button.setOrder(Integer.parseInt(contents.toString()));
+                    toolBar.addButton(button);
+                    button = null;
+                    break;
+
+                case TOOLBAR:
+                    toolBar.setConstraints(tbc);
+                    toolBars.add(toolBar);
+                    tbc = null;
+                    break;
             }
-
         }
 
-        public Vector getToolsVector() {
-            return toolBars;
-        }
-
+        @Override
         public void characters(char[] data, int start, int length) {
             contents.write(data, start, length);
         }
 
+        @Override
         public void ignorableWhitespace(char[] data, int start, int length) {
             characters(data, start, length);
         }
 
+        @Override
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
-    } // XMLHandler
 
-    static class ToolsParser implements XMLReader {
-        private String nsu = EMPTY;
-        private AttributesImpl atts = new AttributesImpl();
-
-        private String attType1 = "CDATA";
-        private ContentHandler handler;
-
-        private static char[] newLine = {'\n'};
-        private static String indent_1 = "\n   ";
-        private static String indent_2 = "\n      ";
-        private static String indent_3 = "\n        ";
-        private static String indent_4 = "\n          ";
-
-        public ToolsParser() {
+        public Vector<ToolBarWrapper> getToolsVector() {
+            return toolBars;
         }
 
+    } // XMLHandler class
+
+    private static class ToolsParser implements XMLReader {
+
+        private static final char[] NEW_LINE = {'\n'};
+        private static final String INDENT_1 = "\n   ";
+        private static final String INDENT_2 = "\n      ";
+        private static final String INDENT_3 = "\n        ";
+        private static final String INDENT_4 = "\n          ";
+
+        private final AttributesImpl attributes;
+        private ContentHandler handler;
+
+        public ToolsParser() {
+            attributes = new AttributesImpl();
+        }
+
+        @Override
         public void parse(InputSource input) throws SAXException, IOException {
             if (!(input instanceof ToolbarButtonsSource))
                 throw new SAXException("Parser can only accept a ToolbarButtonsSource");
@@ -536,196 +459,174 @@ public class ToolBarProperties {
 
         public void parse(ToolbarButtonsSource input) throws IOException, SAXException {
             try {
-                if (handler == null) {
+                if (handler == null)
                     throw new SAXException("No content handler");
-                }
-
-                ToolBarWrapper[] tb = input.getTools();
 
                 handler.startDocument();
-                handler.startElement(nsu, EQ_TOOLBARS, EQ_TOOLBARS, atts);
-                handler.ignorableWhitespace(newLine, 0, 1);
+                handler.startElement(EMPTY, EQ_TOOLBARS, EQ_TOOLBARS, attributes);
+                handler.ignorableWhitespace(NEW_LINE, 0, 1);
 
-                boolean isSeparator = false;
-                ToolBarConstraints tbc = null;
-                ToolBarButton button = null;
-                Vector buttons = null;
+                String cdata = "CDATA";
+                for (ToolBarWrapper toolBarWrapper : input.getTools()) {
+                    handler.ignorableWhitespace(INDENT_1.toCharArray(), 0, INDENT_1.length());
 
-                for (int i = 0; i < tb.length; i++) {
-                    handler.ignorableWhitespace(indent_1.toCharArray(), 0, indent_1.length());
+                    attributes.addAttribute(EMPTY, NAME, NAME, cdata, toolBarWrapper.getName());
+                    attributes.addAttribute(EMPTY, VISIBLE, VISIBLE, cdata, Boolean.toString(toolBarWrapper.isVisible()));
 
-                    atts.addAttribute(EMPTY, NAME, NAME, attType1, tb[i].getName());
-                    atts.addAttribute(EMPTY, VISIBLE, VISIBLE, attType1,
-                            Boolean.toString(tb[i].isVisible()));
+                    handler.startElement(EMPTY, TOOLBAR, TOOLBAR, attributes);
 
-                    handler.startElement(nsu, TOOLBAR, TOOLBAR, atts);
-                    atts.removeAttribute(atts.getIndex(NAME));
-                    atts.removeAttribute(atts.getIndex(VISIBLE));
+                    attributes.removeAttribute(attributes.getIndex(NAME));
+                    attributes.removeAttribute(attributes.getIndex(VISIBLE));
 
-                    handler.ignorableWhitespace(newLine, 0, 1);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
+                    handler.ignorableWhitespace(INDENT_2.toCharArray(), 0, INDENT_2.length());
+                    handler.startElement(EMPTY, CONSTRAINTS, CONSTRAINTS, attributes);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
 
-                    handler.ignorableWhitespace(indent_2.toCharArray(), 0, indent_2.length());
-                    handler.startElement(nsu, CONSTRAINTS, CONSTRAINTS, atts);
-                    handler.ignorableWhitespace(newLine, 0, 1);
+                    ToolBarConstraints tbc = toolBarWrapper.getConstraints();
+                    writeXML(ROW, Integer.toString(tbc.getRow()), INDENT_3);
+                    writeXML(POSITION, Integer.toString(tbc.getPosition()), INDENT_3);
+                    writeXML(LOC_X, Integer.toString(tbc.getLocX()), INDENT_3);
+                    writeXML(RESIZE_OFFSET_X, Integer.toString(tbc.getResizeOffsetX()), INDENT_3);
+                    writeXML(MINIMUM_WIDTH, Integer.toString(tbc.getMinimumWidth()), INDENT_3);
+                    writeXML(PREFERRED_WIDTH, Integer.toString(tbc.getPreferredWidth()), INDENT_3);
+                    writeXML(CURRENT_WIDTH, Integer.toString(tbc.getCurrentWidth()), INDENT_3);
 
-                    tbc = tb[i].getConstraints();
-                    writeXML(ROW, Integer.toString(tbc.getRow()), indent_3);
-                    writeXML(POSITION, Integer.toString(tbc.getPosition()), indent_3);
-                    writeXML(LOC_X, Integer.toString(tbc.getLocX()), indent_3);
-                    writeXML(RESIZE_OFFSET_X, Integer.toString(tbc.getResizeOffsetX()), indent_3);
-                    writeXML(MINIMUM_WIDTH, Integer.toString(tbc.getMinimumWidth()), indent_3);
-                    writeXML(PREFERRED_WIDTH, Integer.toString(tbc.getPreferredWidth()), indent_3);
-                    writeXML(CURRENT_WIDTH, Integer.toString(tbc.getCurrentWidth()), indent_3);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
+                    handler.ignorableWhitespace(INDENT_2.toCharArray(), 0, INDENT_2.length());
+                    handler.endElement(EMPTY, CONSTRAINTS, CONSTRAINTS);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
 
-                    handler.ignorableWhitespace(newLine, 0, 1);
-                    handler.ignorableWhitespace(indent_2.toCharArray(), 0, indent_2.length());
-                    handler.endElement(nsu, CONSTRAINTS, CONSTRAINTS);
-                    handler.ignorableWhitespace(newLine, 0, 1);
-                    tbc = null;
+                    if (toolBarWrapper.hasButtons()) {
+                        Vector<ToolBarButton> buttonsVector = toolBarWrapper.getButtonsVector();
 
-                    if (tb[i].hasButtons()) {
-                        buttons = tb[i].getButtonsVector();
+                        handler.ignorableWhitespace(INDENT_2.toCharArray(), 0, INDENT_2.length());
+                        handler.startElement(EMPTY, BUTTONS, BUTTONS, attributes);
+                        handler.ignorableWhitespace(NEW_LINE, 0, 1);
 
-                        handler.ignorableWhitespace(indent_2.toCharArray(), 0, indent_2.length());
-                        handler.startElement(nsu, BUTTONS, BUTTONS, atts);
-                        handler.ignorableWhitespace(newLine, 0, 1);
+                        for (int j = 0, k = buttonsVector.size(); j < k; j++) {
+                            ToolBarButton button = buttonsVector.elementAt(j);
+                            boolean isSeparator = button.isSeparator();
 
-                        for (int j = 0, k = buttons.size(); j < k; j++) {
-                            button = (ToolBarButton) buttons.elementAt(j);
-                            handler.ignorableWhitespace(indent_3.toCharArray(), 0,
-                                    indent_3.length());
-                            atts.addAttribute(EMPTY, ID, ID, attType1,
-                                    Integer.toString(button.getId()));
+                            handler.ignorableWhitespace(INDENT_3.toCharArray(), 0, INDENT_3.length());
 
-                            isSeparator = button.isSeparator();
-
+                            attributes.addAttribute(EMPTY, ID, ID, cdata, Integer.toString(button.getId()));
                             if (!isSeparator)
-                                atts.addAttribute(EMPTY, ACTION_ID, ACTION_ID, attType1,
-                                        button.getActionId());
+                                attributes.addAttribute(EMPTY, ACTION_ID, ACTION_ID, cdata, button.getActionId());
 
-                            handler.startElement(nsu, BUTTON, BUTTON, atts);
-                            atts.removeAttribute(atts.getIndex(ID));
+                            handler.startElement(EMPTY, BUTTON, BUTTON, attributes);
 
+                            attributes.removeAttribute(attributes.getIndex(ID));
                             if (!isSeparator)
-                                atts.removeAttribute(atts.getIndex(ACTION_ID));
+                                attributes.removeAttribute(attributes.getIndex(ACTION_ID));
 
-                            writeXML(VISIBLE, Boolean.toString(button.isVisible()), indent_4);
-                            writeXML(ORDER, Integer.toString(button.getOrder()), indent_4);
+                            writeXML(VISIBLE, Boolean.toString(button.isVisible()), INDENT_4);
+                            writeXML(ORDER, Integer.toString(button.getOrder()), INDENT_4);
 
-                            handler.ignorableWhitespace(indent_3.toCharArray(), 0, indent_3.length());
-                            handler.endElement(nsu, BUTTON, BUTTON);
-                            handler.ignorableWhitespace(newLine, 0, 1);
+                            handler.ignorableWhitespace(INDENT_3.toCharArray(), 0, INDENT_3.length());
+                            handler.endElement(EMPTY, BUTTON, BUTTON);
+                            handler.ignorableWhitespace(NEW_LINE, 0, 1);
                         }
 
-                        handler.ignorableWhitespace(indent_2.toCharArray(), 0, indent_2.length());
-                        handler.endElement(nsu, BUTTONS, BUTTONS);
-                        handler.ignorableWhitespace(newLine, 0, 1);
-
+                        handler.ignorableWhitespace(INDENT_2.toCharArray(), 0, INDENT_2.length());
+                        handler.endElement(EMPTY, BUTTONS, BUTTONS);
+                        handler.ignorableWhitespace(NEW_LINE, 0, 1);
                     }
 
-                    handler.ignorableWhitespace(indent_1.toCharArray(), 0, indent_1.length());
-                    handler.endElement(nsu, TOOLBAR, TOOLBAR);
-                    handler.ignorableWhitespace(newLine, 0, 1);
-
+                    handler.ignorableWhitespace(INDENT_1.toCharArray(), 0, INDENT_1.length());
+                    handler.endElement(EMPTY, TOOLBAR, TOOLBAR);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
                 }
 
-                handler.ignorableWhitespace(newLine, 0, 1);
-                handler.endElement(nsu, EQ_TOOLBARS, EQ_TOOLBARS);
+                handler.ignorableWhitespace(NEW_LINE, 0, 1);
+                handler.endElement(EMPTY, EQ_TOOLBARS, EQ_TOOLBARS);
                 handler.endDocument();
 
             } catch (Exception e) {
                 Log.error("Error method parse in class ToolBarProperties:", e);
             }
-
         }
 
-        private void writeXML(String name, String line, String space)
-                throws SAXException {
-            int textLength = line.length();
-
+        private void writeXML(String name, String line, String space) throws SAXException {
             handler.ignorableWhitespace(space.toCharArray(), 0, space.length());
-
-            handler.startElement(nsu, name, name, atts);
-
-            handler.characters(line.toCharArray(), 0, textLength);
-
-            handler.endElement(nsu, name, name);
+            handler.startElement(EMPTY, name, name, attributes);
+            handler.characters(line.toCharArray(), 0, line.length());
+            handler.endElement(EMPTY, name, name);
         }
 
+        @Override
         public void setContentHandler(ContentHandler handler) {
             this.handler = handler;
         }
 
+        @Override
         public ContentHandler getContentHandler() {
             return this.handler;
         }
 
+        @Override
         public void setErrorHandler(ErrorHandler handler) {
         }
 
+        @Override
         public ErrorHandler getErrorHandler() {
             return null;
         }
 
+        @Override
         public void parse(String systemId) throws IOException, SAXException {
         }
 
+        @Override
         public DTDHandler getDTDHandler() {
             return null;
         }
 
+        @Override
         public EntityResolver getEntityResolver() {
             return null;
         }
 
+        @Override
         public void setEntityResolver(EntityResolver resolver) {
         }
 
+        @Override
         public void setDTDHandler(DTDHandler handler) {
         }
 
+        @Override
         public Object getProperty(String name) {
             return null;
         }
 
+        @Override
         public void setProperty(String name, java.lang.Object value) {
         }
 
+        @Override
         public void setFeature(String name, boolean value) {
         }
 
+        @Override
         public boolean getFeature(String name) {
             return false;
         }
-    } // class DriverParser
 
-    static class ToolbarButtonsSource extends InputSource {
+    } // DriverParser class
+
+    private static class ToolbarButtonsSource extends InputSource {
 
         public ToolBarWrapper[] getTools() {
-            int size = tools.size();
+            int size = userTools.size();
+
             ToolBarWrapper[] toolBars = new ToolBarWrapper[size];
-            for (int i = 0; i < size; i++) {
-                toolBars[i] = (ToolBarWrapper) tools.elementAt(i);
-            }
+            for (int i = 0; i < size; i++)
+                toolBars[i] = userTools.elementAt(i);
+
             return toolBars;
         }
 
-    } // class ToolbarButtonsSource
-
+    } // ToolbarButtonsSource class
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -32,7 +32,7 @@ import java.io.Serializable;
  */
 public class ToolBarButton implements Serializable, Cloneable {
 
-    public static final int SEPARATOR_ID = 29;
+    public static final int SEPARATOR_ID = -1;
 
     private int id;
     private int order;

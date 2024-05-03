@@ -1,25 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-=======================================================================
-        File:         toolbars-default.xml
-        Author:       Takis Diakoumis
-        Description:  Toolbar buttons and layout defaults file
-=======================================================================
--->
-
 <system-toolbars>
 
     <toolbar name="Database Tools" visible="true">
 
         <constraints>
+
             <row>0</row>
             <position>0</position>
-            <loc-x>-1</loc-x>
+            <loc-x>0</loc-x>
             <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
+
         </constraints>
 
         <buttons>
@@ -65,18 +58,21 @@
             </button>
 
         </buttons>
+
     </toolbar>
 
     <toolbar name="Application Tools" visible="true">
 
         <constraints>
+
             <row>0</row>
             <position>1</position>
-            <loc-x>-1</loc-x>
+            <loc-x>0</loc-x>
             <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
+
         </constraints>
 
         <buttons>
@@ -137,18 +133,21 @@
             </button>
 
         </buttons>
+
     </toolbar>
 
     <toolbar name="System Tools" visible="true">
 
         <constraints>
+
             <row>0</row>
             <position>2</position>
-            <loc-x>489</loc-x>
-            <resize-offset-x>477</resize-offset-x>
+            <loc-x>0</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
+
         </constraints>
 
         <buttons>
@@ -168,7 +167,7 @@
                 <order>2</order>
             </button>
 
-            <button id="22" action-id="application-logs-command"  >
+            <button id="22" action-id="application-logs-command">
                 <visible>true</visible>
                 <order>3</order>
             </button>
@@ -184,6 +183,203 @@
             </button>
 
         </buttons>
+
+    </toolbar>
+
+    <toolbar name="Query Editor Tools" visible="true">
+
+        <constraints>
+
+            <row>0</row>
+            <position>0</position>
+            <loc-x>0</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
+
+        </constraints>
+
+        <buttons>
+
+            <button id="25" action-id="execute-command">
+                <visible>true</visible>
+                <order>0</order>
+            </button>
+
+            <button id="26" action-id="execute-in-any-connections-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
+
+            <button id="27" action-id="execute-script-command">
+                <visible>true</visible>
+                <order>2</order>
+            </button>
+
+            <button id="28" action-id="execute-at-cursor-command">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
+
+            <button id="29" action-id="execute-selection-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
+
+            <button id="30" action-id="execute-in-profiler-command">
+                <visible>true</visible>
+                <order>5</order>
+            </button>
+
+            <button id="31" action-id="editor-stop-command">
+                <visible>true</visible>
+                <order>6</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>7</order>
+            </button>
+
+            <button id="32" action-id="commit-command">
+                <visible>true</visible>
+                <order>8</order>
+            </button>
+
+            <button id="33" action-id="rollback-command">
+                <visible>true</visible>
+                <order>9</order>
+            </button>
+
+            <button id="34" action-id="toggle-autocommit-command">
+                <visible>true</visible>
+                <order>10</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>11</order>
+            </button>
+
+            <button id="35" action-id="manage-bookmarks-command">
+                <visible>true</visible>
+                <order>12</order>
+            </button>
+
+            <button id="36" action-id="manage-shortcuts-command">
+                <visible>true</visible>
+                <order>13</order>
+            </button>
+
+            <button id="37" action-id="sql-history-command">
+                <visible>true</visible>
+                <order>14</order>
+            </button>
+
+            <button id="38" action-id="editor-next-command">
+                <visible>true</visible>
+                <order>15</order>
+            </button>
+
+            <button id="39" action-id="editor-previous-command">
+                <visible>true</visible>
+                <order>16</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>17</order>
+            </button>
+
+            <button id="40" action-id="editor-export-command">
+                <visible>true</visible>
+                <order>18</order>
+            </button>
+
+            <button id="41" action-id="editor-rs-metadata-command">
+                <visible>true</visible>
+                <order>19</order>
+            </button>
+
+            <button id="42" action-id="editor-show-hide-rs-columns-command">
+                <visible>true</visible>
+                <order>20</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>21</order>
+            </button>
+
+            <button id="43" action-id="open-command">
+                <visible>true</visible>
+                <order>22</order>
+            </button>
+
+            <button id="44" action-id="save-as-command">
+                <visible>true</visible>
+                <order>23</order>
+            </button>
+
+            <button id="45" action-id="print-command">
+                <visible>true</visible>
+                <order>24</order>
+            </button>
+
+            <button id="46" action-id="print-plan-command">
+                <visible>true</visible>
+                <order>25</order>
+            </button>
+
+            <button id="47" action-id="print-explained-plan-command">
+                <visible>true</visible>
+                <order>26</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>27</order>
+            </button>
+
+            <button id="48" action-id="find-command">
+                <visible>true</visible>
+                <order>28</order>
+            </button>
+
+            <button id="49" action-id="find-next-command">
+                <visible>true</visible>
+                <order>29</order>
+            </button>
+
+            <button id="50" action-id="replace-command">
+                <visible>true</visible>
+                <order>30</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>31</order>
+            </button>
+
+            <button id="51" action-id="toggle-editor-output-command">
+                <visible>true</visible>
+                <order>32</order>
+            </button>
+
+            <button id="52" action-id="change-split-orientation-command">
+                <visible>true</visible>
+                <order>33</order>
+            </button>
+
+        </buttons>
+
     </toolbar>
 
 </system-toolbars>

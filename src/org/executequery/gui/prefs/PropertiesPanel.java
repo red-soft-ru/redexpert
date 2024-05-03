@@ -28,6 +28,7 @@ import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.gui.ActionContainer;
 import org.executequery.localization.Bundles;
+import org.executequery.toolbars.ToolBarManager;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
 
@@ -182,6 +183,7 @@ public class PropertiesPanel extends JPanel
         node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_APPLICATION, bundledString("ApplicationTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_QUERY_EDITOR, bundledString("QueryEditorTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
         branches.add(node);
 
@@ -325,15 +327,19 @@ public class PropertiesPanel extends JPanel
                 break;
 
             case PropertyTypes.TOOLBAR_DATABASE:
-                panel = new PropertiesToolBar("Database Tools");
+                panel = new PropertiesToolBar(ToolBarManager.DATABASE_TOOLS);
                 break;
 
             case PropertyTypes.TOOLBAR_APPLICATION:
-                panel = new PropertiesToolBar("Application Tools");
+                panel = new PropertiesToolBar(ToolBarManager.APPLICATION_TOOLS);
+                break;
+
+            case PropertyTypes.TOOLBAR_QUERY_EDITOR:
+                panel = new PropertiesToolBar(ToolBarManager.QUERY_EDITOR_TOOLS);
                 break;
 
             case PropertyTypes.TOOLBAR_SYSTEM:
-                panel = new PropertiesToolBar("System Tools");
+                panel = new PropertiesToolBar(ToolBarManager.SYSTEM_TOOLS);
                 break;
 
             case PropertyTypes.LOOK_PLUGIN:

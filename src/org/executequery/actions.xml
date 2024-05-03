@@ -239,6 +239,7 @@
             mnemonic="M"
             accel-key=""
             accel-editable="false"
+            small-icon="/org/executequery/icons/Bookmarks16.png"
             execute-class="org.executequery.actions.queryeditor.ManageBookmarksCommand"/>
 
     <action id="add-bookmark-command"

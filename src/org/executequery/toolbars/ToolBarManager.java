@@ -41,6 +41,7 @@ public class ToolBarManager extends DefaultToolBarManager
     public static final String DATABASE_TOOLS = "Database Tools";
     public static final String APPLICATION_TOOLS = "Application Tools";
     public static final String SYSTEM_TOOLS = "System Tools";
+    public static final String QUERY_EDITOR_TOOLS = "Query Editor Tools";
 
     public ToolBarManager() {
         super(TOOLBARS_XML, SystemProperties.getProperty("system", "toolbars.defaults"));

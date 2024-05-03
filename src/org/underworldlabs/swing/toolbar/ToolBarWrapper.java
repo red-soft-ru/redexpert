@@ -30,28 +30,10 @@ import java.util.Vector;
  */
 public class ToolBarWrapper implements Cloneable {
 
-    /**
-     * This tool bar's name
-     */
     private String name;
-
-    /**
-     * Whether the tool bar is visible
-     */
     private boolean visible;
-
-    /**
-     * This tool bar's buttons
-     */
-    private Vector buttons;
-
-    /**
-     * The tool bar's constraints
-     */
+    private Vector<ToolBarButton> buttons;
     private ToolBarConstraints constraints;
-
-    public ToolBarWrapper() {
-    }
 
     public ToolBarWrapper(String name, boolean visible) {
         this.name = name;
@@ -71,86 +53,48 @@ public class ToolBarWrapper implements Cloneable {
     }
 
     public void addButton(ToolBarButton button) {
-        if (buttons == null) {
-            buttons = new Vector();
-        }
+        if (buttons == null)
+            buttons = new Vector<>();
         buttons.add(button);
     }
 
-    public void resetButtons(Vector _buttons) {
-        int size = _buttons.size();
-
-        if (buttons != null) {
-            buttons.clear();
-        } else {
-            buttons = new Vector(size);
-        }
-
-        for (int i = 0; i < size; i++) {
-            buttons.add(((ToolBarButton) _buttons.elementAt(i)).clone());
-        }
-
+    public void resetButtons(Vector<ToolBarButton> newButtons) {
+        buttons = new Vector<>();
+        newButtons.forEach(button -> buttons.add((ToolBarButton) button.clone()));
     }
 
-    private int getVisibleButtonsCount(Vector _buttons) {
-        int count = 0;
-        ToolBarButton button = null;
-
-        for (int i = 0, k = _buttons.size(); i < k; i++) {
-            button = (ToolBarButton) _buttons.elementAt(i);
-            if (button.isVisible()) {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    public void setButtonsVector(Vector _buttons) {
+    public void setButtonsVector(Vector<ToolBarButton> buttons) {
         constraints.setMinimumWidth(-1);
-        buttons = _buttons;
+        this.buttons = buttons;
     }
 
-    public int getButtonCount() {
-        return buttons.size();
-    }
+    public void setVisible(boolean visible) {
 
-    public void setVisible(boolean _visible) {
-
-        if (visible == _visible) {
+        if (this.visible == visible)
             return;
-        }
-        visible = _visible;
 
-        if (visible) {
+        this.visible = visible;
+        if (this.visible) {
             constraints.setRow(ToolBarProperties.getNextToolbarRow());
             constraints.setPosition(0);
-        } else {
+
+        } else
             constraints.reset();
-        }
-
-    }
-
-    public void resetButtons() {
-        if (buttons != null && buttons.size() > 0) {
-            buttons.clear();
-        }
     }
 
     public boolean hasButtons() {
-        return buttons != null && buttons.size() > 0;
+        return buttons != null && !buttons.isEmpty();
     }
 
-    public Vector getButtonsVector() {
+    public Vector<ToolBarButton> getButtonsVector() {
         return buttons;
     }
 
     public ToolBarButton[] getButtonsArray() {
-        if (buttons != null && buttons.size() > 0) {
-            return (ToolBarButton[]) buttons.toArray(new ToolBarButton[]{});
-        } else {
-            return null;
-        }
+        if (buttons != null && !buttons.isEmpty())
+            return buttons.toArray(new ToolBarButton[]{});
+
+        return null;
     }
 
     public void setName(String name) {
@@ -161,33 +105,20 @@ public class ToolBarWrapper implements Cloneable {
         return name;
     }
 
+    @Override
     public Object clone() {
-        ToolBarWrapper tb = new ToolBarWrapper(name, visible);
-        tb.setConstraints((ToolBarConstraints) constraints.clone());
+        ToolBarWrapper wrapper = new ToolBarWrapper(name, visible);
+        wrapper.setConstraints((ToolBarConstraints) constraints.clone());
 
-        if (buttons != null) {
-            tb.resetButtons((Vector) buttons.clone());
-        }
-        return tb;
+        if (buttons != null)
+            wrapper.resetButtons((Vector<ToolBarButton>) buttons.clone());
+
+        return wrapper;
     }
 
+    @Override
     public String toString() {
         return name;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

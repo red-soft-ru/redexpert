@@ -279,12 +279,12 @@
                 <order>14</order>
             </button>
 
-            <button id="38" action-id="editor-next-command">
+            <button id="38" action-id="editor-previous-command">
                 <visible>true</visible>
                 <order>15</order>
             </button>
 
-            <button id="39" action-id="editor-previous-command">
+            <button id="39" action-id="editor-next-command">
                 <visible>true</visible>
                 <order>16</order>
             </button>

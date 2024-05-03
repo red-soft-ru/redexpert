@@ -59,23 +59,16 @@ class QueryEditorToolBar extends PanelToolBar {
 
     private final InputMap queryEditorInputMap;
     private final ActionMap queryEditorActionMap;
-
-    private Map<String, RolloverButton> buttons;
+    private final Map<String, RolloverButton> buttons;
 
     public QueryEditorToolBar(ActionMap queryEditorActionMap, InputMap queryEditorInputMap) {
         this.queryEditorActionMap = queryEditorActionMap;
         this.queryEditorInputMap = queryEditorInputMap;
-
+        this.buttons = new HashMap<>();
         init();
     }
 
     private void init() {
-        buttons = new HashMap<>();
-        buildToolBar();
-    }
-
-    public void buildToolBar() {
-        removeAll();
 
         ToolBarWrapper wrapper = ToolBarProperties.getToolBar(ToolBarManager.QUERY_EDITOR_TOOLS);
         if (wrapper == null || !wrapper.isVisible() || !wrapper.hasButtons())
@@ -84,14 +77,16 @@ class QueryEditorToolBar extends PanelToolBar {
         wrapper.getButtonsVector().stream()
                 .sorted(new ButtonComparator())
                 .filter(ToolBarButton::isVisible)
-                .forEachOrdered(button -> {
-                    if (button.isSeparator()) {
-                        addSeparator();
-                    } else if (Objects.equals(button.getActionId(), QUERY_BOOKMARKS)) {
-                        addButton(createQueryBookmarkButton());
-                    } else
-                        addButton(createButton(button.getActionId()));
-                });
+                .forEachOrdered(this::addToolBarButton);
+    }
+
+    private void addToolBarButton(ToolBarButton button) {
+        if (button.isSeparator()) {
+            addSeparator();
+        } else if (Objects.equals(button.getActionId(), QUERY_BOOKMARKS)) {
+            addButton(createQueryBookmarkButton());
+        } else
+            addButton(createButton(button.getActionId()));
     }
 
     private JButton createQueryBookmarkButton() {

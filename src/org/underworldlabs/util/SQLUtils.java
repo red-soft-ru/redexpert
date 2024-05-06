@@ -366,7 +366,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         for (ColumnData cd : cols) {
-            String name = format(relationName, cd.getConnection()) + "." + cd.getFormattedColumnName();
+            String name = format(relationName, cd.getConnection()) + "." + cd.getColumnName();
             sb.append(generateComment(name, metaTag, cd.getRemarks(), delimiter, true, cd.getConnection()));
         }
 

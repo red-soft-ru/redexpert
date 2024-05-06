@@ -459,14 +459,9 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(authid))
             sb.append("\nAUTHID ").append(authid).append("\n");
 
-        if (inputParameters != null && inputParameters.size() > 0 &&
-                (inputParameters.size() == 1 &&
-                        !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)) {
-
-            sb.append(" (\n");
-            sb.append(formattedParameters(inputParameters, false));
-            sb.append(") ");
-        }
+        if (inputParameters != null && !inputParameters.isEmpty())
+            if (inputParameters.size() == 1 && !MiscUtils.isNull(inputParameters.get(0).getColumnName()) || inputParameters.size() > 1)
+                sb.append(" (\n").append(formattedParameters(inputParameters, false)).append(") ");
 
         return sb.toString();
     }
@@ -729,22 +724,18 @@ public final class SQLUtils {
 
     public static String formattedParameter(ColumnData cd, boolean appendName) {
         StringBuilder sb = new StringBuilder();
-        if (appendName) {
-            sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : format(cd.getColumnName(), cd.getConnection())).
-                    append(" ");
-        }
+
+        if (appendName)
+            sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).append(SPACE);
+
         if (MiscUtils.isNull(cd.getComputedBy())) {
-            if (MiscUtils.isNull(cd.getDomain())) {
 
-                if (cd.getTypeName() != null || cd.isTypeOf())
-                    sb.append(cd.getFormattedDataType());
+            if (!MiscUtils.isNull(cd.getDomain())) {
+                sb.append(cd.isTypeOf() ? cd.getFormattedDataType() : cd.getFormattedDomain());
 
-            } else {
-                if (cd.isTypeOf())
-                    sb.append(cd.getFormattedDataType());
-                else
-                    sb.append(cd.getFormattedDomain());
-            }
+            } else if (cd.getTypeName() != null || cd.isTypeOf())
+                sb.append(cd.getFormattedDataType());
+
             sb.append(cd.isNotNull() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER
                     && !MiscUtils.isNull(cd.getDefaultValue().getValue())
@@ -752,9 +743,9 @@ public final class SQLUtils {
             ) {
                 sb.append(SPACE).append(format(cd.getDefaultValue(), cd));
             }
-            if (!MiscUtils.isNull(cd.getCheck())) {
+
+            if (!MiscUtils.isNull(cd.getCheck()))
                 sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
-            }
 
         } else
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");

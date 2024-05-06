@@ -349,14 +349,16 @@ public class SQLSyntaxDocument extends RSyntaxDocument
 
     }
 
-    private Style[] styles;
+             private Style[] styles;
+
+             public synchronized org.fife.ui.rsyntaxtextarea.Token getTokenListForLine(int line) {
+                 return super.getTokenListForLine(line);
+             }
 
 
-
-
-    /**
-     * Change the style of a particular type of token.
-     */
+             /**
+              * Change the style of a particular type of token.
+              */
 
 
     /**

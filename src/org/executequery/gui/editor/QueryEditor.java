@@ -234,7 +234,7 @@ public class QueryEditor extends DefaultTabView
 
         delegate = new QueryEditorDelegate(this);
         delegate.setTPP(transactionParametersPanel);
-        popup = new QueryEditorPopupMenu(delegate);
+        popup = new QueryEditorPopupMenu();
 
         // --- panels ---
 

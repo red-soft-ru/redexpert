@@ -356,14 +356,20 @@ public class GUIUtils {
                 message, null);
     }
 
-    public static final String displayInputMessage(Component parent, String title, Object message) {
-        return displayDialog(parent,
+    public static String displayInputMessage(Component parent, String title, Object message) {
+        return displayDialog(
+                parent,
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 true,
                 "OptionPane.questionIcon",
                 title,
-                message, new Object[]{Bundles.getCommon("ok.button"), Bundles.getCommon("cancel.button")}).toString();
+                message,
+                new Object[]{
+                        Bundles.getCommon("ok.button"),
+                        Bundles.getCommon("cancel.button")
+                }
+        ).toString();
     }
 
     public static final void displayWarningMessage(Component parent, Object message) {
@@ -392,45 +398,44 @@ public class GUIUtils {
 
         dialogReturnValue = null;
 
-        Runnable runnable = new Runnable() {
-            public void run() {
-                showNormalCursor(parent);
-                Object okOption = null;
-                if (buttons != null)
-                    okOption = buttons[0];
-                JOptionPane pane = new JOptionPane(message, messageType,
-                        optionType, UIManager.getIcon(icon), buttons, okOption);
-                pane.setWantsInput(wantsInput);
+        Runnable runnable = () -> {
+            showNormalCursor(parent);
 
-                JDialog dialog = null;
-                JFrame frame = null;
-                if (parent == null) {
-                    frame = new JFrame("My dialog asks....");
-                    frame.setUndecorated(true);
-                    frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
-                    frame.setVisible( true );
-                    frame.setLocationRelativeTo( null );
-                    dialog = pane.createDialog(frame, title);
-                } else
-                    dialog = pane.createDialog(parent, title);
+            Object okOption = null;
+            if (buttons != null)
+                okOption = buttons[0];
 
-                if (message instanceof DialogMessageContent) {
+            JOptionPane pane = new JOptionPane(message, messageType, optionType, UIManager.getIcon(icon), buttons, okOption);
+            pane.setWantsInput(wantsInput);
 
-                    ((DialogMessageContent) message).setDialog(dialog);
-                }
-                dialog.setLocation(getPointToCenter(parent, dialog.getSize()));
-                dialog.setVisible(true);
-                dialog.dispose();
-                if (frame != null)
-                    frame.dispose();
+            JDialog dialog;
+            JFrame frame = null;
+            if (parent == null) {
+                frame = new JFrame("My dialog asks....");
+                frame.setUndecorated(true);
+                frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
+                frame.setVisible(true);
+                frame.setLocationRelativeTo(null);
+                dialog = pane.createDialog(frame, title);
 
-                if (wantsInput) {
-                    dialogReturnValue = pane.getInputValue();
-                } else {
-                    dialogReturnValue = pane.getValue();
-                }
+            } else
+                dialog = pane.createDialog(parent, title);
 
+            if (message instanceof DialogMessageContent)
+                ((DialogMessageContent) message).setDialog(dialog);
+
+            dialog.setLocation(getPointToCenter(parent, dialog.getSize()));
+            dialog.setVisible(true);
+            dialog.dispose();
+            if (frame != null)
+                frame.dispose();
+
+            if (formatDialogReturnValue(pane.getValue()) != JOptionPane.YES_OPTION) {
+                dialogReturnValue = JOptionPane.UNINITIALIZED_VALUE;
+                return;
             }
+
+            dialogReturnValue = wantsInput ? pane.getInputValue() : pane.getValue();
         };
         invokeAndWait(runnable);
 

@@ -40,45 +40,59 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     private boolean lafChangeWarningShown = false;
 
     public PropertiesAppearance() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
-    /**
-     * Initializes the state of this instance.
-     */
-    private void init() throws Exception {
+    private void init() {
 
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        String key;
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
                 bundledString("General"),
-                null));
+                null
+        ));
 
-        String key = "system.display.statusbar";
+        key = "startup.display.splash";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("DisplaySplashScreenAtStartup"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "startup.window.maximized";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("MaximiseWindowOnStartup"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "system.display.statusbar";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("StatusBar"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "system.display.connections";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("Connections"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
                 bundledString("Appearance"),
-                null));
+                null
+        ));
 
         key = "startup.display.lookandfeel";
         list.add(new UserPreference(
@@ -86,41 +100,43 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 key,
                 bundledString("LookAndFeel"),
                 LookAndFeelType.valueOf(stringUserProperty(key)),
-                lookAndFeelValuePairs()));
+                lookAndFeelValuePairs()
+        ));
 
         key = "display.aa.fonts";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("UseAnti-aliasFonts"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "desktop.background.custom.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
                 bundledString("DesktopBackground"),
-                SystemProperties.getColourProperty("user", key)));
+                SystemProperties.getColourProperty("user", key)
+        ));
 
         key = "decorate.dialog.look";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("DecorateDialogs"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "decorate.frame.look";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("DecorateFrame"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
         addContent(preferencesPanel);
-
         lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
     }
 
@@ -152,7 +168,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         LookAndFeelType[] lookAndFeelTypes = LookAndFeelType.values();
         LabelValuePair[] values = new LabelValuePair[lookAndFeelTypes.length];
         for (int i = 0; i < lookAndFeelTypes.length; i++) {
-
             LookAndFeelType lookAndFeelType = lookAndFeelTypes[i];
             values[i] = new LabelValuePair(lookAndFeelType, lookAndFeelType.getDescription());
         }

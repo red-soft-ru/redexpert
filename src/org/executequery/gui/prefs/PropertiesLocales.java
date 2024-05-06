@@ -20,9 +20,8 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.GUIUtilities;
-import org.executequery.log.Log;
 import org.underworldlabs.swing.DisabledField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.StringSorter;
 import org.underworldlabs.util.SystemProperties;
 
@@ -41,74 +40,64 @@ import java.util.TimeZone;
 public class PropertiesLocales extends AbstractPropertiesBasePanel
         implements ListSelectionListener {
 
-    private JList localeList;
-    private JList timezoneList;
+    private Locale[] locales;
+    private JList<String> localeList;
+    private JList<String> timezoneList;
 
     private DisabledField selectedLocaleField;
     private DisabledField selectedTimeZoneField;
 
-    private Locale[] locales;
-    private String[] timezones;
-
     public PropertiesLocales() {
-        GUIUtilities.showWaitCursor();
-        try {
-            jbInit();
-        } catch (Exception e) {
-            Log.error("Error init Class PropertiesLocales:", e);
-        } finally {
-            GUIUtilities.showNormalCursor();
-        }
+        init();
     }
 
-    private void jbInit() throws Exception {
-
-//        JLabel localesLabel = new JLabel("Language Locales:");
-//        JLabel timezonesLabel = new JLabel("Time Zones:");
-
-        selectedLocaleField = new DisabledField();
-        selectedTimeZoneField = new DisabledField();
+    private void init() {
 
         locales = Locale.getAvailableLocales();
-        timezones = TimeZone.getAvailableIDs();
+        Arrays.sort(locales, Comparator.comparing(Locale::getDisplayName));
 
-        Arrays.sort(locales, new LocalesComparator());
+        String[] timezones = TimeZone.getAvailableIDs();
         Arrays.sort(timezones, new StringSorter());
 
-        String[] locValues = new String[locales.length];
         String country = SystemProperties.getProperty("user", "locale.country");
         String language = SystemProperties.getProperty("user", "locale.language");
 
         boolean selectedFound = false;
         String selectedLocValue = null;
 
+        String[] locValues = new String[locales.length];
         for (int i = 0; i < locValues.length; i++) {
             locValues[i] = locales[i].getDisplayName();
 
-            if (!selectedFound) {
-
-                if (country.compareTo(locales[i].getCountry()) == 0 &&
-                        language.compareTo(locales[i].getLanguage()) == 0) {
+            if (!selectedFound && country != null && language != null) {
+                if (country.compareTo(locales[i].getCountry()) == 0 && language.compareTo(locales[i].getLanguage()) == 0) {
                     selectedLocValue = locValues[i];
                     selectedFound = true;
                 }
-
             }
-
         }
 
-        localeList = new JList(locValues);
-        timezoneList = new JList(timezones);
+        localeList = new JList<>(locValues);
+        timezoneList = new JList<>(timezones);
 
         localeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         timezoneList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        JScrollPane localeScroll = new JScrollPane(localeList);
-        JScrollPane timezoneScroll = new JScrollPane(timezoneList);
+        selectedLocaleField = new DisabledField();
+        selectedTimeZoneField = new DisabledField();
 
-        Dimension scrollerDim = new Dimension(370, 100);
-        localeScroll.setPreferredSize(scrollerDim);
-        timezoneScroll.setPreferredSize(scrollerDim);
+        GridBagHelper gbh = new GridBagHelper()
+                .setInsets(5, 5, 5, 5)
+                .anchorNorthWest()
+                .fillBoth();
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.add(new JLabel(bundledString("TimeZones")), gbh.setMinWeightX().setMinWeightY().get());
+        mainPanel.add(selectedTimeZoneField, gbh.nextCol().setMinWeightX().get());
+        mainPanel.add(new JLabel(bundledString("LanguageLocales")), gbh.nextCol().setMinWeightX().get());
+        mainPanel.add(selectedLocaleField, gbh.nextCol().setMinWeightX().spanX().get());
+        mainPanel.add(new JScrollPane(timezoneList), gbh.nextRowFirstCol().setWidth(2).setMaxWeightY().spanY().get());
+        mainPanel.add(new JScrollPane(localeList), gbh.nextCol().spanX().get());
 
         localeList.setSelectedValue(selectedLocValue, true);
         timezoneList.setSelectedValue(SystemProperties.getProperty("user", "locale.timezone"), true);
@@ -116,53 +105,12 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
         selectedLocaleField.setText(selectedLocValue);
         selectedTimeZoneField.setText(SystemProperties.getProperty("user", "locale.timezone"));
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets.bottom = 5;
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(bundledString("TimeZones")), gbc);
-        gbc.gridy++;
-        panel.add(selectedTimeZoneField, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(timezoneScroll, gbc);
-        gbc.gridy++;
-        gbc.insets.top = 10;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledString("LanguageLocales")), gbc);
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        panel.add(selectedLocaleField, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1.0;
-        gbc.insets.bottom = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(localeScroll, gbc);
-
-        addContent(panel);
+        add(mainPanel, new GridBagHelper().fillBoth().setMaxWeightY().spanX().get());
         localeList.addListSelectionListener(this);
         timezoneList.addListSelectionListener(this);
     }
 
-    public void restoreDefaults() {
-        timezoneList.setSelectedValue(
-                SystemProperties.getProperty("defaults", "locale.timezone"), true);
-        localeList.setSelectedValue(
-                SystemProperties.getProperty("defaults", "locale.country"), true);
-    }
-
-    public void valueChanged(ListSelectionEvent e) {
-        selectedTimeZoneField.setText((String) timezoneList.getSelectedValue());
-        selectedLocaleField.setText(locales[localeList.getSelectedIndex()].getDisplayName());
-        PropertiesPanel.setRestartNeed(true);
-    }
-
+    @Override
     public void save() {
         Locale loc = locales[localeList.getSelectedIndex()];
         SystemProperties.setProperty("user", "locale.country", loc.getCountry());
@@ -174,28 +122,17 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
         System.setProperty("user.timezone", selectedTimeZoneField.getText());
     }
 
-    static class LocalesComparator implements Comparator<Locale> {
+    @Override
+    public void restoreDefaults() {
+        timezoneList.setSelectedValue(SystemProperties.getProperty("defaults", "locale.timezone"), true);
+        localeList.setSelectedValue(SystemProperties.getProperty("defaults", "locale.country"), true);
+    }
 
-        public int compare(Locale loc1, Locale loc2) {
-
-            return loc1.getDisplayName().compareTo(loc2.getDisplayName());
-        }
-
-    } // class LocalesComparator
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        selectedTimeZoneField.setText(timezoneList.getSelectedValue());
+        selectedLocaleField.setText(locales[localeList.getSelectedIndex()].getDisplayName());
+        PropertiesPanel.setRestartNeed(true);
+    }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

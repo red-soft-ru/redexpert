@@ -34,6 +34,7 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel {
+    private SimplePreferencesPanel preferencesPanel;
 
     public static final String[] ALIIGNS = {
             Bundles.get("preferences.allign.right"),
@@ -41,46 +42,45 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
             Bundles.get("preferences.allign.center")
     };
 
-    private SimplePreferencesPanel preferencesPanel;
-
     public PropertiesResultSetTableGeneral() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
     }
 
     private void init() {
 
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        String key;
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
                 bundledString("ResultSetTable"),
-                null));
+                null
+        ));
 
-        String key = "results.table.column.resize";
+        key = "results.table.column.resize";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("ColumnsResizeable"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.column.reorder";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("ColumnReordering"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.row.numbers";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("RowNumberHeader"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.column.width";
         list.add(new UserPreference(
@@ -88,7 +88,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 3,
                 key,
                 bundledString("ColumnWidth"),
-                SystemProperties.getProperty("user", key)));
+                SystemProperties.getProperty("user", key)
+        ));
 
         key = "results.table.column.height";
         list.add(new UserPreference(
@@ -96,14 +97,16 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 3,
                 key,
                 bundledString("ColumnHeight"),
-                SystemProperties.getProperty("user", key)));
+                SystemProperties.getProperty("user", key)
+        ));
 
         key = "results.table.column.width.save";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("SaveColumnWidthStateBetweenQueries"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.date.pattern";
         list.add(new UserPreference(
@@ -111,7 +114,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 -1,
                 key,
                 bundledString("DatePatternFormat"),
-                stringUserProperty(key)));
+                stringUserProperty(key)
+        ));
 
         key = "results.time.pattern";
         list.add(new UserPreference(
@@ -119,7 +123,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 -1,
                 key,
                 bundledString("TimePatternFormat"),
-                stringUserProperty(key)));
+                stringUserProperty(key)
+        ));
 
         key = "results.timestamp.pattern";
         list.add(new UserPreference(
@@ -127,7 +132,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 -1,
                 key,
                 bundledString("TimestampPatternFormat"),
-                stringUserProperty(key)));
+                stringUserProperty(key)
+        ));
 
         key = "results.time.timezone.pattern";
         list.add(new UserPreference(
@@ -135,7 +141,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 -1,
                 key,
                 bundledString("TimeTimezonePatternFormat"),
-                stringUserProperty(key)));
+                stringUserProperty(key)
+        ));
 
         key = "results.timestamp.timezone.pattern";
         list.add(new UserPreference(
@@ -143,28 +150,32 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 -1,
                 key,
                 bundledString("TimestampTimezonePatternFormat"),
-                stringUserProperty(key)));
+                stringUserProperty(key)
+        ));
 
         key = "results.table.cell.null.text";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledString("NullValueCellText"),
-                SystemProperties.getStringProperty("user", key)));
+                SystemProperties.getStringProperty("user", key)
+        ));
 
         key = "results.table.double-click.record.dialog";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("CellDouble-clickOpensDataItemViewer"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.single.row.transpose";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("TransposeWhenSingleRowResult"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.align.numeric";
         list.add(new UserPreference(
@@ -172,7 +183,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 key,
                 bundledString("alignNumericValues"),
                 alignUserProperty(key),
-                ALIIGNS));
+                ALIIGNS
+        ));
 
         key = "results.table.align.text";
         list.add(new UserPreference(
@@ -180,7 +192,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 key,
                 bundledString("alignTextValues"),
                 alignUserProperty(key),
-                ALIIGNS));
+                ALIIGNS
+        ));
 
         key = "results.table.align.bool";
         list.add(new UserPreference(
@@ -188,7 +201,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 key,
                 bundledString("alignBoolValues"),
                 alignUserProperty(key),
-                ALIIGNS));
+                ALIIGNS
+        ));
 
         key = "results.table.align.null";
         list.add(new UserPreference(
@@ -196,7 +210,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 key,
                 bundledString("alignNullValues"),
                 alignUserProperty(key),
-                ALIIGNS));
+                ALIIGNS
+        ));
 
         key = "results.table.align.other";
         list.add(new UserPreference(
@@ -204,34 +219,43 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 key,
                 bundledString("alignOtherValues"),
                 alignUserProperty(key),
-                ALIIGNS));
+                ALIIGNS
+        ));
 
         key = "results.table.use.form.adding.deleting";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("UseFormForAddingDeletingRecords"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.use.other.color.null";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledString("UseOtherColorForNullWhenAddingDeletingRecords"),
-                Boolean.valueOf(stringUserProperty(key))));
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.fetch.size";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
                 bundledString("FetchSize"),
-                Integer.valueOf(stringUserProperty(key))));
+                Integer.valueOf(stringUserProperty(key))
+        ));
 
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        key = "browser.max.records";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                key,
+                bundledString("MaximumRecordsReturned"),
+                SystemProperties.getProperty("user", key)
+        ));
+
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
         addContent(preferencesPanel);
-
     }
 
     protected String alignUserProperty(String key) {

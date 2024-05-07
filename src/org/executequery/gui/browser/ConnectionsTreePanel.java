@@ -693,35 +693,33 @@ public class ConnectionsTreePanel extends TreePanel
     public ConnectionsFolder newFolder() {
 
         String name = GUIUtilities.displayInputMessage(bundleString("NewFolder"), bundleString("FolderName"));
-        if (!JOptionPane.UNINITIALIZED_VALUE.equals(name)) {
+        if (MiscUtils.isNull(name) || Objects.equals(JOptionPane.UNINITIALIZED_VALUE, name))
+            return null;
 
-            ConnectionsFolder folder = new ConnectionsFolder(name);
-            folders.add(folder);
+        ConnectionsFolder folder = new ConnectionsFolder(name);
+        folders.add(folder);
 
-            ConnectionsFolderNode lastFolder = null;
-            DefaultMutableTreeNode root = tree.getConnectionsBranchNode();
-            for (Enumeration<?> i = root.children(); i.hasMoreElements(); ) {
+        ConnectionsFolderNode lastFolder = null;
+        DefaultMutableTreeNode root = tree.getConnectionsBranchNode();
+        for (Enumeration<?> i = root.children(); i.hasMoreElements(); ) {
 
-                Object object = i.nextElement();
-                if (isAConnectionsFolderNode(object))
-                    lastFolder = asConnectionsFolderNode(object);
-                else
-                    break;
-            }
-
-            int insertIndex = 0;
-            ConnectionsFolderNode folderNode = new ConnectionsFolderNode(folder);
-            if (lastFolder != null)
-                insertIndex = root.getIndex(lastFolder) + 1;
-
-            root.insert(folderNode, insertIndex);
-            tree.nodesWereInserted(root, new int[]{insertIndex});
-            folderAdded(folder);
-
-            return folder;
+            Object object = i.nextElement();
+            if (isAConnectionsFolderNode(object))
+                lastFolder = asConnectionsFolderNode(object);
+            else
+                break;
         }
 
-        return null;
+        int insertIndex = 0;
+        ConnectionsFolderNode folderNode = new ConnectionsFolderNode(folder);
+        if (lastFolder != null)
+            insertIndex = root.getIndex(lastFolder) + 1;
+
+        root.insert(folderNode, insertIndex);
+        tree.nodesWereInserted(root, new int[]{insertIndex});
+        folderAdded(folder);
+
+        return folder;
     }
 
     /**

@@ -226,69 +226,77 @@ public class AdvancedSchedulePanel extends JTabbedPane {
         }
 
         private void fillValuesFromField() {
-            if (!generatingCron) {
-                boolean validValue = true;
-                fillValues = true;
-                try {
-                    String[] crons = cronField.getText().split(" ");
-                    if (crons.length != 5)
-                        validValue = false;
-                    else {
-                        String cron = crons[typeCronTab];
-                        if (cron.trim().equalsIgnoreCase("*"))
-                            eachUnitRadio.setSelected(true);
-                        else if (cron.contains(",") && !(cron.contains("-") || cron.contains("/")) || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))) {
-                            specificUnitRadio.setSelected(true);
-                            String[] qs = cron.split(",");
-                            specificUnitComboCheck.getModel().removeChecks();
-                            for (String q : qs) {
-                                int index = getIndexFromValue(Integer.parseInt(q));
-                                specificUnitComboCheck.getModel().addCheck(baseUnits.get(index));
-                            }
 
-                        } else if (cron.contains("/") && !cron.contains(",")) {
-                            intervalUnitRadio.setSelected(true);
-                            String interval = cron.substring(cron.indexOf("/") + 1);
-                            intervalCombo.setSelectedIndex(Integer.parseInt(interval) - 1);
-                            interval = cron.substring(0, cron.indexOf("/"));
-                            if (interval.equalsIgnoreCase("*")) {
-                                beginCheck.setSelected(false);
-                                endCheck.setSelected(false);
-                            } else if (interval.contains("-")) {
-                                beginCheck.setSelected(true);
-                                endCheck.setSelected(true);
-                                String beginValue = interval.substring(0, cron.indexOf("-"));
-                                String endValue = interval.substring(cron.indexOf("-") + 1);
-                                int ind1 = Integer.parseInt(beginValue);
-                                int ind2 = Integer.parseInt(endValue);
-                                beginCombo.setSelectedIndex(getIndexFromValue(ind1));
-                                endCombo.setSelectedIndex(getIndexFromValue(ind2));
-                            } else {
-                                beginCheck.setSelected(true);
-                                int ind = Integer.parseInt(interval);
-                                beginCombo.setSelectedItem(getIndexFromValue(ind));
-                            }
-                        } else if (cron.contains("-") && !cron.contains(",")) {
-                            betweenUnitRadio.setSelected(true);
-                            String[] qs = cron.split("-");
-                            if (qs.length > 2)
-                                validValue = false;
-                            betweenBeginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[0])));
-                            betweenEndCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(qs[1])));
-                        }
+            if (generatingCron)
+                return;
+
+            fillValues = true;
+            boolean validValue = true;
+            try {
+
+                String[] crons = cronField.getText().split(" ");
+                if (crons.length != 5)
+                    throw new Exception("crons.length != 5");
+
+                String cron = crons[typeCronTab];
+                if (cron.trim().equalsIgnoreCase("*")) {
+                    eachUnitRadio.setSelected(true);
+
+                } else if (cron.contains(",") && !(cron.contains("-")
+                        || cron.contains("/"))
+                        || (!cron.contains(",") && !cron.contains("/") && !cron.contains("-"))
+                ) {
+                    specificUnitRadio.setSelected(true);
+                    specificUnitComboCheck.getModel().removeChecks();
+
+                    String[] values = cron.split(",");
+                    for (String q : values) {
+                        int index = getIndexFromValue(Integer.parseInt(q));
+                        specificUnitComboCheck.getModel().addCheck(baseUnits.get(index));
                     }
 
+                } else if (cron.contains("/") && !cron.contains(",")) {
+                    String interval = cron.substring(cron.indexOf("/") + 1);
 
-                } catch (Exception e) {
-                    if (Log.isDebugEnabled())
-                        Log.error(e.getMessage(), e);
-                    validValue = false;
+                    intervalUnitRadio.setSelected(true);
+                    intervalCombo.setSelectedIndex(Integer.parseInt(interval) - 1);
+
+                    interval = cron.substring(0, cron.indexOf("/"));
+                    if (interval.equalsIgnoreCase("*")) {
+                        beginCheck.setSelected(false);
+                        endCheck.setSelected(false);
+
+                    } else if (interval.contains("-")) {
+                        String beginValue = interval.substring(0, cron.indexOf("-"));
+                        String endValue = interval.substring(cron.indexOf("-") + 1);
+
+                        beginCheck.setSelected(true);
+                        beginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(beginValue)));
+                        endCheck.setSelected(true);
+                        endCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(endValue)));
+
+                    } else {
+                        beginCheck.setSelected(true);
+                        beginCombo.setSelectedItem(getIndexFromValue(Integer.parseInt(interval)));
+                    }
+
+                } else if (cron.contains("-") && !cron.contains(",")) {
+                    String[] range = cron.split("-");
+                    if (range.length > 2)
+                        validValue = false;
+
+                    betweenUnitRadio.setSelected(true);
+                    betweenBeginCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(range[0])));
+                    betweenEndCombo.setSelectedIndex(getIndexFromValue(Integer.parseInt(range[1])));
                 }
-                if (!validValue)
-                    cronField.setBorder(BorderFactory.createLineBorder(Color.RED));
-                else cronField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                fillValues = false;
+
+            } catch (Exception e) {
+                Log.debug(e.getMessage(), e);
+                validValue = false;
             }
+
+            cronField.setBorder(BorderFactory.createLineBorder(validValue ? Color.BLACK : Color.RED));
+            fillValues = false;
         }
 
         protected void update() {
@@ -304,10 +312,10 @@ public class AdvancedSchedulePanel extends JTabbedPane {
             Object[] units = new Object[0];
             switch (typeCronTab) {
                 case MINUTES:
-                    units = IntStream.range(1, 60).mapToObj(Integer::toString).toArray();
+                    units = IntStream.range(0, 60).mapToObj(Integer::toString).toArray();
                     break;
                 case HOURS:
-                    units = IntStream.range(1, 24).mapToObj(Integer::toString).toArray();
+                    units = IntStream.range(0, 24).mapToObj(Integer::toString).toArray();
                     break;
                 case DAYS:
                     units = IntStream.range(1, 32).mapToObj(Integer::toString).toArray();

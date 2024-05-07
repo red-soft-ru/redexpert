@@ -27,8 +27,6 @@ import org.executequery.gui.FeedbackPanel;
 import org.executequery.log.Log;
 
 import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Command to open the feedback dialog.
@@ -37,41 +35,29 @@ import java.lang.reflect.Method;
  */
 public class FeedbackCommand extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        String actionCommand = e.getActionCommand();
         try {
+            getClass().getMethod(e.getActionCommand(), ActionEvent.class).invoke(this, e);
 
-            Method method = getClass().getMethod(
-                    actionCommand, new Class[]{ActionEvent.class});
-
-            method.invoke(this, e);
-
-        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException
-                | IllegalAccessException | InvocationTargetException e1) {
-
-            handleException(e1);
+        } catch (Exception exception) {
+            Log.error(bundledString("errorExecutingFeedbackCommand"), exception);
         }
-
     }
 
-    private void handleException(Throwable e) {
-
-        Log.error(bundledString("errorExecutingFeedbackCommand"), e);
-    }
-
+    @SuppressWarnings("unused")
     public void featureRequest(ActionEvent e) {
-
         showDialog(FeedbackPanel.FEATURE_REQUEST, bundledString("featureRequest"));
     }
 
+    @SuppressWarnings("unused")
     public void userComments(ActionEvent e) {
-
         showDialog(FeedbackPanel.USER_COMMENTS, bundledString("userComments"));
     }
 
+    @SuppressWarnings("unused")
     public void bugReport(ActionEvent e) {
-
         showDialog(FeedbackPanel.BUG_REPORT, bundledString("reportBug"));
     }
 
@@ -79,7 +65,6 @@ public class FeedbackCommand extends AbstractBaseCommand {
 
         GUIUtilities.showWaitCursor();
         try {
-
             BaseDialog dialog = new BaseDialog(title, true, true);
             FeedbackPanel panel = new FeedbackPanel(dialog, type);
 
@@ -87,10 +72,8 @@ public class FeedbackCommand extends AbstractBaseCommand {
             dialog.display();
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
     }
 
 }
-

@@ -24,9 +24,9 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.*;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.databaseobjects.ConnectionTester;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -890,30 +890,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void test() {
 
-        if (!valid()) {
-
+        if (!valid())
             return;
-        }
 
         populateAndSave();
-
         try {
-
             GUIUtilities.showWaitCursor();
-            if (new ConnectionTester().test(databaseConnection)) {
-
+            if (ConnectionMediator.getInstance().test(databaseConnection))
                 GUIUtilities.displayInformationMessage(bundleString("test.success"));
-            }
 
         } catch (DataSourceException e) {
-
             connectionError(e);
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
-
     }
 
     private void connectionError(DataSourceException e) {

@@ -22,6 +22,7 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.apache.commons.lang.StringUtils;
+import org.executequery.Constants;
 import org.executequery.actions.databasecommands.DatabaseStatisticCommand;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -521,8 +522,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return columns;
     }
 
-    private final transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
-
     /**
      * Returns the column names of the specified database object.
      *
@@ -550,16 +549,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             // retrieve the base column info
             rs = dmd.getColumns(_catalog, _schema, table, null);
             while (rs.next()) {
-
-                String name = rs.getString(4);
-                columns.add(columnInformationFactory.build(
+                columns.add(buildColumnInfo(
                         table,
-                        name,
+                        rs.getString(4),
                         rs.getString(6),
                         rs.getInt(5),
                         rs.getInt(7),
                         rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
+                        rs.getInt(11) == DatabaseMetaData.columnNoNulls
+                ));
             }
 
             return columns;
@@ -579,6 +577,42 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             releaseResources(rs, null);
         }
 
+    }
+
+    private ColumnInformation buildColumnInfo(String table, String column, String type, int typeInt, int size, int scale, boolean notNull) {
+        StringBuilder buffer = new StringBuilder();
+
+        String typeString = type == null ? Constants.EMPTY : type;
+        buffer.append(column).append(" ").append(typeString);
+
+        if (!typeString.matches("\\b\\D+\\d+\\b")
+                || typeInt == Types.CHAR
+                || typeInt == Types.VARCHAR
+                || typeInt == Types.LONGVARCHAR
+        ) {
+            if (size > 0
+                    && typeInt != Types.DATE
+                    && typeInt != Types.TIME
+                    && typeInt != Types.TIMESTAMP
+                    && typeInt != Types.BIT
+            ) {
+
+                buffer.append("(");
+                buffer.append(size);
+
+                if (scale > 0) {
+                    buffer.append(",");
+                    buffer.append(scale);
+                }
+                buffer.append(")");
+            }
+        }
+
+        if (notNull)
+            buffer.append(" NOT NULL");
+        buffer.append("  [").append(table).append("]");
+
+        return new ColumnInformation(column, buffer.toString());
     }
 
 

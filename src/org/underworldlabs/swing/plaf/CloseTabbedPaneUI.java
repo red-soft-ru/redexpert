@@ -26,10 +26,7 @@ import org.underworldlabs.swing.TabPopupMenuContainer;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.ActionMapUIResource;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.InputMapUIResource;
-import javax.swing.plaf.UIResource;
+import javax.swing.plaf.*;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.basic.BasicHTML;
@@ -1883,82 +1880,99 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
 
     }
 
+    private static CloseTabbedPaneUI getUI(ActionEvent e) {
+        TabbedPaneUI ui = ((JTabbedPane) e.getSource()).getUI();
+        return ui instanceof CloseTabbedPaneUI ? (CloseTabbedPaneUI) ui : null;
+    }
 
     private static class RightAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(EAST);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(RIGHT);
         }
     }
 
     private static class LeftAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(WEST);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(WEST);
         }
     }
 
     private static class UpAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(NORTH);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(NORTH);
         }
     }
 
     private static class DownAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(SOUTH);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(SOUTH);
         }
     }
 
     private static class NextAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(NEXT);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(NEXT);
         }
     }
 
     private static class PreviousAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.navigateSelectedTab(PREVIOUS);
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.navigateSelectedTab(PREVIOUS);
         }
     }
 
     private static class PageUpAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            int tabPlacement = pane.getTabPlacement();
-            if (tabPlacement == TOP || tabPlacement == BOTTOM) {
+
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui == null)
+                return;
+
+            int placement = ((JTabbedPane) e.getSource()).getTabPlacement();
+            if (placement == TOP || placement == BOTTOM)
                 ui.navigateSelectedTab(WEST);
-            } else {
+            else
                 ui.navigateSelectedTab(NORTH);
-            }
         }
     }
 
     private static class PageDownAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            int tabPlacement = pane.getTabPlacement();
-            if (tabPlacement == TOP || tabPlacement == BOTTOM) {
+
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui == null)
+                return;
+
+            int placement = ((JTabbedPane) e.getSource()).getTabPlacement();
+            if (placement == TOP || placement == BOTTOM)
                 ui.navigateSelectedTab(EAST);
-            } else {
+            else
                 ui.navigateSelectedTab(SOUTH);
-            }
         }
     }
 
     private static class RequestFocusAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JTabbedPane pane = (JTabbedPane) e.getSource();
             pane.requestFocus();
@@ -1966,13 +1980,13 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
     }
 
     private static class RequestFocusForVisibleAction extends AbstractAction {
+        @Override
         public void actionPerformed(ActionEvent e) {
-            JTabbedPane pane = (JTabbedPane) e.getSource();
-            CloseTabbedPaneUI ui = (CloseTabbedPaneUI) pane.getUI();
-            ui.requestFocusForVisibleComponent();
+            CloseTabbedPaneUI ui = CloseTabbedPaneUI.getUI(e);
+            if (ui != null)
+                ui.requestFocusForVisibleComponent();
         }
     }
-
 
     /**
      * Selects a tab in the JTabbedPane based on the String of the

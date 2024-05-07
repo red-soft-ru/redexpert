@@ -25,6 +25,7 @@ import com.github.vertical_blank.sqlformatter.core.FormatConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -45,52 +46,36 @@ public class TokenizingFormatter {
     }
 
     private String rebuildQueryString(List<String> formattedQueries) {
-
-        StringBuilder sb = new StringBuilder();
-
-        for (String query : formattedQueries)
-            sb.append(query.trim()).append("\n");
-
-        return sb.toString();
+        return formattedQueries.stream().map(String::trim).collect(Collectors.joining("\n"));
     }
 
     private List<String> formatQueries(List<DerivedQuery> queries) {
-
         List<String> formattedQueries = new ArrayList<>(queries.size());
 
         for (DerivedQuery query : queries) {
 
-            String formattedQuery = SqlFormatter
-                    .extend(cfg -> cfg.plusSpecialWordChars("$"))
-                    .format(query.getOriginalQuery(), FormatConfig.builder()
-                            .indent("\t").build());
+            String formattedQuery = SqlFormatter.extend(cfg -> cfg.plusSpecialWordChars("$"))
+                    .format(query.getOriginalQuery(), FormatConfig.builder().indent("\t").build());
 
             if (!formattedQuery.endsWith(query.getEndDelimiter()))
                 formattedQuery += query.getEndDelimiter();
 
             if (query.isSetTerm()) {
-                formattedQuery = "\nSET TERM " + query.getEndDelimiter() + ";\n" +
-                        formattedQuery + "\nSET TERM ;" + query.getEndDelimiter() + "\n";
+                formattedQuery = "\nSET TERM " + query.getEndDelimiter() + ";\n"
+                        + formattedQuery
+                        + "\nSET TERM ;" + query.getEndDelimiter() + "\n";
             }
 
             formattedQueries.add(formattedQuery);
-
         }
 
         return formattedQueries;
     }
 
     private QueryTokenizer queryTokenizer() {
-
         if (queryTokenizer == null)
             queryTokenizer = new QueryTokenizer();
         return queryTokenizer;
     }
 
 }
-
-
-
-
-
-

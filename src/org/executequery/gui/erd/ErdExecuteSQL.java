@@ -276,11 +276,6 @@ public class ErdExecuteSQL extends ErdPrintableDialog
 
     }
 
-    @Override
-    public TransactionParametersPanel getTPP() {
-        return null;
-    }
-
     public void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException {
     }
 

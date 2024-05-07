@@ -60,7 +60,6 @@ public class PluginLookAndFeelManager {
     public void loadLookAndFeel() throws Exception {
 
         if (lfd == null) {
-            LookAndFeelProperties.newInstance();
             LookAndFeelProperties.loadLookAndFeels();
             lfd = LookAndFeelProperties.getInstalledCustomLook();
         }

@@ -27,66 +27,24 @@ import java.util.Map;
 
 public final class RepositoryCache {
 
-    private static Map<String, Repository> repositories;
+    private static final Map<String, Repository> repositories;
 
-    private RepositoryCache() {
+    static {
+        repositories = new HashMap<>();
+        repositories.put(KeywordRepository.REPOSITORY_ID, new KeywordRepositoryImpl());
+        repositories.put(SqlCommandHistoryRepository.REPOSITORY_ID, new SqlCommandHistoryRepositoryImpl());
+        repositories.put(QueryBookmarkRepository.REPOSITORY_ID, new QueryBookmarkXMLRepository());
+        repositories.put(EditorSQLShortcutRepository.REPOSITORY_ID, new EditorSQLShortcutXMLRepository());
+        repositories.put(RecentlyOpenFileRepository.REPOSITORY_ID, new RecentlyOpenFileRepositoryImpl());
+        repositories.put(LatestVersionRepository.REPOSITORY_ID, new LatestVersionRepositoryImpl());
+        repositories.put(LogRepository.REPOSITORY_ID, new LogFileRepository());
+        repositories.put(DatabaseConnectionRepository.REPOSITORY_ID, new DatabaseConnectionXMLRepository());
+        repositories.put(ConnectionFoldersRepository.REPOSITORY_ID, new ConnectionFoldersXMLRepository());
+        repositories.put(DatabaseDriverRepository.REPOSITORY_ID, new DatabaseDriverXMLRepository());
     }
 
     public static synchronized Repository load(String key) {
-
-        if (repositories.containsKey(key)) {
-
-            return repositories.get(key);
-        }
-
-        return null;
-    }
-
-    static {
-
-        repositories = new HashMap<String, Repository>();
-
-        repositories.put(KeywordRepository.REPOSITORY_ID,
-                new KeywordRepositoryImpl());
-
-        repositories.put(SqlCommandHistoryRepository.REPOSITORY_ID,
-                new SqlCommandHistoryRepositoryImpl());
-
-        repositories.put(QueryBookmarkRepository.REPOSITORY_ID,
-                new QueryBookmarkXMLRepository());
-
-        repositories.put(EditorSQLShortcutRepository.REPOSITORY_ID,
-                new EditorSQLShortcutXMLRepository());
-
-        repositories.put(RecentlyOpenFileRepository.REPOSITORY_ID,
-                new RecentlyOpenFileRepositoryImpl());
-
-        repositories.put(LatestVersionRepository.REPOSITORY_ID,
-                new LatestVersionRepositoryImpl());
-
-        repositories.put(LogRepository.REPOSITORY_ID,
-                new LogFileRepository());
-
-        repositories.put(DatabaseConnectionRepository.REPOSITORY_ID,
-                new DatabaseConnectionXMLRepository());
-
-        repositories.put(ConnectionFoldersRepository.REPOSITORY_ID,
-                new ConnectionFoldersXMLRepository());
-
-        repositories.put(DatabaseDriverRepository.REPOSITORY_ID,
-                new DatabaseDriverXMLRepository());
-
+        return repositories.getOrDefault(key, null);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -10,7 +10,7 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.databaseobjects.CreateTriggerPanel;
 import org.executequery.gui.databaseobjects.TableTriggersTableModel;
 import org.executequery.localization.Bundles;
-import org.executequery.toolbars.AbstractToolBarForTable;
+import org.executequery.toolbars.AbstractTableToolBar;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
@@ -39,7 +39,7 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
 
         triggersLoaded = false;
 
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
+        buttonsEditingTriggersPanel = new AbstractTableToolBar(
                 "Create Trigger",
                 "Delete Trigger",
                 "Refresh"

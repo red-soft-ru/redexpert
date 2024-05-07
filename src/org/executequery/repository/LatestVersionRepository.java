@@ -20,25 +20,10 @@
 
 package org.executequery.repository;
 
-import org.executequery.ApplicationVersion;
-
 public interface LatestVersionRepository extends Repository {
 
     String REPOSITORY_ID = "latest-version";
 
-    ApplicationVersion getLatestVersion();
-
-    String getReleaseNotes();
-
     String getReleaseNotesUrl();
 
-    String getBinaryZipUrl();
-
 }
-
-
-
-
-
-
-

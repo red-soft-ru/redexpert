@@ -149,11 +149,6 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.setTpp(tpp);
     }
 
-    @Override
-    public TransactionParametersPanel getTPP() {
-        return dispatcher.getTpp();
-    }
-
     public void executeQuery(DatabaseConnection selectedConnection,
                              String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 

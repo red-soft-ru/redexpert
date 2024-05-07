@@ -25,13 +25,10 @@ import java.util.Map;
 
 public class UserFeedback {
 
-    private String name;
-
-    private String email;
-
-    private String remarks;
-
-    private String type;
+    private final String name;
+    private final String type;
+    private final String email;
+    private final String remarks;
 
     public UserFeedback(String name, String email, String remarks, String type) {
         super();
@@ -59,7 +56,7 @@ public class UserFeedback {
 
     public Map<String, String> asMap() {
 
-        final Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("body", getRemarks());
         map.put("name", getName());
         map.put("email", getEmail());
@@ -71,14 +68,3 @@ public class UserFeedback {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

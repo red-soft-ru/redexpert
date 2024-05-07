@@ -20,7 +20,9 @@
 
 package org.executequery.repository;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelDefinition;
 import org.executequery.util.UserSettingsProperties;
 import org.xml.sax.*;
@@ -34,14 +36,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Vector;
-
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the
- *           release of version 3.0.0beta1 has meant a
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
 
 /**
  * Look and feel property definition controller.
@@ -52,224 +49,174 @@ public class LookAndFeelProperties {
 
     private static Vector<LookAndFeelDefinition> looks;
 
-    private static final String ROOT = "customlookandfeels";
-    private static final String MAIN_NODE = "lookandfeel";
     private static final String NAME = "name";
     private static final String PATH = "path";
-    private static final String CLASS_NAME = "classname";
-    private static final String SKIN_LOOK = "skinlookfeel";
     private static final String INSTALLED = "installed";
     private static final String THEME_PACK = "themepack";
-
-    private static final String EMPTY = "";
-
-    public LookAndFeelProperties() {
-    }
-
-    public static void newInstance() {
-        new LookAndFeelProperties();
-    }
-
-    public static LookAndFeelDefinition getLookAndFeel(String name) {
-
-        for (LookAndFeelDefinition lafd : looks) {
-
-            if (name.equals(lafd.getName())) {
-                return lafd;
-            }
-
-        }
-
-        return null;
-    }
-
-    public static Vector<LookAndFeelDefinition> getLookAndFeelPropertiesVector() {
-        if (looks == null) {
-            loadLookAndFeels();
-        }
-        return looks;
-    }
+    private static final String CLASS_NAME = "classname";
+    private static final String MAIN_NODE = "lookandfeel";
+    private static final String SKIN_LOOK = "skinlookfeel";
+    private static final String ROOT = "customlookandfeels";
 
     public static LookAndFeelDefinition[] getLookAndFeelArray() {
-        if (looks == null) {
+
+        if (looks == null)
             loadLookAndFeels();
-        }
 
-        int v_size = looks.size();
-        if (v_size > 0) {
-            LookAndFeelDefinition[] lfda = new LookAndFeelDefinition[v_size];
-            for (int i = 0; i < v_size; i++) {
-                lfda[i] = (LookAndFeelDefinition) looks.elementAt(i);
-            }
-            return lfda;
-        } else {
+        int lafsVectorSize = looks.size();
+        if (lafsVectorSize < 1)
             return null;
-        }
 
+        LookAndFeelDefinition[] lookAndFeelDefinitions = new LookAndFeelDefinition[lafsVectorSize];
+        for (int i = 0; i < lafsVectorSize; i++)
+            lookAndFeelDefinitions[i] = looks.elementAt(i);
+
+        return lookAndFeelDefinitions;
     }
 
     public static LookAndFeelDefinition getInstalledCustomLook() {
-        LookAndFeelDefinition lfd = null;
-        for (int i = 0; i < looks.size(); i++) {
-            lfd = (LookAndFeelDefinition) looks.elementAt(i);
-            if (lfd.isInstalled()) {
-                break;
-            }
-            lfd = null;
-        }
-        return lfd;
+        return looks.stream()
+                .filter(LookAndFeelDefinition::isInstalled)
+                .findFirst().orElse(null);
     }
 
-    public static synchronized int saveLookAndFeels(LookAndFeelDefinition[] lfda) {
-        OutputStream os = null;
-        try {
+    public static synchronized void saveLookAndFeels(LookAndFeelDefinition[] lfda) {
+
+        File fileToSave = new File(filePath());
+        try (OutputStream os = Files.newOutputStream(fileToSave.toPath())) {
+
             TransformerFactory transFactory = TransformerFactory.newInstance();
             Transformer transformer = transFactory.newTransformer();
-            LookAndFeelParser cp = new LookAndFeelParser();
-
-            //      File lfXML = new File("conf/lookandfeel.xml");
-            File lfXML = new File(filePath());
-
-            os = new FileOutputStream(lfXML);
-            SAXSource source = new SAXSource(cp, new LookAndFeelInputSource(lfda));
-            StreamResult r = new StreamResult(os);
-            transformer.transform(source, r);
+            LookAndFeelParser lookAndFeelParser = new LookAndFeelParser();
+            SAXSource source = new SAXSource(lookAndFeelParser, new LookAndFeelInputSource(lfda));
+            StreamResult streamResult = new StreamResult(os);
+            transformer.transform(source, streamResult);
 
             looks.clear();
-            for (int i = 0; i < lfda.length; i++) {
-                looks.add(lfda[i]);
-            }
+            Collections.addAll(looks, lfda);
 
-            return 1;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            try {
-                if (os != null) {
-                    os.close();
-                }
-            } catch (IOException e) {
-            }
+            Log.error(e.getMessage(), e);
         }
     }
 
     public static synchronized void loadLookAndFeels() {
 
         File file = new File(filePath());
-
-        if (file.exists()) {
-            InputStream in = null;
-            try {
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setNamespaceAware(true);
-
-                SAXParser parser = factory.newSAXParser();
-                XMLLookAndFeelHandler handler = new XMLLookAndFeelHandler();
-
-                in = new FileInputStream(file);
-                parser.parse(in, handler);
-
-                looks = handler.getLooksVector();
-            } catch (Exception e) {
-                e.printStackTrace();
-                GUIUtilities.displayErrorMessage("Error opening look and feel definitions.");
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
-
-        } else
+        if (!file.exists()) {
             GUIUtilities.displayErrorMessage(
                     "Look & Feel definition XML file not found.\n" +
-                            "Ensure the file lookandfeel.xml " +
-                            "is in ~/.executequery/conf");
+                            "EConstants.EMPTYre the file lookandfeel.xml is in ~/.executequery/conf"
+            );
+        }
 
+        try (InputStream in = Files.newInputStream(file.toPath())) {
+
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            SAXParser parser = factory.newSAXParser();
+            XMLLookAndFeelHandler handler = new XMLLookAndFeelHandler();
+            parser.parse(in, handler);
+
+            looks = handler.getLooksVector();
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+            GUIUtilities.displayErrorMessage("Error opening look and feel definitions.");
+        }
     }
 
     private static String filePath() {
-
-        UserSettingsProperties settings = new UserSettingsProperties();
-
-        return settings.getUserSettingsDirectory() + "lookandfeel.xml";
+        return new UserSettingsProperties().getUserSettingsDirectory() + "lookandfeel.xml";
     }
 
-    static class XMLLookAndFeelHandler extends DefaultHandler {
+    private static class XMLLookAndFeelHandler extends DefaultHandler {
 
-        private LookAndFeelDefinition lfd = new LookAndFeelDefinition();
-        private CharArrayWriter contents = new CharArrayWriter();
-        private Vector<LookAndFeelDefinition> v = new Vector<LookAndFeelDefinition>();
+        private LookAndFeelDefinition lookAndFeel;
+        private final CharArrayWriter contents;
+        private final Vector<LookAndFeelDefinition> lookAndFeelDefinitions;
 
         public XMLLookAndFeelHandler() {
-        }
-
-        public void startElement(String nameSpaceURI, String localName,
-                                 String qName, Attributes attrs) {
-            contents.reset();
-
-            if (localName.equals(MAIN_NODE))
-                lfd.setInstalled(Boolean.valueOf(
-                        attrs.getValue(INSTALLED)).booleanValue());
-
-        }
-
-        public void endElement(String nameSpaceURI, String localName, String qName) {
-
-            if (lfd == null)
-                lfd = new LookAndFeelDefinition();
-
-            if (localName.equals(NAME))
-                lfd.setName(contents.toString());
-            else if (localName.equals(PATH))
-                lfd.setLibraryPath(contents.toString());
-            else if (localName.equals(CLASS_NAME))
-                lfd.setClassName(contents.toString());
-            else if (localName.equals(SKIN_LOOK))
-                lfd.setIsSkinLookAndFeel(Integer.parseInt(contents.toString()));
-            else if (localName.equals(THEME_PACK)) {
-                lfd.setThemePack(contents.toString());
-                v.add(lfd);
-                lfd = null;
-            }
-
+            lookAndFeel = new LookAndFeelDefinition();
+            contents = new CharArrayWriter();
+            lookAndFeelDefinitions = new Vector<>();
         }
 
         public Vector<LookAndFeelDefinition> getLooksVector() {
-            return v;
+            return lookAndFeelDefinitions;
         }
 
+        @Override
+        public void startElement(String nameSpaceURI, String localName, String qName, Attributes attrs) {
+            contents.reset();
+
+            if (localName.equals(MAIN_NODE))
+                lookAndFeel.setInstalled(Boolean.parseBoolean(attrs.getValue(INSTALLED)));
+        }
+
+        @Override
+        public void endElement(String nameSpaceURI, String localName, String qName) {
+
+            if (lookAndFeel == null)
+                lookAndFeel = new LookAndFeelDefinition();
+
+            switch (localName) {
+                case NAME:
+                    lookAndFeel.setName(contents.toString());
+                    break;
+
+                case PATH:
+                    lookAndFeel.setLibraryPath(contents.toString());
+                    break;
+
+                case CLASS_NAME:
+                    lookAndFeel.setClassName(contents.toString());
+                    break;
+
+                case SKIN_LOOK:
+                    lookAndFeel.setIsSkinLookAndFeel(Integer.parseInt(contents.toString()));
+                    break;
+
+                case THEME_PACK:
+                    lookAndFeel.setThemePack(contents.toString());
+                    lookAndFeelDefinitions.add(lookAndFeel);
+                    lookAndFeel = null;
+                    break;
+            }
+        }
+
+        @Override
         public void characters(char[] data, int start, int length) {
             contents.write(data, start, length);
         }
 
+        @Override
         public void ignorableWhitespace(char[] data, int start, int length) {
             characters(data, start, length);
         }
 
+        @Override
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
 
-    } // XMLHandler
+    } // XMLLookAndFeelHandler class
 
+    private static class LookAndFeelParser implements XMLReader {
 
-    static class LookAndFeelParser implements XMLReader {
-        private String nsu = "";
-        private AttributesImpl atts = new AttributesImpl();
+        private static final String CDATA = "CDATA";
+        private static final char[] NEW_LINE = {'\n'};
+        private static final String INDENT_1 = "\n   ";
+        private static final String INDENT_2 = "\n      ";
 
         private ContentHandler handler;
-        private static final String attType1 = "CDATA";
-        private static final char[] newLine = {'\n'};
-        private static final String indent_1 = "\n   ";
-        private static final String indent_2 = "\n      ";
+        private final AttributesImpl attributes;
 
         public LookAndFeelParser() {
+            attributes = new AttributesImpl();
         }
 
+        @Override
         public void parse(InputSource input) throws SAXException, IOException {
             if (!(input instanceof LookAndFeelInputSource))
                 throw new SAXException("Parser can only accept a LookAndFeelInputSource");
@@ -283,132 +230,124 @@ public class LookAndFeelProperties {
                 if (handler == null)
                     throw new SAXException("No content handler");
 
-                LookAndFeelDefinition[] lfda = input.getLookAndFeelArray();
-
                 handler.startDocument();
-                handler.startElement(nsu, ROOT, ROOT, atts);
-                handler.ignorableWhitespace(newLine, 0, 1);
+                handler.startElement(Constants.EMPTY, ROOT, ROOT, attributes);
+                handler.ignorableWhitespace(NEW_LINE, 0, 1);
 
                 String ZERO = "0";
                 String ONE = "1";
 
-                for (int i = 0; i < lfda.length; i++) {
-                    handler.ignorableWhitespace(indent_1.toCharArray(), 0, indent_1.length());
+                for (LookAndFeelDefinition lookAndFeelDefinition : input.getLookAndFeelArray()) {
+                    handler.ignorableWhitespace(INDENT_1.toCharArray(), 0, INDENT_1.length());
+                    attributes.addAttribute(Constants.EMPTY, INSTALLED, INSTALLED, CDATA, Boolean.toString(lookAndFeelDefinition.isInstalled()));
 
-                    atts.addAttribute(nsu, INSTALLED, INSTALLED, attType1,
-                            Boolean.toString(lfda[i].isInstalled()));
+                    handler.startElement(Constants.EMPTY, MAIN_NODE, MAIN_NODE, attributes);
+                    attributes.removeAttribute(attributes.getIndex(INSTALLED));
 
-                    handler.startElement(nsu, MAIN_NODE, MAIN_NODE, atts);
-                    atts.removeAttribute(atts.getIndex(INSTALLED));
+                    writeXML(NAME, lookAndFeelDefinition.getName(), INDENT_2);
+                    writeXML(PATH, lookAndFeelDefinition.getLibraryPath(), INDENT_2);
+                    writeXML(CLASS_NAME, lookAndFeelDefinition.getClassName(), INDENT_2);
+                    writeXML(SKIN_LOOK, lookAndFeelDefinition.isSkinLookAndFeel() ? ONE : ZERO, INDENT_2);
+                    writeXML(THEME_PACK, lookAndFeelDefinition.getThemePack(), INDENT_2);
 
-                    writeXML(NAME, lfda[i].getName(), indent_2);
-                    writeXML(PATH, lfda[i].getLibraryPath(), indent_2);
-                    writeXML(CLASS_NAME, lfda[i].getClassName(), indent_2);
-                    writeXML(SKIN_LOOK, lfda[i].isSkinLookAndFeel() ? ONE : ZERO, indent_2);
-                    writeXML(THEME_PACK, lfda[i].getThemePack(), indent_2);
-
-                    handler.ignorableWhitespace(indent_1.toCharArray(), 0, indent_1.length());
-                    handler.endElement(nsu, MAIN_NODE, MAIN_NODE);
-                    handler.ignorableWhitespace(newLine, 0, 1);
-
+                    handler.ignorableWhitespace(INDENT_1.toCharArray(), 0, INDENT_1.length());
+                    handler.endElement(Constants.EMPTY, MAIN_NODE, MAIN_NODE);
+                    handler.ignorableWhitespace(NEW_LINE, 0, 1);
                 }
 
-                handler.ignorableWhitespace(newLine, 0, 1);
-                handler.endElement(nsu, ROOT, ROOT);
+                handler.ignorableWhitespace(NEW_LINE, 0, 1);
+                handler.endElement(Constants.EMPTY, ROOT, ROOT);
                 handler.endDocument();
 
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.error(e.getMessage(), e);
             }
         }
 
-        private void writeXML(String name, String line, String space)
-                throws SAXException {
+        @SuppressWarnings("SameParameterValue")
+        private void writeXML(String name, String line, String space) throws SAXException {
 
             if (line == null)
-                line = EMPTY;
-
-            int textLength = line.length();
+                line = Constants.EMPTY;
 
             handler.ignorableWhitespace(space.toCharArray(), 0, space.length());
-
-            handler.startElement(nsu, name, name, atts);
-
-            handler.characters(line.toCharArray(), 0, textLength);
-
-            handler.endElement(nsu, name, name);
+            handler.startElement(Constants.EMPTY, name, name, attributes);
+            handler.characters(line.toCharArray(), 0, line.length());
+            handler.endElement(Constants.EMPTY, name, name);
         }
 
+        @Override
         public void setContentHandler(ContentHandler handler) {
             this.handler = handler;
         }
 
+        @Override
         public ContentHandler getContentHandler() {
             return this.handler;
         }
 
+        @Override
         public void setErrorHandler(ErrorHandler handler) {
         }
 
+        @Override
         public ErrorHandler getErrorHandler() {
             return null;
         }
 
+        @Override
         public void parse(String systemId) throws IOException, SAXException {
         }
 
+        @Override
         public DTDHandler getDTDHandler() {
             return null;
         }
 
+        @Override
         public EntityResolver getEntityResolver() {
             return null;
         }
 
+        @Override
         public void setEntityResolver(EntityResolver resolver) {
         }
 
+        @Override
         public void setDTDHandler(DTDHandler handler) {
         }
 
+        @Override
         public Object getProperty(String name) {
             return null;
         }
 
+        @Override
         public void setProperty(String name, java.lang.Object value) {
         }
 
+        @Override
         public void setFeature(String name, boolean value) {
         }
 
+        @Override
         public boolean getFeature(String name) {
             return false;
         }
 
-    } // class LookAndFeelParser
+    } // LookAndFeelParser class
 
-    static class LookAndFeelInputSource extends InputSource {
-        private LookAndFeelDefinition[] lfda;
+    private static class LookAndFeelInputSource extends InputSource {
+        private final LookAndFeelDefinition[] lookAndFeelDefinitions;
 
-        public LookAndFeelInputSource(LookAndFeelDefinition[] la) {
-            lfda = la;
+        public LookAndFeelInputSource(LookAndFeelDefinition[] lookAndFeelDefinitions) {
+            this.lookAndFeelDefinitions = lookAndFeelDefinitions;
         }
 
         public LookAndFeelDefinition[] getLookAndFeelArray() {
-            return lfda;
+            return lookAndFeelDefinitions;
         }
 
-    } // class LookAndFeelInputSource
+    } // LookAndFeelInputSource class
 
 }
-
-
-
-
-
-
-
-
-
-
-

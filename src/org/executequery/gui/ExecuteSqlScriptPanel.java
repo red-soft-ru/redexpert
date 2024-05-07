@@ -500,11 +500,6 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         ThreadUtils.invokeAndWait(() -> outputPanel.appendActionFixedWidth(message));
     }
 
-    @Override
-    public void warningMessage(final String message) {
-        ThreadUtils.invokeAndWait(() -> outputPanel.appendWarning(message));
-    }
-
     // ---
 
     class SqlTextPaneStatusBar extends AbstractStatusBarPanel {

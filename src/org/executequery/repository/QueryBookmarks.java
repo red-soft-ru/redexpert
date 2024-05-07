@@ -29,24 +29,16 @@ import java.util.List;
 public class QueryBookmarks {
 
     private static QueryBookmarks instance;
-
-    private QueryBookmarkRepository queryBookmarkRepository;
-
     private List<QueryBookmark> queryBookmarks;
+    private final QueryBookmarkRepository queryBookmarkRepository;
 
     private QueryBookmarks() {
-
-        queryBookmarkRepository = (QueryBookmarkRepository)
-                RepositoryCache.load(QueryBookmarkRepository.REPOSITORY_ID);
+        queryBookmarkRepository = (QueryBookmarkRepository) RepositoryCache.load(QueryBookmarkRepository.REPOSITORY_ID);
     }
 
     public static synchronized QueryBookmarks getInstance() {
-
-        if (instance == null) {
-
+        if (instance == null)
             instance = new QueryBookmarks();
-        }
-
         return instance;
     }
 
@@ -77,42 +69,15 @@ public class QueryBookmarks {
     }
 
     public boolean nameExists(String name) {
-
-        if (!hasQueryBookmarks()) {
-
-            return false;
-        }
-
-        return (findBookmarkByName(name) != null);
-    }
-
-    public void removeBookmarkByName(String name) {
-
-        QueryBookmark bookmark = findBookmarkByName(name);
-
-        if (bookmark != null) {
-
-            removeBookmark(bookmark);
-        }
-
-    }
-
-    public void removeBookmark(QueryBookmark bookmark) {
-        queryBookmarks.remove(bookmark);
+        return hasQueryBookmarks() && findBookmarkByName(name) != null;
     }
 
     public QueryBookmark findBookmarkByName(String name) {
-
         loadBookmarks();
 
-        for (QueryBookmark bookmark : queryBookmarks) {
-
-            if (bookmark.getName().equals(name)) {
-
+        for (QueryBookmark bookmark : queryBookmarks)
+            if (bookmark.getName().equals(name))
                 return bookmark;
-            }
-
-        }
 
         return null;
     }
@@ -120,28 +85,13 @@ public class QueryBookmarks {
     private void loadBookmarks() {
 
         if (queryBookmarks == null || queryBookmarks.isEmpty()) {
-
             try {
-
                 queryBookmarks = queryBookmarkRepository.open();
 
             } catch (RepositoryException e) {
-
-                queryBookmarks = new ArrayList<QueryBookmark>();
+                queryBookmarks = new ArrayList<>();
             }
-
         }
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

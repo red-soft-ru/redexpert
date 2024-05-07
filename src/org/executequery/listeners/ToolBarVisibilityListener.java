@@ -21,43 +21,13 @@
 package org.executequery.listeners;
 
 import org.executequery.event.ApplicationEvent;
+import org.executequery.event.ApplicationEventListener;
 import org.executequery.toolbars.ToolBarEvent;
-import org.executequery.toolbars.ToolBarListener;
-import org.executequery.util.ThreadUtils;
-import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
-public class ToolBarVisibilityListener implements ToolBarListener {
+public class ToolBarVisibilityListener implements ApplicationEventListener {
 
-    public void toolBarChanged(ToolBarEvent e) {
-
-        ThreadUtils.invokeLater(
-
-                new Runnable() {
-
-                    public void run() {
-
-                        ToolBarProperties.saveTools();
-                    }
-                }
-
-        );
-
-    }
-
+    @Override
     public boolean canHandleEvent(ApplicationEvent event) {
-
         return (event instanceof ToolBarEvent);
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-

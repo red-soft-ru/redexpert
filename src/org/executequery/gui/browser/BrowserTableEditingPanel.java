@@ -47,8 +47,8 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
-import org.executequery.toolbars.AbstractToolBarForTable;
-import org.executequery.toolbars.AbstractToolBarForTableIndexes;
+import org.executequery.toolbars.AbstractTableToolBar;
+import org.executequery.toolbars.AbstractTableIndexesToolBar;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -310,7 +310,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingIndexesPanel() {
 
-        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes(
+        buttonsEditingIndexesPanel = new AbstractTableIndexesToolBar(
                 "Create Index",
                 "Delete Index",
                 "Refresh",
@@ -342,7 +342,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingTriggersPanel() {
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
+        buttonsEditingTriggersPanel = new AbstractTableToolBar(
                 "Create Trigger",
                 "Delete Trigger",
                 "Refresh"

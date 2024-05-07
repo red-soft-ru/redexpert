@@ -24,46 +24,22 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databaseobjects.NamedObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public final class DerivedQuery {
 
-    private static final DerivedTableStrategy defaultDerivedTableStrategy;
-
-    private static final Map<Integer, DerivedTableStrategy> derivedTableStrategies;
-
-    private String derivedQuery;
-
     private final String originalQuery;
-
-    private String queryWithoutComments;
-
-    private List<QueryTable> queryTables;
-
     private final String endDelimiter;
     private final boolean isSetTerm;
 
-    static {
+    private String derivedQuery;
+    private String queryWithoutComments;
 
-        defaultDerivedTableStrategy = new DefaultDerivedTableStrategy();
-        derivedTableStrategies = new HashMap<Integer, DerivedTableStrategy>();
-        derivedTableStrategies.put(QueryTypes.SELECT, new SelectDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.INSERT, new InsertDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.UPDATE, new UpdateDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.DELETE, new DeleteDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.DROP_OBJECT, new DropTableDerivedTableStrategy());
-        derivedTableStrategies.put(QueryTypes.ALTER_OBJECT, new AlterTableDerivedTableStrategy());
-    }
+    private int type;
+    private int typeObject;
+    private String metaName;
+    private String objectName;
 
     public DerivedQuery(String originalQuery) {
         this(originalQuery, null, ";", false);
-    }
-
-    public DerivedQuery(String originalQuery, String queryWithoutComments) {
-        this(originalQuery, queryWithoutComments, ";", false);
     }
 
     public DerivedQuery(String originalQuery, String queryWithoutComments, String endDelimiter, boolean isSetTerm) {
@@ -72,134 +48,38 @@ public final class DerivedQuery {
         this.queryWithoutComments = queryWithoutComments;
         this.endDelimiter = endDelimiter;
         this.isSetTerm = isSetTerm;
-    }
-
-    public String getOriginalQuery() {
-        return originalQuery;
-    }
-
-    public String getLoggingQuery() {
-
-        if (derivedQuery.length() > 50) {
-
-            return derivedQuery.substring(0, 50) + " ... ";
-        }
-
-        return derivedQuery;
-    }
-
-    public String getDerivedQuery() {
-        return derivedQuery;
+        this.type = -1;
     }
 
     public void setDerivedQuery(String derivedQuery) {
 
         String query = derivedQuery.replaceAll("\t", " ");
-
-        if (query.endsWith(";")) {
-
+        if (query.endsWith(";"))
             query = query.substring(0, query.length() - 1);
-        }
 
         this.derivedQuery = query;
-    }
-
-    public boolean isExecutable() {
-
-        return StringUtils.isNotBlank(getDerivedQuery());
-    }
-
-    private int typeObject;
-
-    public List<QueryTable> tableForWord(String word) {
-
-        deriveTables();
-
-        int dotPoint = word.indexOf('.');
-        if (dotPoint == -1) {
-
-            return queryTables;
-        }
-
-        String pattern = word.substring(0, dotPoint);
-        return asList(getTableForNameOrAlias(pattern));
-    }
-
-    private List<QueryTable> asList(QueryTable queryTable) {
-
-        List<QueryTable> list = new ArrayList<QueryTable>(1);
-        if (queryTable != null) {
-
-            list.add(queryTable);
-        }
-
-        return list;
-    }
-
-    public QueryTable getTableForNameOrAlias(String nameOrAlias) {
-
-        deriveTables();
-        if (!queryTables.isEmpty()) {
-
-            for (QueryTable queryTable : queryTables) {
-
-                if (queryTable.isNameOrAlias(nameOrAlias)) {
-
-                    return queryTable;
-                }
-
-            }
-        }
-
-        return null;
-    }
-
-    int type = -1;
-    private String metaName;
-    private String objectName;
-
-    private void deriveTables() {
-
-        if (queryTables != null) {
-
-            return;
-        }
-
-        int queryType = getQueryType();
-            DerivedTableStrategy derivedTableStrategy = derivedTableStrategies.get(queryType);
-            if (derivedTableStrategy == null) {
-
-                derivedTableStrategy = defaultDerivedTableStrategy;
-            }
-
-            queryTables = derivedTableStrategy.deriveTables(derivedQuery);
-    }
-
-    public int getTypeObject() {
-        return typeObject;
-    }
-
-    public String getMetaName() {
-        return metaName;
     }
 
     private int indexSpace(String str) {
         int res = str.indexOf(" ");
         int ind = str.indexOf("\t");
+
         if (res == -1 || (ind != -1 && ind < res))
             res = ind;
+
         if (res == -1)
             res = str.length();
+
         return res;
     }
 
     private void setTypeObject(String query, String firstOperator) {
 
         query = query.substring(firstOperator.length()).trim();
-        int ind = indexSpace(query);
-        metaName = query.substring(0, ind);
-        metaName = metaName.trim();
-        for (int i = 0; i < NamedObject.META_TYPES.length; i++)
+        int indexSpace = indexSpace(query);
+
+        metaName = query.substring(0, indexSpace).trim();
+        for (int i = 0; i < NamedObject.META_TYPES.length; i++) {
             if (NamedObject.META_TYPES[i].startsWith(metaName)) {
                 typeObject = i;
                 metaName = NamedObject.META_TYPES[i];
@@ -207,20 +87,20 @@ public final class DerivedQuery {
                     metaName = "GLOBAL TEMPORARY TABLE";
                 break;
             }
+        }
+
         query = query.substring(metaName.length()).trim();
-        ind = indexSpace(query);
-        objectName = query.substring(0, ind);
+        indexSpace = indexSpace(query);
+
+        objectName = query.substring(0, indexSpace);
         if (objectName.startsWith("\"")) {
             query = query.substring(1);
-            ind = query.indexOf("\"");
-            objectName = query.substring(0, ind);
+            indexSpace = query.indexOf("\"");
+            objectName = query.substring(0, indexSpace);
         }
-        ind = queryWithoutComments.toUpperCase().indexOf(objectName);
-        objectName = ind > -1 ? queryWithoutComments.substring(ind, objectName.length() + ind) : objectName;
-    }
 
-    public String getObjectName() {
-        return objectName;
+        indexSpace = queryWithoutComments.toUpperCase().indexOf(objectName);
+        objectName = indexSpace > -1 ? queryWithoutComments.substring(indexSpace, objectName.length() + indexSpace) : objectName;
     }
 
     public int getQueryType() {
@@ -331,6 +211,34 @@ public final class DerivedQuery {
         return type;
     }
 
+    public void setQueryWithoutComments(String queryWithoutComments) {
+        this.queryWithoutComments = queryWithoutComments;
+    }
+
+    public String getQueryWithoutComments() {
+        return queryWithoutComments;
+    }
+
+    public int getTypeObject() {
+        return typeObject;
+    }
+
+    public String getMetaName() {
+        return metaName;
+    }
+
+    public String getOriginalQuery() {
+        return originalQuery;
+    }
+
+    public String getDerivedQuery() {
+        return derivedQuery;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
     public String getEndDelimiter() {
         return endDelimiter;
     }
@@ -339,13 +247,8 @@ public final class DerivedQuery {
         return isSetTerm;
     }
 
-    public String getQueryWithoutComments() {
-        return queryWithoutComments;
+    public boolean isExecutable() {
+        return StringUtils.isNotBlank(getDerivedQuery());
     }
 
-    public void setQueryWithoutComments(String queryWithoutComments) {
-        this.queryWithoutComments = queryWithoutComments;
-    }
 }
-
-

@@ -25,10 +25,10 @@ public class AdvancedSchedulePanel extends JTabbedPane {
     public static final int MINUTES = 0;
     public static final int HOURS = MINUTES + 1;
     public static final int DAYS = HOURS + 1;
-    public static final int WEEKDAYS = DAYS + 1;
-    public static final int MONTHS = WEEKDAYS + 1;
+    public static final int MONTHS = DAYS + 1;
+    public static final int WEEKDAYS = MONTHS + 1;
 
-    public static final String[] CRON_NAMES = {"minute", "hour", "day", "weekday", "month"};
+    public static final String[] CRON_NAMES = {"minute", "hour", "day", "month", "weekday"};
 
     public AdvancedSchedulePanel(JTextField cronField) {
         super();

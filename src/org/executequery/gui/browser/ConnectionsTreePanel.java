@@ -1152,7 +1152,7 @@ public class ConnectionsTreePanel extends TreePanel
     private void updateProperties(DatabaseConnection dc) {
         Map<Object, Object> properties = new LinkedHashMap<>();
 
-        properties.put(bundleString("status"), dc.isConnected() ? bundleString("status.on") : bundleString("status.off"));
+        properties.put(bundleString("status"), bundleString(dc.isConnected() ? "status.on" : "status.off"));
         properties.put(bundleString("name"), dc.getName());
         properties.put(bundleString("server"), dc.getHost() + "/" + dc.getPort());
         properties.put(bundleString("source"), dc.getSourceName());
@@ -1171,9 +1171,9 @@ public class ConnectionsTreePanel extends TreePanel
 
     private void updateProperties(List<DatabaseConnection> databaseConnections) {
         Map<Object, Object> properties = new LinkedHashMap<>();
-        databaseConnections.forEach(dc -> properties.put(dc.getName(), dc.getHost() + "/" + dc.getPort()));
+        databaseConnections.forEach(dc -> properties.put(dc.getName(), bundleString(dc.isConnected() ? "status.on" : "status.off")));
 
-        propertiesPanel.setHeaders(Arrays.asList(bundleString("name"), bundleString("server")));
+        propertiesPanel.setHeaders(Arrays.asList(bundleString("name"), bundleString("status")));
         propertiesPanel.setDatabaseProperties(properties, false);
     }
 

@@ -25,7 +25,11 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.PropertyWrapperModel;
 
 import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,6 +67,19 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
 
     public JTable getTable() {
         return table;
+    }
+
+    public void setHeaders(List<String> headers) {
+        JTableHeader tableHeader = table.getTableHeader();
+        TableColumnModel columnModel = tableHeader.getColumnModel();
+        for (int col = 0; col < headers.size() && col < columnModel.getColumnCount(); col++)
+            columnModel.getColumn(col).setHeaderValue(headers.get(col));
+
+        tableHeader.repaint();
+    }
+
+    public void restoreHeaders() {
+        setHeaders(Arrays.asList(PropertyWrapperModel.DEFAULT_HEADERS));
     }
 
 }

@@ -30,9 +30,11 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -218,6 +220,10 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         }
 
         return childrenList;
+    }
+
+    public Vector<TreeNode> getChildren() {
+        return children;
     }
 
     /**

@@ -45,6 +45,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseConnectionRepository;
+import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
@@ -138,6 +139,10 @@ public class ConnectionsTreePanel extends TreePanel
 
         propertiesPanel = new DatabasePropertiesPanel();
         propertiesPanel.getTable().setFont(new Font(propertiesPanel.getTable().getFont().getFontName(), Font.PLAIN, 12));
+
+        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repo instanceof DatabaseConnectionRepository)
+            updateProperties(((DatabaseConnectionRepository) repo).findAll());
 
         toolBar = new ConnectionsTreeToolBar(this);
         treeScrollPane = new JScrollPane(tree);
@@ -1160,6 +1165,15 @@ public class ConnectionsTreePanel extends TreePanel
         properties.values().removeAll(Collections.singleton(Constants.EMPTY));
         properties.values().removeAll(Collections.singleton(null));
 
+        propertiesPanel.restoreHeaders();
+        propertiesPanel.setDatabaseProperties(properties, false);
+    }
+
+    private void updateProperties(List<DatabaseConnection> databaseConnections) {
+        Map<Object, Object> properties = new LinkedHashMap<>();
+        databaseConnections.forEach(dc -> properties.put(dc.getName(), dc.getHost() + "/" + dc.getPort()));
+
+        propertiesPanel.setHeaders(Arrays.asList(bundleString("name"), bundleString("server")));
         propertiesPanel.setDatabaseProperties(properties, false);
     }
 
@@ -1680,10 +1694,21 @@ public class ConnectionsTreePanel extends TreePanel
 
             TreePath path = pathFromMouseEvent(e);
             if (path != null && path == getTreeSelectionPath()) {
+
                 Object node = path.getLastPathComponent();
                 if (node instanceof DatabaseHostNode) {
                     DatabaseConnection dc = ((DatabaseHostNode) node).getDatabaseConnection();
                     updateProperties(dc);
+
+                } else if (node instanceof ConnectionsFolderNode) {
+                    ConnectionsFolder connectionsFolder = ((ConnectionsFolderNode) node).getConnectionsFolder();
+                    updateProperties(connectionsFolder.getConnections());
+
+                } else if (node instanceof RootDatabaseObjectNode) {
+                    Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+                    if (repo instanceof DatabaseConnectionRepository)
+                        updateProperties(((DatabaseConnectionRepository) repo).findAll());
+
                 } else
                     propertiesPanel.setDatabaseProperties(new HashMap<>());
             }

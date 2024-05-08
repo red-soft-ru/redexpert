@@ -33,7 +33,7 @@ import java.util.*;
  */
 public class PropertyWrapperModel extends AbstractSortableTableModel {
 
-    private static final String[] HEADER = Bundles.get(PropertyWrapperModel.class, new String[]{
+    public static final String[] DEFAULT_HEADERS = Bundles.get(PropertyWrapperModel.class, new String[]{
             "property",
             "value"
     });
@@ -98,7 +98,7 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
 
     @Override
     public String getColumnName(int col) {
-        return HEADER[col];
+        return DEFAULT_HEADERS[col];
     }
 
 }

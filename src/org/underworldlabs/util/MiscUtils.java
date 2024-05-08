@@ -85,7 +85,27 @@ public final class MiscUtils {
      * @return <code>true</code> | <code>false</code>
      */
     public static boolean isNull(String value) {
-        return value == null || value.trim().length() == 0;
+        return value == null || value.trim().isEmpty();
+    }
+
+    /**
+     * Checks if the specified list is <code>null</code> or empty
+     *
+     * @param value the value to check for <code>null</code>
+     * @return <code>true</code> | <code>false</code>
+     */
+    public static boolean isEmpty(List<?> value) {
+        return value == null || value.isEmpty();
+    }
+
+    /**
+     * Checks if the specified array is <code>null</code> or empty
+     *
+     * @param value the value to check for <code>null</code>
+     * @return <code>true</code> | <code>false</code>
+     */
+    public static boolean isEmpty(Object[] value) {
+        return value == null || value.length < 1;
     }
 
     /**

@@ -1,6 +1,8 @@
 package org.executequery.actions.databasecommands;
 
 import biz.redsoft.IFBStatisticManager;
+import org.apache.commons.lang.StringUtils;
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -15,6 +17,8 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class contains methods that make it easy
@@ -50,22 +54,39 @@ public class DatabaseStatisticCommand {
     /**
      * Returns database header statistic
      *
-     * @param dc connection to use
+     * @param dc              connection to use
+     * @param handleException is it nesessary to show warnings
      * @return the same result as <code>gstat -h</code> command
      */
-    public static String getDatabaseHeader(DatabaseConnection dc) {
+    public static String getDatabaseHeader(DatabaseConnection dc, boolean handleException) {
 
-        try (OutputStream outputStream = getDatabaseHeaderStatistics(dc)) {
+        try (OutputStream outputStream = getDatabaseHeaderStatistics(dc, handleException)) {
             return outputStream.toString();
 
         } catch (IOException e) {
-            Log.error(e.getMessage(), e);
+            if (handleException)
+                Log.error(e.getMessage(), e);
         }
 
         return null;
     }
 
-    private static OutputStream getDatabaseHeaderStatistics(DatabaseConnection dc) {
+    public static String getHeaderValue(String key, String databaseHeader) {
+
+        int index = StringUtils.indexOfIgnoreCase(databaseHeader, key);
+        if (index < 0)
+            return Constants.EMPTY;
+
+        String value = databaseHeader.substring(index + key.length()).trim();
+
+        Matcher matcher = Pattern.compile("\n").matcher(value);
+        if (matcher.find())
+            value = value.substring(0, matcher.start());
+
+        return value;
+    }
+
+    private static OutputStream getDatabaseHeaderStatistics(DatabaseConnection dc, boolean handleException) {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         IFBStatisticManager statisticManager = getStatisticManager(dc);
@@ -77,8 +98,10 @@ public class DatabaseStatisticCommand {
                 statisticManager.getHeaderPage();
 
             } catch (SQLException e) {
-                e.printStackTrace(System.out);
-                GUIUtilities.displayExceptionErrorDialog("Unable to get database header statistic", e);
+                if (handleException) {
+                    Log.error(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog("Unable to get database header statistic", e);
+                }
             }
         }
 

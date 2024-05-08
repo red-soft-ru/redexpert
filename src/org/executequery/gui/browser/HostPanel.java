@@ -24,6 +24,7 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
@@ -113,24 +114,25 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         DatabaseConnection databaseConnection = host.getDatabaseConnection();
         if (databaseConnection.isConnected())
             changePanelData();
+        else
+            updateDatabaseProperties(true);
     }
 
     /**
      * Reloads the database properties meta data table panel.
      */
     protected void updateDatabaseProperties() {
+        updateDatabaseProperties(false);
+    }
 
-        if (!host.getDatabaseConnection().isConnected())
-            return;
-
-        try {
-            propertiesPanel.setDatabaseProperties(host.getDatabaseProperties());
-
-        } catch (DataSourceException e) {
-            propertiesPanel.setDatabaseProperties(new HashMap<>(0));
-            controller.handleException(e);
-        }
-
+    /**
+     * Reloads the database properties meta data table panel.
+     */
+    protected void updateDatabaseProperties(boolean useStaticMethhod) {
+        propertiesPanel.setDatabaseProperties(useStaticMethhod ?
+                DefaultDatabaseHost.getDatabaseProperties(host.getDatabaseConnection(), true) :
+                host.getDatabaseProperties()
+        );
     }
 
     /**

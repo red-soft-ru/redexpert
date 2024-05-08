@@ -49,8 +49,7 @@ public class SystemPropertiesTable extends JTable {
             getTableHeader().setDefaultRenderer(new DefaultTableHeaderRenderer());
         }
 
-        model = new PropertyWrapperModel(System.getProperties(),
-                PropertyWrapperModel.SORT_BY_KEY);
+        model = new PropertyWrapperModel(System.getProperties());
         setModel(model);
 
         getTableHeader().setReorderingAllowed(false);

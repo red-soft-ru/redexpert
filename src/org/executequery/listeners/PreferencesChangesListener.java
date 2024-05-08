@@ -32,6 +32,7 @@ import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.repository.UserLayoutProperties;
 
 import javax.swing.*;
+import java.util.Objects;
 
 public class PreferencesChangesListener extends AbstractUserPreferenceListener
         implements UserPreferenceListener {
@@ -39,63 +40,54 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
     private final UserLayoutProperties layoutProperties;
 
     public PreferencesChangesListener(UserLayoutProperties layoutProperties) {
-
         super();
         this.layoutProperties = layoutProperties;
     }
 
+    @Override
     public void preferencesChanged(UserPreferenceEvent event) {
 
-        if (event.getEventType() == UserPreferenceEvent.ALL) {
+        if (event.getEventType() != UserPreferenceEvent.ALL)
+            return;
 
-            for (String key : dockedPanelKeysArray()) {
+        for (String key : dockedPanelKeysArray()) {
 
-                layoutProperties.setDockedPaneVisible(
-                        key,
-                        systemUserBooleanProperty(key),
-                        false);
+            if (Objects.equals(ConnectionsTreePanel.ADVANCED_PROPERTY_KEY, key)) {
+                JPanel connectionsTreePanel = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (connectionsTreePanel instanceof ConnectionsTreePanel)
+                    ((ConnectionsTreePanel) connectionsTreePanel).setPropertiesPanelVisible(systemUserBooleanProperty(key));
+
+                continue;
             }
 
-            applyComponentLookAndFeel();
-
-            GUIUtilities.setDockedTabViews(true);
-
-            layoutProperties.save();
-
+            layoutProperties.setDockedPaneVisible(
+                    key,
+                    systemUserBooleanProperty(key),
+                    false
+            );
         }
 
+        applyComponentLookAndFeel();
+        GUIUtilities.setDockedTabViews(true);
+
+        layoutProperties.save();
     }
 
     private String[] dockedPanelKeysArray() {
-
         return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
+                ConnectionsTreePanel.ADVANCED_PROPERTY_KEY,
                 DriversTreePanel.PROPERTY_KEY,
                 KeywordsDockedPanel.PROPERTY_KEY,
                 SQLStateCodesDockedPanel.PROPERTY_KEY,
                 SystemPropertiesDockedTab.PROPERTY_KEY,
-                SystemOutputPanel.PROPERTY_KEY};
+                SystemOutputPanel.PROPERTY_KEY
+        };
     }
 
     private void applyComponentLookAndFeel() {
-
-        JDialog.setDefaultLookAndFeelDecorated(
-                systemUserBooleanProperty("decorate.dialog.look"));
-
-        JFrame.setDefaultLookAndFeelDecorated(
-                systemUserBooleanProperty("decorate.frame.look"));
-
+        JDialog.setDefaultLookAndFeelDecorated(systemUserBooleanProperty("decorate.dialog.look"));
+        JFrame.setDefaultLookAndFeelDecorated(systemUserBooleanProperty("decorate.frame.look"));
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

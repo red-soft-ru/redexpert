@@ -48,6 +48,7 @@ import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
@@ -75,6 +76,7 @@ public class ConnectionsTreePanel extends TreePanel
 
     public static final String TITLE = Bundles.get(ConnectionsTreePanel.class, "Connections");
     public static final String PROPERTY_KEY = "system.display.connections";
+    public static final String ADVANCED_PROPERTY_KEY = "browser.show.connection.properties";
     public static final String MENU_ITEM_KEY = "viewConnections";
 
     private boolean moveScroll;
@@ -97,6 +99,7 @@ public class ConnectionsTreePanel extends TreePanel
 
     private JScrollPane treeScrollPane;
     private ConnectionsTreeToolBar toolBar;
+    private DatabasePropertiesPanel propertiesPanel;
 
     private BrowserTreePopupMenu popupMenu;
     private BrowserTreeRootPopupMenu rootPopupMenu;
@@ -105,9 +108,10 @@ public class ConnectionsTreePanel extends TreePanel
     // ---
 
     public ConnectionsTreePanel() {
-        super(new BorderLayout());
+        super(new GridBagLayout());
 
         init();
+        setPropertiesPanelVisible(SystemProperties.getBooleanProperty("user", "browser.show.connection.properties"));
         EventMediator.registerListener(this);
         enableButtons(
                 false,
@@ -132,18 +136,27 @@ public class ConnectionsTreePanel extends TreePanel
         treeFindAction = new TreeFindAction();
         treeFindAction.install(tree);
 
+        propertiesPanel = new DatabasePropertiesPanel();
+        propertiesPanel.getTable().setFont(new Font(propertiesPanel.getTable().getFont().getFontName(), Font.PLAIN, 12));
+
         toolBar = new ConnectionsTreeToolBar(this);
         treeScrollPane = new JScrollPane(tree);
 
         // --- arrange ---
 
-        add(toolBar, BorderLayout.NORTH);
-        add(treeScrollPane, BorderLayout.CENTER);
+        GridBagHelper ghh = new GridBagHelper().fillBoth();
+        add(toolBar, ghh.setMinWeightY().spanX().get());
+        add(treeScrollPane, ghh.setMaxWeightY().nextRow().get());
+        add(propertiesPanel, ghh.setWeightY(0.4).nextRow().get());
 
         // ---
 
         tree.setSelectionRow(0);
         tree.setToggleClickCount(-1);
+    }
+
+    public void setPropertiesPanelVisible(boolean visible) {
+        propertiesPanel.setVisible(visible);
     }
 
     private DefaultMutableTreeNode createTreeStructure() {
@@ -1131,18 +1144,39 @@ public class ConnectionsTreePanel extends TreePanel
         return connections.stream().anyMatch(o -> name.equals(o.getName()));
     }
 
+    private void updateProperties(DatabaseConnection dc) {
+        Map<Object, Object> properties = new LinkedHashMap<>();
+
+        properties.put(bundleString("status"), dc.isConnected() ? bundleString("status.on") : bundleString("status.off"));
+        properties.put(bundleString("name"), dc.getName());
+        properties.put(bundleString("server"), dc.getHost() + "/" + dc.getPort());
+        properties.put(bundleString("source"), dc.getSourceName());
+        properties.put(bundleString("charset"), dc.getCharset());
+        properties.put(bundleString("user"), dc.getUserName());
+        properties.put(bundleString("role"), dc.getRole());
+        if (SystemProperties.getBooleanProperty("user", "browser.show.connection.properties.advanced"))
+            properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc, false));
+
+        properties.values().removeAll(Collections.singleton(Constants.EMPTY));
+        properties.values().removeAll(Collections.singleton(null));
+
+        propertiesPanel.setDatabaseProperties(properties, false);
+    }
+
     protected void handleException(Throwable e) {
         controller.handleException(e);
     }
 
     protected void connect(DatabaseConnection dc) {
         controller.connect(dc);
+        updateProperties(dc);
     }
 
     protected void disconnect(DatabaseConnection dc) {
         if (canProceedWithChangesApplied(tree.getLastPathComponent())) {
             setSelectedConnection(dc);
             controller.disconnect(dc);
+            updateProperties(dc);
         }
     }
 
@@ -1643,6 +1677,17 @@ public class ConnectionsTreePanel extends TreePanel
 
         @Override
         public void mouseClicked(MouseEvent e) {
+
+            TreePath path = pathFromMouseEvent(e);
+            if (path != null && path == getTreeSelectionPath()) {
+                Object node = path.getLastPathComponent();
+                if (node instanceof DatabaseHostNode) {
+                    DatabaseConnection dc = ((DatabaseHostNode) node).getDatabaseConnection();
+                    updateProperties(dc);
+                } else
+                    propertiesPanel.setDatabaseProperties(new HashMap<>());
+            }
+
             if (e.getClickCount() > 1)
                 twoClicks(e);
         }

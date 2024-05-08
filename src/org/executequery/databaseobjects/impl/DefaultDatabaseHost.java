@@ -49,8 +49,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static org.executequery.actions.databasecommands.DatabaseStatisticCommand.getHeaderValue;
 
 /**
  * Default database host object implementation.
@@ -1117,31 +1117,34 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     @Override
-    public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
+    public Map<Object, Object> getDatabaseProperties() {
+        if (databaseProperties == null || databaseProperties.isEmpty()) {
+            databaseProperties = getDatabaseProperties(getDatabaseConnection(), true);
+            databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
+            databaseProperties.put(bundleString("Driver"), getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
+        }
 
-        boolean isFirebird3 = getDatabaseConnection().getMajorServerVersion() >= 3;
-        boolean isFirebird4 = getDatabaseConnection().getMajorServerVersion() >= 4;
-        boolean isRedDatabase5 = getDatabaseConnection().getMajorServerVersion() >= 5 && new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase");
+        return databaseProperties;
+    }
+
+    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection, boolean handleException) {
+        boolean isFirebird3 = connection.getMajorServerVersion() >= 3;
+        boolean isFirebird4 = connection.getMajorServerVersion() >= 4;
+        boolean isRedDatabase5 = connection.getMajorServerVersion() >= 5
+                && !MiscUtils.isNull(new DefaultDatabaseHost(connection).getDatabaseProductName())
+                && new DefaultDatabaseHost(connection).getDatabaseProductName().toLowerCase().contains("reddatabase");
 
         Table databaseTable = Table.createTable("MON$DATABASE", "D");
-        SelectBuilder sb = new SelectBuilder(getDatabaseConnection());
+        SelectBuilder sb = new SelectBuilder(connection);
         sb.appendTable(databaseTable);
         sb.appendField(Field.createField(databaseTable, "MON$DATABASE_NAME", "DATABASE_NAME"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGE_SIZE", "PAGE_SIZE"));
-        sb.appendField(Field.createField(databaseTable, "MON$ODS_MAJOR", "ODS_MAJOR"));
-        sb.appendField(Field.createField(databaseTable, "MON$ODS_MINOR", "ODS_MINOR"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_TRANSACTION", "OLDEST_TRANSACTION"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_ACTIVE", "OLDEST_ACTIVE"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_SNAPSHOT", "OLDEST_SNAPSHOT"));
-        sb.appendField(Field.createField(databaseTable, "MON$NEXT_TRANSACTION", "NEXT_TRANSACTION"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGE_BUFFERS", "PAGE_BUFFERS"));
-        sb.appendField(Field.createField(databaseTable, "MON$SQL_DIALECT", "SQL_DIALECT"));
         sb.appendField(Field.createField(databaseTable, "MON$SHUTDOWN_MODE", "SHUTDOWN_MODE"));
         sb.appendField(Field.createField(databaseTable, "MON$SWEEP_INTERVAL", "SWEEP_INTERVAL"));
         sb.appendField(Field.createField(databaseTable, "MON$READ_ONLY", "READ_ONLY"));
         sb.appendField(Field.createField(databaseTable, "MON$FORCED_WRITES", "FORCED_WRITES"));
         sb.appendField(Field.createField(databaseTable, "MON$RESERVE_SPACE", "RESERVE_SPACE"));
-        sb.appendField(Field.createField(databaseTable, "MON$CREATION_DATE", "CREATION_DATE").setStatement("CAST(MON$CREATION_DATE AS TIMESTAMP)"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGES", "PAGES"));
         sb.appendField(Field.createField(databaseTable, "MON$STAT_ID", "STAT_ID"));
         sb.appendField(Field.createField(databaseTable, "MON$BACKUP_STATE", "BACKUP_STATE"));
@@ -1159,14 +1162,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             sb.appendField(Field.createField(databaseTable, "MON$CRYPT_STATE", "CRYPT_STATE"));
         }
 
-        if (databaseProperties != null)
-            return databaseProperties;
+        Map<Object, Object> databaseProperties = new HashMap<>();
+        databaseProperties.put(bundleString("Driver"), connection.getDriverName());
 
-        databaseProperties = new HashMap<>();
-        databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
-        databaseProperties.put(bundleString("Driver"), getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
-
-        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(getDatabaseConnection());
+        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
         databaseProperties.put(bundleString("GUID"), getHeaderValue(DatabaseStatisticCommand.GUID, databaseHeader));
         databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATACHMENT, databaseHeader));
         databaseProperties.put(bundleString("GENERATION"), getHeaderValue(DatabaseStatisticCommand.GENERATION, databaseHeader));
@@ -1175,9 +1174,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         databaseProperties.put(bundleString("IMPLEMENTATION"), getHeaderValue(DatabaseStatisticCommand.IMPLEMENTATION, databaseHeader));
         databaseProperties.put(bundleString("SHADOW_COUNT"), getHeaderValue(DatabaseStatisticCommand.SHADOW_COUNT, databaseHeader));
         databaseProperties.put(bundleString("SCN"), getHeaderValue(DatabaseStatisticCommand.SCN, databaseHeader));
+        databaseProperties.put(bundleString("CREATION_DATE"), getHeaderValue(DatabaseStatisticCommand.CREATION_DATE, databaseHeader));
+        databaseProperties.put(bundleString("SQL_DIALECT"), getHeaderValue(DatabaseStatisticCommand.DIALECT, databaseHeader));
+        databaseProperties.put(bundleString("NEXT_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.NEXT_TRANSACTION, databaseHeader));
+        databaseProperties.put(bundleString("PAGE_SIZE"), getHeaderValue(DatabaseStatisticCommand.PAGE_SIZE, databaseHeader));
+        databaseProperties.put(bundleString("ODS_VERSION"), getHeaderValue(DatabaseStatisticCommand.ODS, databaseHeader));
+        databaseProperties.put(bundleString("ServerVersion"), (getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader) + " " + connection.getMajorServerVersion()).trim());
+        databaseProperties.put(bundleString("OLDEST_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.OIT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_ACTIVE"), getHeaderValue(DatabaseStatisticCommand.OAT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), getHeaderValue(DatabaseStatisticCommand.OST, databaseHeader));
 
         Object value = getHeaderValue(DatabaseStatisticCommand.PAGE_BUFF, databaseHeader);
-        if (value != null) {
+        if (value != null && !MiscUtils.isNull(value.toString())) {
             int intVal = Integer.parseInt(value.toString());
             value = Objects.equals(intVal, 0) ? Bundles.getCommon("default") : value;
         }
@@ -1185,13 +1193,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         try {
 
-            ResultSet rs = new DefaultStatementExecutor(getDatabaseConnection()).getResultSet(sb.getSQLQuery()).getResultSet();
+            ResultSet rs = new DefaultStatementExecutor(connection).getResultSet(sb.getSQLQuery()).getResultSet();
             if (rs != null && rs.next()) {
-
-                // --- ods version ---
-
-                value = rs.getInt("ODS_MAJOR") + "." + rs.getInt("ODS_MINOR");
-                databaseProperties.put(bundleString("ODS_VERSION"), value);
 
                 // --- shutdown mode ---
 
@@ -1242,7 +1245,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 long pageSize = rs.getLong("PAGE_SIZE");    // db pages size
                 long pagesCount = rs.getLong("PAGES");      // db pages count
 
-                databaseProperties.put(bundleString("PAGE_SIZE"), pageSize);
                 databaseProperties.put(bundleString("PAGES"), pagesCount);
                 databaseProperties.put(bundleString("dbFileSize"), pageSize * pagesCount);
 
@@ -1294,14 +1296,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 // --- others ---
 
                 databaseProperties.put(bundleString("DATABASE_NAME"), rs.getString("DATABASE_NAME"));           //  db file name
-                databaseProperties.put(bundleString("OLDEST_TRANSACTION"), rs.getInt("OLDEST_TRANSACTION"));    // oldest transaction number
-                databaseProperties.put(bundleString("OLDEST_ACTIVE"), rs.getInt("OLDEST_ACTIVE"));              // oldest active transaction number
-                databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), rs.getInt("OLDEST_SNAPSHOT"));          // snapshot transaction number
-                databaseProperties.put(bundleString("NEXT_TRANSACTION"), rs.getInt("NEXT_TRANSACTION"));        // next transaction number
                 databaseProperties.put(bundleString("PAGE_BUFFERS"), rs.getInt("PAGE_BUFFERS"));                // cached pages count
-                databaseProperties.put(bundleString("SQL_DIALECT"), rs.getInt("SQL_DIALECT"));                  // SQL dialect
                 databaseProperties.put(bundleString("SWEEP_INTERVAL"), rs.getInt("SWEEP_INTERVAL"));            // sweep interval
-                databaseProperties.put(bundleString("CREATION_DATE"), rs.getTimestamp("CREATION_DATE"));        // db creation date
                 databaseProperties.put(bundleString("STAT_ID"), rs.getInt("STAT_ID"));                          // statistics index
                 if (isFirebird3) {
                     databaseProperties.put(bundleString("CRYPT_PAGE"), rs.getInt("CRYPT_PAGE"));                // now encrypted db pages
@@ -1313,30 +1309,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 }
 
             } else {
-                Log.error("Warning about loading database properties: the resultSet is null or empty");
+                Log.warning("Warning about loading database properties: the resultSet is null or empty");
             }
 
         } catch (SQLException e) {
             Log.error("Error occurred loading database properties", e);
         }
 
+        databaseProperties.values().removeAll(Collections.singleton(Constants.EMPTY));
         databaseProperties.values().removeAll(Collections.singleton(null));
         return databaseProperties;
-    }
-
-    private String getHeaderValue(String key, String databaseHeader) {
-
-        int index = StringUtils.indexOfIgnoreCase(databaseHeader, key);
-        if (index < 0)
-            return null;
-
-        String value = databaseHeader.substring(index + key.length()).trim();
-
-        Matcher matcher = Pattern.compile("\n").matcher(value);
-        if (matcher.find())
-            value = value.substring(0, matcher.start());
-
-        return value;
     }
 
     public boolean supportsCatalogsInTableDefinitions() {
@@ -1602,7 +1584,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         this.pauseLoadingTreeForSearch = pauseLoadingTreeForSearch;
     }
 
-    public String bundleString(String key) {
+    public static String bundleString(String key) {
         return Bundles.get(DefaultDatabaseHost.class, key);
     }
 

@@ -162,6 +162,22 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
+        key = "browser.show.connection.properties";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("ShowConnectionProperties"),
+                SystemProperties.getBooleanProperty("user", key)
+        ));
+
+        key = "browser.show.connection.properties.advanced";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledString("ShowAdvancedConnectionProperties"),
+                SystemProperties.getBooleanProperty("user", key)
+        ));
+
         key = "browser.search.in.columns";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

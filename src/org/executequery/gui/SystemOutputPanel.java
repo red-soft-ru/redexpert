@@ -22,7 +22,7 @@ package org.executequery.gui;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.PatternLayout;
-import org.executequery.GUIUtilities;
+import org.executequery.Constants;
 import org.executequery.components.BasicPopupMenuListener;
 import org.executequery.components.TextAreaLogAppender;
 import org.executequery.localization.Bundles;
@@ -37,37 +37,24 @@ import java.awt.*;
 /**
  * @author Takis Diakoumis
  */
-public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnlyTextPane {
+public class SystemOutputPanel extends AbstractDockedTabPanel
+        implements ReadOnlyTextPane {
 
-    /**
-     * This panel's title
-     */
     public static final String TITLE = Bundles.get(SystemOutputPanel.class, "title");
+    public static final String PROPERTY_KEY = "system.display.console";
+    public static final String MENU_ITEM_KEY = "viewConsole";
 
-    /**
-     * the output text area
-     */
     private JTextArea textArea;
 
     public SystemOutputPanel() {
-
         super(new BorderLayout());
-
-        try {
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
+        init();
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         textArea = new JTextArea();
-        textArea.setFont(new Font("dialog", 0, 11));
+        textArea.setFont(new Font("dialog", Font.PLAIN, 11));
         textArea.setEditable(false);
 
         SystemOutputPanelPopUpMenu systemOutputPanelPopUpMenu = new SystemOutputPanelPopUpMenu(this);
@@ -85,31 +72,33 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
         reloadFont();
     }
 
-    public Icon getIcon() {
-
-        return GUIUtilities.loadIcon("SystemOutput.png");
+    public void setTextFont(Font font) {
+        textArea.setFont(font);
     }
 
-    public String toString() {
+    public void reloadFont() {
+        String fontName = SystemProperties.getProperty("user", "console.font.name");
+        String fontSize = SystemProperties.getProperty("user", "console.font.size");
 
-        return "Output Console";
+        if (!MiscUtils.isNull(fontName) && !MiscUtils.isNull(fontSize)) {
+            setTextFont(new Font(fontName, Font.PLAIN, Integer.parseInt(fontSize)));
+
+        } else {
+            Font consoleFont = UIManager.getDefaults().getFont("TextArea.font");
+            SystemProperties.setProperty("user", "console.font.name", consoleFont.getFontName());
+            reloadFont();
+        }
     }
 
-    // ----------------------------------------
-    // DockedTabView Implementation
-    // ----------------------------------------
-
-    public static final String MENU_ITEM_KEY = "viewConsole";
-
-    public static final String PROPERTY_KEY = "system.display.console";
+    // --- DockedTabView impl ---
 
     /**
      * Returns the display title for this view.
      *
      * @return the title displayed for this view
      */
+    @Override
     public String getTitle() {
-
         return TITLE;
     }
 
@@ -118,8 +107,8 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
      *
      * @return the key
      */
+    @Override
     public String getPropertyKey() {
-
         return PROPERTY_KEY;
     }
 
@@ -129,54 +118,42 @@ public class SystemOutputPanel extends AbstractDockedTabPanel implements ReadOnl
      *
      * @return the preferences key
      */
+    @Override
     public String getMenuItemKey() {
-
         return MENU_ITEM_KEY;
     }
 
+    @Override
     public void clear() {
-
-        textArea.setText("");
+        textArea.setText(Constants.EMPTY);
     }
 
+    @Override
     public void copy() {
-
         textArea.copy();
     }
 
+    @Override
     public void selectAll() {
-
         textArea.selectAll();
 
     }
 
+    @Override
     public String getText() {
-
         return textArea.getText();
     }
 
+    @Override
     public JTextComponent getTextComponent() {
-
         return textArea;
     }
 
-    public void setTextFont(Font font) {
-        textArea.setFont(font);
-    }
+    // ---
 
-    public void reloadFont() {
-        String nameFont = SystemProperties.getProperty("user", "console.font.name");
-        if (!MiscUtils.isNull(nameFont)) {
-            setTextFont(new Font(nameFont, Font.PLAIN, Integer.parseInt(SystemProperties.getProperty("user", "console.font.size"))));
-        } else {
-            Font consoleFont = UIManager.getDefaults().getFont("TextArea.font");
-            SystemProperties.setProperty("user", "console.font.name", consoleFont.getFontName());
-            reloadFont();
-        }
+    @Override
+    public String toString() {
+        return "Output Console";
     }
 
 }
-
-
-
-

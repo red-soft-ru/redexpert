@@ -32,8 +32,10 @@ import org.executequery.databasemediators.spi.TemplateDatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseObjectFactory;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.event.*;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -1719,6 +1721,18 @@ public class ConnectionsTreePanel extends TreePanel
                     Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
                     if (repo instanceof DatabaseConnectionRepository)
                         updateProperties(((DatabaseConnectionRepository) repo).findAll());
+
+                } else if (node instanceof DatabaseObjectNode) {
+
+                    NamedObject databaseObject = ((DatabaseObjectNode) node).getDatabaseObject();
+                    if (databaseObject instanceof AbstractDatabaseObject) {
+                        DatabaseConnection dc = ((AbstractDatabaseObject) databaseObject).getHost().getDatabaseConnection();
+                        updateProperties(dc);
+
+                    } else if (databaseObject instanceof DefaultDatabaseMetaTag) {
+                        DatabaseConnection dc = ((DefaultDatabaseMetaTag) databaseObject).getHost().getDatabaseConnection();
+                        updateProperties(dc);
+                    }
 
                 } else
                     propertiesPanel.setDatabaseProperties(new HashMap<>());

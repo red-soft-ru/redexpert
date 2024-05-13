@@ -212,10 +212,10 @@ public class WindowsSchedulerPanel extends JPanel
     }
 
     private void generateCron() {
-        String[] crons = new String[5];
+        String[] crons = new String[]{"*", "*", "*", "*", "*"};
 
         if (everyYearRadio.isSelected()) {
-            LocalDateTime localDate = timestampPicker.getDateTime();
+            LocalDateTime localDate = timestampPicker.getDateTimeOrNull();
             if (localDate != null) {
                 crons[0] = localDate.getMinute() + "";
                 crons[1] = localDate.getHour() + "";
@@ -345,7 +345,6 @@ public class WindowsSchedulerPanel extends JPanel
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        generateCron();
     }
 
     // --- ListCheckListener impl ---

@@ -164,6 +164,10 @@ public class ConnectionsTreePanel extends TreePanel
         propertiesPanel.setVisible(visible);
     }
 
+    public boolean isPropertiesPanelVisible() {
+        return propertiesPanel.isVisible();
+    }
+
     private DefaultMutableTreeNode createTreeStructure() {
 
         DatabaseObjectFactory factory = databaseObjectFactory();
@@ -1150,8 +1154,11 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     private void updateProperties(DatabaseConnection dc) {
-        Map<Object, Object> properties = new LinkedHashMap<>();
 
+        if (!isPropertiesPanelVisible())
+            return;
+
+        Map<Object, Object> properties = new LinkedHashMap<>();
         properties.put(bundleString("status"), bundleString(dc.isConnected() ? "status.on" : "status.off"));
         properties.put(bundleString("name"), dc.getName());
         properties.put(bundleString("server"), dc.getHost() + "/" + dc.getPort());
@@ -1170,6 +1177,10 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     private void updateProperties(List<DatabaseConnection> databaseConnections) {
+
+        if (!isPropertiesPanelVisible())
+            return;
+
         Map<Object, Object> properties = new LinkedHashMap<>();
         databaseConnections.forEach(dc -> properties.put(dc.getName(), bundleString(dc.isConnected() ? "status.on" : "status.off")));
 

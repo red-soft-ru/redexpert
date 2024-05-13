@@ -118,6 +118,11 @@ public class PropertiesPanel extends JPanel
     private static boolean restartNeed;
 
     /**
+     * boolean key shows is it needed to update PATH env during restart
+     */
+    private static boolean updateEnvNeed;
+
+    /**
      * Constructs a new instance.
      */
     public PropertiesPanel(ActionContainer parent) {
@@ -135,7 +140,8 @@ public class PropertiesPanel extends JPanel
         super(new BorderLayout());
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
-        this.restartNeed = false;
+        restartNeed = false;
+        updateEnvNeed = false;
 
         try {
             init();
@@ -445,7 +451,7 @@ public class PropertiesPanel extends JPanel
             if (isRestartNeed()) {
                 setRestartNeed(false);
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
-                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo());
+                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
 
             } else
                 GUIUtilities.displayInformationMessage(bundledString("setting-applied"));
@@ -480,6 +486,10 @@ public class PropertiesPanel extends JPanel
 
     public static void setRestartNeed(boolean restartNeed) {
         PropertiesPanel.restartNeed = restartNeed;
+    }
+
+    public static void setUpdateEnvNeed(boolean updateEnvNeed) {
+        PropertiesPanel.updateEnvNeed = updateEnvNeed;
     }
 
     private String bundledString(String key) {

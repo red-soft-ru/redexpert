@@ -36,10 +36,8 @@ import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -1526,11 +1524,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = packageQuery + query;
         if (typeObject == 0)
             query = tableQuery + query;
-        try {
-            FileUtils.writeFile("D:\\queries.txt", query, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return query;
     }
 
@@ -1630,11 +1623,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         if (typeObject == 0)
             query += tableQuery;
-        try {
-            FileUtils.writeFile("D:\\queries.txt", query, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return query;
     }
 }

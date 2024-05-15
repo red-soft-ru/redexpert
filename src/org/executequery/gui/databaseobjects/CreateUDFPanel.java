@@ -91,6 +91,7 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     protected void initEdited() {
         reset();
         addCreateSqlTab(editedUDF);
+        addDependenciesTab(editedUDF);
     }
 
     protected String generateQuery() {

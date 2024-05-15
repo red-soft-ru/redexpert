@@ -36,8 +36,10 @@ import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -1486,15 +1488,26 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             comparingCondition += "(T1.RDB$DEPENDENT_TYPE = " + list.get(i) + ")";
         }
         comparingCondition += ")";
+        String udfJoin = "\n";
+        String udfWhere = "";
+        if (typeObject == 15 && version > 2) {
+            udfJoin = " LEFT JOIN RDB$FUNCTIONS F ON T1.RDB$DEPENDED_ON_NAME=F.RDB$FUNCTION_NAME\n";
+            if (getSubType() == UDF) {
+                udfWhere = "AND (F.RDB$LEGACY_FLAG = 1 AND (F.RDB$MODULE_NAME IS NOT NULL) AND (F.RDB$SYSTEM_FLAG = 0 OR F.RDB$SYSTEM_FLAG IS NULL))\n";
+            } else {
+                udfWhere = "AND (F.RDB$MODULE_NAME IS NULL) AND (F.RDB$PACKAGE_NAME IS NULL)\n";
+            }
+        }
         query = "SELECT DISTINCT\n" +
                 "T1.RDB$DEPENDED_ON_NAME," +
                 "NULL," +
                 "CAST(T1.RDB$DEPENDED_ON_TYPE AS INTEGER)\n" +
-                "FROM RDB$DEPENDENCIES T1\n" +
+                "FROM RDB$DEPENDENCIES T1" + udfJoin +
                 "WHERE (T1.RDB$DEPENDENT_NAME = '" + dependedObject.getName() + "')\n" +
                 ((version > 2) ? "AND (T1.RDB$PACKAGE_NAME IS NULL)\n" : "") +
                 comparingCondition +
                 "AND (T1.RDB$DEPENDED_ON_TYPE=" + typeObject + ")\n" +
+                udfWhere +
                 "UNION ALL\n" +
                 "SELECT DISTINCT\n" +
                 "D.RDB$DEPENDED_ON_NAME," +
@@ -1513,12 +1526,16 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = packageQuery + query;
         if (typeObject == 0)
             query = tableQuery + query;
-
+        try {
+            FileUtils.writeFile("D:\\queries.txt", query, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return query;
     }
 
     private String getDependentQuery(int typeObject) {
-
+        int version = ((AbstractDatabaseObject) dependedObject).getDatabaseMajorVersion();
         String query;
         ((AbstractDatabaseObject) dependedObject).getDatabaseMajorVersion();
         List<Integer> list = getTypeDependFromDatabaseObject(dependedObject);
@@ -1550,13 +1567,25 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             comparingCondition += "(D1.RDB$DEPENDED_ON_TYPE = " + list.get(i) + ")\n";
         }
         comparingCondition += ")";
+        String udfJoin = "\n";
+        String udfWhere = "";
+        if (typeObject == 15 && version > 2) {
+            udfJoin = " LEFT JOIN RDB$FUNCTIONS F ON D1.RDB$DEPENDENT_NAME=F.RDB$FUNCTION_NAME\n";
+            if (getSubType() == UDF) {
+                udfWhere = "AND (F.RDB$LEGACY_FLAG = 1 AND (F.RDB$MODULE_NAME IS NOT NULL) AND (F.RDB$SYSTEM_FLAG = 0 OR F.RDB$SYSTEM_FLAG IS NULL))\n";
+            } else {
+                udfWhere = "AND (F.RDB$MODULE_NAME IS NULL) AND (F.RDB$PACKAGE_NAME IS NULL)\n";
+            }
+        }
 
         query = "SELECT DISTINCT D1.RDB$DEPENDENT_NAME\n" +
                 "FROM RDB$DEPENDENCIES D1\n" +
                 "LEFT JOIN RDB$RELATIONS R1 ON ((D1.RDB$DEPENDENT_NAME = R1.RDB$RELATION_NAME) AND (NOT (R1.RDB$VIEW_BLR IS NULL)))\n" +
+                udfJoin +
                 "WHERE (D1.RDB$DEPENDENT_TYPE = " + typeObject + ")\n" +
                 "AND (D1.RDB$DEPENDENT_TYPE <> 3)\n" +
                 "AND (D1.RDB$DEPENDED_ON_NAME = '" + dependedObject.getName() + "')\n" +
+                udfWhere +
                 comparingCondition + "\n";
 
         if (list.contains(9)) {
@@ -1601,7 +1630,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         if (typeObject == 0)
             query += tableQuery;
-
+        try {
+            FileUtils.writeFile("D:\\queries.txt", query, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return query;
     }
 }

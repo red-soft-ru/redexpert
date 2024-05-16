@@ -38,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -411,14 +412,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     private void displayExecuteDialog() {
-
-        ExecuteProcedurePanel procedurePanel = new ExecuteProcedurePanel(
-                getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0,
-                procedureName
-        );
-
-        BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, procedurePanel);
-        dialog.display();
+        new BaseDialog(
+                bundleString(Objects.equals(getTypeObject(), NamedObject.META_TYPES[NamedObject.FUNCTION]) ?
+                        "executeFunction" :
+                        "executeProcedure"
+                ),
+                true,
+                new ExecuteProcedurePanel(
+                        getTypeObject(),
+                        procedureName,
+                        connection
+                )
+        ).display();
     }
 
     /**

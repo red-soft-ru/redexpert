@@ -27,11 +27,6 @@
                 <order>1</order>
             </button>
 
-            <button id="2" action-id="execute-object">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
             <button id="3" action-id="extract-metadata-command">
                 <visible>true</visible>
                 <order>3</order>

@@ -50,9 +50,6 @@
         <menu-item id="execute-sql-script-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="execute-object"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="extract-metadata-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

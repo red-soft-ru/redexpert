@@ -474,14 +474,6 @@
             small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
             execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
 
-    <action id="execute-object"
-            name="Execute Stored Objects"
-            mnemonic="B"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/Procedure16.png"
-            description="View and execute stored procedures and functions"
-            execute-class="org.executequery.actions.databasecommands.ExecuteStoredObjectCommand"/>
-
     <action id="compare-data-types"
             name="Compare Data Types"
             mnemonic="D"

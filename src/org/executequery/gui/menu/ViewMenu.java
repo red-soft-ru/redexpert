@@ -35,62 +35,42 @@ import java.util.Map;
 public class ViewMenu extends AbstractOptionsMenu
         implements UserPreferenceListener {
 
-    private ViewOptionsCommand viewOptionsCommand;
+    private final ViewOptionsCommand viewOptionsCommand;
+    private final Map<String, String> commandsMap;
 
     public ViewMenu() {
 
         viewOptionsCommand = new ViewOptionsCommand();
 
-        createCommandToPropertiesMap();
+        commandsMap = new HashMap<>();
+        commandsMap.put("viewConsole", "system.display.console");
+        commandsMap.put("viewConnections", "system.display.connections");
+        commandsMap.put("viewKeywords", "system.display.keywords");
+        commandsMap.put("viewSqlStateCodes", "system.display.state-codes");
+        commandsMap.put("viewDrivers", "system.display.drivers");
+        commandsMap.put("viewSystemProperties", "system.display.systemprops");
+        commandsMap.put("viewNotepad", "system.display.notepad");
+        commandsMap.put("viewStatusBar", "system.display.statusbar");
 
         EventMediator.registerListener(this);
     }
 
+    @Override
     protected void addActionForMenuItem(JCheckBoxMenuItem menuItem) {
-
         menuItem.addActionListener(viewOptionsCommand);
     }
 
+    @Override
     protected void setMenuItemValue(JCheckBoxMenuItem menuItem) {
-
-        String actionCommand = menuItem.getActionCommand();
-
-        if (actionCommand != null &&
-                actionCommandsToPropertiesMap.containsKey(actionCommand)) {
-
-            menuItem.setSelected(booleanValueForKey(
-                    actionCommandsToPropertiesMap.get(actionCommand)));
-        }
-
+        String command = menuItem.getActionCommand();
+        if (command != null && commandsMap.containsKey(command))
+            menuItem.setSelected(booleanValueForKey(commandsMap.get(command)));
     }
 
+    @Override
     protected boolean listeningForEvent(UserPreferenceEvent event) {
-
-        return (event.getEventType() == UserPreferenceEvent.ALL
-                || event.getEventType() == UserPreferenceEvent.DOCKED_COMPONENT_CLOSED);
-    }
-
-    private Map<String, String> actionCommandsToPropertiesMap;
-
-    private void createCommandToPropertiesMap() {
-
-        actionCommandsToPropertiesMap = new HashMap<String, String>();
-
-        actionCommandsToPropertiesMap.put("viewConsole", "system.display.console");
-        actionCommandsToPropertiesMap.put("viewConnections", "system.display.connections");
-        actionCommandsToPropertiesMap.put("viewKeywords", "system.display.keywords");
-        actionCommandsToPropertiesMap.put("viewSqlStateCodes", "system.display.state-codes");
-        actionCommandsToPropertiesMap.put("viewDrivers", "system.display.drivers");
-        actionCommandsToPropertiesMap.put("viewSystemProperties", "system.display.systemprops");
-        actionCommandsToPropertiesMap.put("viewNotepad", "system.display.notepad");
-        actionCommandsToPropertiesMap.put("viewStatusBar", "system.display.statusbar");
-
+        int type = event.getEventType();
+        return type == UserPreferenceEvent.ALL || type == UserPreferenceEvent.DOCKED_COMPONENT_CLOSED;
     }
 
 }
-
-
-
-
-
-

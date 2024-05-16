@@ -226,14 +226,6 @@
             small-icon="/org/executequery/icons/Keywords16.png"
             execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
 
-    <action id="manage-shortcuts-command"
-            name="Manage Query Shortcuts"
-            mnemonic="S"
-            accel-key=""
-            accel-editable="false"
-            small-icon="/org/executequery/icons/Shortcut16.png"
-            execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
-
     <action id="manage-bookmarks-command"
             name="Manage Query Bookmarks"
             mnemonic="M"
@@ -454,13 +446,6 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/Edit16.png"
             execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
-
-    <action id="manage-shortcuts-command"
-            name="Manage Query Shortcuts"
-            accel-key=""
-            accel-editable="false"
-            small-icon="/org/executequery/icons/Shortcut16.png"
-            execute-class="org.executequery.actions.queryeditor.ManageShortcutsCommand"/>
 
     <action id="scratch-pad-command"
             name="Scratch Pad"

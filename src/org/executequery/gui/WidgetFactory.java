@@ -101,6 +101,21 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named JButton class instance
+     *
+     * @param name     the component's name
+     * @param text     the displayed button text
+     * @param listener the ActionListener to be added
+     */
+    public static JButton createButton(String name, String text, ActionListener listener) {
+
+        JButton button = createButton(name, text);
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
      * Create named JRadioButton class instance
      *
      * @param name the component's name

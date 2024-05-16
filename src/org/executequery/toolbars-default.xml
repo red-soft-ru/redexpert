@@ -47,11 +47,6 @@
                 <order>5</order>
             </button>
 
-            <button id="6" action-id="manage-shortcuts-command">
-                <visible>true</visible>
-                <order>6</order>
-            </button>
-
             <button id="7" action-id="user-keywords-command">
                 <visible>true</visible>
                 <order>7</order>
@@ -267,11 +262,6 @@
             <button id="35" action-id="manage-bookmarks-command">
                 <visible>true</visible>
                 <order>12</order>
-            </button>
-
-            <button id="36" action-id="manage-shortcuts-command">
-                <visible>true</visible>
-                <order>13</order>
             </button>
 
             <button id="37" action-id="sql-history-command">

@@ -29,7 +29,8 @@ public interface PropertyTypes {
     int LOOK_PLUGIN = CONNECTIONS + 1;
     int APPEARANCE = LOOK_PLUGIN + 1;
     int SHORTCUTS = APPEARANCE + 1;
-    int EDITOR = SHORTCUTS + 1;
+    int SQL_SHORTCUTS = SHORTCUTS + 1;
+    int EDITOR = SQL_SHORTCUTS + 1;
     int RESULT_SET = EDITOR + 1;
 
     int TOOLBAR_GENERAL = RESULT_SET + 1;

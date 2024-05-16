@@ -71,9 +71,6 @@
 
         </menu>
 
-        <menu-item id="user-keywords-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
     </menu>
 
     <menu name="Tools"

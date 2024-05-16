@@ -186,27 +186,20 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         return userDefinedKeyWords;
     }
 
+    @Override
     public void setUserDefinedKeywords(List<String> keywords) {
 
-        if (keywords == null || keywords.isEmpty()) {
-
+        if (keywords == null)
             return;
-        }
 
         try {
-
             String delimeter = "|";
+
             StringBuilder sb = new StringBuilder();
-
-            for (int i = 0, k = keywords.size(); i < k; i++) {
-
+            for (int i = 0, size = keywords.size(); i < size; i++) {
                 sb.append(keywords.get(i));
-
-                if (i != k - 1) {
-
+                if (i != size - 1)
                     sb.append(delimeter);
-                }
-
             }
 
             String path = getUserDefinedKeywordsPath();
@@ -216,21 +209,16 @@ public class KeywordRepositoryImpl implements KeywordRepository {
             keyWordsListUpdated = true;
 
             // fire the event to registered listeners
-            EventMediator.fireEvent(new DefaultKeywordEvent("KeywordProperties",
-                    DefaultKeywordEvent.KEYWORDS_ADDED));
+            EventMediator.fireEvent(new DefaultKeywordEvent(
+                    "KeywordProperties",
+                    DefaultKeywordEvent.KEYWORDS_ADDED
+            ));
 
         } catch (IOException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                e.printStackTrace();
-            }
-
             Log.error("Error saving keywords to file");
+            Log.debug(e.getMessage(), e);
             throw new ApplicationException(e);
         }
-
-
     }
 
     public String getId() {
@@ -296,6 +284,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         }
 
     }
+
     /**
      * Returns the path to the user keywords file.
      */

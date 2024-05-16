@@ -135,6 +135,7 @@ public class PropertiesPanel extends JPanel
         branches.add(new PropertyNode(PropertyTypes.GENERAL, bundledString("General")));
         branches.add(new PropertyNode(PropertyTypes.SHORTCUTS, bundledString("Shortcuts")));
         branches.add(new PropertyNode(PropertyTypes.SQL_SHORTCUTS, bundledString("SqlShortcuts")));
+        branches.add(new PropertyNode(PropertyTypes.KEYWORDS, bundledString("UserDefinedKeywords")));
 
         PropertyNode node = new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display"));
         node.addChild(new PropertyNode(PropertyTypes.LOCALE, bundledString("Locale")));
@@ -280,6 +281,8 @@ public class PropertiesPanel extends JPanel
                 return new PropertiesKeyShortcuts();
             case PropertyTypes.SQL_SHORTCUTS:
                 return new PropertiesSqlShortcuts();
+            case PropertyTypes.KEYWORDS:
+                return new PropertiesKeywords();
 
             case PropertyTypes.APPEARANCE:
                 return new PropertiesAppearance();

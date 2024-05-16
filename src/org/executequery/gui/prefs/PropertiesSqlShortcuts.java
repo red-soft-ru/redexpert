@@ -120,7 +120,7 @@ public class PropertiesSqlShortcuts extends AbstractPropertiesBasePanel
         // --- base ---
 
         addContent(mainPanel);
-        setRestoreButtonVisible(false);
+        hideRestoreButton();
     }
 
     @SuppressWarnings("unchecked")

@@ -66,7 +66,6 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
         setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
         add(bottomPanel, new GridBagHelper()
-                .setInsets(0, 5, 5, 5)
                 .anchorSouthEast()
                 .fillNone()
                 .setY(2)
@@ -89,8 +88,8 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
     // ---
 
-    protected final void setRestoreButtonVisible(boolean visible) {
-        restoreButton.getParent().setVisible(visible);
+    protected final void hideRestoreButton() {
+        restoreButton.getParent().setVisible(false);
     }
 
     protected final String stringUserProperty(String key) {

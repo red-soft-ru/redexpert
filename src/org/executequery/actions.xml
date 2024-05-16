@@ -223,7 +223,6 @@
             name="Add to User Defined Keywords"
             accel-key="control shift K"
             accel-editable="true"
-            small-icon="/org/executequery/icons/Keywords16.png"
             execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
 
     <action id="manage-bookmarks-command"
@@ -453,13 +452,6 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/ScratchPad16.png"
             execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
-
-    <action id="user-keywords-command"
-            name="User Defined Keywords"
-            mnemonic="K"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/Keywords16.png"
-            execute-class="org.executequery.actions.toolscommands.KeyWordsCommand"/>
 
     <action id="heap-memory-command"
             name="Heap Memory Status"

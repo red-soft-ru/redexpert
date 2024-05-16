@@ -95,7 +95,11 @@ public class PropertiesPanel extends JPanel
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
     private static boolean restartNeed;
+    private static boolean updateEnvNeed;
 
+    /**
+     * Constructs a new instance.
+     */
     public PropertiesPanel(ActionContainer parent) {
         this(parent, -1);
     }
@@ -103,9 +107,10 @@ public class PropertiesPanel extends JPanel
     public PropertiesPanel(ActionContainer parent, int openRow) {
         super(new BorderLayout());
 
-        restartNeed = false;
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
+        restartNeed = false;
+        updateEnvNeed = false;
 
         init();
         if (openRow != -1)
@@ -350,7 +355,7 @@ public class PropertiesPanel extends JPanel
             if (isRestartNeed()) {
                 setRestartNeed(false);
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
-                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo());
+                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
 
             } else
                 GUIUtilities.displayInformationMessage(bundledString("setting-applied"));
@@ -385,6 +390,10 @@ public class PropertiesPanel extends JPanel
 
     public static void setRestartNeed(boolean restartNeed) {
         PropertiesPanel.restartNeed = restartNeed;
+    }
+
+    public static void setUpdateEnvNeed(boolean updateEnvNeed) {
+        PropertiesPanel.updateEnvNeed = updateEnvNeed;
     }
 
     private String bundledString(String key) {

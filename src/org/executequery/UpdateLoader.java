@@ -127,7 +127,7 @@ public class UpdateLoader extends JFrame {
     }
 
     public void launch() {
-        ExecuteQuery.restart(repoArg);
+        ExecuteQuery.restart(repoArg, false);
     }
 
     private void cleanup() {

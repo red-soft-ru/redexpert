@@ -97,8 +97,8 @@ public class AdvancedSchedulePanel extends JTabbedPane {
 
             ButtonGroup radioButtons = new ButtonGroup();
             radioButtons.add(eachUnitRadio);
-            radioButtons.add(betweenUnitRadio);
             radioButtons.add(intervalUnitRadio);
+            radioButtons.add(betweenUnitRadio);
             radioButtons.add(specificUnitRadio);
 
             // --- check boxes ---

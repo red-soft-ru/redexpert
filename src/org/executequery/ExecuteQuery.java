@@ -37,36 +37,17 @@ public final class ExecuteQuery {
 
     public static void main(String[] args) {
 
-        /*
-        // make sure the installed java version is at least 1.7
-        if (!MiscUtils.isMinJavaVersion(1, 7)) {
-
-            JOptionPane.showMessageDialog(null,
-                    "The minimum required Java version is 1.7.\n" +
-                    "The reported version is " +
-                    System.getProperty("java.vm.version") +
-                    ".\n\nPlease download and install the latest Java " +
-                    "version\nfrom http://java.sun.com and try again.\n\n",
-                    "Java Version Error",
-                    JOptionPane.ERROR_MESSAGE);
-
-            System.exit(1);
-        }
-        */
-
         if (isHelpStartupOnly(args)) {
             HelpWindow.main(args);
-
-        } else {
-            Runtime.getRuntime().addShutdownHook(new Thread(ExecuteQuery::shutdownHook));
-            ApplicationContext.getInstance().startup(args);
-            new ApplicationLauncher().startup();
+            return;
         }
 
+        Runtime.getRuntime().addShutdownHook(new Thread(ExecuteQuery::shutdownHook));
+        ApplicationContext.getInstance().startup(args);
+        new ApplicationLauncher().startup();
     }
 
-    public static void restart(String repoArg) {
-
+    public static void restart(String repoArg, boolean updateEnv) {
         try {
 
             StringBuilder sb = new StringBuilder("./RedExpert");
@@ -74,17 +55,20 @@ public final class ExecuteQuery {
                 sb.append("64");
             if (System.getProperty("os.name").toLowerCase().contains("win"))
                 sb.append(".exe");
+
+            String updateEnvStr = updateEnv ? "--update-env" : Constants.EMPTY;
+
             if (repoArg == null || repoArg.isEmpty())
                 repoArg = "-repo=";
 
-            System.out.println("Executing: " + sb);
-
-            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), repoArg);
+            ProcessBuilder processBuilder = new ProcessBuilder(sb.toString(), updateEnvStr, repoArg);
             processBuilder.directory(new File(System.getProperty("user.dir")));
+
+            System.out.println("Executing: " + String.join(" ", processBuilder.command()));
             processBuilder.start();
 
         } catch (IOException e) {
-            e.printStackTrace(System.err);
+            Log.error(e.getMessage(), e);
         }
 
         stop();

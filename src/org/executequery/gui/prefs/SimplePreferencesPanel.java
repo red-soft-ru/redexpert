@@ -391,8 +391,10 @@ public class SimplePreferencesPanel extends JPanel
                         pathToJava = pathToJava.replace("%re%", "");
                     }
 
-                    if (JavaFileProperty.setValue(pathToJava))
+                    if (JavaFileProperty.setValue(pathToJava)) {
                         SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
+                        PropertiesPanel.setUpdateEnvNeed(true);
+                    }
                 } else
                     SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
             }

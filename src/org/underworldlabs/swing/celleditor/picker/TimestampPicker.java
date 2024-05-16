@@ -82,6 +82,19 @@ public class TimestampPicker extends JPanel {
         return LocalDateTime.of(date, time);
     }
 
+    public LocalDateTime getDateTimeOrNull() {
+
+        if (isNull())
+            return null;
+
+        LocalDate date = datePicker.getRealDate();
+        LocalTime time = timePicker.getLocalTime();
+        if (date == null || time == null)
+            return null;
+
+        return LocalDateTime.of(date, time);
+    }
+
     private void update() {
         setDateTime(isNull() ? null : LocalDateTime.now());
         setEnabled(!isNull());

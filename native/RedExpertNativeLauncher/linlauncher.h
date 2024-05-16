@@ -1227,11 +1227,15 @@ int runLauncher(int argc, char *argv[])
     NativeArguments launcher_args;
 
     err_rep.ARGV0 = *argv++;
-    if (*argv != 0)
-        fileForOpenPath = *argv++;
+    for (int i = 1; i < argc; i++)
+    {
+        std::string arg = *argv++;
 
-    while (*argv != 0)
-        launcher_args.push_back(*argv++);
+        if (i == 1 && !startsWith(arg, "--"))
+            fileForOpenPath = arg;
+        else if (!startsWith(arg, "--update-env"))
+            launcher_args.push_back(arg);
+    }
 
     err_rep.launcher_args = launcher_args;
     launcher_args.push_back(class_path);

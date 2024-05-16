@@ -988,10 +988,6 @@ public final class GUIUtilities {
                 panel = new SystemPropertiesDockedTab();
                 break;
 
-            case NotepadDockedPanel.PROPERTY_KEY:
-                panel = new NotepadDockedPanel();
-                break;
-
             case SystemOutputPanel.PROPERTY_KEY:
                 startLogger();
                 break;

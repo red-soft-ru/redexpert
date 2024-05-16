@@ -38,7 +38,6 @@ public class OpenFileDialog extends FileChooserDialog
 
     public static final int NEW_EDITOR = 0;
     public static final int OPEN_EDITOR = 1;
-    public static final int SCRATCH_PAD = 2;
     public static final int ERD_PANEL = 3;
 
     /**
@@ -50,11 +49,6 @@ public class OpenFileDialog extends FileChooserDialog
      * The use new editor check box
      */
     private JCheckBox newEditorCheck;
-
-    /**
-     * The open scratch pad check box
-     */
-    private JCheckBox scratchPadCheck;
 
     /**
      * The open ERD check box
@@ -101,7 +95,6 @@ public class OpenFileDialog extends FileChooserDialog
 
         openEditorCheck = new JCheckBox(bundleString("new-command.open-query-editor"));
         newEditorCheck = new JCheckBox(bundleString("new-command.new-query-editor"), true);
-        scratchPadCheck = new JCheckBox(bundleString("new-command.new-scratch-pad"));
         erdPanelCheck = new JCheckBox(bundleString("new-command.new-erd"));
 
         openEditorCheck.setEnabled(false);
@@ -110,7 +103,6 @@ public class OpenFileDialog extends FileChooserDialog
         bg.add(openEditorCheck);
         bg.add(newEditorCheck);
         bg.add(erdPanelCheck);
-        bg.add(scratchPadCheck);
 
         JPanel optionsPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -122,10 +114,6 @@ public class OpenFileDialog extends FileChooserDialog
         optionsPanel.add(openEditorCheck, gbc);
         gbc.gridy = 1;
         optionsPanel.add(erdPanelCheck, gbc);
-        gbc.gridx = 0;
-        gbc.insets.left = 0;
-        gbc.insets.right = 5;
-        optionsPanel.add(scratchPadCheck, gbc);
 
         optionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("new-command.open-with") + ':'));
 
@@ -154,20 +142,14 @@ public class OpenFileDialog extends FileChooserDialog
             }
 
             newEditorCheck.setEnabled(true);
-            //openEditorCheck.setEnabled(true);
-            scratchPadCheck.setEnabled(true);
             erdPanelCheck.setEnabled(false);
         } else if (filter == eqFiles) {
             erdPanelCheck.setEnabled(true);
             erdPanelCheck.setSelected(true);
             newEditorCheck.setEnabled(false);
-            //openEditorCheck.setEnabled(false);
-            scratchPadCheck.setEnabled(false);
         } else {
             erdPanelCheck.setEnabled(true);
             newEditorCheck.setEnabled(true);
-            //openEditorCheck.setEnabled(true);
-            scratchPadCheck.setEnabled(true);
             newEditorCheck.setSelected(true);
         }
     }
@@ -175,31 +157,16 @@ public class OpenFileDialog extends FileChooserDialog
     public int getOpenWith() {
 
         if (newEditorCheck.isSelected()) {
-
             return NEW_EDITOR;
 
         } else if (openEditorCheck.isSelected()) {
-
             return OPEN_EDITOR;
 
-        } else if (scratchPadCheck.isSelected()) {
-
-            return SCRATCH_PAD;
-
         } else if (erdPanelCheck.isSelected()) {
-
             return ERD_PANEL;
 
-        } else {
-
+        } else
             return NEW_EDITOR;
-        }
     }
 
 }
-
-
-
-
-
-

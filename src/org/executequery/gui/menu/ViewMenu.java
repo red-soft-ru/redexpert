@@ -49,7 +49,6 @@ public class ViewMenu extends AbstractOptionsMenu
         commandsMap.put("viewSqlStateCodes", "system.display.state-codes");
         commandsMap.put("viewDrivers", "system.display.drivers");
         commandsMap.put("viewSystemProperties", "system.display.systemprops");
-        commandsMap.put("viewNotepad", "system.display.notepad");
         commandsMap.put("viewStatusBar", "system.display.statusbar");
 
         EventMediator.registerListener(this);

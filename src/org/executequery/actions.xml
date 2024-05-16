@@ -446,13 +446,6 @@
             small-icon="/org/executequery/icons/Edit16.png"
             execute-class="org.executequery.actions.toolscommands.EditorCommand"/>
 
-    <action id="scratch-pad-command"
-            name="Scratch Pad"
-            mnemonic="P"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ScratchPad16.png"
-            execute-class="org.executequery.actions.toolscommands.ScratchPadCommand"/>
-
     <action id="heap-memory-command"
             name="Heap Memory Status"
             mnemonic="M"

@@ -25,7 +25,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.OpenFileDialog;
 import org.executequery.event.DefaultFileIOEvent;
 import org.executequery.event.FileIOEvent;
-import org.executequery.gui.ScratchPadPanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.erd.ErdSaveFileFormat;
 import org.executequery.gui.erd.ErdViewerPanel;
@@ -85,18 +84,8 @@ public class FileLoader {
         try {
             String fileName = file.getName();
 
-            if (openWith == -1) {
-
-                if (fileName.endsWith(".sql")) {
-
-                    openWith = OpenFileDialog.NEW_EDITOR;
-
-                } else {
-
-                    openWith = OpenFileDialog.SCRATCH_PAD;
-                }
-
-            }
+            if (openWith == -1)
+                openWith = OpenFileDialog.NEW_EDITOR;
 
             if (fileName.endsWith(".eqd")) {
 
@@ -168,19 +157,6 @@ public class FileLoader {
                     openNewEditor(file, contents);
                 }
 
-            } else if (openWith == OpenFileDialog.SCRATCH_PAD) {
-
-                JPanel panel = GUIUtilities.getSelectedCentralPane();
-
-                if (panel != null && panel instanceof ScratchPadPanel) {
-
-                    ((ScratchPadPanel) panel).setEditorText(contents);
-
-                } else {
-
-                    openNewScratchPad(file, contents);
-                }
-
             }
 
             fireFileOpened(file);
@@ -199,15 +175,6 @@ public class FileLoader {
         EventMediator.fireEvent(
                 new DefaultFileIOEvent(this, FileIOEvent.INPUT_COMPLETE,
                         file.getAbsolutePath()));
-    }
-
-    private void openNewScratchPad(File file, String contents) {
-
-        GUIUtilities.addCentralPane(ScratchPadPanel.TITLE,
-                ScratchPadPanel.FRAME_ICON,
-                new ScratchPadPanel(contents),
-                null,
-                true);
     }
 
     private void openNewEditor(File file, String contents) {

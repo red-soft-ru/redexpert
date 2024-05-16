@@ -21,7 +21,6 @@
 package org.executequery.actions.viewcommands;
 
 import org.executequery.GUIUtilities;
-import org.executequery.gui.NotepadDockedPanel;
 import org.executequery.gui.SystemOutputPanel;
 import org.executequery.gui.SystemPropertiesDockedTab;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -36,60 +35,39 @@ import java.awt.event.ActionEvent;
  */
 public class ViewOptionsCommand extends AbstractViewOptionsCommand {
 
+    @SuppressWarnings("unused")
     public void viewStatusBar(ActionEvent e) {
-
         GUIUtilities.displayStatusBar(selectionFromEvent(e));
     }
 
+    @SuppressWarnings("unused")
     public void viewConsole(ActionEvent e) {
-
         displayDockedComponent(e, SystemOutputPanel.PROPERTY_KEY);
     }
 
+    @SuppressWarnings("unused")
     public void viewConnections(ActionEvent e) {
-
         displayDockedComponent(e, ConnectionsTreePanel.PROPERTY_KEY);
     }
 
     public void viewKeywords(ActionEvent e) {
-
         displayDockedComponent(e, KeywordsDockedPanel.PROPERTY_KEY);
     }
 
     public void viewSqlStateCodes(ActionEvent e) {
-
         displayDockedComponent(e, SQLStateCodesDockedPanel.PROPERTY_KEY);
     }
 
     public void viewDrivers(ActionEvent e) {
-
         displayDockedComponent(e, DriversTreePanel.PROPERTY_KEY);
     }
 
-    public void viewNotepad(ActionEvent e) {
-
-        displayDockedComponent(e, NotepadDockedPanel.PROPERTY_KEY);
-    }
-
     public void viewSystemProperties(ActionEvent e) {
-
         displayDockedComponent(e, SystemPropertiesDockedTab.PROPERTY_KEY);
     }
 
     private void displayDockedComponent(ActionEvent e, String key) {
-
         GUIUtilities.displayDockedComponent(key, selectionFromEvent(e));
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

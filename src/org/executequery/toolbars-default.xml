@@ -67,11 +67,6 @@
 
         <buttons>
 
-            <button id="8" action-id="scratch-pad-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
             <button id="9" action-id="editor-command">
                 <visible>true</visible>
                 <order>1</order>

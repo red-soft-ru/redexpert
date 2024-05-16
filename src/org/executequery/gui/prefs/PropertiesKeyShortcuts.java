@@ -69,7 +69,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         Vector<ShortcutKey> shortcuts = formatValues(ActionBuilder.getActions());
         tableModel = new ShortcutsTableModel(shortcuts);
         table = new JTable(tableModel);
-        table.setFont(AbstractPropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         table.addMouseListener(new MouseHandler());
         
         table.setRowHeight(TABLE_ROW_HEIGHT);
@@ -83,7 +83,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets.left = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(bundledString("KeyboardShortcuts")), gbc);
+        panel.add(new JLabel(bundledStaticString("KeyboardShortcuts")), gbc);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets.top = 10;
         gbc.gridy = 1;
@@ -162,7 +162,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
     class ShortcutsTableModel extends AbstractTableModel {
 
         private Vector<ShortcutKey> shortcuts;
-        private String[] columnHeaders = {bundledString("Command"), bundledString("Shortcut")};
+        private String[] columnHeaders = {bundledStaticString("Command"), bundledStaticString("Shortcut")};
 
         ShortcutsTableModel(Vector<ShortcutKey> shortcuts) {
             this.shortcuts = shortcuts;

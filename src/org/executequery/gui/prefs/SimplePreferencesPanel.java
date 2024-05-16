@@ -129,7 +129,7 @@ public class SimplePreferencesPanel extends JPanel
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
-        table.setFont(AbstractPropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         table.setTableHeader(null);
 
         EachRowEditor rowEditor = new EachRowEditor(table);
@@ -183,7 +183,7 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.INTEGER_TYPE:
                     final NumberCellEditor numEditor =
                             new NumberCellEditor(preferences[i].getMaxLength(), true);
-                    numEditor.setFont(AbstractPropertiesBasePanel.panelFont);
+                    numEditor.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
                     editor = new DefaultCellEditor(numEditor) {
                         public Object getCellEditorValue() {
@@ -207,7 +207,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (colourRenderer == null) {
                         colourRenderer = new ColourTableCellRenderer();
-                        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        colourRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                         table.addMouseListener(this);
                     }
 
@@ -229,7 +229,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (fileRenderer == null) {
                         fileRenderer = new FileSelectionTableCell(JFileChooser.FILES_ONLY);
-                        fileRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        fileRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                     }
 
                     rowRendererValues.add(i, fileRenderer);
@@ -240,7 +240,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (dirRenderer == null) {
                         dirRenderer = new FileSelectionTableCell(JFileChooser.DIRECTORIES_ONLY);
-                        dirRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        dirRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                     }
 
                     rowRendererValues.add(i, dirRenderer);
@@ -575,7 +575,7 @@ public class SimplePreferencesPanel extends JPanel
         public TableComboBox(Object[] values) {
 
             super(values);
-            setFont(AbstractPropertiesBasePanel.panelFont);
+            setFont(AbstractPropertiesBasePanel.getDefaultFont());
         }
 
     } // class TableComboBox

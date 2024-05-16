@@ -24,7 +24,6 @@ package org.executequery.gui.prefs;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
@@ -68,17 +67,17 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         // editor background etc colours
 
         Map<String, String> editorColourKeys = new HashMap<>();
-        editorColourKeys.put("editor.caret.colour", bundledString("CaretColour"));
-        editorColourKeys.put("editor.linenumber.background", bundledString("GutterBackground"));
-        editorColourKeys.put("editor.linenumber.foreground", bundledString("GutterForeground"));
-        editorColourKeys.put("editor.text.background.colour", bundledString("EditorBackground"));
-        editorColourKeys.put("editor.text.background.alternate.color", bundledString("EditorAlternativeBackground"));
-        editorColourKeys.put("editor.text.foreground.colour", bundledString("EditorForeground"));
-        editorColourKeys.put("editor.results.background.colour", bundledString("ResultsPanelBackground"));
-        editorColourKeys.put("editor.text.selection.foreground", bundledString("TextSelectionForeground"));
-        editorColourKeys.put("editor.text.selection.background", bundledString("TextSelectionBackground"));
-        editorColourKeys.put("editor.text.selection.background.alternative", bundledString("TextSelectionAlternativeBackground"));
-        editorColourKeys.put("editor.display.linehighlight.colour", bundledString("CurrentLineHighlight"));
+        editorColourKeys.put("editor.caret.colour", bundledStaticString("CaretColour"));
+        editorColourKeys.put("editor.linenumber.background", bundledStaticString("GutterBackground"));
+        editorColourKeys.put("editor.linenumber.foreground", bundledStaticString("GutterForeground"));
+        editorColourKeys.put("editor.text.background.colour", bundledStaticString("EditorBackground"));
+        editorColourKeys.put("editor.text.background.alternate.color", bundledStaticString("EditorAlternativeBackground"));
+        editorColourKeys.put("editor.text.foreground.colour", bundledStaticString("EditorForeground"));
+        editorColourKeys.put("editor.results.background.colour", bundledStaticString("ResultsPanelBackground"));
+        editorColourKeys.put("editor.text.selection.foreground", bundledStaticString("TextSelectionForeground"));
+        editorColourKeys.put("editor.text.selection.background", bundledStaticString("TextSelectionBackground"));
+        editorColourKeys.put("editor.text.selection.background.alternative", bundledStaticString("TextSelectionAlternativeBackground"));
+        editorColourKeys.put("editor.display.linehighlight.colour", bundledStaticString("CurrentLineHighlight"));
 
         List<UserPreference> editorColoursPreferences = new ArrayList<>();
         for (Map.Entry<String, String> entry : editorColourKeys.entrySet()) {
@@ -92,7 +91,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         editorColoursPreferencesTable.addMouseListener(new MouseHandler(editorColoursPreferencesTable));
 
         ColourTableCellRenderer colourRenderer = new ColourTableCellRenderer();
-        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+        colourRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
         TableColumnModel tcm = editorColoursPreferencesTable.getColumnModel();
 
@@ -123,7 +122,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         column.setPreferredWidth(70);
 
         ComboBoxCellEditor comboEditor = new ComboBoxCellEditor(new String[]{PLAIN, ITALIC, BOLD});
-        comboEditor.setFont(AbstractPropertiesBasePanel.panelFont);
+        comboEditor.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         tcm.getColumn(2).setCellEditor(comboEditor);
 
         samplePanel = new SamplePanel();
@@ -137,7 +136,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.insets.bottom = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledString("QueryEditorColours")), gbc);
+        panel.add(new JLabel(bundledStaticString("QueryEditorColours")), gbc);
         gbc.weighty = 0.4;
         gbc.gridy++;
         gbc.fill = GridBagConstraints.BOTH;
@@ -146,7 +145,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.weighty = 0;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledString("SyntaxStyles")), gbc);
+        panel.add(new JLabel(bundledStaticString("SyntaxStyles")), gbc);
         gbc.weighty = 0.5;
         gbc.gridy++;
         gbc.insets.top = 0;
@@ -156,7 +155,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         gbc.weighty = 0;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledString("EditorSample")), gbc);
+        panel.add(new JLabel(bundledStaticString("EditorSample")), gbc);
         gbc.gridy++;
         gbc.weighty = 0.4;
         gbc.insets.top = 0;
@@ -175,7 +174,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
         table.setRowSelectionAllowed(false);
         table.getTableHeader().setResizingAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
-        table.setFont(AbstractPropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
         return table;
     }
@@ -306,7 +305,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
                     g.setColor(syntaxColour.color);
                 }
 
-                String text = bundledString(getLabelText(i));
+                String text = bundledStaticString(getLabelText(i));
                 g.drawString(text, gutterWidth + 5, y1);
 
                 if (showCaret) {
@@ -358,9 +357,9 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
         private final Vector<SyntaxColour> syntaxColours;
         private final String[] columnHeaders = {
-                bundledString("SyntaxStyle"),
-                bundledString("Colour"),
-                bundledString("FontStyle")
+                bundledStaticString("SyntaxStyle"),
+                bundledStaticString("Colour"),
+                bundledStaticString("FontStyle")
         };
 
         SyntaxColorTableModel() {
@@ -369,7 +368,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours implement
 
             for (int i = 0; i < SYNTAX_TYPES.length; i++) {
                 addSyntaxColour(
-                        bundledString(getTableValueText(i)),
+                        bundledStaticString(getTableValueText(i)),
                         SystemProperties.getColourProperty("user", STYLE_COLOUR_PREFIX + SYNTAX_TYPES[i]),
                         SystemProperties.getIntProperty("user", STYLE_NAME_PREFIX + SYNTAX_TYPES[i]),
                         SYNTAX_TYPES[i]

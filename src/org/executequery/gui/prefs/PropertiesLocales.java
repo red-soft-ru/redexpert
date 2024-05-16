@@ -92,9 +92,9 @@ public class PropertiesLocales extends AbstractPropertiesBasePanel
                 .fillBoth();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.add(new JLabel(bundledString("TimeZones")), gbh.setMinWeightX().setMinWeightY().get());
+        mainPanel.add(new JLabel(bundledStaticString("TimeZones")), gbh.setMinWeightX().setMinWeightY().get());
         mainPanel.add(selectedTimeZoneField, gbh.nextCol().setMinWeightX().get());
-        mainPanel.add(new JLabel(bundledString("LanguageLocales")), gbh.nextCol().setMinWeightX().get());
+        mainPanel.add(new JLabel(bundledStaticString("LanguageLocales")), gbh.nextCol().setMinWeightX().get());
         mainPanel.add(selectedLocaleField, gbh.nextCol().setMinWeightX().spanX().get());
         mainPanel.add(new JScrollPane(timezoneList), gbh.nextRowFirstCol().setWidth(2).setMaxWeightY().spanY().get());
         mainPanel.add(new JScrollPane(localeList), gbh.nextCol().spanX().get());

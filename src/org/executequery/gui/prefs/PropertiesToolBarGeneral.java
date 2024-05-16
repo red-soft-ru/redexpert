@@ -66,28 +66,28 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Visibility"),
+                bundledStaticString("Visibility"),
                 null));
 
         String key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DatabaseToolBar"),
+                bundledStaticString("DatabaseToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         key = ToolBarManager.APPLICATION_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ApplicationToolBar"),
+                bundledStaticString("ApplicationToolBar"),
                 Objects.requireNonNull(ToolBarProperties.getToolBar(key)).isVisible()));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SystemToolBar"),
+                bundledStaticString("SystemToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         UserPreference[] preferences =

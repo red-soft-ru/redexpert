@@ -54,7 +54,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("ResultSetTable"),
+                bundledStaticString("ResultSetTable"),
                 null
         ));
 
@@ -62,7 +62,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ColumnsResizeable"),
+                bundledStaticString("ColumnsResizeable"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -70,7 +70,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ColumnReordering"),
+                bundledStaticString("ColumnReordering"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -78,7 +78,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("RowNumberHeader"),
+                bundledStaticString("RowNumberHeader"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -87,7 +87,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("ColumnWidth"),
+                bundledStaticString("ColumnWidth"),
                 SystemProperties.getProperty("user", key)
         ));
 
@@ -96,7 +96,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("ColumnHeight"),
+                bundledStaticString("ColumnHeight"),
                 SystemProperties.getProperty("user", key)
         ));
 
@@ -104,7 +104,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SaveColumnWidthStateBetweenQueries"),
+                bundledStaticString("SaveColumnWidthStateBetweenQueries"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -113,7 +113,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("DatePatternFormat"),
+                bundledStaticString("DatePatternFormat"),
                 stringUserProperty(key)
         ));
 
@@ -122,7 +122,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimePatternFormat"),
+                bundledStaticString("TimePatternFormat"),
                 stringUserProperty(key)
         ));
 
@@ -131,7 +131,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimestampPatternFormat"),
+                bundledStaticString("TimestampPatternFormat"),
                 stringUserProperty(key)
         ));
 
@@ -140,7 +140,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimeTimezonePatternFormat"),
+                bundledStaticString("TimeTimezonePatternFormat"),
                 stringUserProperty(key)
         ));
 
@@ -149,7 +149,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimestampTimezonePatternFormat"),
+                bundledStaticString("TimestampTimezonePatternFormat"),
                 stringUserProperty(key)
         ));
 
@@ -157,7 +157,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("NullValueCellText"),
+                bundledStaticString("NullValueCellText"),
                 SystemProperties.getStringProperty("user", key)
         ));
 
@@ -165,7 +165,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("CellDouble-clickOpensDataItemViewer"),
+                bundledStaticString("CellDouble-clickOpensDataItemViewer"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -173,7 +173,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("TransposeWhenSingleRowResult"),
+                bundledStaticString("TransposeWhenSingleRowResult"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -181,7 +181,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("alignNumericValues"),
+                bundledStaticString("alignNumericValues"),
                 alignUserProperty(key),
                 ALIIGNS
         ));
@@ -190,7 +190,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("alignTextValues"),
+                bundledStaticString("alignTextValues"),
                 alignUserProperty(key),
                 ALIIGNS
         ));
@@ -199,7 +199,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("alignBoolValues"),
+                bundledStaticString("alignBoolValues"),
                 alignUserProperty(key),
                 ALIIGNS
         ));
@@ -208,7 +208,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("alignNullValues"),
+                bundledStaticString("alignNullValues"),
                 alignUserProperty(key),
                 ALIIGNS
         ));
@@ -217,7 +217,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("alignOtherValues"),
+                bundledStaticString("alignOtherValues"),
                 alignUserProperty(key),
                 ALIIGNS
         ));
@@ -226,7 +226,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseFormForAddingDeletingRecords"),
+                bundledStaticString("UseFormForAddingDeletingRecords"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -234,7 +234,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseOtherColorForNullWhenAddingDeletingRecords"),
+                bundledStaticString("UseOtherColorForNullWhenAddingDeletingRecords"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -242,7 +242,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("FetchSize"),
+                bundledStaticString("FetchSize"),
                 Integer.valueOf(stringUserProperty(key))
         ));
 
@@ -250,7 +250,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("MaximumRecordsReturned"),
+                bundledStaticString("MaximumRecordsReturned"),
                 SystemProperties.getProperty("user", key)
         ));
 

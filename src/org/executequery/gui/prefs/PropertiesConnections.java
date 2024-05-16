@@ -52,7 +52,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
+                bundledStaticString("General"),
                 null
         ));
 
@@ -60,7 +60,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ConnectAtStartup"),
+                bundledStaticString("ConnectAtStartup"),
                 Boolean.valueOf(SystemProperties.getProperty("user", key))
         ));
 
@@ -68,7 +68,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("StartupConnection"),
+                bundledStaticString("StartupConnection"),
                 SystemProperties.getProperty("user", key),
                 connectionNames()
         ));
@@ -77,7 +77,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("Connection.connect.timeout"),
+                bundledStaticString("Connection.connect.timeout"),
                 Integer.valueOf(Objects.requireNonNull(SystemProperties.getProperty("user", key)))
         ));
 
@@ -85,7 +85,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("Connection.shutdown.timeout"),
+                bundledStaticString("Connection.shutdown.timeout"),
                 Integer.valueOf(Objects.requireNonNull(SystemProperties.getProperty("user", key)))
         ));
 
@@ -93,7 +93,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ConnectAtStartup.username"),
+                bundledStaticString("ConnectAtStartup.username"),
                 SystemProperties.getProperty("user", key)
         ));
 
@@ -101,7 +101,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ConnectAtStartup.password"),
+                bundledStaticString("ConnectAtStartup.password"),
                 SystemProperties.getProperty("user", key)
         ));
 
@@ -109,7 +109,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ConnectAtStartup.charset"),
+                bundledStaticString("ConnectAtStartup.charset"),
                 SystemProperties.getProperty("user", key),
                 availableCharsets()
         ));
@@ -117,7 +117,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("TreeConnections"),
+                bundledStaticString("TreeConnections"),
                 null
         ));
 
@@ -126,7 +126,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("NodeHeight"),
+                bundledStaticString("NodeHeight"),
                 stringUserProperty(key)
         ));
 
@@ -134,7 +134,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ConnectOnDouble-click"),
+                bundledStaticString("ConnectOnDouble-click"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -142,7 +142,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("AlphabetSorting"),
+                bundledStaticString("AlphabetSorting"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -150,7 +150,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ShowSystemObjects"),
+                bundledStaticString("ShowSystemObjects"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -158,7 +158,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ShowOnlyDefaultCatalogOrSchema"),
+                bundledStaticString("ShowOnlyDefaultCatalogOrSchema"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -166,7 +166,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ShowConnectionProperties"),
+                bundledStaticString("ShowConnectionProperties"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -174,7 +174,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ShowAdvancedConnectionProperties"),
+                bundledStaticString("ShowAdvancedConnectionProperties"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -182,7 +182,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SearchInColumns"),
+                bundledStaticString("SearchInColumns"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -190,7 +190,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("QueryForRowsCount"),
+                bundledStaticString("QueryForRowsCount"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 

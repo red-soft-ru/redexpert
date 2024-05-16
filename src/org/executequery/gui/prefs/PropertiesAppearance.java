@@ -51,7 +51,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
+                bundledStaticString("General"),
                 null
         ));
 
@@ -59,7 +59,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DisplaySplashScreenAtStartup"),
+                bundledStaticString("DisplaySplashScreenAtStartup"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -67,7 +67,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("MaximiseWindowOnStartup"),
+                bundledStaticString("MaximiseWindowOnStartup"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -75,7 +75,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("StatusBar"),
+                bundledStaticString("StatusBar"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -83,14 +83,14 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("Connections"),
+                bundledStaticString("Connections"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Appearance"),
+                bundledStaticString("Appearance"),
                 null
         ));
 
@@ -98,7 +98,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.ENUM_TYPE,
                 key,
-                bundledString("LookAndFeel"),
+                bundledStaticString("LookAndFeel"),
                 LookAndFeelType.valueOf(stringUserProperty(key)),
                 lookAndFeelValuePairs()
         ));
@@ -107,7 +107,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseAnti-aliasFonts"),
+                bundledStaticString("UseAnti-aliasFonts"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -115,7 +115,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                bundledString("DesktopBackground"),
+                bundledStaticString("DesktopBackground"),
                 SystemProperties.getColourProperty("user", key)
         ));
 
@@ -123,7 +123,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DecorateDialogs"),
+                bundledStaticString("DecorateDialogs"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -131,7 +131,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DecorateFrame"),
+                bundledStaticString("DecorateFrame"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -148,7 +148,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     public void itemStateChanged() {
 
         if (!lafChangeWarningShown) {
-            GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
+            GUIUtilities.displayInformationMessage(bundledString("ChangingTheme.Information"));
             lafChangeWarningShown = true;
         }
 

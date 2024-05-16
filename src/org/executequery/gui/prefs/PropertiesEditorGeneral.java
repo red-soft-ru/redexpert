@@ -45,7 +45,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
+                bundledStaticString("General"),
                 null
         ));
 
@@ -53,7 +53,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("Auto-completeOnlyHotKey"),
+                bundledStaticString("Auto-completeOnlyHotKey"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -61,7 +61,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("Auto-completeKeywordsOn"),
+                bundledStaticString("Auto-completeKeywordsOn"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -69,7 +69,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("Auto-completeDatabaseObjectsOn"),
+                bundledStaticString("Auto-completeDatabaseObjectsOn"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -77,7 +77,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DefaultEditorAuto-commit"),
+                bundledStaticString("DefaultEditorAuto-commit"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -85,7 +85,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("RetainResultSetMetaData"),
+                bundledStaticString("RetainResultSetMetaData"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -93,7 +93,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("RecycleResultSetTabs"),
+                bundledStaticString("RecycleResultSetTabs"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -101,7 +101,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("RemoveCommentsForExecution"),
+                bundledStaticString("RemoveCommentsForExecution"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -109,7 +109,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("PrintAllSQLToOutputPanel"),
+                bundledStaticString("PrintAllSQLToOutputPanel"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -117,7 +117,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("OpenANewEditorForNewOpenConnection"),
+                bundledStaticString("OpenANewEditorForNewOpenConnection"),
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
@@ -125,7 +125,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ConvertTabsToSpaces"),
+                bundledStaticString("ConvertTabsToSpaces"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -134,7 +134,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                bundledString("TabSize"),
+                bundledStaticString("TabSize"),
                 stringUserProperty(key)
         ));
 
@@ -143,7 +143,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("UndoCount"),
+                bundledStaticString("UndoCount"),
                 stringUserProperty(key)
         ));
 
@@ -152,7 +152,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("HistoryCount"),
+                bundledStaticString("HistoryCount"),
                 stringUserProperty(key)
         ));
 
@@ -161,14 +161,14 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 -1,
                 key,
-                bundledString("DefaultMaximumRowsReturned"),
+                bundledStaticString("DefaultMaximumRowsReturned"),
                 stringUserProperty(key)
         ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Display"),
+                bundledStaticString("Display"),
                 null
         ));
 
@@ -176,7 +176,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("StatusBar"),
+                bundledStaticString("StatusBar"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -184,7 +184,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ToolsPanel"),
+                bundledStaticString("ToolsPanel"),
                 Boolean.valueOf(SystemProperties.getProperty("user", key))
         ));
 
@@ -192,7 +192,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("LineNumbers"),
+                bundledStaticString("LineNumbers"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -200,7 +200,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("CurrentLineHighlight"),
+                bundledStaticString("CurrentLineHighlight"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 

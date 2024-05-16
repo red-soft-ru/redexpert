@@ -50,7 +50,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
+                bundledStaticString("General"),
                 null
         ));
 
@@ -58,7 +58,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("CheckForUpdateOnStartup"),
+                bundledStaticString("CheckForUpdateOnStartup"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -66,7 +66,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("LoadUnstableVersions"),
+                bundledStaticString("LoadUnstableVersions"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -74,7 +74,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("PromptToSaveOpenDocuments"),
+                bundledStaticString("PromptToSaveOpenDocuments"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -83,7 +83,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                bundledString("RecentFilesToStore"),
+                bundledStaticString("RecentFilesToStore"),
                 stringUserProperty(key)
         ));
 
@@ -91,7 +91,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("LineSeparator"),
+                bundledStaticString("LineSeparator"),
                 SystemProperties.getProperty("user", key),
                 new String[]{
                         LineSeparator.DOS.label,
@@ -104,7 +104,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("DefaultFileEncoding"),
+                bundledStaticString("DefaultFileEncoding"),
                 encodingValue(),
                 availableCharsets()
         ));
@@ -113,14 +113,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.FILE_TYPE,
                 key,
-                bundledString("JavaPath"),
+                bundledStaticString("JavaPath"),
                 stringUserProperty(key)
         ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Logging"),
+                bundledStaticString("Logging"),
                 null
         ));
 
@@ -128,7 +128,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SystemConsole"),
+                bundledStaticString("SystemConsole"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -136,7 +136,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("LogOutputToFile"),
+                bundledStaticString("LogOutputToFile"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -144,7 +144,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("LogOutToConsole"),
+                bundledStaticString("LogOutToConsole"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -152,7 +152,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("LogErrToConsole"),
+                bundledStaticString("LogErrToConsole"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -161,7 +161,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                bundledString("MaximumRollingLogBackups"),
+                bundledStaticString("MaximumRollingLogBackups"),
                 stringUserProperty(key)
         ));
 
@@ -169,7 +169,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("OutputLogLevel"),
+                bundledStaticString("OutputLogLevel"),
                 stringUserProperty(key),
                 Constants.LOG_LEVELS
         ));
@@ -178,14 +178,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.DIR_TYPE,
                 key,
-                bundledString("OutputLogFilePath"),
+                bundledStaticString("OutputLogFilePath"),
                 stringUserProperty(key)
         ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("InternetProxySettings"),
+                bundledStaticString("InternetProxySettings"),
                 null
         ));
 
@@ -193,7 +193,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseProxyServer"),
+                bundledStaticString("UseProxyServer"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
@@ -201,7 +201,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ProxyHost"),
+                bundledStaticString("ProxyHost"),
                 stringUserProperty(key)
         ));
 
@@ -209,7 +209,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("ProxyPort"),
+                bundledStaticString("ProxyPort"),
                 stringUserProperty(key)
         ));
 
@@ -217,7 +217,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ProxyUser"),
+                bundledStaticString("ProxyUser"),
                 stringUserProperty(key)
         ));
 
@@ -225,7 +225,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
         list.add(new UserPreference(
                 UserPreference.PASSWORD_TYPE,
                 key,
-                bundledString("ProxyPassword"),
+                bundledStaticString("ProxyPassword"),
                 stringUserProperty(key)
         ));
 

@@ -178,19 +178,12 @@
             description="Create Database"
             execute-class="org.executequery.actions.databasecommands.CreateDatabaseCommand"/>
 
-    <action id="create-erd-command"
-            name="Create New ERD"
+    <action id="erd-command"
+            name="ER-diagram editor"
             mnemonic="N"
             accel-editable="true"
             small-icon="/org/executequery/icons/ErdPanel16.png"
             execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
-
-    <action id="map-erd-command"
-            name="Map Existing Database"
-            mnemonic="M"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ErdPanel16.png"
-            execute-class="org.executequery.actions.databasecommands.CreateErdFromDatabaseCommand"/>
 
     <action id="execute-command"
             name="Execute"
@@ -419,14 +412,6 @@
             small-icon="/org/executequery/icons/Information16.png"
             execute-class="org.executequery.actions.helpcommands.AboutCommand"/>
 
-    <action id="visit-redsoft-command"
-            name="Visit red-soft.biz online"
-            mnemonic="V"
-            small-icon="/org/executequery/icons/WebComponent16.png"
-            accel-editable="false"
-            description="Opens executequery.org in a browser window"
-            execute-class="org.executequery.actions.helpcommands.VisitOnlineCommand"/>
-
     <action id="check-update-command"
             name="Check for Update"
             mnemonic="U"
@@ -478,7 +463,6 @@
             name="Compare Data Types"
             mnemonic="D"
             accel-editable="true"
-            small-icon="/org/executequery/icons/CompareDataTypes16.png"
             description="Compare data types across different database products"
             execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
 
@@ -494,7 +478,7 @@
             mnemonic="N"
             accel-editable="true"
             accel-key="control shift N"
-            small-icon="/org/executequery/icons/DatabaseConnect16.png"
+            small-icon="/org/executequery/icons/NewConnection16.png"
             execute-class="org.executequery.actions.databasecommands.ConnectCommand"/>
 
     <action id="import-connections-from-file-command"
@@ -601,21 +585,33 @@
             description="Profiler"
             execute-class="org.executequery.actions.toolscommands.ProfilerCommand"/>
 
-    <action id="exit-from-account-command"
-            name="Exit From Account"
-            mnemonic="EA"
-            accel-editable="true"
-            description="Exit From Account"
-            execute-class="org.executequery.actions.helpcommands.ExitFromAccountCommand"/>
+    <action id="connect-to-all-databases-command"
+            name="Connect All"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ConnectedAll.png"
+            execute-class="org.executequery.actions.databasecommands.MultipleConnectCommand"/>
 
-    <action id="log-in-account-command"
-            name="Log In Account"
-            mnemonic="LA"
-            accel-editable="true"
-            description="Log In Account"
-            execute-class="org.executequery.actions.helpcommands.LogInAccountCommand"/>
+    <action id="disconnect-from-all-database-command"
+            name="Disconnect All"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/DisconnectedAll.png"
+            execute-class="org.executequery.actions.databasecommands.MultipleDisconnectCommand"/>
 
-    <!-- do not remove, that's actions called by hotkeys -->
+    <!-- actions that must be configured dynamically from the code -->
+
+    <action id="connect-to-database-command"
+            small-icon="/org/executequery/icons/Disconnected.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
+    <action id="reload-connection-tree-selection-command"
+            small-icon="/org/executequery/icons/Refresh16.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
+    <action id="search-connection-tree-node-command"
+            small-icon="/org/executequery/icons/Zoom16.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
+    <!-- DO NOT REMOVE (that's actions called by hotkeys) -->
 
     <action id="comment-lines-command"
             name="Comment/Uncomment"

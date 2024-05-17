@@ -23,7 +23,6 @@ package org.executequery.gui.browser;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.actions.databasecommands.CreateDatabaseCommand;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
@@ -52,7 +51,6 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.tree.DynamicTree;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -116,13 +114,7 @@ public class ConnectionsTreePanel extends TreePanel
         init();
         setPropertiesPanelVisible(SystemProperties.getBooleanProperty("user", "browser.show.connection.properties"));
         EventMediator.registerListener(this);
-        enableButtons(
-                false,
-                false,
-                false,
-                false,
-                false
-        );
+        enableButtons(false);
     }
 
     private void init() {
@@ -152,8 +144,7 @@ public class ConnectionsTreePanel extends TreePanel
         // --- arrange ---
 
         GridBagHelper ghh = new GridBagHelper().fillBoth();
-        add(toolBar, ghh.setMinWeightY().spanX().get());
-        add(treeScrollPane, ghh.setMaxWeightY().nextRow().get());
+        add(treeScrollPane, ghh.setMaxWeightY().spanX().get());
         add(propertiesPanel, ghh.setWeightY(0.4).nextRow().get());
 
         // ---
@@ -166,6 +157,7 @@ public class ConnectionsTreePanel extends TreePanel
         propertiesPanel.setVisible(visible);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isPropertiesPanelVisible() {
         return propertiesPanel.isVisible();
     }
@@ -233,30 +225,12 @@ public class ConnectionsTreePanel extends TreePanel
         return databaseObjectFactory;
     }
 
-    private void enableButtons(boolean enableUpButton, boolean enableDownButton, boolean enableReloadButton, boolean enableDeleteButton, boolean enableConnect) {
-        toolBar.enableButtons(enableUpButton, enableDownButton, enableReloadButton, enableDeleteButton, enableConnect, enableReloadButton);
+    private void enableButtons(boolean enable) {
+        toolBar.enableButtons(enable, enable, enable);
     }
 
-    private void move(int direction) {
-
-        if (tree.canMoveSelection(direction)) {
-            try {
-
-                removeTreeSelectionListener();
-                tree.moveSelection(direction);
-
-                // adjust the position of the connection
-                Object object = tree.getLastPathComponent();
-
-                if (isADatabaseHostNode(object))
-                    moveNode(connections, asDatabaseHostNode(object).getDatabaseConnection(), direction);
-                else if (isAConnectionsFolderNode(object))
-                    moveNode(folders, asConnectionsFolderNode(object).getConnectionsFolder(), direction);
-
-            } finally {
-                addTreeSelectionListener();
-            }
-        }
+    private void enableButtons(boolean enableReload, boolean enableConnect) {
+        toolBar.enableButtons(enableReload, enableConnect, enableReload);
     }
 
     private ConnectionsFolderNode asConnectionsFolderNode(Object object) {
@@ -269,12 +243,20 @@ public class ConnectionsTreePanel extends TreePanel
 
     // --- toolbar and actions handlers ---
 
-    @SuppressWarnings("unused")
     public void connectDisconnect() {
         if (!getSelectedDatabaseConnection().isConnected())
             connect(getSelectedDatabaseConnection());
         else
             GUIUtilities.closeSelectedConnection();
+    }
+
+    public void reloadSelection() {
+        reloadPath(tree.getSelectionPath());
+    }
+
+    @SuppressWarnings("unused")
+    public void searchNodes() {
+        getTreeFindAction().actionPerformed(new ActionEvent(this, 0, "searchNodes"));
     }
 
     @SuppressWarnings("unused")
@@ -306,19 +288,6 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     /**
-     * Creates a new connection and adds it to the bottom of the list.
-     */
-    public void newConnection() {
-        String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
-        newConnection(databaseConnectionFactory().create(name));
-    }
-
-    @SuppressWarnings("unused")
-    public void newDatabase() {
-        new CreateDatabaseCommand().execute(null);
-    }
-
-    /**
      * Deletes the selected connection (host node) from the list.
      */
     @SuppressWarnings("unused")
@@ -329,35 +298,6 @@ public class ConnectionsTreePanel extends TreePanel
             deleteConnection(asDatabaseHostNode(object));
         else if (isAConnectionsFolderNode(object))
             deleteFolder(asConnectionsFolderNode(object));
-    }
-
-    /**
-     * Reloads the currently selected node.
-     */
-    @SuppressWarnings("unused")
-    public void reloadSelection() {
-        reloadPath(tree.getSelectionPath());
-    }
-
-    /**
-     * Moves the selected connection (host node) up in the list.
-     */
-    @SuppressWarnings("unused")
-    public void moveConnectionUp() {
-        move(DynamicTree.MOVE_UP);
-    }
-
-    /**
-     * Moves the selected connection (host node) down in the list.
-     */
-    @SuppressWarnings("unused")
-    public void moveConnectionDown() {
-        move(DynamicTree.MOVE_DOWN);
-    }
-
-    @SuppressWarnings("unused")
-    public void searchNodes() {
-        getTreeFindAction().actionPerformed(new ActionEvent(this, 0, "searchNodes"));
     }
 
     @SuppressWarnings({"rawtypes", "unused"})
@@ -412,6 +352,14 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     // ---
+
+    /**
+     * Creates a new connection and adds it to the bottom of the list.
+     */
+    public void newConnection() {
+        String name = buildConnectionName(Bundles.getCommon("newConnection.button"));
+        newConnection(databaseConnectionFactory().create(name));
+    }
 
     private void connectionModified(DatabaseConnection databaseConnection) {
         EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, databaseConnection));
@@ -537,13 +485,7 @@ public class ConnectionsTreePanel extends TreePanel
         } else {
             GUIUtils.invokeLater(() -> {
                 controller.selectionChanging();
-                enableButtons(
-                        false,
-                        false,
-                        false,
-                        false,
-                        false
-                );
+                enableButtons(false);
                 tree.setSelectionRow(0);
             });
         }
@@ -761,27 +703,6 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         dc.setName(newName);
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void moveNode(List list, Object object, int direction) {
-
-        int currentIndex = list.indexOf(object);
-        if (currentIndex == 0 && direction == DynamicTree.MOVE_UP)
-            return;
-
-        int newIndex;
-        if (direction == DynamicTree.MOVE_UP) {
-            newIndex = currentIndex - 1;
-
-        } else {
-            newIndex = currentIndex + 1;
-            if (newIndex > (list.size() - 1))
-                return;
-        }
-
-        list.remove(currentIndex);
-        list.add(newIndex, object);
     }
 
     /**
@@ -1408,15 +1329,8 @@ public class ConnectionsTreePanel extends TreePanel
 
         // if the host node itself is selected - enable/disable buttons
         TreePath selectionPath = tree.getSelectionPath();
-        if (selectionPath != null && selectionPath.getLastPathComponent() == node) {
-            enableButtons(
-                    true,
-                    true,
-                    true,
-                    false,
-                    true
-            );
-        }
+        if (selectionPath != null && selectionPath.getLastPathComponent() == node)
+            enableButtons(true);
 
         nodeStructureChanged(node);
     }
@@ -1441,13 +1355,7 @@ public class ConnectionsTreePanel extends TreePanel
         } else {
             TreePath selectionPath = tree.getSelectionPath();
             boolean hostIsLastPathComponent = selectionPath != null && selectionPath.getLastPathComponent() == host;
-            enableButtons(
-                    hostIsLastPathComponent,
-                    hostIsLastPathComponent,
-                    false,
-                    hostIsLastPathComponent,
-                    hostIsLastPathComponent
-            );
+            enableButtons(false, hostIsLastPathComponent);
         }
     }
 
@@ -1570,41 +1478,22 @@ public class ConnectionsTreePanel extends TreePanel
 
         if (object == tree.getConnectionsBranchNode()) { // root node
             controller.displayConnectionList();
-            enableButtons(false, false, false, false, false);
+            enableButtons(false);
             return;
         }
 
         final DatabaseObjectNode node = (DatabaseObjectNode) object;
         if (node instanceof ConnectionsFolderNode) {
             controller.displayConnectionList(((ConnectionsFolderNode) node).getConnectionsFolder());
-            enableButtons(
-                    true,
-                    true,
-                    false,
-                    true,
-                    false
-            );
+            enableButtons(false);
             return;
 
         } else if (node instanceof DatabaseHostNode) {
             DatabaseHostNode hostNode = (DatabaseHostNode) node;
-            enableButtons(
-                    true,
-                    true,
-                    hostNode.isConnected(),
-                    !hostNode.isConnected(),
-                    true
-            );
+            enableButtons(hostNode.isConnected(), true);
 
-        } else {
-            enableButtons(
-                    false,
-                    false,
-                    true,
-                    false,
-                    true
-            );
-        }
+        } else
+            enableButtons(true);
 
         if (node.isHostNode()) {
             final ConnectionsTreePanel c = this;

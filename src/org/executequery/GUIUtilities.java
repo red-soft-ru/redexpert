@@ -39,7 +39,6 @@ import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.menu.ExecuteQueryMenu;
-import org.executequery.gui.menu.MenuItem;
 import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -249,37 +248,7 @@ public final class GUIUtilities {
                 }
             });
 
-            ExecuteQueryMenu menu = (ExecuteQueryMenu) frame.getJMenuBar();
-            MenuItem item = new MenuItem();
-            item.setName(Bundles.get("action.exit-from-account-command"));
-            item.setActionCommand("exit-from-account-command");
-            item.setId("exit-from-account-command");
-
-            JMenu toolsMenu = null;
-            for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
-                    toolsMenu = menu.getMenu(i);
-                    break;
-                }
-            }
-
-            if (toolsMenu != null) {
-                toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
-
-                for (int i = 0; i < toolsMenu.getItemCount(); i++) {
-
-                    JMenuItem menuItem = toolsMenu.getItem(i);
-                    if (menuItem != null) {
-                        if (Bundles.get("action.log-in-account-command").contentEquals(menuItem.getText())) {
-                            toolsMenu.remove(i);
-                            break;
-                        }
-                    }
-                }
-            }
-
         } else {
-
             while (statusBar.getLabel(4).getMouseListeners().length > 0)
                 statusBar.getLabel(4).removeMouseListener(statusBar.getLabel(4).getMouseListeners()[0]);
 
@@ -291,34 +260,6 @@ public final class GUIUtilities {
                 }
             });
 
-            ExecuteQueryMenu menu = (ExecuteQueryMenu) frame.getJMenuBar();
-            MenuItem item = new MenuItem();
-            item.setName(Bundles.get("action.log-in-account-command"));
-            item.setActionCommand("log-in-account-command");
-            item.setId("log-in-account-command");
-
-            JMenu toolsMenu = null;
-            for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
-                    toolsMenu = menu.getMenu(i);
-                    break;
-                }
-            }
-
-            if (toolsMenu != null) {
-                toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
-
-                for (int i = 0; i < toolsMenu.getItemCount(); i++) {
-
-                    JMenuItem menuItem = toolsMenu.getItem(i);
-                    if (menuItem != null) {
-                        if (Bundles.get("action.exit-from-account-command").contentEquals(menuItem.getText())) {
-                            toolsMenu.remove(i);
-                            break;
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -1527,6 +1468,10 @@ public final class GUIUtilities {
         } catch (InvocationTargetException | InterruptedException e) {
             e.printStackTrace(System.out);
         }
+    }
+
+    public static ToolBarManager getToolBar() {
+        return toolBar;
     }
 
     public static String bundledString(String key) {

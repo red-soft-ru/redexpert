@@ -17,29 +17,60 @@
 
         <buttons>
 
-            <button id="0" action-id="compare-data-types">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="1" action-id="execute-sql-script-command">
+            <button id="101" action-id="connect-to-database-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="3" action-id="extract-metadata-command">
-                <visible>true</visible>
+            <button id="102" action-id="connect-to-all-databases-command">
+                <visible>false</visible>
+                <order>2</order>
+            </button>
+
+            <button id="103" action-id="disconnect-from-all-database-command">
+                <visible>false</visible>
                 <order>3</order>
             </button>
 
-            <button id="4" action-id="create-erd-command">
+            <button id="104" action-id="reload-connection-tree-selection-command">
                 <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="5" action-id="map-erd-command">
+            <button id="105" action-id="search-connection-tree-node-command">
                 <visible>true</visible>
                 <order>5</order>
+            </button>
+
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>6</order>
+            </button>
+
+            <button id="106" action-id="new-connection-command">
+                <visible>true</visible>
+                <order>7</order>
+            </button>
+
+            <button id="107" action-id="create-database-command">
+                <visible>true</visible>
+                <order>8</order>
+            </button>
+
+            <button id="108" action-id="execute-sql-script-command">
+                <visible>true</visible>
+                <order>9</order>
+            </button>
+
+            <button id="109" action-id="comparerDB-command">
+                <visible>true</visible>
+                <order>10</order>
+            </button>
+
+            <button id="110" action-id="extract-metadata-command">
+                <visible>true</visible>
+                <order>11</order>
             </button>
 
         </buttons>
@@ -62,52 +93,52 @@
 
         <buttons>
 
-            <button id="9" action-id="editor-command">
+            <button id="201" action-id="editor-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="10" action-id="database-statistic-command">
+            <button id="202" action-id="erd-command">
                 <visible>true</visible>
                 <order>2</order>
             </button>
 
-            <button id="11" action-id="trace-manager-command">
+            <button id="203" action-id="database-statistic-command">
                 <visible>true</visible>
                 <order>3</order>
             </button>
 
-            <button id="12" action-id="grant-manager-command">
+            <button id="204" action-id="trace-manager-command">
                 <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="13" action-id="user-manager-command">
+            <button id="205" action-id="user-manager-command">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-            <button id="14" action-id="profiler-command">
+            <button id="206" action-id="grant-manager-command">
                 <visible>true</visible>
                 <order>6</order>
             </button>
 
-            <button id="15" action-id="comparerDB-command">
+            <button id="207" action-id="profiler-command">
                 <visible>true</visible>
                 <order>7</order>
             </button>
 
-            <button id="16" action-id="table-validation-command">
+            <button id="208" action-id="table-validation-command">
                 <visible>true</visible>
                 <order>8</order>
             </button>
 
-            <button id="17" action-id="import-data-from-file-command">
+            <button id="209" action-id="import-data-from-file-command">
                 <visible>true</visible>
                 <order>9</order>
             </button>
 
-            <button id="18" action-id="generator-test-data-command">
+            <button id="210" action-id="generator-test-data-command">
                 <visible>true</visible>
                 <order>10</order>
             </button>
@@ -132,34 +163,24 @@
 
         <buttons>
 
-            <button id="19" action-id="drivers-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="20" action-id="heap-memory-command">
+            <button id="301" action-id="console-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="21" action-id="console-command">
+            <button id="302" action-id="application-logs-command">
                 <visible>true</visible>
                 <order>2</order>
             </button>
 
-            <button id="22" action-id="application-logs-command">
+            <button id="303" action-id="preferences-command">
                 <visible>true</visible>
                 <order>3</order>
             </button>
 
-            <button id="23" action-id="preferences-command">
+            <button id="304" action-id="help-command">
                 <visible>true</visible>
                 <order>4</order>
-            </button>
-
-            <button id="24" action-id="help-command">
-                <visible>true</visible>
-                <order>5</order>
             </button>
 
         </buttons>
@@ -182,37 +203,37 @@
 
         <buttons>
 
-            <button id="25" action-id="execute-command">
+            <button id="401" action-id="execute-command">
                 <visible>true</visible>
                 <order>0</order>
             </button>
 
-            <button id="26" action-id="execute-in-any-connections-command">
+            <button id="402" action-id="execute-in-any-connections-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="27" action-id="execute-script-command">
+            <button id="403" action-id="execute-script-command">
                 <visible>true</visible>
                 <order>2</order>
             </button>
 
-            <button id="28" action-id="execute-at-cursor-command">
+            <button id="404" action-id="execute-at-cursor-command">
                 <visible>true</visible>
                 <order>3</order>
             </button>
 
-            <button id="29" action-id="execute-selection-command">
+            <button id="405" action-id="execute-selection-command">
                 <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="30" action-id="execute-in-profiler-command">
+            <button id="406" action-id="execute-in-profiler-command">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-            <button id="31" action-id="editor-stop-command">
+            <button id="407" action-id="editor-stop-command">
                 <visible>true</visible>
                 <order>6</order>
             </button>
@@ -223,17 +244,17 @@
                 <order>7</order>
             </button>
 
-            <button id="32" action-id="commit-command">
+            <button id="408" action-id="commit-command">
                 <visible>true</visible>
                 <order>8</order>
             </button>
 
-            <button id="33" action-id="rollback-command">
+            <button id="409" action-id="rollback-command">
                 <visible>true</visible>
                 <order>9</order>
             </button>
 
-            <button id="34" action-id="toggle-autocommit-command">
+            <button id="410" action-id="toggle-autocommit-command">
                 <visible>true</visible>
                 <order>10</order>
             </button>
@@ -244,22 +265,22 @@
                 <order>11</order>
             </button>
 
-            <button id="35" action-id="manage-bookmarks-command">
+            <button id="411" action-id="manage-bookmarks-command">
                 <visible>true</visible>
                 <order>12</order>
             </button>
 
-            <button id="37" action-id="sql-history-command">
+            <button id="412" action-id="sql-history-command">
                 <visible>true</visible>
                 <order>14</order>
             </button>
 
-            <button id="38" action-id="editor-previous-command">
+            <button id="413" action-id="editor-previous-command">
                 <visible>true</visible>
                 <order>15</order>
             </button>
 
-            <button id="39" action-id="editor-next-command">
+            <button id="414" action-id="editor-next-command">
                 <visible>true</visible>
                 <order>16</order>
             </button>
@@ -270,17 +291,17 @@
                 <order>17</order>
             </button>
 
-            <button id="40" action-id="editor-export-command">
+            <button id="415" action-id="editor-export-command">
                 <visible>true</visible>
                 <order>18</order>
             </button>
 
-            <button id="41" action-id="editor-rs-metadata-command">
+            <button id="416" action-id="editor-rs-metadata-command">
                 <visible>true</visible>
                 <order>19</order>
             </button>
 
-            <button id="42" action-id="editor-show-hide-rs-columns-command">
+            <button id="418" action-id="editor-show-hide-rs-columns-command">
                 <visible>true</visible>
                 <order>20</order>
             </button>
@@ -291,27 +312,27 @@
                 <order>21</order>
             </button>
 
-            <button id="43" action-id="open-command">
+            <button id="419" action-id="open-command">
                 <visible>true</visible>
                 <order>22</order>
             </button>
 
-            <button id="44" action-id="save-as-command">
+            <button id="420" action-id="save-as-command">
                 <visible>true</visible>
                 <order>23</order>
             </button>
 
-            <button id="45" action-id="print-command">
+            <button id="421" action-id="print-command">
                 <visible>true</visible>
                 <order>24</order>
             </button>
 
-            <button id="46" action-id="print-plan-command">
+            <button id="422" action-id="print-plan-command">
                 <visible>true</visible>
                 <order>25</order>
             </button>
 
-            <button id="47" action-id="print-explained-plan-command">
+            <button id="423" action-id="print-explained-plan-command">
                 <visible>true</visible>
                 <order>26</order>
             </button>
@@ -322,17 +343,17 @@
                 <order>27</order>
             </button>
 
-            <button id="48" action-id="find-command">
+            <button id="424" action-id="find-command">
                 <visible>true</visible>
                 <order>28</order>
             </button>
 
-            <button id="49" action-id="find-next-command">
+            <button id="425" action-id="find-next-command">
                 <visible>true</visible>
                 <order>29</order>
             </button>
 
-            <button id="50" action-id="replace-command">
+            <button id="426" action-id="replace-command">
                 <visible>true</visible>
                 <order>30</order>
             </button>
@@ -343,12 +364,12 @@
                 <order>31</order>
             </button>
 
-            <button id="51" action-id="toggle-editor-output-command">
+            <button id="427" action-id="toggle-editor-output-command">
                 <visible>true</visible>
                 <order>32</order>
             </button>
 
-            <button id="52" action-id="change-split-orientation-command">
+            <button id="428" action-id="change-split-orientation-command">
                 <visible>true</visible>
                 <order>33</order>
             </button>

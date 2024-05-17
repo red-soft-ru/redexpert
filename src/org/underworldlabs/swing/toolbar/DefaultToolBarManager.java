@@ -22,6 +22,7 @@ package org.underworldlabs.swing.toolbar;
 
 import org.executequery.gui.WidgetFactory;
 import org.executequery.util.UserSettingsProperties;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 
 import java.util.*;
@@ -93,7 +94,6 @@ public class DefaultToolBarManager {
         toolbarBase.revalidate();
     }
 
-    @SuppressWarnings({"unchecked"})
     protected void buildToolBar(String name) {
 
         ToolBarWrapper wrapper = ToolBarProperties.getToolBar(name);
@@ -105,25 +105,28 @@ public class DefaultToolBarManager {
 
         wrapper.getButtonsVector().stream()
                 .sorted(new ButtonComparator())
-                .filter(button -> ((ToolBarButton) button).isVisible())
+                .filter(ToolBarButton::isVisible)
                 .forEachOrdered(button -> {
 
-                    ToolBarButton toolbarButton = (ToolBarButton) button;
-                    if (toolbarButton.isSeparator()) {
+                    if (button.isSeparator()) {
                         toolBar.addSeparator();
                         return;
                     }
 
                     toolBar.addButton(WidgetFactory.createRolloverButton(
-                            toolbarButton.getActionId(),
-                            ActionBuilder.get(toolbarButton.getActionId()),
-                            toolbarButton.getName()
+                            button.getActionId(),
+                            ActionBuilder.get(button.getActionId()),
+                            button.getName()
                     ));
                 });
 
         toolBar.addSeparator();
         toolBar.buildToolBar();
         toolbarBase.addToolBar(toolBar, new ToolBarConstraints(0, 0));
+    }
+
+    public RolloverButton getButton(String actionId) {
+        return toolbars.get("Tool Bar").getButton(actionId);
     }
 
 }

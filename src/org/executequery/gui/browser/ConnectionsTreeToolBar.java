@@ -22,22 +22,18 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
 
 /**
  * @author Takis Diakoumis
  */
-class ConnectionsTreeToolBar extends PanelToolBar {
+class ConnectionsTreeToolBar {
 
     private final ConnectionsTreePanel treePanel;
 
-    private JButton upButton;
-    private JButton downButton;
     private JButton reloadButton;
     private JButton connectButton;
-    private JButton deleteConnectionButton;
 
     private ImageIcon connectedIcon;
     private ImageIcon disconnectedIcon;
@@ -51,94 +47,33 @@ class ConnectionsTreeToolBar extends PanelToolBar {
         connectedIcon = GUIUtilities.loadIcon("Connected.png");
         disconnectedIcon = GUIUtilities.loadIcon("Disconnected.png");
 
-        connectButton = addButton(
-                treePanel,
-                "connectDisconnect",
-                GUIUtilities.getAbsoluteIconPath("Connected.png"),
-                Bundles.get("action.connect-to-database-command")
-        );
+        connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
+        if (connectButton != null) {
+            connectButton.addActionListener(e -> treePanel.connectDisconnect());
+            connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
+            connectButton.setIcon(disconnectedIcon);
+        }
 
-        addButton(
-                treePanel,
-                "connectAll",
-                GUIUtilities.getAbsoluteIconPath("ConnectedAll.png"),
-                bundleString("connectAll")
-        );
+        reloadButton = GUIUtilities.getToolBar().getButton("reload-connection-tree-selection-command");
+        if (reloadButton != null)
+            reloadButton.addActionListener(e -> treePanel.reloadSelection());
 
-        addButton(
-                treePanel,
-                "disconnectAll",
-                GUIUtilities.getAbsoluteIconPath("DisconnectedAll.png"),
-                bundleString("disconnectAll")
-        );
-
-        addSeparator();
-
-        addButton(
-                treePanel,
-                "newFolder",
-                GUIUtilities.getAbsoluteIconPath("NewFolder16.png"),
-                bundleString("newFolder")
-        );
-
-        addButton(
-                treePanel,
-                "newConnection",
-                GUIUtilities.getAbsoluteIconPath("NewConnection16.png"),
-                Bundles.getCommon("newConnection.button")
-        );
-
-        addButton(
-                treePanel,
-                "newDatabase",
-                GUIUtilities.getAbsoluteIconPath("create_database16.png"),
-                Bundles.getCommon("newDatabase.button")
-        );
-
-        deleteConnectionButton = addButton(
-                treePanel,
-                "deleteConnection",
-                GUIUtilities.getAbsoluteIconPath("Delete16.png"),
-                Bundles.getCommon("delete.button")
-        );
-
-        addSeparator();
-
-        reloadButton = addButton(
-                treePanel,
-                "reloadSelection",
-                GUIUtilities.getAbsoluteIconPath("Refresh16.png"),
-                bundleString("reloadSelection")
-        );
-
-        upButton = addButton(
-                treePanel,
-                "moveConnectionUp",
-                GUIUtilities.getAbsoluteIconPath("Up16.png"),
-                bundleString("moveConnectionUp")
-        );
-
-        downButton = addButton(
-                treePanel,
-                "moveConnectionDown",
-                GUIUtilities.getAbsoluteIconPath("Down16.png"),
-                bundleString("moveConnectionDown")
-        );
-
-        addButton(treePanel.getTreeFindAction());
+        JButton searchButton = GUIUtilities.getToolBar().getButton("search-connection-tree-node-command");
+        if (searchButton != null) {
+            searchButton.setAction(treePanel.getTreeFindAction());
+            searchButton.setText(null);
+        }
     }
 
-    protected void enableButtons(
-            boolean enableUpButton, boolean enableDownButton, boolean enableReloadButton,
-            boolean enableDeleteButton, boolean enableConnected, boolean databaseConnected) {
+    protected void enableButtons(boolean enableReloadButton, boolean enableConnected, boolean databaseConnected) {
 
-        upButton.setEnabled(enableUpButton);
-        downButton.setEnabled(enableDownButton);
-        connectButton.setEnabled(enableConnected);
-        reloadButton.setEnabled(enableReloadButton);
-        deleteConnectionButton.setEnabled(enableDeleteButton);
+        if (connectButton != null)
+            connectButton.setEnabled(enableConnected);
 
-        if (enableConnected) {
+        if (reloadButton != null)
+            reloadButton.setEnabled(enableReloadButton);
+
+        if (connectButton != null && enableConnected) {
             if (databaseConnected) {
                 connectButton.setIcon(connectedIcon);
                 connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
@@ -147,10 +82,6 @@ class ConnectionsTreeToolBar extends PanelToolBar {
                 connectButton.setToolTipText(Bundles.getCommon("connect.button"));
             }
         }
-    }
-
-    private static String bundleString(String key) {
-        return Bundles.get(ConnectionsTreeToolBar.class, key);
     }
 
 }

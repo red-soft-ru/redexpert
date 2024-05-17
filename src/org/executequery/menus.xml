@@ -15,39 +15,18 @@
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="D">
 
-        <menu name="Connections..."
-              key="menu.database.connections"
-              class="org.executequery.gui.menu.ConnectionsMenu">
-
-            <menu-item id="new-connection-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-            <menu name="Import Connections"
-                  key="menu.database.connections.import"
-                  mnemonic="I"
-                  class="org.underworldlabs.swing.menu.MainMenu">
-
-                <menu-item id="import-connections-from-DB-command"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-                <menu-item id="import-connections-from-file-command"
-                           class="org.underworldlabs.swing.menu.MainMenuItem"/>
-            </menu>
-
-            <menu-item id="export-connections-command"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        </menu>
+        <menu-item id="new-connection-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="create-database-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>
 
-        <menu-item id="compare-data-types"
+        <menu-item id="execute-sql-script-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="execute-sql-script-command"
+        <menu-item id="comparerDB-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="extract-metadata-command"
@@ -55,135 +34,19 @@
 
         <menu-item id="separator"/>
 
-        <menu name="Generate ERD"
-              key="menu.database.generate-erd"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="G">
+        <menu name="Import Connections"
+              key="menu.database.connections.import"
+              mnemonic="I"
+              class="org.underworldlabs.swing.menu.MainMenu">
 
-            <menu-item id="create-erd-command"
+            <menu-item id="import-connections-from-DB-command"
                        class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-            <menu-item id="map-erd-command"
+            <menu-item id="import-connections-from-file-command"
                        class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         </menu>
 
-    </menu>
-
-    <menu name="Tools"
-          key="menu.tools"
-          class="org.underworldlabs.swing.menu.MainMenu"
-          mnemonic="T">
-
-        <menu-item id="editor-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="database-statistic-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="trace-manager-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="grant-manager-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="user-manager-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="profiler-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="comparerDB-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="table-validation-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="import-data-from-file-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="generator-test-data-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-    </menu>
-
-    <menu name="System"
-          key="menu.system"
-          class="org.underworldlabs.swing.menu.MainMenu"
-          mnemonic="T">
-
-        <menu-item id="drivers-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="heap-memory-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="console-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="application-logs-command"
-                   key="menu.system.logs"
-                   name="System Output Log"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"
-                   mnemonic="S"
-                   action-command="viewSystemLog"
-                   tool-tip="View the system output log"/>
-
-        <menu name="Reset Logs"
-              key="menu.system.reset-logs"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="R">
-
-            <menu-item id="application-logs-command"
-                       key="menu.system.reset-logs.application"
-                       name="System Output Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="S"
-                       action-command="resetSystemLog"
-                       tool-tip="Reset the system output log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.system.reset-logs.export"
-                       name="Data Export Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="X"
-                       action-command="resetExportLog"
-                       tool-tip="Reset the data export log"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.system.reset-logs.import"
-                       name="Data Import Log"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="I"
-                       action-command="resetImportLog"
-                       tool-tip="Reset the data import log"/>
-
-            <menu-item id="separator"/>
-
-            <menu-item id="application-logs-command"
-                       key="menu.system.reset-logs.all"
-                       name="Reset All"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="A"
-                       action-command="resetAllLogs"
-                       tool-tip="Reset all logs"/>
-
-        </menu>
-
-        <menu-item id="separator"/>
-
-        <menu-item id="check-update-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="preferences-command"
+        <menu-item id="export-connections-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
     </menu>
@@ -275,24 +138,94 @@
 
     </menu>
 
+    <menu name="Tools"
+          key="menu.tools"
+          class="org.underworldlabs.swing.menu.MainMenu"
+          mnemonic="T">
+
+        <menu-item id="editor-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="erd-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="database-statistic-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="trace-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="user-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="grant-manager-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="profiler-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="table-validation-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="import-data-from-file-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="generator-test-data-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+    </menu>
+
+    <menu name="System"
+          key="menu.system"
+          class="org.underworldlabs.swing.menu.MainMenu"
+          mnemonic="T">
+
+        <menu-item id="drivers-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="compare-data-types"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="heap-memory-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="console-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="application-logs-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="preferences-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+    </menu>
+
     <menu name="Help"
           key="menu.help"
           class="org.underworldlabs.swing.menu.MainMenu"
           mnemonic="H">
 
         <menu-item id="help-command"
-                   key="menu.help.contents"
-                   name="Help Contents"
                    class="org.underworldlabs.swing.menu.MainMenuItem"
-                   mnemonic="H"
                    accel-key="F1"/>
+
+        <menu-item id="feedback-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"
+                   action-command="userComments"/>
 
         <menu-item id="separator"/>
 
         <menu-item id="license-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="about-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="release-notes-command"
@@ -300,35 +233,10 @@
 
         <menu-item id="separator"/>
 
-        <menu name="Feedback"
-              key="menu.help.feedback"
-              class="org.underworldlabs.swing.menu.MainMenu"
-              mnemonic="F">
+        <menu-item id="check-update-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-            <menu-item id="feedback-command"
-                       key="menu.help.feedback.user-comments"
-                       name="User Comments"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="C"
-                       action-command="userComments"/>
-
-            <menu-item id="feedback-command"
-                       key="menu.help.feedback.feature-request"
-                       name="Feature Request"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="F"
-                       action-command="featureRequest"/>
-
-            <menu-item id="feedback-command"
-                       key="menu.help.feedback.report-bug"
-                       name="Report Bug"
-                       class="org.underworldlabs.swing.menu.MainMenuItem"
-                       mnemonic="B"
-                       action-command="bugReport"/>
-
-        </menu>
-
-        <menu-item id="visit-redsoft-command"
+        <menu-item id="about-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
     </menu>

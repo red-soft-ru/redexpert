@@ -24,9 +24,9 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FeedbackPanel;
-import org.executequery.log.Log;
 
 import java.awt.event.ActionEvent;
+import java.util.Vector;
 
 /**
  * Command to open the feedback dialog.
@@ -37,36 +37,22 @@ public class FeedbackCommand extends AbstractBaseCommand {
 
     @Override
     public void execute(ActionEvent e) {
-
-        try {
-            getClass().getMethod(e.getActionCommand(), ActionEvent.class).invoke(this, e);
-
-        } catch (Exception exception) {
-            Log.error(bundledString("errorExecutingFeedbackCommand"), exception);
-        }
+        feedback();
     }
 
-    @SuppressWarnings("unused")
-    public void featureRequest(ActionEvent e) {
-        showDialog(FeedbackPanel.FEATURE_REQUEST, bundledString("featureRequest"));
+    public final void feedback() {
+        showDialog(FeedbackPanel.DEFAULT_TITLE, null);
     }
 
-    @SuppressWarnings("unused")
-    public void userComments(ActionEvent e) {
-        showDialog(FeedbackPanel.USER_COMMENTS, bundledString("userComments"));
+    public final void bugReport(Vector<Throwable> throwableVector) {
+        showDialog(FeedbackPanel.BUG_REPORT_TITLE, throwableVector);
     }
 
-    @SuppressWarnings("unused")
-    public void bugReport(ActionEvent e) {
-        showDialog(FeedbackPanel.BUG_REPORT, bundledString("reportBug"));
-    }
-
-    private void showDialog(int type, String title) {
-
+    private void showDialog(String title, Vector<Throwable> throwableVector) {
         GUIUtilities.showWaitCursor();
         try {
             BaseDialog dialog = new BaseDialog(title, true, true);
-            FeedbackPanel panel = new FeedbackPanel(dialog, type);
+            FeedbackPanel panel = new FeedbackPanel(dialog, throwableVector);
 
             dialog.addDisplayComponent(panel);
             dialog.display();

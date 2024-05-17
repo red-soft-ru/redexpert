@@ -23,7 +23,6 @@ package org.executequery.gui;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.RepositoryException;
 import org.executequery.repository.UserFeedback;
 import org.executequery.repository.UserFeedbackRepository;
 import org.executequery.repository.spi.UserFeedbackRepositoryImpl;
@@ -36,8 +35,11 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Base feedback panel for comments, requests and bugs.
@@ -45,233 +47,193 @@ import java.awt.event.ActionListener;
  * @author Takis Diakoumis
  */
 public class FeedbackPanel extends DefaultActionButtonsPanel
-        implements ActionListener,
+        implements
         FocusComponentPanel,
         Interruptible {
 
-    /**
-     * user comments feedback indicator
-     */
+    public static final String DEFAULT_TITLE = bundledString("title");
+    public static final String BUG_REPORT_TITLE = bundledString("reportBug");
+
     public static final int USER_COMMENTS = 0;
+    public static final int FEATURE_REQUEST = USER_COMMENTS + 1;
+    public static final int BUG_REPORT = FEATURE_REQUEST + 1;
 
-    /**
-     * feature request feedback indicator
-     */
-    public static final int FEATURE_REQUEST = 2;
+    private final Map<Integer, String> feedbackTypes;
+    private final ActionContainer parent;
 
-    /**
-     * bug report feedback indicator
-     */
-    public static final int BUG_REPORT = 1;
+    // --- GUI components ---
 
-    /**
-     * the feedback type for the instance
-     */
-    private int feedbackType;
-
-    /**
-     * user's name field
-     */
+    private JButton sendButton;
+    private JButton cancelButton;
     private JTextField nameField;
-
-    /**
-     * user's email field
-     */
     private JTextField emailField;
-
-    /**
-     * user's comments field
-     */
-
     private JTextArea commentsField;
+    private JComboBox<?> feedbackTypeCombo;
 
-    /**
-     * the parent container
-     */
-    private ActionContainer parent;
+    // ---
 
-    /**
-     * Thread worker object
-     */
+    private boolean cancelled;
     private SwingWorker worker;
-
-    /**
-     * The progress dialog
-     */
+    private UserFeedbackRepository repository;
     private InterruptibleProgressDialog progressDialog;
 
-    /**
-     * Creates a new instance of FeedbackPanel
-     */
-    public FeedbackPanel(ActionContainer parent, int feedbackType) {
-
+    public FeedbackPanel(ActionContainer parent, Vector<Throwable> throwableVector) {
         this.parent = parent;
-        this.feedbackType = feedbackType;
+
+        feedbackTypes = new LinkedHashMap<>();
+        feedbackTypes.put(USER_COMMENTS, bundledString("userComments"));
+        feedbackTypes.put(FEATURE_REQUEST, bundledString("featureRequest"));
+        feedbackTypes.put(BUG_REPORT, bundledString("reportBug"));
 
         init();
+        addSystemProperties();
+
+        if (throwableVector != null && !throwableVector.isEmpty()) {
+            feedbackTypeCombo.setSelectedIndex(BUG_REPORT);
+            feedbackTypeCombo.setEnabled(false);
+            addStackTrace(throwableVector);
+        }
+
+        arrange();
     }
 
     private void init() {
 
-        String labelText = generateLabelText();
-
-        commentsField = new JTextArea(createHeader());
+        commentsField = new JTextArea();
         commentsField.setFont(UIManager.getDefaults().getFont("Label.font"));
         commentsField.setMargin(new Insets(2, 2, 2, 2));
-        commentsField.setLineWrap(true);
-        commentsField.setWrapStyleWord(true);
 
-        nameField = WidgetFactory.createTextField("nameField");
-        emailField = WidgetFactory.createTextField("emailField");
-        initFieldValues();
+        nameField = WidgetFactory.createTextField("nameField", getUserName());
+        emailField = WidgetFactory.createTextField("emailField", getUserEmail());
 
-        JPanel basePanel = new JPanel(new GridBagLayout());
+        feedbackTypeCombo = WidgetFactory.createComboBox(
+                "feedbackTypeCombo",
+                feedbackTypes.values().toArray()
+        );
 
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest();
+        cancelButton = WidgetFactory.createButton(
+                "cancelButton",
+                Bundles.get("common.cancel.button"),
+                e -> parent.finished()
+        );
 
-        basePanel.add(new JLabel(labelText),
-                gridBagHelper.fillHorizontally().spanX().get());
+        sendButton = WidgetFactory.createButton(
+                "sendButton",
+                Bundles.get("common.send.button"),
+                e -> send()
+        );
+    }
 
-        gridBagHelper.addLabelFieldPair(basePanel,
-                new JLabel(Bundles.getCommon("name")), nameField,
-                null, true, true);
+    private void arrange() {
+        GridBagHelper gbh;
 
-        gridBagHelper.addLabelFieldPair(basePanel,
-                new JLabel("Email"), emailField,
-                null, true, true);
+        // --- main panel ---
 
-        basePanel.add(new JScrollPane(commentsField),
-                gridBagHelper.nextRowFirstCol().spanX().spanY().fillBoth().get());
+        JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        JButton cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"));
-        cancelButton.setActionCommand("cancel");
-        JButton sendButton = WidgetFactory.createButton("sendButton", Bundles.get("common.send.button"));
-        sendButton.setActionCommand("Send");
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
+        mainPanel.add(
+                new JLabel(generateLabelText()),
+                gbh.fillHorizontally().setMinWeightY().spanX().get()
+        );
+        mainPanel.add(
+                new JSeparator(JSeparator.HORIZONTAL),
+                gbh.nextRow().bottomGap(5).get()
+        );
+        mainPanel.add(
+                new JLabel(Bundles.getCommon("name")),
+                gbh.nextRowFirstCol().setWidth(1).bottomGap(0).rightGap(0).setMinWeightX().get()
+        );
+        mainPanel.add(
+                nameField,
+                gbh.nextCol().setMaxWeightX().spanX().rightGap(5).get()
+        );
+        mainPanel.add(
+                new JLabel("Email"),
+                gbh.nextRowFirstCol().setWidth(1).rightGap(0).setMinWeightX().get()
+        );
+        mainPanel.add(
+                emailField,
+                gbh.nextCol().setMaxWeightX().rightGap(5).bottomGap(5).spanX().get()
+        );
+        mainPanel.add(
+                new JSeparator(JSeparator.HORIZONTAL),
+                gbh.nextRowFirstCol().get()
+        );
+        mainPanel.add(
+                feedbackTypeCombo,
+                gbh.nextRowFirstCol().bottomGap(0).get()
+        );
+        mainPanel.add(
+                new JScrollPane(commentsField),
+                gbh.nextRowFirstCol().setMaxWeightY().spanY().fillBoth().topGap(0).bottomGap(5).get()
+        );
 
-        sendButton.addActionListener(this);
-        cancelButton.addActionListener(this);
+        // --- base ---
 
         addActionButton(sendButton);
         addActionButton(cancelButton);
 
         setPreferredSize(new Dimension(700, 480));
-
-        addContentPanel(basePanel);
+        addContentPanel(mainPanel);
     }
 
-    private void initFieldValues() {
+    private void addSystemProperties() {
+        commentsField.append("---------------------------------------------------------------------------------------------");
+        commentsField.append("\nVersion: " + System.getProperty("executequery.minor.version") + " [ Build " + System.getProperty("executequery.build") + " ]");
+        commentsField.append("\nJava VM: " + System.getProperty("java.runtime.version"));
+        commentsField.append("\nOperating System: " + System.getProperty("os.name") + " [ " + System.getProperty("os.version") + " ]");
+        commentsField.append("\n---------------------------------------------------------------------------------------------\n");
+    }
 
-        if (hasUserFullName())
-            nameField.setText(getUserFullName());
-        else if (hasUserRedDataBaseName())
-            nameField.setText(getUserRedDataBaseName());
-        else
-            nameField.setText(System.getProperty("user.name"));
+    private void addStackTrace(Vector<Throwable> throwableVector) {
+        StringWriter writer = new StringWriter();
+        throwableVector.forEach(throwable -> throwable.printStackTrace(new PrintWriter(writer)));
 
-        if (hasUserEmail())
-            emailField.setText(getUserEmail());
-
+        commentsField.insert("\n\n", 0);
+        commentsField.append(writer.toString());
     }
 
     private String getUserEmail() {
-
-        return SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "user.email.address");
+        return SystemProperties.containsKey(Constants.USER_PROPERTIES_KEY, "user.email.address") ?
+                SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "user.email.address") :
+                Constants.EMPTY;
     }
 
-    private boolean hasUserEmail() {
+    private String getUserName() {
 
-        return SystemProperties.containsKey(
-                Constants.USER_PROPERTIES_KEY, "user.email.address");
-    }
+        if (SystemProperties.containsKey(Constants.USER_PROPERTIES_KEY, "user.full.name"))
+            return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "user.full.name");
 
-    private String getUserFullName() {
+        if (SystemProperties.containsKey(Constants.USER_PROPERTIES_KEY, "reddatabase.user"))
+            return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "reddatabase.user");
 
-        return SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "user.full.name");
-    }
-
-    private boolean hasUserFullName() {
-
-        return SystemProperties.containsKey(
-                Constants.USER_PROPERTIES_KEY, "user.full.name");
-    }
-
-    private String getUserRedDataBaseName() {
-
-        return SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "reddatabase.user");
-    }
-
-    private boolean hasUserRedDataBaseName() {
-
-        return SystemProperties.containsKey(
-                Constants.USER_PROPERTIES_KEY, "reddatabase.user");
-    }
-
-    private String createHeader() {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("---\nVersion: ");
-        sb.append(System.getProperty("executequery.minor.version"));
-        sb.append(" [ Build ");
-        sb.append(System.getProperty("executequery.build"));
-        sb.append(" ]\nJava VM: ");
-        sb.append(System.getProperty("java.runtime.version"));
-        sb.append("\nOperating System: ");
-        sb.append(System.getProperty("os.name"));
-        sb.append(" [ ");
-        sb.append(System.getProperty("os.version"));
-        sb.append(" ]\n---\n\n");
-
-        return sb.toString();
+        return System.getProperty("user.name");
     }
 
     private String generateLabelText() {
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<html>");
-        sb.append(Constants.TABLE_TAG_START);
-        sb.append("<tr><td>");
-
-        switch (feedbackType) {
-            case BUG_REPORT:
-                sb.append(bundledString("bugReport"));
-                break;
-            case FEATURE_REQUEST:
-            case USER_COMMENTS:
-            default:
-                sb.append(bundledString("completeFields"));
-                break;
-        }
-
-        sb.append("</td></tr><tr><td>");
-        sb.append(bundledString("infoAttachments"));
-        sb.append("</td></tr><tr><td>");
-        sb.append(bundledString("warningInternetConnection"));
-        sb.append("</td></tr>");
-        sb.append(Constants.TABLE_TAG_END);
-        sb.append("</html>");
-
-        return sb.toString();
+        return "<html>" + Constants.TABLE_TAG_START +
+                "<tr><td>" +
+                bundledString(feedbackTypeCombo.getSelectedIndex() == BUG_REPORT ?
+                        "reportBugLabel" :
+                        "completeFields"
+                ) +
+                "</td></tr>" +
+                "<tr><td>" + bundledString("infoAttachments") + "</td></tr>" +
+                "<tr><td>" + bundledString("warningInternetConnection") + "</td></tr>"
+                + Constants.TABLE_TAG_END + "</html>";
     }
 
     private void send() {
 
-        if (!fieldsValid()) {
-
+        if (!fieldsValid())
             return;
-        }
 
         worker = new SwingWorker("sendFeedback") {
 
+            @Override
             public Object construct() {
-
                 parent.block();
-
                 return doWork();
             }
 
@@ -279,36 +241,26 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
             public void interrupt() {
 
                 if (parent.isDialog()) {
-
                     parent.unblock();
-
-                    JDialog dialog = (JDialog) parent;
-                    dialog.setVisible(true);
+                    ((JDialog) parent).setVisible(true);
                     return;
                 }
                 super.interrupt();
             }
 
+            @Override
             public void finished() {
 
                 Object result = get();
-
                 if (!cancelled && result == Constants.WORKER_SUCCESS) {
-
                     closeProgressDialog();
+                    GUIUtilities.displayInformationMessage(bundledString("messageSuccess"));
 
-                    GUIUtilities.displayInformationMessage(
-                            bundledString("messageSuccess"));
-
-                } else if (cancelled || result == Constants.WORKER_FAIL ||
-                        result == Constants.WORKER_CANCEL) {
+                } else if (cancelled || result == Constants.WORKER_FAIL || result == Constants.WORKER_CANCEL) {
 
                     if (parent.isDialog()) {
-
                         parent.unblock();
-
-                        JDialog dialog = (JDialog) parent;
-                        dialog.setVisible(true);
+                        ((JDialog) parent).setVisible(true);
                         closeProgressDialog();
                         return;
                     }
@@ -324,184 +276,102 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
                 GUIUtilities.getParentFrame(),
                 bundledString("postingFeedback"),
                 bundledString("postingFeedbackMessage"),
-                this);
+                this
+        );
 
         worker.start();
         progressDialog.run();
     }
 
     private boolean fieldsValid() {
-        String email = emailField.getText();
 
-        if (MiscUtils.isNull(email)) {
-
-            GUIUtilities.displayErrorMessage(
-                    noEmailErrorMessage());
-            return false;
-
-
-        }
-        String comments = commentsField.getText();
-
-        if (MiscUtils.isNull(comments)) {
-
-            GUIUtilities.displayErrorMessage(noRemarksErrorMessage());
-
+        if (MiscUtils.isNull(emailField.getText())) {
+            GUIUtilities.displayErrorMessage(bundledString("noEmailErrorMessage"));
             return false;
         }
-        String name = nameField.getText();
 
-        if (MiscUtils.isNull(name)) {
+        if (MiscUtils.isNull(commentsField.getText())) {
+            GUIUtilities.displayErrorMessage(bundledString("noRemarksErrorMessage"));
+            return false;
+        }
 
-            GUIUtilities.displayErrorMessage(noNameErrorMessage());
-
+        if (MiscUtils.isNull(nameField.getText())) {
+            GUIUtilities.displayErrorMessage(bundledString("noNameErrorMessage"));
             return false;
         }
 
         return true;
     }
 
-    private String noRemarksErrorMessage() {
-        return bundledString("noRemarksErrorMessage");
-    }
-
-    private String noNameErrorMessage() {
-        return bundledString("noNameErrorMessage");
-    }
-
-    private String noEmailErrorMessage() {
-        return bundledString("noEmailErrorMessage");
-    }
-
     private Object doWork() {
-
-        repository = createFeedbackRepository();
-
-        try {
-
-            UserFeedback userFeedback = createUserFeedback();
-            return resultWork(repository.postFeedback(userFeedback));
-        } catch (RepositoryException e) {
-
-            if (cancelled) {
-
-                return Constants.WORKER_CANCEL;
-            }
-
-            showError(e.getMessage());
-
-            return Constants.WORKER_FAIL;
-        }
-
+        repository = new UserFeedbackRepositoryImpl();
+        return resultWork(repository.postFeedback(createUserFeedback()));
     }
 
-    private Object resultWork(int res) {
-        if (res == 1)
+    private Object resultWork(int result) {
+
+        if (result == 1)
             return Constants.WORKER_SUCCESS;
-        else {
-            if (res == 401) {
-                SystemProperties.setStringProperty("user", "reddatabase.token", "");
-                GUIUtilities.loadAuthorisationInfo();
-                UserFeedback userFeedback = createUserFeedback();
-                return resultWork(repository.postFeedback(userFeedback));
-            }
-            return Constants.WORKER_FAIL;
+
+        if (result == 401) {
+            SystemProperties.setStringProperty("user", "reddatabase.token", "");
+            GUIUtilities.loadAuthorisationInfo();
+
+            return resultWork(repository.postFeedback(createUserFeedback()));
         }
-    }
 
-    private UserFeedbackRepository createFeedbackRepository() {
-
-        return new UserFeedbackRepositoryImpl();
+        return Constants.WORKER_FAIL;
     }
 
     private UserFeedback createUserFeedback() {
-
-        String typeString = "" + feedbackType;
-
-
-        return new UserFeedback(nameField.getText(), emailField.getText(),
-                commentsField.getText(),
-                typeString);
-    }
-
-    private void showError(String message) {
-
-        closeProgressDialog();
-
-        GUIUtilities.showNormalCursor();
-        GUIUtilities.displayErrorMessage(message);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-
-        String command = e.getActionCommand();
-
-        if (command.equals("Send")) {
-
-            send();
-
-        } else {
-
-            parent.finished();
-        }
-
+        return new UserFeedback(
+                nameField.getText().trim(),
+                emailField.getText().trim(),
+                commentsField.getText().trim(),
+                String.valueOf(feedbackTypeCombo.getSelectedIndex())
+        );
     }
 
     private void closeProgressDialog() {
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (progressDialog != null && progressDialog.isVisible()) {
-                    progressDialog.dispose();
-                }
-                progressDialog = null;
-            }
+        SwingUtilities.invokeLater(() -> {
+            if (progressDialog != null && progressDialog.isVisible())
+                progressDialog.dispose();
+            progressDialog = null;
         });
     }
 
-    /**
-     * process cancelled flag
-     */
-    private boolean cancelled;
+    protected static String bundledString(String key) {
+        return Bundles.get(FeedbackPanel.class, key);
+    }
 
-    private UserFeedbackRepository repository;
+    // --- Interruptible impl ---
 
     /**
      * Sets the process cancel flag as specified.
      */
+    @Override
     public void setCancelled(boolean cancelled) {
-
         this.cancelled = cancelled;
-
-        if (cancelled) {
-
+        if (cancelled)
             repository.cancel();
-        }
-
     }
 
     /**
      * Indicates thatthis process should be interrupted.
      */
+    @Override
     public void interrupt() {
         worker.interrupt();
     }
 
+    // --- FocusComponentPanel impl ---
+
     /**
      * Returns the default focus component of this object.
      */
+    @Override
     public Component getDefaultFocusComponent() {
         return nameField;
     }
 
-    protected String bundledString(String key) {
-        return Bundles.get(this.getClass(), key);
-    }
-
-
 }
-
-
-
-
-

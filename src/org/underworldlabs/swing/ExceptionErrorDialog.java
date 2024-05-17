@@ -20,18 +20,14 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.actions.helpcommands.FeedbackCommand;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.util.IconUtilities;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -43,401 +39,257 @@ import java.util.Vector;
  *
  * @author Takis Diakoumis
  */
-public class ExceptionErrorDialog extends AbstractBaseDialog
-        implements ActionListener,
-        ComponentListener {
+public class ExceptionErrorDialog extends AbstractBaseDialog {
 
-    /**
-     * the error message
-     */
-    private final String message;
-
-    /**
-     * the exception list
-     */
-    private final Vector<Throwable> exceptions;
-
-    /**
-     * empty exception indicating the last in a chain
-     */
-    private Throwable noMoreExceptions;
-
-    /**
-     * the stack trace text pane
-     */
-    private JTextArea textPane;
-
-    /**
-     * the show stack button
-     */
-    private JButton showStackButton;
-
-    /**
-     * the close button
-     */
-    private JButton closeButton;
-
-    /**
-     * the next excpetion button
-     */
-    private JButton nextButton;
-
-    /**
-     * the previous excpetion button
-     */
-    private JButton previousButton;
-
-    /**
-     * the paste stack button
-     */
-    private JButton pasteButton;
-
-    /**
-     * the stack trace panel
-     */
-    private JPanel stackTracePanel;
-
-    /**
-     * the default height
-     */
-    private int defaultHeight;
-
-    /**
-     * the default width
-     */
-    private int defaultWidth;
-
-    /**
-     * the current exception index (chained exceptions)
-     */
-    private int selectedIndex;
-
+    private static final int STACK_HEIGHT = 220;
     private static final int DEFAULT_WIDTH = 600;
 
-    public ExceptionErrorDialog(Frame owner, String message, Throwable exception) {
+    private final String message;
+    private final Vector<Throwable> exceptions;
 
+    // --- GUI components ---
+
+    private JTextArea textPane;
+    private JPanel stackTracePanel;
+
+    private JButton showStackButton;
+    private JButton sendReportButton;
+    private JButton nextButton;
+    private JButton previousButton;
+    private JButton copyButton;
+
+    // ---
+
+    private int defaultHeight;
+    private int selectedIndex;
+    private Throwable noMoreExceptions;
+
+    public ExceptionErrorDialog(Frame owner, String message, Throwable exception) {
         super(owner, Bundles.getCommon("error-message"), true);
         this.message = message;
 
-        exceptions = new Vector<Throwable>();
-        // we want the underlying cause
-        /*if (exception.getCause() != null) {
-            exceptions.add(exception.getCause());
-        } else {*/
-            exceptions.add(exception);
-        // }
+        exceptions = new Vector<>();
+        exceptions.add(exception);
         selectedIndex = 0;
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
+        arrange();
+//        addComponentListener(this);
     }
 
+
     private void init() {
-        Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
-        if (errorIcon == null) {
-            // if we don't have one (some LAFs), try the warning icon
-            errorIcon = UIManager.getIcon("OptionPane.warningIcon");
-        }
-
-        closeButton = WidgetFactory.createButton("closeButton", this, Bundles.getCommon("close.button"));
-        showStackButton = WidgetFactory.createButton("showStackButton", this, bundleString("ShowStackTrace"));
-
-        // format the text
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><table border=\"0\" cellpadding=\"2\">");
-
-        String delim = "\n";
-        boolean wasDelim = true;
-        StringTokenizer st = new StringTokenizer(message, delim, true);
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            if (delim.equals(token)) {
-                if (wasDelim) {
-                    sb.append("<tr><td></td></tr>");
-                }
-                wasDelim = true;
-                continue;
-            }
-            sb.append("<tr><td>");
-            sb.append(token);
-            sb.append("</td></tr>");
-            wasDelim = false;
-        }
-
-        sb.append("</table></html>");
-
-        JPanel base = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets.left = 5;
-        gbc.insets.right = 20;
-        gbc.gridy++;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        base.add(new JLabel(errorIcon), gbc);
-        gbc.gridx = 1;
-        gbc.insets.left = 0;
-        gbc.insets.right = 0;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        base.add(new JLabel(sb.toString()), gbc);
-        gbc.gridy++;
-
-        gbc.gridx = 1;
-        gbc.insets.top = 15;
-        gbc.insets.right = 5;
-        gbc.insets.bottom = 10;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        base.add(showStackButton, gbc);
-        gbc.gridx = 2;
-        gbc.weightx = 0;
-        gbc.insets.right = 0;
-        base.add(closeButton, gbc);
 
         stackTracePanel = new JPanel(new GridBagLayout());
         stackTracePanel.setVisible(false);
 
-        JPanel stackTraceBase = new JPanel(new BorderLayout());
-        stackTraceBase.add(stackTracePanel, BorderLayout.CENTER);
+        showStackButton = WidgetFactory.createButton(
+                "showStackButton",
+                e -> showHideStack(),
+                bundleString("ShowStackTrace")
+        );
 
-        Container contentPane = getContentPane();
-        contentPane.setLayout(new GridBagLayout());
+        sendReportButton = WidgetFactory.createButton(
+                "sendReportButton",
+                e -> new FeedbackCommand().bugReport(exceptions),
+                bundleString("sendReportButton")
+        );
 
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.insets.top = 10;
-        gbc.insets.left = 5;
-        gbc.insets.bottom = 5;
-        gbc.insets.right = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.weightx = 1.0;
-        contentPane.add(base, gbc);
-        gbc.gridy++;
-        gbc.weighty = 1.0;
-        gbc.insets.top = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        contentPane.add(stackTraceBase, gbc);
+        copyButton = WidgetFactory.createRolloverButton(
+                "copyButton",
+                bundleString("pasteToClipboard"),
+                "Paste16.png",
+                e -> Toolkit.getDefaultToolkit()
+                        .getSystemClipboard()
+                        .setContents(new StringSelection(textPane.getText()), null)
+        );
 
-        addComponentListener(this);
+        nextButton = WidgetFactory.createButton(
+                "nextButton",
+                e -> showNextStack(),
+                bundleString("NextException")
+        );
 
-        //this.setLayout(new BorderLayout());
-        //add(contentPane, BorderLayout.CENTER);
-
-        pack();
-        Dimension size = getSize();
-
-        // get the absolute center position and adjust 
-        // for possible dialog expansion on stack trace
-        Point location = GUIUtils.getPointToCenter(getOwner(), size);
-        location.y -= (STACK_HEIGHT / 2);
-        setLocation(location);
-
-        // set the height and width for resets
-        defaultHeight = size.height;
-        defaultWidth = DEFAULT_WIDTH;
-
-        setVisible(true);
+        previousButton = WidgetFactory.createButton(
+                "previousButton",
+                e -> showPrewStack(),
+                bundleString("PreviousException")
+        );
+        previousButton.setEnabled(false);
     }
 
-    public Dimension getMinimumSize() {
+    private void arrange() {
+        GridBagHelper gbh;
 
-        return new Dimension(Math.max(DEFAULT_WIDTH, getWidth()), getSize().height);
+        // --- exception icon ---
+
+        Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
+        if (errorIcon == null)
+            errorIcon = UIManager.getIcon("OptionPane.warningIcon");
+
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper();
+        buttonPanel.add(showStackButton, gbh.nextCol().fillNone().setMinWeightX().get());
+        buttonPanel.add(sendReportButton, gbh.nextCol().leftGap(5).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 20, 0);
+        mainPanel.add(new JLabel(errorIcon), gbh.get());
+        mainPanel.add(new JLabel(getExceptionMessage()), gbh.nextCol().rightGap(5).leftGap(0).setMaxWeightX().fillHorizontally().spanX().get());
+        mainPanel.add(buttonPanel, gbh.anchorEast().fillNone().leftGap(5).bottomGap(5).nextRowFirstCol().spanX().get());
+        mainPanel.add(stackTracePanel, gbh.nextRowFirstCol().topGap(0).setMaxWeightY().fillBoth().get());
+
+        // --- base ---
+
+        add(mainPanel);
+        pack();
+
+        defaultHeight = getHeight() - 32;
+        setMinimumSize(new Dimension(Math.max(DEFAULT_WIDTH, getWidth()), defaultHeight));
+        setSize(getMinimumSize());
+
+        Point location = GUIUtils.getPointToCenter(getOwner(), getSize());
+        location.y -= (STACK_HEIGHT / 2);
+
+        setLocation(location);
+        setVisible(true);
     }
 
     /**
      * Builds the stack trace text pane and associated buttons in the case of SQLExceptions.
      */
     private void buildStackTracePanel() {
-        if (textPane == null) {
-            textPane = new JTextArea();
-            textPane.setMargin(new Insets(2, 2, 2, 2));
-            textPane.setEditable(false);
-            textPane.setWrapStyleWord(false);
-            textPane.setBackground(getBackground());
-            textPane.setFont(UIManager.getDefaults().getFont("Label.font"));
-            JScrollPane scroller = new JScrollPane(textPane);
 
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.gridy++;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            stackTracePanel.add(scroller, gbc);
+        if (textPane != null)
+            return;
 
-            pasteButton = new RolloverButton(
-                    IconUtilities.loadDefaultIconResource("Paste16.png", true),
-                    bundleString("pasteToClipboard"));
-            pasteButton.addActionListener(this);
+        textPane = new JTextArea();
+        textPane.setMargin(new Insets(2, 2, 2, 2));
+        textPane.setEditable(false);
+        textPane.setWrapStyleWord(false);
+        textPane.setBackground(getBackground());
+        textPane.setFont(UIManager.getDefaults().getFont("Label.font"));
 
-            gbc.gridy++;
-            gbc.insets.top = 2;
-            gbc.weighty = 0;
-            gbc.weightx = 0;
-            gbc.gridwidth = 1;
-            gbc.fill = GridBagConstraints.NONE;
-            gbc.anchor = GridBagConstraints.WEST;
-            stackTracePanel.add(pasteButton, gbc);
+        GridBagHelper gbh = new GridBagHelper();
+        stackTracePanel.add(new JScrollPane(textPane), gbh.fillBoth().setMaxWeightY().spanX().get());
+        stackTracePanel.add(copyButton, gbh.nextRow().topGap(5).fillNone().setMinWeightY().get());
 
+        if (exceptions.get(selectedIndex) instanceof SQLException) {
+            SQLException exception = (SQLException) exceptions.get(selectedIndex);
+            if (exception.getNextException() != null) {
 
-            if (exceptions.get(selectedIndex) instanceof SQLException) {
-                SQLException sqlExc = (SQLException) exceptions.get(selectedIndex);
-                if (sqlExc.getNextException() != null) {
-                    nextButton = new JButton(bundleString("NextException"));
-                    nextButton.addActionListener(this);
-                    previousButton = new JButton(bundleString("PreviousException"));
-                    previousButton.addActionListener(this);
-                    previousButton.setEnabled(false);
-
-                    //gbc.gridy++;
-                    gbc.insets.top = 5;
-                    gbc.insets.right = 5;
-                    gbc.insets.left = 0;
-                    gbc.weighty = 0;
-                    gbc.gridwidth = 1;
-                    gbc.weightx = 1.0;
-                    gbc.gridx = 0;
-                    gbc.fill = GridBagConstraints.NONE;
-                    gbc.anchor = GridBagConstraints.EAST;
-                    stackTracePanel.add(previousButton, gbc);
-                    gbc.weightx = 0;
-                    gbc.gridx = 1;
-                    gbc.insets.right = 0;
-                    stackTracePanel.add(nextButton, gbc);
-                }
+                stackTracePanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().fillHorizontally().get());
+                stackTracePanel.add(previousButton, gbh.nextCol().setMinWeightX().get());
+                stackTracePanel.add(nextButton, gbh.nextCol().get());
             }
         }
     }
 
-    /**
-     * the stack trace pane height
-     */
-    private static final int STACK_HEIGHT = 220;
+    private String getExceptionMessage() {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><table border=\"0\" cellpadding=\"2\">");
+
+        String lineBreak = "\n";
+        boolean hasLineBreak = true;
+
+        StringTokenizer tokenizer = new StringTokenizer(message, lineBreak, true);
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+
+            if (lineBreak.equals(token)) {
+                if (hasLineBreak)
+                    sb.append("<tr><td></td></tr>");
+
+                hasLineBreak = true;
+                continue;
+            }
+
+            sb.append("<tr><td>").append(token).append("</td></tr>");
+            hasLineBreak = false;
+        }
+
+        sb.append("</table></html>");
+
+        return sb.toString();
+    }
 
     /**
      * Prints the specified exception's stack trace
      * to the text pane.
      *
-     * @param e - the exception to be printed
+     * @param throwable - the exception to be printed
      */
-    private void printException(Throwable e) {
-        if (e != null && e != noMoreExceptions) {
-            StringWriter sw = new StringWriter();
-            PrintWriter out = new PrintWriter(sw);
-            e.printStackTrace(out);
-            textPane.setText(sw.toString());
-        } else {
+    private void printException(Throwable throwable) {
+
+        if (throwable != null && throwable != noMoreExceptions) {
+            StringWriter writer = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(writer));
+            textPane.setText(writer.toString());
+
+        } else
             textPane.setText(bundleString("stackNotAvailable"));
-        }
+
         textPane.setCaretPosition(0);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource();
+    private void showHideStack() {
+        buildStackTracePanel();
 
-        if (source == showStackButton) {
-            buildStackTracePanel();
+        if (stackTracePanel.isVisible()) {
+            stackTracePanel.setVisible(false);
+            showStackButton.setText(bundleString("ShowStackTrace"));
+            setSize(new Dimension(getWidth(), defaultHeight));
 
-            if (stackTracePanel.isVisible()) {
-                stackTracePanel.setVisible(false);
-                setSize(new Dimension(getWidth(), defaultHeight));
-                showStackButton.setText(bundleString("ShowStackTrace"));
-            } else {
-                stackTracePanel.setVisible(true);
-                showStackButton.setText(bundleString("HideStackTrace"));
-                setSize(new Dimension(
-                        getWidth(), defaultHeight + (STACK_HEIGHT + 30)));
+        } else {
+            stackTracePanel.setVisible(true);
+            showStackButton.setText(bundleString("HideStackTrace"));
+            setSize(new Dimension(getWidth(), defaultHeight + STACK_HEIGHT + 30));
 
-                printException(exceptions.get(selectedIndex));
-            }
+            printException(exceptions.get(selectedIndex));
+        }
+    }
 
-        } else if (source == nextButton) {
-            selectedIndex++;
-            if (exceptions.size() - 1 < selectedIndex) {
-                SQLException sqlException = (SQLException) exceptions.get(selectedIndex - 1);
-                SQLException nextSQLException = sqlException.getNextException();
+    private void showNextStack() {
+        selectedIndex++;
 
-                if (nextSQLException == null) {
-                    // add the dummy to the end
-                    if (noMoreExceptions == null) {
-                        noMoreExceptions = new Throwable();
-                        exceptions.add(noMoreExceptions);
-                    }
-                } else {
-                    exceptions.add(nextSQLException);
+        if (exceptions.size() - 1 < selectedIndex) {
+            SQLException sqlException = (SQLException) exceptions.get(selectedIndex - 1);
+            SQLException nextSQLException = sqlException.getNextException();
+
+            if (nextSQLException == null) {
+                if (noMoreExceptions == null) {
+                    noMoreExceptions = new Throwable();
+                    exceptions.add(noMoreExceptions);
                 }
 
-            }
-
-            Throwable currentException = exceptions.get(selectedIndex);
-            printException(currentException);
-
-            if (currentException == noMoreExceptions || currentException == null) {
-                nextButton.setEnabled(false);
-            }
-            previousButton.setEnabled(true);
-        } else if (source == previousButton) {
-            selectedIndex--;
-            Throwable currentException = exceptions.get(selectedIndex);
-            printException(currentException);
-
-            if (selectedIndex == 0) {
-                previousButton.setEnabled(false);
-            }
-            nextButton.setEnabled(true);
-        } else if (source == pasteButton) {
-            Toolkit.getDefaultToolkit().getSystemClipboard().
-                    setContents(new StringSelection(textPane.getText()), null);
-        } else if (source == closeButton) {
-            dispose();
-        }
-    }
-
-    /**
-     * Invoked when the component's size changes.
-     */
-    public void componentResized(ComponentEvent e) {
-        Dimension _size = getSize();
-        boolean resizeRequired = false;
-        if (_size.height < defaultHeight) {
-            _size.height = defaultHeight;
-            resizeRequired = true;
+            } else
+                exceptions.add(nextSQLException);
         }
 
-        if (_size.width < defaultWidth) {
-            _size.width = defaultWidth;
-            resizeRequired = true;
-        }
+        Throwable currentException = exceptions.get(selectedIndex);
+        printException(currentException);
 
-        if (resizeRequired) {
-            setSize(_size);
-        }
-
-        Log.trace("Dialog resized - " + getSize());
+        if (currentException == noMoreExceptions || currentException == null)
+            nextButton.setEnabled(false);
+        previousButton.setEnabled(true);
     }
 
-    /**
-     * Invoked when the component's position changes.
-     */
-    public void componentMoved(ComponentEvent e) {
-    }
+    private void showPrewStack() {
+        selectedIndex--;
 
-    /**
-     * Invoked when the component has been made visible.
-     */
-    public void componentShown(ComponentEvent e) {
-    }
+        Throwable currentException = exceptions.get(selectedIndex);
+        printException(currentException);
 
-    /**
-     * Invoked when the component has been made invisible.
-     */
-    public void componentHidden(ComponentEvent e) {
+        if (selectedIndex == 0)
+            previousButton.setEnabled(false);
+        nextButton.setEnabled(true);
     }
 
     private String bundleString(String key) {
@@ -445,5 +297,3 @@ public class ExceptionErrorDialog extends AbstractBaseDialog
     }
 
 }
-
-

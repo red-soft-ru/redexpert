@@ -22,7 +22,6 @@ package org.executequery.sql;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonToken;
-import org.executequery.Constants;
 import org.executequery.gui.text.syntax.Token;
 import org.executequery.gui.text.syntax.TokenTypes;
 import org.underworldlabs.sqlLexer.SqlLexer;
@@ -47,8 +46,10 @@ public class QueryTokenizer {
     private final List<Token> singleLineCommentTokens;
     private final List<Token> multiLineCommentTokens;
     private final List<Token> declareBlockTokens;
-    private final Matcher declareBlockMatcher;
-
+    private static final int NORMAL = 0;
+    private static final int AS = NORMAL + 1;
+    private static final int DECLARE = AS + 1;
+    private static final int BEGIN_END = DECLARE + 1;
     private List<String> beginEndBlocks;
 
     public QueryTokenizer() {
@@ -57,7 +58,6 @@ public class QueryTokenizer {
         multiLineCommentTokens = new ArrayList<>();
         declareBlockTokens = new ArrayList<>();
         beginEndBlockTokens = new ArrayList<>();
-        declareBlockMatcher = Pattern.compile(TokenTypes.DECLARE_BLOCK_REGEX, Pattern.DOTALL).matcher(Constants.EMPTY);
     }
 
     public String removeComments(String query) {
@@ -67,7 +67,7 @@ public class QueryTokenizer {
 
     public List<DerivedQuery> tokenize(String query) {
 
-        extractStringAndCommentsTokens(query);
+        extractNotDelimiterTokens(query);
 
         List<DerivedQuery> derivedQueries = deriveQueries(query);
         for (DerivedQuery derivedQuery : derivedQueries) {
@@ -177,8 +177,10 @@ public class QueryTokenizer {
         boolean single = !(withinSingleLineComment(index, index));
         boolean multi = !(withinMultiLineComment(index, index));
         boolean quote = !(withinQuotedString(index, index));
+        boolean declare = !(withinDeclareBlock(index, index));
+        boolean beginEnd = !(withinBeginEndBlock(index, index));
 
-        return single && multi && quote;
+        return single && multi && quote && declare && beginEnd;
     }
 
     private QueryTokenized firstQuery(String query, String delimiter, int startIndexQuery, String lowQuery) {
@@ -236,105 +238,65 @@ public class QueryTokenizer {
         return notInAnyToken(index);
     }
 
-    private void extractDeclareBlockTokens(String query) {
-
-        addTokensForMatcherWhenNotInString(declareBlockMatcher, query, declareBlockTokens);
-    }
-
-    private int indexOfStringWithSpaces(String query, String word) {
-        return indexOfStringWithSpaces(query, word, 0);
-    }
-
-    private int indexOfStringWithSpaces(String query, String word, int startIndex) {
-
-        String[] spaces = {" ", "\n", ";"};
-        int index = query.length();
-
-        for (String iSpace : spaces) {
-            for (String jSpace : spaces) {
-
-                int ind = query.indexOf(iSpace + word + jSpace, startIndex);
-                if (ind != -1 && ind < index)
-                    index = ind;
-            }
-        }
-
-        return (index == query.length()) ? -1 : index + 1;
-    }
-
-    private String replace(String query, int start, String replacement) {
-
-        String startQuery = query.substring(0, start);
-        startQuery += replacement;
-        startQuery += query.substring(start + replacement.length());
-
-        return startQuery;
-    }
-
-    private String addBeginEndBlock(String query) {
-
-        int start = indexOfStringWithSpaces(query, beginPattern);
-        int end = -1;
-
-        if (start > 0 && notInAnyToken(start)) {
-
-            end = indexOfStringWithSpaces(query, endPattern);
-            if (end > 0 && notInAnyToken(end)) {
-
-                query = replace(query, start, "nigeb");
-
-                int ind = indexOfStringWithSpaces(query, beginPattern);
-                while (ind > 0 && ind < end) {
-
-                    query = addBeginEndBlock(query);
-                    query = replace(query, ind, "nigeb");
-                    ind = indexOfStringWithSpaces(query, beginPattern);
-                    end = indexOfStringWithSpaces(query, endPattern);
-
-                    while (!notInAnyToken(end))
-                        end = query.indexOf(end);
-                }
-            }
-        }
-
-        List<Token> tokens = beginEndBlockTokens;
-        if (start >= 0 && end >= 0) {
-            tokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, start, end));
-            query = replace(query, end, "dne");
-            beginEndBlocks.add(query.substring(start, end + 3));
-        }
-
-        return query;
-    }
-
-    private void extractBeginEndBlockTokens(String query) {
-
-        beginEndBlocks = new ArrayList<>();
-        for (int index = indexOfStringWithSpaces(query, beginPattern); index >= 0; index = indexOfStringWithSpaces(query, beginPattern, index + 1)) {
-            if (notInAnyToken(index))
-                query = addBeginEndBlock(query);
-        }
-
-    }
-
-    public void extractStringAndCommentsTokens(String query) {
+    public void extractNotDelimiterTokens(String query) {
 
         SqlLexer lexer = new SqlLexer(CharStreams.fromString(query));
 
         stringTokens.clear();
         singleLineCommentTokens.clear();
         multiLineCommentTokens.clear();
-
+        beginEndBlockTokens.clear();
+        declareBlockTokens.clear();
+        int state = NORMAL;
+        int beginCount = 0;
+        int startIndex = 0;
         while (true) {
 
             org.antlr.v4.runtime.Token antlrToken = lexer.nextToken();
-
             if (antlrToken.getType() == SqlLexer.STRING_LITERAL)
                 stringTokens.add(new Token(TokenTypes.STRING, antlrToken.getStartIndex(), antlrToken.getStopIndex()));
             if (antlrToken.getType() == SqlLexer.SINGLE_LINE_COMMENT)
                 singleLineCommentTokens.add(new Token(TokenTypes.SINGLE_LINE_COMMENT, antlrToken.getStartIndex(), antlrToken.getStopIndex()));
             if (antlrToken.getType() == SqlLexer.MULTILINE_COMMENT)
                 multiLineCommentTokens.add(new Token(TokenTypes.COMMENT, antlrToken.getStartIndex(), antlrToken.getStopIndex()));
+            if (state == AS) {
+                if (antlrToken.getType() != SqlLexer.SPACES && antlrToken.getType() != SqlLexer.MULTILINE_COMMENT && antlrToken.getType() != SqlLexer.SINGLE_LINE_COMMENT) {
+                    if (antlrToken.getType() == SqlLexer.KEYWORD && antlrToken.getText().equalsIgnoreCase("declare")) {
+                        state = DECLARE;
+                        startIndex = antlrToken.getStartIndex();
+                    } else if (antlrToken.getType() == SqlLexer.KEYWORD && antlrToken.getText().equalsIgnoreCase("begin")) {
+                        state = BEGIN_END;
+                        beginCount++;
+                        startIndex = antlrToken.getStartIndex();
+                    } else state = NORMAL;
+
+                }
+            } else if (state == DECLARE) {
+                if (antlrToken.getType() == SqlLexer.OPERATOR && antlrToken.getText().equalsIgnoreCase(";")) {
+                    declareBlockTokens.add(new Token(TokenTypes.DECLARE_BLOCK, startIndex, antlrToken.getStopIndex()));
+                    state = AS;
+                }
+            } else if (state == BEGIN_END) {
+                if (antlrToken.getType() == SqlLexer.KEYWORD) {
+                    if (antlrToken.getText().equalsIgnoreCase("begin")) {
+                        beginCount++;
+                    } else if (antlrToken.getText().equalsIgnoreCase("end")) {
+                        beginCount--;
+                        if (beginCount <= 0) {
+                            beginEndBlockTokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, startIndex, antlrToken.getStopIndex()));
+                            state = NORMAL;
+                        }
+                    }
+                }
+            } else {
+                if (antlrToken.getType() == SqlLexer.KEYWORD && antlrToken.getText().equalsIgnoreCase("as"))
+                    state = AS;
+                if (antlrToken.getType() == SqlLexer.KEYWORD && antlrToken.getText().equalsIgnoreCase("begin")) {
+                    state = BEGIN_END;
+                    beginCount++;
+                    startIndex = antlrToken.getStartIndex();
+                }
+            }
             if (antlrToken.getType() == CommonToken.EOF)
                 break;
         }
@@ -343,34 +305,7 @@ public class QueryTokenizer {
 
     public void extractTokens(String query) {
 
-        extractStringAndCommentsTokens(query);
-    }
-
-    private void addTokensForMatcherWhenNotInString(Matcher matcher, String query, List<Token> tokens) {
-
-        tokens.clear();
-        matcher.reset(query);
-        int startIndex = 0;
-
-        while (matcher.find()) {
-
-            int start = matcher.start() + startIndex;
-            int end = matcher.end();
-
-            query = query.substring(end);
-            end = end + startIndex;
-            startIndex = end;
-
-            int endOffset = end;
-
-            if (!withinQuotedString(start, endOffset)) {
-                int tokenStyle = (matcher == declareBlockMatcher) ? TokenTypes.DECLARE_BLOCK : TokenTypes.COMMENT;
-                tokens.add(new Token(tokenStyle, start, end));
-            }
-
-            matcher.reset(query);
-        }
-
+        extractNotDelimiterTokens(query);
     }
 
     private String removeTokensForType(int typeAntlrToken, String query) {

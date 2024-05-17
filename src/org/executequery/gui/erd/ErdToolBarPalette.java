@@ -24,7 +24,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.RolloverButton;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
@@ -56,9 +55,6 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton erdTitleButton;
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
-    private RolloverButton openButton;
-    private RolloverButton saveButton;
-    private RolloverButton printButton;
 
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
@@ -163,24 +159,6 @@ public class ErdToolBarPalette extends PanelToolBar
                 "ZoomOut16.png",
                 this
         );
-
-        openButton = WidgetFactory.createRolloverButton(
-                "openButton",
-                ActionBuilder.get("open-command"),
-                Bundles.get("action.open-command")
-        );
-
-        saveButton = WidgetFactory.createRolloverButton(
-                "saveButton",
-                ActionBuilder.get("save-command"),
-                Bundles.get("action.save-command")
-        );
-
-        printButton = WidgetFactory.createRolloverButton(
-                "printButton",
-                ActionBuilder.get("print-command"),
-                Bundles.get("action.print-command")
-        );
     }
 
     private void arrange() {
@@ -202,11 +180,6 @@ public class ErdToolBarPalette extends PanelToolBar
         addSeparator();
         addButton(zoomOutButton);
         addButton(zoomInButton);
-
-        addSeparator();
-        addButton(openButton);
-        addButton(saveButton);
-        addButton(printButton);
     }
 
     private void setBackgroundColours(boolean forCanvas) {

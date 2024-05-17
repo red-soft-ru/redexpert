@@ -51,6 +51,97 @@
 
     </menu>
 
+    <menu name="Edit"
+          key="menu.edit"
+          class="org.underworldlabs.swing.menu.MainMenu"
+          mnemonic="E">
+
+        <menu-item id="cut-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="copy-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="paste-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="open-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="save-as-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="print-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu-item id="find-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="replace-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="goto-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        <menu-item id="separator"/>
+
+        <menu name="Move text"
+              key="menu.edit.move"
+              class="org.underworldlabs.swing.menu.MainMenu"
+              mnemonic="C">
+
+            <menu-item id="move-row-up-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="move-row-down-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="shift-text-left-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="shift-text-right-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        </menu>
+
+        <menu name="Duplicate text"
+              key="menu.edit.duplicate"
+              class="org.underworldlabs.swing.menu.MainMenu"
+              mnemonic="C">
+
+            <menu-item id="duplicate-row-up-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="duplicate-row-down-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        </menu>
+
+        <menu name="Change Case"
+              key="menu.edit.change-case"
+              class="org.underworldlabs.swing.menu.MainMenu"
+              mnemonic="C">
+
+            <menu-item id="to-upper-case-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="to-lower-case-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="to-camel-case-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+            <menu-item id="to-underscore-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        </menu>
+
+    </menu>
+
     <menu name="View"
           key="menu.view"
           mnemonic="V"

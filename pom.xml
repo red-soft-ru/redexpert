@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <antlr.version>4.7</antlr.version>
+        <antlr.version>4.13.1</antlr.version>
         <jaybird3.version>3.0.36</jaybird3.version>
         <jaybird4.version>4.0.28</jaybird4.version>
         <jaybird5.version>5.0.17</jaybird5.version>

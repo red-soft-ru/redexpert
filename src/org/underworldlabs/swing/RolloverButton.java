@@ -26,6 +26,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URL;
 
 /**
  * This class creates a JButton where the borders are painted only
@@ -39,117 +40,63 @@ public class RolloverButton extends JButton
         implements MouseListener {
 
     private String toolTip;
-    private ImageIcon image;
     private boolean selectionEnabled;
-
-    private static Insets buttonInsets;
-
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param img the ImageIcon to be displayed on the button
-     * @param tip the button's tool tip
-     */
-    public RolloverButton(ImageIcon img, String tip) {
-        super(img);
-        toolTip = tip;
-        init();
-    }
-
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param a   the Action to be associated with this button
-     * @param tip the button's tool tip
-     */
-    public RolloverButton(Action a, String tip) {
-        super(a);
-        toolTip = tip;
-        init();
-    }
-
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param label the button's label
-     * @param tip   the button's tool tip
-     */
-    public RolloverButton(String label, String tip, int h, int w) {
-        super(label);
-        toolTip = tip;
-        init();
-        setButtonSize(h, w);
-    }
-
-    public RolloverButton(ImageIcon img, String tip, int h, int w) {
-        super(img);
-        toolTip = tip;
-        init();
-        setButtonSize(h, w);
-    }
-
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param imgPath the path relative to this class of
-     *                the button icon image
-     * @param tip     the button's tool tip
-     */
-    public RolloverButton(String imgPath, String tip) {
-        this(imgPath, tip, -1);
-    }
-
-    /**
-     * Creates a new RolloverButton with an associated image
-     * and tool tip.
-     *
-     * @param imgPath the path relative to this class of
-     *                the button icon image
-     * @param tip     the button's tool tip
-     */
-    public RolloverButton(String imgPath, String tip, int size) {
-        super();
-        setButtonIcon(imgPath);
-        toolTip = tip;
-        init();
-    }
+    private boolean mouseEnteredContentAreaFill;
 
     public RolloverButton() {
         init();
     }
 
-    static {
-        buttonInsets = new Insets(1, 1, 1, 1);
+    public RolloverButton(String iconPath, String toolTip) {
+        super();
+        this.toolTip = toolTip;
+        init();
+        setButtonIcon(iconPath);
     }
 
-    /**
-     * Initialises the state of the button.
-     */
-    private void init() {
+    public RolloverButton(ImageIcon icon, String toolTip) {
+        super(icon);
+        this.toolTip = toolTip;
+        init();
+    }
 
+    public RolloverButton(Action action, String toolTip) {
+        super(action);
+        this.toolTip = toolTip;
+        init();
+    }
+
+    public RolloverButton(ImageIcon icon, String toolTip, int height, int width) {
+        super(icon);
+        this.toolTip = toolTip;
+
+        init();
+        setButtonSize(height, width);
+    }
+
+    public RolloverButton(String label, String toolTip, int height, int width) {
+        super(label);
+        this.toolTip = toolTip;
+
+        init();
+        setButtonSize(height, width);
+    }
+
+    private void init() {
         selectionEnabled = true;
-        setMargin(buttonInsets);
+        mouseEnteredContentAreaFill = true;
+
+        setMargin(new Insets(1, 1, 1, 1));
         setToolTipText(toolTip);
         setBorderPainted(false);
         setContentAreaFilled(false);
         addMouseListener(this);
     }
 
-//    @Override
-//    public void updateUI() {
-//
-//        setUI(new javax.swing.plaf.metal.MetalButtonUI());
-//    }
-
     /**
      * Resets the buttons rollover state.
      */
     public void reset() {
-
         setBorderPainted(false);
         setContentAreaFilled(false);
     }
@@ -162,12 +109,12 @@ public class RolloverButton extends JButton
     /**
      * Sets the image associated with the button.
      *
-     * @param path the path relative to this class of
-     *             the button icon image
+     * @param iconPath the path relative to this class of the button icon image
      */
-    public void setButtonIcon(String path) {
-        image = new ImageIcon(RolloverButton.class.getResource(path));
-        setIcon(image);
+    public void setButtonIcon(String iconPath) {
+        URL iconUrl = RolloverButton.class.getResource(iconPath);
+        if (iconUrl != null)
+            setIcon(new ImageIcon(iconUrl));
     }
 
     public void enableSelectionRollover(boolean enable) {
@@ -178,13 +125,16 @@ public class RolloverButton extends JButton
         return selectionEnabled;
     }
 
-    boolean mouseEnteredContentAreaFill = true;
+    public void setMouseEnteredContentAreaFill(boolean mouseEnteredContentAreaFill) {
+        this.mouseEnteredContentAreaFill = mouseEnteredContentAreaFill;
+    }
+
+    // --- MouseListener impl ---
 
     /**
-     * Paints the button's borders as the mouse pointer enters.
-     *
-     * @param e the MouseEvent that created this event
+     * Paints the button's borders as the mouse pointer enters
      */
+    @Override
     public void mouseEntered(MouseEvent e) {
         if (isEnabled() && isSelectionRolloverEnabled()) {
             setBorderPainted(true);
@@ -193,9 +143,45 @@ public class RolloverButton extends JButton
         }
     }
 
-    public void setMouseEnteredContentAreaFill(boolean mouseEnteredContentAreaFill) {
-        this.mouseEnteredContentAreaFill = mouseEnteredContentAreaFill;
+    /**
+     * Sets the button's borders unpainted as the mouse
+     * pointer exits
+     */
+    @Override
+    public void mouseExited(MouseEvent e) {
+        setBorderPainted(false);
+        setContentAreaFilled(false);
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    // --- JComponent impl ---
+
+    @Override
+    public JToolTip createToolTip() {
+
+        JToolTip jToolTip = new JToolTip() {
+            @Override
+            public void updateUI() {
+                setUI(new AcceleratorToolTipUI());
+            }
+        };
+
+        jToolTip.setComponent(this);
+        return jToolTip;
+    }
+
+    // --- Component impl ---
 
     /**
      * Override the <code>isFocusable()</code>
@@ -205,51 +191,16 @@ public class RolloverButton extends JButton
      *
      * @return false
      */
+    @Override
     public boolean isFocusable() {
         return false;
     }
 
-    /**
-     * Sets the button's borders unpainted as the mouse
-     * pointer exits.
-     *
-     * @param e the MouseEvent that created this event
-     */
-    public void mouseExited(MouseEvent e) {
-        setBorderPainted(false);
-        setContentAreaFilled(false);
-    }
+    // --- Object impl ---
 
-    public void mouseReleased(MouseEvent e) {
+    @Override
+    public String toString() {
+        return getName();
     }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    public JToolTip createToolTip() {
-        JToolTip tip = new PaintedButtonToolTip();
-        tip.setComponent(this);
-        return tip;
-    }
-
-    class PaintedButtonToolTip extends JToolTip {
-        public void updateUI() {
-            setUI(new AcceleratorToolTipUI());
-        }
-    } // class PaintedButtonToolTip
 
 }
-
-
-
-
-
-
-
-
-
-
-

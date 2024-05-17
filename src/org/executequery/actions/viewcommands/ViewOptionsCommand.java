@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.gui.SystemOutputPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -44,6 +45,23 @@ public class ViewOptionsCommand extends AbstractViewOptionsCommand {
     @SuppressWarnings("unused")
     public void viewConnections(ActionEvent e) {
         displayDockedComponent(e, ConnectionsTreePanel.PROPERTY_KEY);
+    }
+
+    @SuppressWarnings("unused")
+    public void viewConnectionProperties(ActionEvent e) {
+        JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (component instanceof ConnectionsTreePanel) {
+            ((ConnectionsTreePanel) component).setPropertiesPanelVisible(selectionFromEvent(e));
+            GUIUtilities.updatePreference(ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY, selectionFromEvent(e));
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void viewSystemObjects(ActionEvent e) {
+        GUIUtilities.updatePreference(ConnectionsTreePanel.SYSTEM_OBJECTS_KEY, selectionFromEvent(e));
+        JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (component instanceof ConnectionsTreePanel)
+            ((ConnectionsTreePanel) component).reloadOpenedConnections();
     }
 
     private void displayDockedComponent(ActionEvent e, String key) {

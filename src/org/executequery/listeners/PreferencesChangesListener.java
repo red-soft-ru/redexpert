@@ -48,10 +48,18 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
 
         for (String key : dockedPanelKeysArray()) {
 
-            if (Objects.equals(ConnectionsTreePanel.ADVANCED_PROPERTY_KEY, key)) {
-                JPanel connectionsTreePanel = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                if (connectionsTreePanel instanceof ConnectionsTreePanel)
-                    ((ConnectionsTreePanel) connectionsTreePanel).setPropertiesPanelVisible(systemUserBooleanProperty(key));
+            if (Objects.equals(ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY, key)) {
+                JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (component instanceof ConnectionsTreePanel)
+                    ((ConnectionsTreePanel) component).setPropertiesPanelVisible(systemUserBooleanProperty(key));
+
+                continue;
+            }
+
+            if (Objects.equals(ConnectionsTreePanel.SYSTEM_OBJECTS_KEY, key)) {
+                JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+                if (component instanceof ConnectionsTreePanel)
+                    ((ConnectionsTreePanel) component).reloadOpenedConnections();
 
                 continue;
             }
@@ -72,7 +80,8 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
     private String[] dockedPanelKeysArray() {
         return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
-                ConnectionsTreePanel.ADVANCED_PROPERTY_KEY,
+                ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY,
+                ConnectionsTreePanel.SYSTEM_OBJECTS_KEY,
                 SystemOutputPanel.PROPERTY_KEY
         };
     }

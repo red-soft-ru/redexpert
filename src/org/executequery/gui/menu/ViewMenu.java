@@ -45,6 +45,8 @@ public class ViewMenu extends AbstractOptionsMenu
         commandsMap = new HashMap<>();
         commandsMap.put("viewConsole", "system.display.console");
         commandsMap.put("viewConnections", "system.display.connections");
+        commandsMap.put("viewSystemObjects", "browser.show.system.objects");
+        commandsMap.put("viewConnectionProperties", "browser.show.connection.properties");
         commandsMap.put("viewStatusBar", "system.display.statusbar");
 
         EventMediator.registerListener(this);

@@ -988,6 +988,11 @@ public final class GUIUtilities {
         updatePreferencesToFile();
     }
 
+    public static void updatePreference(String key, boolean value) {
+        SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, key, value);
+        updatePreferencesToFile();
+    }
+
     private static void setDockedComponentVisible(String key, boolean visible) {
 
         if (visible)

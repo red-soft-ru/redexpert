@@ -152,10 +152,10 @@ public class PropertiesPanel extends JPanel
         branches.add(new PropertyNode(PropertyTypes.RESULT_SET, bundledString("ResultSetTable")));
 
         node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_QUERY_EDITOR, bundledString("QueryEditorTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_APPLICATION, bundledString("ApplicationTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_QUERY_EDITOR, bundledString("QueryEditorTools")));
         branches.add(node);
 
         node = new PropertyNode(PropertyTypes.FONTS_GENERAL, bundledString("Fonts"));

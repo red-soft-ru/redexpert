@@ -34,44 +34,40 @@ import java.awt.event.ActionEvent;
 public class QueryEditorViewOptionsCommand extends AbstractViewOptionsCommand {
 
     private static final String EDITOR_DISPLAY_STATUSBAR = "editor.display.statusbar";
+    private static final String EDITOR_DISPLAY_TOOLS = "editor.display.toolsPanel";
+    private static final String EDITOR_DISPLAY_LINE_NUMS = "editor.display.linenums";
+    private static final String EDITOR_DISPLAY_LINE_HIGHLIGHT = "editor.display.linehighlight";
 
-    private static final String EDITOR_DISPLAY_LINENUMS = "editor.display.linenums";
-
+    @SuppressWarnings("unused")
     public void viewEditorStatusBar(ActionEvent e) {
-
         setBooleanProperty(EDITOR_DISPLAY_STATUSBAR, selectionFromEvent(e));
-
         fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_STATUSBAR);
     }
 
+    @SuppressWarnings("unused")
+    public void viewEditorTools(ActionEvent e) {
+        setBooleanProperty(EDITOR_DISPLAY_TOOLS, selectionFromEvent(e));
+        fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_TOOLS);
+    }
+
+    @SuppressWarnings("unused")
     public void viewEditorLineNumbers(ActionEvent e) {
+        setBooleanProperty(EDITOR_DISPLAY_LINE_NUMS, selectionFromEvent(e));
+        fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_LINE_NUMS);
+    }
 
-        setBooleanProperty(EDITOR_DISPLAY_LINENUMS, selectionFromEvent(e));
-
-        fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_LINENUMS);
+    @SuppressWarnings("unused")
+    public void viewEditorLineHighlight(ActionEvent e) {
+        setBooleanProperty(EDITOR_DISPLAY_LINE_HIGHLIGHT, selectionFromEvent(e));
+        fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_LINE_HIGHLIGHT);
     }
 
     private void fireEditorPreferencesChangedEvent(String key) {
-
-        EventMediator.fireEvent(
-                new DefaultUserPreferenceEvent(this, key,
-                        UserPreferenceEvent.QUERY_EDITOR));
+        EventMediator.fireEvent(new DefaultUserPreferenceEvent(this, key, UserPreferenceEvent.QUERY_EDITOR));
     }
 
     private void setBooleanProperty(String key, boolean value) {
-
         SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, key, value);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

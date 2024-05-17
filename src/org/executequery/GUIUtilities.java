@@ -34,12 +34,9 @@ import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
-import org.executequery.gui.drivers.DriversTreePanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
-import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.menu.ExecuteQueryMenu;
-import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.http.ReddatabaseAPI;
@@ -921,24 +918,8 @@ public final class GUIUtilities {
                 panel = new ConnectionsTreePanel();
                 break;
 
-            case DriversTreePanel.PROPERTY_KEY:
-                panel = new DriversTreePanel();
-                break;
-
-            case SystemPropertiesDockedTab.PROPERTY_KEY:
-                panel = new SystemPropertiesDockedTab();
-                break;
-
             case SystemOutputPanel.PROPERTY_KEY:
                 startLogger();
-                break;
-
-            case KeywordsDockedPanel.PROPERTY_KEY:
-                panel = new KeywordsDockedPanel();
-                break;
-
-            case SQLStateCodesDockedPanel.PROPERTY_KEY:
-                panel = new SQLStateCodesDockedPanel();
                 break;
         }
 

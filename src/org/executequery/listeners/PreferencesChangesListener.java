@@ -24,11 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.SystemOutputPanel;
-import org.executequery.gui.SystemPropertiesDockedTab;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.drivers.DriversTreePanel;
-import org.executequery.gui.keywords.KeywordsDockedPanel;
-import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.repository.UserLayoutProperties;
 
 import javax.swing.*;
@@ -77,10 +73,6 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
         return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
                 ConnectionsTreePanel.ADVANCED_PROPERTY_KEY,
-                DriversTreePanel.PROPERTY_KEY,
-                KeywordsDockedPanel.PROPERTY_KEY,
-                SQLStateCodesDockedPanel.PROPERTY_KEY,
-                SystemPropertiesDockedTab.PROPERTY_KEY,
                 SystemOutputPanel.PROPERTY_KEY
         };
     }

@@ -139,8 +139,8 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
                 DatabaseDriverRepository.REPOSITORY_ID)).findAll();
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
-        GUIUtilities.ensureDockedTabVisible(DriversTreePanel.PROPERTY_KEY);
         parent.addNewDriver();
     }
 
@@ -164,7 +164,6 @@ public class DriverListPanel extends AbstractFormObjectViewPanel
         // select the driver in the tree
         if (row < model.getRowCount()) {
             DatabaseDriver driver = (DatabaseDriver) model.getValueAt(row, 0);
-            GUIUtilities.ensureDockedTabVisible(DriversTreePanel.PROPERTY_KEY);
             parent.setSelectedDriver(driver);
         }
 

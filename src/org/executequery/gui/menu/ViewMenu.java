@@ -45,10 +45,6 @@ public class ViewMenu extends AbstractOptionsMenu
         commandsMap = new HashMap<>();
         commandsMap.put("viewConsole", "system.display.console");
         commandsMap.put("viewConnections", "system.display.connections");
-        commandsMap.put("viewKeywords", "system.display.keywords");
-        commandsMap.put("viewSqlStateCodes", "system.display.state-codes");
-        commandsMap.put("viewDrivers", "system.display.drivers");
-        commandsMap.put("viewSystemProperties", "system.display.systemprops");
         commandsMap.put("viewStatusBar", "system.display.statusbar");
 
         EventMediator.registerListener(this);

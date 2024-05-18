@@ -258,6 +258,44 @@ test:windows:
       - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
       - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
+test:windows-robot:
+  extends: .test_template
+  tags:
+    - windows
+    - proxmox
+    - tester
+  variables:
+    PROXMOX_TEMPLATE: template-testing-re-windows-7
+    ErrorActionPreference: STOP
+    DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
+    PYTHON: c:\Python38\python.exe
+    WORKSPACE: ${CI_PROJECT_DIR}
+    DISTRO: red-expert-robot-tests
+  parallel:
+    matrix:
+      - TEST_TYPE: core
+        ARCH: ["x86_64", "x86"]
+        DBMS: ["rdb30", "rdb50"]
+  before_script:
+   - $TEST_DIR = New-TempDirectory -Prefix 'robot_test_re_'
+   - cd $TEST_DIR
+   - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
+  script:
+   - cd $TEST_DIR\RedExpert-$env:VERSION\ci
+   - powershell -ExecutionPolicy ByPass -file test_robot.ps1
+  dependencies: ["prepare", "sources", "build:windows"]
+  needs: ["prepare", "sources", "build:windows"]
+  timeout: 2 hours
+  only:
+    variables:
+      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
+
 repackage:
   tags:
     - docker

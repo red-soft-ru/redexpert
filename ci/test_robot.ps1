@@ -30,12 +30,12 @@ start-process "${PYTHON}" "-m pip install robotframework" -wait -nonewwindow
 
 echo "Start testing"
 cd re-tests-robot
-start-process "${PYTHON}" "-m robot .\tests" -wait -nonewwindow
+start-process "${PYTHON}" "-m robot -x results.xml .\tests" -wait -nonewwindow
 
 echo "Copy test results"
-if (Test-Path "output.xml") {
+if (Test-Path "results.xml") {
     mkdir "${WORKSPACE}\test-results\"
-    copy "output.xml" "${WORKSPACE}\test-results\robot-${DISTRO}-${DBMS}-${ARCH}.xml"
+    copy "results.xml" "${WORKSPACE}\test-results\robot-${DISTRO}-${DBMS}-${ARCH}.xml"
 }
 else
 {

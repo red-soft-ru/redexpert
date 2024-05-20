@@ -74,7 +74,6 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
 
         init();
         arrange();
-//        addComponentListener(this);
     }
 
 

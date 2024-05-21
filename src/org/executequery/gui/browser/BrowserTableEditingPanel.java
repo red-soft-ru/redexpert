@@ -745,6 +745,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 
         if (Integer.parseInt(e.getOldValue().toString()) == TABLE_DATA_TAB_INDEX) {
+            tableDataPanel.stopEditing();
             if (tableDataPanel.hasChanges()) {
 
                 DatabaseObjectChangeProvider provider = new DatabaseObjectChangeProvider(table);
@@ -752,7 +753,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     throw new PropertyVetoException("User cancelled", e);
 
                 if (provider.lastOption == JOptionPane.NO_OPTION) {
-                    tableDataPanel.stopEditing();
                     tableDataPanel.reset();
                     tableDataPanel.markedForReload = false;
                 }

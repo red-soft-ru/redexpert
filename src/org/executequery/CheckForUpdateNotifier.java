@@ -112,7 +112,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                     displayDownloadDialog(null);
 
                 } else if (monitorProgress)
-                    GUIUtilities.displayInformationMessage(bundledString("noUpdateMessage"));
+                    GUIUtilities.displayInformationMessage(bundledString("RedExpertUpToDate"));
 
                 return Constants.WORKER_SUCCESS;
             }

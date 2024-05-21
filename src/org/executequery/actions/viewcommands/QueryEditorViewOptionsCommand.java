@@ -37,6 +37,8 @@ public class QueryEditorViewOptionsCommand extends AbstractViewOptionsCommand {
     private static final String EDITOR_DISPLAY_TOOLS = "editor.display.toolsPanel";
     private static final String EDITOR_DISPLAY_LINE_NUMS = "editor.display.linenums";
     private static final String EDITOR_DISPLAY_LINE_HIGHLIGHT = "editor.display.linehighlight";
+    private static final String EDITOR_WRAP_LINES = "editor.wrap.lines";
+    private static final String EDITOR_DISPLAY_TRANSACTION_PARAMS = "editor.display.transaction.params";
 
     @SuppressWarnings("unused")
     public void viewEditorStatusBar(ActionEvent e) {
@@ -60,6 +62,18 @@ public class QueryEditorViewOptionsCommand extends AbstractViewOptionsCommand {
     public void viewEditorLineHighlight(ActionEvent e) {
         setBooleanProperty(EDITOR_DISPLAY_LINE_HIGHLIGHT, selectionFromEvent(e));
         fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_LINE_HIGHLIGHT);
+    }
+
+    @SuppressWarnings("unused")
+    public void viewEditorWrapLines(ActionEvent e) {
+        setBooleanProperty(EDITOR_WRAP_LINES, selectionFromEvent(e));
+        fireEditorPreferencesChangedEvent(EDITOR_WRAP_LINES);
+    }
+
+    @SuppressWarnings("unused")
+    public void viewEditorTransactionParams(ActionEvent e) {
+        setBooleanProperty(EDITOR_DISPLAY_TRANSACTION_PARAMS, selectionFromEvent(e));
+        fireEditorPreferencesChangedEvent(EDITOR_DISPLAY_TRANSACTION_PARAMS);
     }
 
     private void fireEditorPreferencesChangedEvent(String key) {

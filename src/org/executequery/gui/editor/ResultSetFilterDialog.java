@@ -22,12 +22,14 @@ package org.executequery.gui.editor;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.ResultSetColumnHeader;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -41,44 +43,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class VisibleResultSetColumnsDialog extends BaseDialog {
+public class ResultSetFilterDialog extends BaseDialog {
 
     public static final String TITLE = bundleString("title");
 
     private final ResultSetTable table;
-    private final List<ResultSetColumn> columns;
-    private final JList fullList;
+    private final QueryEditorResultsPanel resultsPanel;
+    private List<ResultSetColumn> columns;
+    private JList fullList;
 
-    public VisibleResultSetColumnsDialog(ResultSetTable table) {
+    private JButton okButton;
+    private JButton cancelButton;
+    private JButton selectAllButton;
+    private JTextField filterField;
+    private JTextField searchField;
 
+    public ResultSetFilterDialog(ResultSetTable table, QueryEditorResultsPanel resultsPanel) {
         super(TITLE, true);
         this.table = table;
-        this.columns = getColumns(getTableModel());
-        this.fullList = new ResultSetColumnList(columns);
+        this.resultsPanel = resultsPanel;
 
         init();
-        pack();
-
-        this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
-        setVisible(true);
+        arrane();
     }
 
     private void init() {
 
-        GridBagHelper gridBagHelper;
+        this.columns = getColumns(getTableModel());
+        this.fullList = new ResultSetColumnList(columns);
 
-        // --- swing components ---
+        okButton = WidgetFactory.createButton(
+                "okButton",
+                Bundles.get("common.ok.button"),
+                e -> updateResultSet()
+        );
 
-        JButton okButton = new JButton(Bundles.get("common.ok.button"));
-        okButton.addActionListener(e -> updateResultSet());
+        cancelButton = WidgetFactory.createButton(
+                "cancelButton",
+                Bundles.get("common.cancel.button"),
+                e -> dispose()
+        );
 
-        JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
-        cancelButton.addActionListener(e -> dispose());
+        selectAllButton = WidgetFactory.createButton(
+                "selectAllButton",
+                bundleString("selectAll"),
+                e -> selectAll(fullList)
+        );
 
-        JButton selectAllCheck = new JButton(bundleString("selectAll"));
-        selectAllCheck.addActionListener(e -> selectAll(fullList));
+        filterField = WidgetFactory.createTextField("filterField");
 
-        JTextField searchField = new JTextField();
+        searchField = WidgetFactory.createTextField("searchField");
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -86,55 +100,62 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
             }
         });
 
-        // --- checkBoxPanel ---
+    }
 
-        JPanel checkBoxPanel = new JPanel(new GridBagLayout());
-        checkBoxPanel.setBorder(BorderFactory.createEtchedBorder());
+    private void arrane() {
+        GridBagHelper gbh;
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(7, 10, 5, 5).anchorNorthWest();
+        // --- filter panel ---
 
-        gridBagHelper.addLabelFieldPair(checkBoxPanel, bundleString("searchLabel"), searchField, null, false, false);
-        checkBoxPanel.add(selectAllCheck, gridBagHelper.nextCol().setMinWeightX().get());
-        checkBoxPanel.add(new JScrollPane(fullList), gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        // --- buttonPanel ---
+        gbh = new GridBagHelper().setInsets(5, 12, 5, 5).anchorNorthWest().fillHorizontally();
+        mainPanel.add(new JLabel(bundleString("filterLabel")), gbh.setMinWeightX().get());
+        mainPanel.add(filterField, gbh.nextCol().leftGap(0).topGap(10).setMaxWeightX().spanX().get());
+        mainPanel.add(new JLabel(bundleString("searchLabel")), gbh.nextRowFirstCol().setWidth(1).leftGap(7).topGap(7).setMinWeightX().get());
+        mainPanel.add(searchField, gbh.nextCol().leftGap(0).topGap(5).setMaxWeightX().get());
+        mainPanel.add(selectAllButton, gbh.nextCol().setMinWeightX().get());
+        mainPanel.add(new JScrollPane(fullList), gbh.nextRowFirstCol().leftGap(5).topGap(0).fillBoth().spanX().spanY().get());
+
+        // --- button panel ---
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(3, 5, 0, 5).anchorEast();
+        gbh = new GridBagHelper().setInsets(0, 5, 5, 5).anchorEast();
+        buttonPanel.add(okButton, gbh.get());
+        buttonPanel.add(cancelButton, gbh.nextCol().rightGap(0).get());
 
-        buttonPanel.add(okButton, gridBagHelper.get());
-        buttonPanel.add(cancelButton, gridBagHelper.nextCol().get());
+        // --- base panel ---
 
-        // --- mainPanel ---
+        JPanel basePanel = new JPanel(new BorderLayout());
+        basePanel.setPreferredSize(new Dimension(400, 350));
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setPreferredSize(new Dimension(400, 350));
-
-        mainPanel.add(checkBoxPanel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        basePanel.add(mainPanel, BorderLayout.CENTER);
+        basePanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // --- base ---
 
         setLayout(new GridBagLayout());
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setResizable(false);
-        add(mainPanel);
+        add(basePanel);
 
-        // ---
-
+        pack();
+        setLocation(GUIUtilities.getLocationForDialog(getSize()));
+        setVisible(true);
     }
 
     public void updateResultSet() {
+
+        String filterString = filterField.getText();
+        if (!MiscUtils.isNull(filterString))
+            resultsPanel.filter(filterString);
 
         int visibleCount = 0;
         for (ResultSetColumn column : columns) {
             for (ResultSetColumnHeader resultSetColumnHeader : getTableModel().getColumnHeaders()) {
 
                 if (column.id.equals(resultSetColumnHeader.getId())) {
-
                     if (column.visible)
                         visibleCount++;
 
@@ -147,6 +168,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         if (visibleCount != 0) {
             table.columnVisibilityChanged();
             dispose();
+
         } else
             GUIUtilities.displayErrorMessage("At least one column from this result set must be visible");
     }
@@ -172,7 +194,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
                 return;
             }
 
-            List<VisibleResultSetColumnsDialog.ResultSetColumn> filteredList = new ArrayList<>();
+            List<ResultSetFilterDialog.ResultSetColumn> filteredList = new ArrayList<>();
             for (ResultSetColumn column : columns)
                 if (column.toString().toLowerCase().contains(searchText.toLowerCase()))
                     filteredList.add(column);
@@ -198,14 +220,13 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
     }
 
     private static String bundleString(String key) {
-        return Bundles.get(VisibleResultSetColumnsDialog.class, key);
+        return Bundles.get(ResultSetFilterDialog.class, key);
     }
 
     static class ResultSetColumnList extends JList {
 
         public ResultSetColumnList(List<ResultSetColumn> columns) {
-
-            super(columns.toArray(new ResultSetColumn[columns.size()]));
+            super(columns.toArray(new ResultSetColumn[0]));
             setCellRenderer(new CheckboxListRenderer());
 
             addKeyListener(new KeyAdapter() {
@@ -268,7 +289,7 @@ public class VisibleResultSetColumnsDialog extends BaseDialog {
         private final String id;
         private final String name;
         private boolean visible;
-        private boolean highlight;
+        private final boolean highlight;
 
         public ResultSetColumn(String id, String name, boolean visible) {
             this.id = id;

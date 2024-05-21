@@ -1,5 +1,5 @@
 /*
- * FocusEditorConnectionComboCommand.java
+ * ExecuteCommand.java
  *
  * Copyright (C) 2002-2017 Takis Diakoumis
  *
@@ -18,36 +18,21 @@
  *
  */
 
-package org.executequery.actions.othercommands;
+package org.executequery.actions.queryeditor;
 
-import org.executequery.GUIUtilities;
-import org.executequery.gui.editor.QueryEditor;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
+ * The Query Editor execute command.
+ *
  * @author Takis Diakoumis
  */
-public class FocusEditorConnectionComboCommand extends AbstractBaseCommand {
+public class ExecuteStatementCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-        JPanel panel = GUIUtilities.getSelectedCentralPane();
-        if (panel instanceof QueryEditor) {
-            QueryEditor editor = (QueryEditor) panel;
-            editor.selectConnectionCombo();
-        }
+        if (isQueryEditorTheCentralPanel())
+            queryEditor().executeStatement(null);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

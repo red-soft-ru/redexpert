@@ -31,6 +31,7 @@ import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.toolbar.*;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -44,18 +45,21 @@ import java.util.Objects;
  */
 class QueryEditorToolBar extends PanelToolBar {
 
+    private static final String EXECUTE_SCRIPT_COMMAND = "execute-statement-command";
+    private static final String EXECUTE_STATEMENT_COMMAND = "execute-statement-command";
+    private static final String EXECUTE_IN_PROFILER_COMMAND = "execute-statement-command";
+    private static final String STOP_EXECUTION_COMMAND = "stop-execution-command";
+    private static final String STOP_ON_ERROR_COMMAND = "editor-stop-on-error-command";
+    private static final String EXECUTE_TO_FILE_COMMAND = "editor-execute-to-file-command";
+
     private static final String COMMIT_COMMAND = "commit-command";
-    private static final String EXECUTE_COMMAND = "execute-command";
     private static final String ROLLBACK_COMMAND = "rollback-command";
     private static final String EDITOR_NEXT_COMMAND = "editor-next-command";
-    private static final String EDITOR_STOP_COMMAND = "editor-stop-command";
     private static final String QUERY_BOOKMARKS = "manage-bookmarks-command";
     private static final String EDITOR_EXPORT_COMMAND = "editor-export-command";
     private static final String EDITOR_PREVIOUS_COMMAND = "editor-previous-command";
-    private static final String EXECUTE_AT_CURSOR_COMMAND = "execute-at-cursor-command";
-    private static final String EXECUTE_SELECTION_COMMAND = "execute-selection-command";
     private static final String EDITOR_RS_METADATA_COMMAND = "editor-rs-metadata-command";
-    private static final String EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND = "editor-show-hide-rs-columns-command";
+    private static final String EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND = "editor-result-set-filter-command";
 
     private final InputMap queryEditorInputMap;
     private final ActionMap queryEditorActionMap;
@@ -172,14 +176,18 @@ class QueryEditorToolBar extends PanelToolBar {
     }
 
     public void setStopButtonEnabled(boolean enable) {
-        if (buttons.containsKey(EDITOR_STOP_COMMAND))
-            buttons.get(EDITOR_STOP_COMMAND).setEnabled(enable);
-        if (buttons.containsKey(EXECUTE_COMMAND))
-            buttons.get(EXECUTE_COMMAND).setEnabled(!enable);
-        if (buttons.containsKey(EXECUTE_AT_CURSOR_COMMAND))
-            buttons.get(EXECUTE_AT_CURSOR_COMMAND).setEnabled(!enable);
-        if (buttons.containsKey(EXECUTE_SELECTION_COMMAND))
-            buttons.get(EXECUTE_SELECTION_COMMAND).setEnabled(!enable);
+        if (buttons.containsKey(STOP_EXECUTION_COMMAND))
+            buttons.get(STOP_EXECUTION_COMMAND).setEnabled(enable);
+        if (buttons.containsKey(EXECUTE_SCRIPT_COMMAND))
+            buttons.get(EXECUTE_SCRIPT_COMMAND).setEnabled(!enable);
+        if (buttons.containsKey(EXECUTE_STATEMENT_COMMAND))
+            buttons.get(EXECUTE_STATEMENT_COMMAND).setEnabled(!enable);
+        if (buttons.containsKey(EXECUTE_IN_PROFILER_COMMAND))
+            buttons.get(EXECUTE_IN_PROFILER_COMMAND).setEnabled(!enable);
+        if (buttons.containsKey(STOP_ON_ERROR_COMMAND))
+            buttons.get(STOP_ON_ERROR_COMMAND).setEnabled(!enable);
+        if (buttons.containsKey(EXECUTE_TO_FILE_COMMAND))
+            buttons.get(EXECUTE_TO_FILE_COMMAND).setEnabled(!enable);
     }
 
     public void setCommitsEnabled(boolean enable) {
@@ -194,6 +202,10 @@ class QueryEditorToolBar extends PanelToolBar {
             buttons.get(EDITOR_EXPORT_COMMAND).setEnabled(enable);
         if (buttons.containsKey(EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND))
             buttons.get(EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND).setEnabled(enable);
+    }
+
+    public JButton getButton(String actionId) {
+        return buttons.get(actionId);
     }
 
     @Override

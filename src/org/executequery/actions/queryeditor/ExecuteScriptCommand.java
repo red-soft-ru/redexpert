@@ -4,13 +4,10 @@ import java.awt.event.ActionEvent;
 
 public class ExecuteScriptCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
-            queryEditor().executeSQLScript(null);
-        }
-
+        if (isQueryEditorTheCentralPanel())
+            queryEditor().executeScript(null);
     }
 
 }

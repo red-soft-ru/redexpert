@@ -121,6 +121,14 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
+        key = "editor.use.multiple.connections";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("UseMultipleConnections"),
+                SystemProperties.getBooleanProperty("user", key)
+        ));
+
         key = "editor.tabs.tospaces";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
@@ -135,6 +143,23 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 1,
                 key,
                 bundledStaticString("TabSize"),
+                stringUserProperty(key)
+        ));
+
+        key = "editor.limit.records.count";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("LimitReturnedRowsCount"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "editor.max.records.count";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                -1,
+                key,
+                bundledStaticString("DefaultMaximumRowsReturned"),
                 stringUserProperty(key)
         ));
 
@@ -156,28 +181,11 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 stringUserProperty(key)
         ));
 
-        key = "editor.max.records";
-        list.add(new UserPreference(
-                UserPreference.INTEGER_TYPE,
-                -1,
-                key,
-                bundledStaticString("DefaultMaximumRowsReturned"),
-                stringUserProperty(key)
-        ));
-
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
                 bundledStaticString("Display"),
                 null
-        ));
-
-        key = "editor.display.statusbar";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("StatusBar"),
-                Boolean.valueOf(stringUserProperty(key))
         ));
 
         key = "editor.display.toolsPanel";
@@ -188,11 +196,35 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(SystemProperties.getProperty("user", key))
         ));
 
+        key = "editor.display.transaction.params";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("TransactionParams"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "editor.display.statusbar";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("StatusBar"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
         key = "editor.display.linenums";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledStaticString("LineNumbers"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "editor.wrap.lines";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("WrapLines"),
                 Boolean.valueOf(stringUserProperty(key))
         ));
 

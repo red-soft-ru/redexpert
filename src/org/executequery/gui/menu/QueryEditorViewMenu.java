@@ -47,6 +47,8 @@ public class QueryEditorViewMenu extends AbstractOptionsMenu
         commandsMap.put("viewEditorTools", "editor.display.toolsPanel");
         commandsMap.put("viewEditorLineNumbers", "editor.display.linenums");
         commandsMap.put("viewEditorLineHighlight", "editor.display.linehighlight");
+        commandsMap.put("viewEditorWrapLines", "editor.wrap.lines");
+        commandsMap.put("viewEditorTransactionParams", "editor.display.transaction.params");
 
         EventMediator.registerListener(this);
     }

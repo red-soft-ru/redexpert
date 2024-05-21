@@ -119,7 +119,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         addSeparator();
 
         if (resultSetTableContainer != null && resultSetTableContainer.isTransposeAvailable()) {
-            add(createFromAction("editor-show-hide-rs-columns-command", "Show/hide result set columns"));
+            add(createFromAction("editor-result-set-filter-command", Bundles.get("action.editor-result-set-filter-command")));
             addSeparator();
         }
 

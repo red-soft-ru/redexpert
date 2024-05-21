@@ -83,10 +83,10 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createMenuItem("editor-add-user-keyword", null, executableButtons));
 
         addSeparator();
-        add(createMenuItem("execute-command", null, executableButtons));
-        add(createMenuItem("execute-at-cursor-command", null, executableButtons));
-        add(createMenuItem("execute-selection-command", null, executableButtons));
-        add(createMenuItem("editor-stop-command", null, executingButtons));
+        add(createMenuItem("execute-script-command", null, executableButtons));
+        add(createMenuItem("execute-statement-command", null, executableButtons));
+        add(createMenuItem("execute-in-profiler-command", null, executableButtons));
+        add(createMenuItem("stop-execution-command", null, executingButtons));
 
         addSeparator();
         add(createMenuItem("commit-command", null, executableButtons, transactionButtons));

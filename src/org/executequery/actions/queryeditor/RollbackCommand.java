@@ -29,24 +29,10 @@ import java.awt.event.ActionEvent;
  */
 public class RollbackCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
-            queryEditor().executeSQLQuery("rollback");
-        }
-
+        if (isQueryEditorTheCentralPanel())
+            queryEditor().executeStatement("rollback");
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

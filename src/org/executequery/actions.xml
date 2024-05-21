@@ -185,26 +185,6 @@
             small-icon="/org/executequery/icons/ErdPanel16.png"
             execute-class="org.executequery.actions.databasecommands.CreateErdCommand"/>
 
-    <action id="execute-command"
-            name="Execute"
-            accel-key="control shift ENTER"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/Execute16.png"
-            execute-class="org.executequery.actions.queryeditor.ExecuteCommand"/>
-
-    <action id="execute-in-any-connections-command"
-            name="Execute"
-            accel-key="control shift ENTER"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/Executings16.png"
-            execute-class="org.executequery.actions.queryeditor.ExecuteInAnyConnectionsCommand"/>
-
-    <action id="execute-as-block-command"
-            name="Execute as Single Statement"
-            accel-key="control shift F5"
-            accel-editable="true"
-            execute-class="org.executequery.actions.queryeditor.ExecuteAsBlockCommand"/>
-
     <action id="editor-format-sql-command"
             name="Format SQL"
             accel-key="control shift F"
@@ -237,19 +217,19 @@
             accel-editable="false"
             execute-class="org.executequery.actions.queryeditor.SelectBookmarkCommand"/>
 
-    <action id="execute-selection-command"
-            name="Execute Selection"
-            accel-key="F9"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteSelection16.png"
-            execute-class="org.executequery.actions.queryeditor.ExecuteSelectionCommand"/>
-
     <action id="execute-script-command"
             name="Execute Script"
             accel-key="F10"
             accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
+            small-icon="/org/executequery/icons/Execute16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
+
+    <action id="execute-statement-command"
+            name="Execute"
+            accel-key="control shift ENTER"
+            accel-editable="true"
+            small-icon="/org/executequery/icons/ExecuteAtCursor16.png"
+            execute-class="org.executequery.actions.queryeditor.ExecuteStatementCommand"/>
 
     <action id="execute-in-profiler-command"
             name="Execute Script In Profiler"
@@ -295,12 +275,6 @@
             accel-editable="true"
             execute-class="org.executequery.actions.queryeditor.DuplicateTextDownCommand"/>
 
-    <action id="toggle-autocommit-command"
-            name="Toggle Auto-Commit"
-            accel-editable="false"
-            small-icon="/org/executequery/icons/AutoCommit16.png"
-            execute-class="org.executequery.actions.queryeditor.AutoCommitCommand"/>
-
     <action id="clear-editor-output-command"
             name="Clear Output Log"
             accel-editable="true"
@@ -322,7 +296,7 @@
             small-icon="/org/executequery/icons/Previous16.png"
             execute-class="org.executequery.actions.queryeditor.PrevCommand"/>
 
-    <action id="editor-stop-command"
+    <action id="stop-execution-command"
             name="Cancel Executing Statement"
             accel-editable="false"
             small-icon="/org/executequery/icons/Stop16.png"
@@ -334,11 +308,11 @@
             small-icon="/org/executequery/icons/ExportDelimited16.png"
             execute-class="org.executequery.actions.othercommands.ExportDataCommand"/>
 
-    <action id="editor-show-hide-rs-columns-command"
+    <action id="editor-result-set-filter-command"
             name="Visible Result Set Columns"
             accel-editable="false"
             small-icon="/org/executequery/icons/TableColumn16.png"
-            execute-class="org.executequery.actions.othercommands.ShowHideResultSetColumnsCommand"/>
+            execute-class="org.executequery.actions.othercommands.ResultSetFilterCommand"/>
 
     <action id="toggle-editor-output-command"
             name="Show/Hide Editor Output"
@@ -373,13 +347,6 @@
             mnemonic="H"
             small-icon="/org/executequery/icons/History16.png"
             execute-class="org.executequery.actions.queryeditor.HistoryCommand"/>
-
-    <action id="execute-at-cursor-command"
-            name="Execute at Cursor"
-            accel-key="control ENTER"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/ExecuteAtCursor16.png"
-            execute-class="org.executequery.actions.queryeditor.ExecuteAtCursorCommand"/>
 
     <action id="change-split-orientation-command"
             name="Change Split Orientation"
@@ -611,6 +578,18 @@
             small-icon="/org/executequery/icons/Zoom16.png"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
+    <action id="editor-stop-on-error-command"
+            small-icon="/org/executequery/icons/StopOnError16_on.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
+    <action id="editor-execute-to-file-command"
+            small-icon="/org/executequery/icons/ExecuteToFile16_on.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
+    <action id="toggle-autocommit-command"
+            small-icon="/org/executequery/icons/AutoCommit16_off.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
     <!-- DO NOT REMOVE (that's actions called by hotkeys) -->
 
     <action id="comment-lines-command"
@@ -619,12 +598,6 @@
             accel-editable="true"
             small-icon="/org/executequery/icons/AddComment16.png"
             execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
-
-    <action id="select-editor-connection-combo-command"
-            name="Select connection combo box"
-            accel-editable="false"
-            accel-key="alt C"
-            execute-class="org.executequery.actions.othercommands.FocusEditorConnectionComboCommand"/>
 
     <action id="create-view-command"
             name="Create View"

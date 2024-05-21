@@ -1,5 +1,5 @@
 /*
- * ExecuteAsBlockCommand.java
+ * ShowHideResultSetColumnsCommand.java
  *
  * Copyright (C) 2002-2017 Takis Diakoumis
  *
@@ -18,37 +18,32 @@
  *
  */
 
-package org.executequery.actions.queryeditor;
+package org.executequery.actions.othercommands;
 
+import org.executequery.GUIUtilities;
+import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.editor.ResultSetFilterDialog;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
- * The Query Editor's execute as block command.
- *
  * @author Takis Diakoumis
- * @version $Revision$
- * @date $Date$
  */
-public class ExecuteAsBlockCommand extends AbstractQueryEditorCommand {
+public class ResultSetFilterCommand extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        if (isQueryEditorTheCentralPanel()) {
+        JPanel panel = GUIUtilities.getSelectedCentralPane();
+        if (panel instanceof QueryEditor) {
 
-            queryEditor().executeAsBlock();
+            QueryEditor editor = (QueryEditor) panel;
+            if (editor.isResultSetSelected())
+                new ResultSetFilterDialog(editor.getResultSetTable(), editor.getResultsPanel());
+            else
+                GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
         }
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

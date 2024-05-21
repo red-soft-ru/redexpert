@@ -344,6 +344,13 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
             return 1;
         else return -1;
     }
+
+    @Override
+    public void reset() {
+        newValue = value;
+        deleted = false;
+        changed = false;
+    }
 }
 
 

@@ -752,14 +752,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     throw new PropertyVetoException("User cancelled", e);
 
                 if (provider.lastOption == JOptionPane.NO_OPTION) {
-
-                    List<Integer> deleterRowIndexes = tableDataPanel.getDeleterRowIndexes();
-                    if (deleterRowIndexes != null) {
-                        deleterRowIndexes.forEach(row -> tableDataPanel.getRowDataForRow(row).forEach(col -> col.setDeleted(false)));
-                        deleterRowIndexes.clear();
-                    }
-
                     tableDataPanel.stopEditing();
+                    tableDataPanel.reset();
                     tableDataPanel.markedForReload = false;
                 }
             }

@@ -75,4 +75,6 @@ public interface RecordDataItem extends TableCellValue, Comparable {
 
     boolean valueContains(String pattern);
 
+    void reset();
+
 }

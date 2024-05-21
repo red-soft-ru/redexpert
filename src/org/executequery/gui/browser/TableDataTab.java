@@ -94,8 +94,6 @@ public class TableDataTab extends JPanel
     private GridBagConstraints canEditTableNoteConstraints;
     private DisabledField rowCountField;
     private JPanel rowCountPanel;
-    private List<TableDataChange> tableDataChanges;
-    private List<Integer> deleterRowIndexes;
     boolean markedForReload;
 
     private JPanel canEditTableNotePanel;
@@ -165,7 +163,6 @@ public class TableDataTab extends JPanel
                 GridBagConstraints.BOTH,
                 new Insets(5, 5, 5, 5), 0, 0);
 
-        tableDataChanges = new ArrayList<TableDataChange>();
         alwaysShowCanEditNotePanel = SystemProperties.getBooleanProperty(
                 Constants.USER_PROPERTIES_KEY, "browser.always.show.table.editable.label");
 
@@ -397,7 +394,6 @@ public class TableDataTab extends JPanel
 
     private Object setTableResultsPanel(DatabaseObject databaseObject) {
         querySender = new DefaultStatementExecutor(databaseObject.getHost().getDatabaseConnection(), true);
-        tableDataChanges.clear();
         primaryKeyColumns.clear();
         foreignKeyColumns.clear();
 
@@ -1076,9 +1072,6 @@ public class TableDataTab extends JPanel
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
 
-                if (deleterRowIndexes == null)
-                    deleterRowIndexes = new ArrayList<>();
-
                 boolean useForm = SystemProperties.getBooleanProperty(
                         Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
                 if (useForm) {
@@ -1090,7 +1083,6 @@ public class TableDataTab extends JPanel
                             .filter(row -> row >= 0)
                             .forEach(row ->  {
                                 tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                                deleterRowIndexes.add(row);
                             });
 
                     table.clearSelection();
@@ -1128,8 +1120,11 @@ public class TableDataTab extends JPanel
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                asDatabaseTableObject().clearDataChanges();
-                loadDataForTable(databaseObject);
+                stopEditing();
+                if (asDatabaseTableObject() != null) {
+                    asDatabaseTableObject().clearDataChanges();
+                }
+                tableModel.reset();
             }
         });
         bar.add(rollbackRolloverButton);
@@ -1293,10 +1288,6 @@ public class TableDataTab extends JPanel
         return table;
     }
 
-    public List<Integer> getDeleterRowIndexes() {
-        return deleterRowIndexes;
-    }
-
     public List<RecordDataItem> getRowDataForRow(int row) {
         return tableModel.getRowDataForRow(row);
     }
@@ -1353,6 +1344,10 @@ public class TableDataTab extends JPanel
                 }
             }
         }
+    }
+
+    public void reset() {
+        tableModel.reset();
     }
 
     private DatabaseTable asDatabaseTable() {

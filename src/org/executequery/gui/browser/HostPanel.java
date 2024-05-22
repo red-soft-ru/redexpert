@@ -35,7 +35,6 @@ import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 
 import java.awt.print.Printable;
-import java.util.HashMap;
 
 /**
  * Database connection host panel.
@@ -130,7 +129,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     protected void updateDatabaseProperties(boolean useStaticMethhod) {
         propertiesPanel.setDatabaseProperties(useStaticMethhod ?
-                DefaultDatabaseHost.getDatabaseProperties(host.getDatabaseConnection(), true) :
+                DefaultDatabaseHost.getDatabaseProperties(host.getDatabaseConnection(), false) :
                 host.getDatabaseProperties()
         );
     }

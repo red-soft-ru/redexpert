@@ -28,7 +28,6 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.repository.UserLayoutProperties;
 
 import javax.swing.*;
-import java.util.Objects;
 
 public class PreferencesChangesListener extends AbstractUserPreferenceListener
         implements UserPreferenceListener {
@@ -47,28 +46,18 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
             return;
 
         for (String key : dockedPanelKeysArray()) {
-
-            if (Objects.equals(ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY, key)) {
-                JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                if (component instanceof ConnectionsTreePanel)
-                    ((ConnectionsTreePanel) component).setPropertiesPanelVisible(systemUserBooleanProperty(key));
-
-                continue;
-            }
-
-            if (Objects.equals(ConnectionsTreePanel.SYSTEM_OBJECTS_KEY, key)) {
-                JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                if (component instanceof ConnectionsTreePanel)
-                    ((ConnectionsTreePanel) component).reloadOpenedConnections();
-
-                continue;
-            }
-
             layoutProperties.setDockedPaneVisible(
                     key,
                     systemUserBooleanProperty(key),
                     false
             );
+        }
+
+        JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (component instanceof ConnectionsTreePanel) {
+            ConnectionsTreePanel panel = (ConnectionsTreePanel) component;
+            panel.setPropertiesPanelVisible(systemUserBooleanProperty(ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY));
+            panel.reloadOpenedConnections();
         }
 
         applyComponentLookAndFeel();
@@ -80,8 +69,6 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
     private String[] dockedPanelKeysArray() {
         return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
-                ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY,
-                ConnectionsTreePanel.SYSTEM_OBJECTS_KEY,
                 SystemOutputPanel.PROPERTY_KEY
         };
     }

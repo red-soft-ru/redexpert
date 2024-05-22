@@ -912,13 +912,18 @@ public class ConnectionsTreePanel extends TreePanel
     public void reloadOpenedConnections() {
         connections.stream()
                 .filter(DatabaseConnection::isConnected)
-                .forEach(dc -> reloadPath(new TreePath(getHostNode(dc).getPath())));
+                .map(dc -> new TreePath(getHostNode(dc).getPath()))
+                .forEach(path -> reloadPath(path, false));
     }
 
     /**
      * Reloads the specified tree path.
      */
     public void reloadPath(TreePath path) {
+        reloadPath(path, true);
+    }
+
+    public void reloadPath(TreePath path, boolean refreshButtons) {
         try {
 
             if (treeExpanding || path == null)
@@ -942,7 +947,7 @@ public class ConnectionsTreePanel extends TreePanel
             if (expanded)
                 tree.expandPath(path);
 
-            pathChanged(oldSelectionPath, path);
+            pathChanged(oldSelectionPath, path, refreshButtons);
 
             // --- reload panel view ---
 
@@ -1458,9 +1463,9 @@ public class ConnectionsTreePanel extends TreePanel
         folderModified(null);
     }
 
-    @Override
-    public void pathChanged(TreePath oldPath, TreePath newPath) {
+    public void pathChanged(TreePath oldPath, TreePath newPath, boolean refreshButtons) {
         oldSelectionPath = oldPath; // store the last position
+
         if (oldSelectionPath != null) {
 
             Object lastObject = oldSelectionPath.getLastPathComponent();
@@ -1485,26 +1490,29 @@ public class ConnectionsTreePanel extends TreePanel
 
         if (object == tree.getConnectionsBranchNode()) { // root node
             controller.displayConnectionList();
-            enableButtons(false);
+            if (refreshButtons)
+                enableButtons(false);
             return;
         }
 
         final DatabaseObjectNode node = (DatabaseObjectNode) object;
         if (node instanceof ConnectionsFolderNode) {
             controller.displayConnectionList(((ConnectionsFolderNode) node).getConnectionsFolder());
-            enableButtons(false);
+            if (refreshButtons)
+                enableButtons(false);
             return;
 
         } else if (node instanceof DatabaseHostNode) {
             DatabaseHostNode hostNode = (DatabaseHostNode) node;
-            enableButtons(hostNode.isConnected(), true);
+            if (refreshButtons)
+                enableButtons(hostNode.isConnected(), true);
 
-        } else
+        } else if (refreshButtons)
             enableButtons(true);
 
         if (node.isHostNode()) {
-            final ConnectionsTreePanel c = this;
-            c.setInProcess(true);
+            final ConnectionsTreePanel treePanel = this;
+            treePanel.setInProcess(true);
 
             SwingWorker worker = new SwingWorker("loadingNode " + node.getName()) {
 
@@ -1525,7 +1533,7 @@ public class ConnectionsTreePanel extends TreePanel
                 public void finished() {
                     tree.finishedLoadingNode();
                     treeExpanding = false;
-                    c.setInProcess(false);
+                    treePanel.setInProcess(false);
                 }
             };
             worker.start();
@@ -1535,6 +1543,11 @@ public class ConnectionsTreePanel extends TreePanel
             moveScrollToSelection();
             setMoveScroll(false);
         }
+    }
+
+    @Override
+    public void pathChanged(TreePath oldPath, TreePath newPath) {
+        pathChanged(oldPath, newPath, true);
     }
 
     @Override

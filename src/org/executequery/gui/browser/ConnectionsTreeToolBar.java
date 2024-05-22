@@ -20,7 +20,11 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.UserPreferenceEvent;
+import org.executequery.event.UserPreferenceListener;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -28,9 +32,10 @@ import javax.swing.*;
 /**
  * @author Takis Diakoumis
  */
-class ConnectionsTreeToolBar {
+public class ConnectionsTreeToolBar implements UserPreferenceListener {
 
     private final ConnectionsTreePanel treePanel;
+    private Boolean[] enables;
 
     private JButton reloadButton;
     private JButton connectButton;
@@ -40,7 +45,9 @@ class ConnectionsTreeToolBar {
 
     public ConnectionsTreeToolBar(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
+
         init();
+        EventMediator.registerListener(this);
     }
 
     private void init() {
@@ -65,13 +72,13 @@ class ConnectionsTreeToolBar {
         }
     }
 
-    protected void enableButtons(boolean enableReloadButton, boolean enableConnected, boolean databaseConnected) {
+    protected void enableButtons(boolean enableReload, boolean enableConnected, boolean databaseConnected) {
 
         if (connectButton != null)
             connectButton.setEnabled(enableConnected);
 
         if (reloadButton != null)
-            reloadButton.setEnabled(enableReloadButton);
+            reloadButton.setEnabled(enableReload);
 
         if (connectButton != null && enableConnected) {
             if (databaseConnected) {
@@ -82,6 +89,36 @@ class ConnectionsTreeToolBar {
                 connectButton.setToolTipText(Bundles.getCommon("connect.button"));
             }
         }
+
+        enables = new Boolean[]{enableReload, enableConnected, databaseConnected};
+    }
+
+    protected void reloadButtons() {
+
+        connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
+        if (connectButton != null)
+            connectButton.addActionListener(e -> treePanel.connectDisconnect());
+
+        reloadButton = GUIUtilities.getToolBar().getButton("reload-connection-tree-selection-command");
+        if (reloadButton != null)
+            reloadButton.addActionListener(e -> treePanel.reloadSelection());
+
+        enableButtons(enables[0], enables[1], enables[2]);
+    }
+
+    // --- UserPreferenceListener impl ---
+
+    @Override
+    public void preferencesChanged(UserPreferenceEvent event) {
+
+        int type = event.getEventType();
+        if (type == UserPreferenceEvent.TOOL_BAR || type == UserPreferenceEvent.ALL)
+            reloadButtons();
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof UserPreferenceEvent;
     }
 
 }

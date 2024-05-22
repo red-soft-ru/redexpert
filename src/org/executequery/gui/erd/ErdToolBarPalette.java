@@ -21,22 +21,29 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.executequery.repository.DatabaseConnectionRepository;
+import org.executequery.repository.Repository;
+import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
  */
-public class ErdToolBarPalette extends PanelToolBar
-        implements ActionListener {
+public class ErdToolBarPalette extends JPanel {
 
     private final ErdViewerPanel parent;
     private final String[] scaleValues;
@@ -48,6 +55,7 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton createRelationButton;
     private RolloverButton deleteRelationButton;
     private RolloverButton generateScriptButton;
+    private RolloverButton generateDiagramButton;
     private RolloverButton fontStyleButton;
     private RolloverButton lineStyleButton;
     private RolloverButton canvasBgButton;
@@ -55,6 +63,8 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton erdTitleButton;
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
+
+    private JComboBox<?> connectionsCombo;
 
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
@@ -69,117 +79,211 @@ public class ErdToolBarPalette extends PanelToolBar
 
     private void init() {
 
+        List<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
+        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repo instanceof DatabaseConnectionRepository)
+            connections = ((DatabaseConnectionRepository) repo).findAll();
+
+        connectionsCombo = WidgetFactory.createComboBox(
+                "connectionsCombo",
+                connections.toArray()
+        );
+
         createTableButton = WidgetFactory.createRolloverButton(
                 "createTableButton",
                 bundleString("createTable"),
                 "NewTable16.png",
-                this
+                e -> new ErdNewTableDialog(parent)
         );
 
         addTableButton = WidgetFactory.createRolloverButton(
                 "addTableButton",
                 bundleString("addTable"),
                 "AddTable16.png",
-                this
+                e -> new ErdSelectionDialog(parent)
         );
 
         dropTableButton = WidgetFactory.createRolloverButton(
                 "dropTableButton",
                 bundleString("dropTable"),
                 "DropTable16.png",
-                this
+                e -> parent.removeSelectedTables()
         );
 
         createRelationButton = WidgetFactory.createRolloverButton(
                 "createRelationButton",
                 bundleString("relation"),
                 "TableRelationship16.png",
-                this
+                e -> createRelation()
         );
 
         deleteRelationButton = WidgetFactory.createRolloverButton(
                 "deleteRelationButton",
                 bundleString("deleteRelation"),
                 "TableRelationshipDelete16.png",
-                this
+                e -> deleteRelation()
         );
 
         generateScriptButton = WidgetFactory.createRolloverButton(
                 "generateScriptsButton",
                 bundleString("genScripts"),
                 "CreateScripts16.png",
-                this
+                e -> generateScript()
+        );
+
+        generateDiagramButton = WidgetFactory.createRolloverButton(
+                "generateDiagramButton",
+                bundleString("generateDiagram"),
+                "TableTrigger16.png",
+                e -> generateDiagram()
         );
 
         erdTitleButton = WidgetFactory.createRolloverButton(
                 "erdTitleButton",
                 bundleString("erdTitle"),
                 "ErdTitle16.png",
-                this
+                e -> createTitle()
         );
 
         fontStyleButton = WidgetFactory.createRolloverButton(
                 "fontStyleButton",
                 bundleString("fontStyle"),
                 "FontStyle16.png",
-                this
+                e -> parent.showFontStyleDialog()
         );
 
         lineStyleButton = WidgetFactory.createRolloverButton(
                 "lineStyleButton",
                 bundleString("lineStyle"),
                 "LineStyle16.png",
-                this
+                e -> parent.showLineStyleDialog()
         );
 
         canvasBgButton = WidgetFactory.createRolloverButton(
                 "canvasBgButton",
                 bundleString("canvasBg"),
                 "ErdBackground16.png",
-                this
+                e -> setBackgroundColours(true)
         );
 
         canvasFgButton = WidgetFactory.createRolloverButton(
                 "canvasFgButton",
                 bundleString("canvasFg"),
                 "ErdForeground16.png",
-                this
+                e -> setBackgroundColours(false)
         );
 
         zoomInButton = WidgetFactory.createRolloverButton(
                 "zoomInButton",
                 bundleString("zoomIn"),
                 "ZoomIn16.png",
-                this
+                e -> parent.zoom(true)
         );
 
         zoomOutButton = WidgetFactory.createRolloverButton(
                 "zoomOutButton",
                 bundleString("zoomOut"),
                 "ZoomOut16.png",
-                this
+                e -> parent.zoom(false)
         );
+
+        connections.stream()
+                .filter(DatabaseConnection::isConnected)
+                .findFirst().ifPresent(dc -> connectionsCombo.setSelectedItem(dc));
     }
 
     private void arrange() {
+        setLayout(new GridBagLayout());
 
-        addButton(createTableButton);
-        addButton(addTableButton);
-        addButton(dropTableButton);
-        addButton(createRelationButton);
-        addButton(deleteRelationButton);
-        addButton(generateScriptButton);
+        GridBagHelper gbh = new GridBagHelper().anchorWest().fillHorizontally();
+        add(connectionsCombo, gbh.setWeightX(0.2).get());
+        add(createTableButton, gbh.nextCol().setMinWeightX().get());
+        add(createTableButton, gbh.nextCol().get());
+        add(addTableButton, gbh.nextCol().get());
+        add(dropTableButton, gbh.nextCol().get());
+        add(createRelationButton, gbh.nextCol().get());
+        add(deleteRelationButton, gbh.nextCol().get());
+        add(generateScriptButton, gbh.nextCol().get());
+        add(generateDiagramButton, gbh.nextCol().get());
 
-        addSeparator();
-        addButton(erdTitleButton);
-        addButton(fontStyleButton);
-        addButton(lineStyleButton);
-        addButton(canvasFgButton);
-        addButton(canvasBgButton);
+        add(PanelToolBar.getSeparator(), gbh.nextCol().get());
+        add(erdTitleButton, gbh.nextCol().get());
+        add(fontStyleButton, gbh.nextCol().get());
+        add(lineStyleButton, gbh.nextCol().get());
+        add(canvasFgButton, gbh.nextCol().get());
+        add(canvasBgButton, gbh.nextCol().get());
 
-        addSeparator();
-        addButton(zoomOutButton);
-        addButton(zoomInButton);
+        add(PanelToolBar.getSeparator(), gbh.nextCol().get());
+        add(zoomOutButton, gbh.nextCol().get());
+        add(zoomInButton, gbh.nextCol().get());
+
+        add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
+    }
+
+    private void generateDiagram() {
+        try {
+            GUIUtilities.showWaitCursor();
+
+            BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
+            JPanel panel = new GenerateErdPanel(getSelectedConnection(), dialog, parent);
+
+            dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.setResizable(false);
+            dialog.display();
+
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+    }
+
+    private void createRelation() {
+
+        if (parent.getAllComponentsVector().size() <= 1) {
+            GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
+            return;
+        }
+
+        new ErdNewRelationshipDialog(parent);
+    }
+
+    private void deleteRelation() {
+
+        ErdTable[] tables = parent.getSelectedTablesArray();
+        if (tables.length < 2)
+            return;
+
+        if (tables.length > 2) {
+            GUIUtilities.displayErrorMessage(bundleString("SelectOnlyTwoTablesError"));
+            return;
+        }
+
+        new ErdDeleteRelationshipDialog(parent, tables);
+    }
+
+    private void generateScript() {
+
+        Vector<ErdTable> tables = parent.getAllComponentsVector();
+        if (tables.isEmpty()) {
+            GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
+            return;
+        }
+
+        Vector<ErdTable> clonedTables = new Vector<>(tables.size());
+        for (int i = 0; i < tables.size(); i++)
+            clonedTables.add(tables.elementAt(i));
+
+        new ErdScriptGenerator(clonedTables, parent);
+    }
+
+    private void createTitle() {
+
+        ErdTitlePanel titlePanel = parent.getTitlePanel();
+        if (titlePanel != null) {
+            titlePanel.doubleClicked(null);
+            return;
+        }
+
+        new ErdTitlePanelDialog(parent);
     }
 
     private void setBackgroundColours(boolean forCanvas) {
@@ -256,87 +360,22 @@ public class ErdToolBarPalette extends PanelToolBar
         parent.setPopupMenuScaleValue(selectedScaleIndex);
     }
 
-    // --- ActionListener impl ---
+    public DatabaseConnection getSelectedConnection() {
 
-    @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource();
+        Object selectedItem = connectionsCombo.getSelectedItem();
+        if (selectedItem instanceof DatabaseConnection) {
 
-        if (Objects.equals(source, createTableButton)) {
-            new ErdNewTableDialog(parent);
+            DatabaseConnection connection = (DatabaseConnection) selectedItem;
+            if (!connection.isConnected())
+                ConnectionMediator.getInstance().connect(connection);
 
-        } else if (Objects.equals(source, addTableButton)) {
-            new ErdSelectionDialog(parent);
-
-        } else if (Objects.equals(source, dropTableButton)) {
-            parent.removeSelectedTables();
-
-        } else if (Objects.equals(source, createRelationButton)) {
-
-            if (parent.getAllComponentsVector().size() <= 1) {
-                GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
-                return;
-            }
-            new ErdNewRelationshipDialog(parent);
-
-        } else if (Objects.equals(source, deleteRelationButton)) {
-
-            ErdTable[] tables = parent.getSelectedTablesArray();
-            if (tables.length < 2)
-                return;
-
-            if (tables.length > 2) {
-                GUIUtilities.displayErrorMessage(bundleString("SelectOnlyTwoTablesError"));
-                return;
-            }
-            new ErdDeleteRelationshipDialog(parent, tables);
-
-        } else if (Objects.equals(source, generateScriptButton)) {
-
-            Vector tables = parent.getAllComponentsVector();
-            if (tables.isEmpty()) {
-                GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
-                return;
-            }
-
-            Vector clonedTables = new Vector<>(tables.size());
-            for (int i = 0; i < tables.size(); i++)
-                clonedTables.add(tables.elementAt(i));
-
-            new ErdScriptGenerator(clonedTables, parent);
-
-        } else if (source == erdTitleButton) {
-
-            ErdTitlePanel titlePanel = parent.getTitlePanel();
-            if (titlePanel != null)
-                titlePanel.doubleClicked(null);
-            else
-                new ErdTitlePanelDialog(parent);
-
-        } else if (source == fontStyleButton) {
-            parent.showFontStyleDialog();
-
-        } else if (source == lineStyleButton) {
-            parent.showLineStyleDialog();
-
-        } else if (source == canvasFgButton) {
-            setBackgroundColours(false);
-
-        } else if (source == canvasBgButton) {
-            setBackgroundColours(true);
-
-        } else if (source == zoomInButton) {
-            parent.zoom(true);
-
-        } else if (source == zoomOutButton) {
-            parent.zoom(false);
+            return connection;
         }
+
+        return null;
     }
 
-    // ---
-
-    private String bundleString(String key) {
+    private static String bundleString(String key) {
         return Bundles.get(ErdToolBarPalette.class, key);
     }
 

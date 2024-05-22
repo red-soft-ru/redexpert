@@ -137,7 +137,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         gbc.insets.left = 7;
         btnPanel.add(cancelButton, gbc);
 
-        createPanel = new CreateTableERDPanel(null, this);
+        createPanel = new CreateTableERDPanel(erdViewerPanel.getDatabaseConnection(), this);
         createPanel.addButtonsPanel(btnPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
         c.add(createPanel, BorderLayout.CENTER);

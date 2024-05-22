@@ -80,7 +80,13 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     /**
      * the connection props object
      */
-    private DatabaseConnection databaseConnection;
+    private final DatabaseConnection databaseConnection;
+    private ErdViewerPanel erdViewerPanel;
+
+    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables, String schema, ErdViewerPanel erdViewerPanel) {
+        this(databaseConnection, selectedTables, schema);
+        this.erdViewerPanel = erdViewerPanel;
+    }
 
     public ErdGenerateProgressDialog(DatabaseConnection databaseConnection,
                                      Vector selectedTables, String schema) {
@@ -232,19 +238,15 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             GUIUtilities.showWaitCursor();
             metaData = null;
 
-            ErdViewerPanel viewerPanel =
-                    new ErdViewerPanel(selectedTables, columnData, false);
-            viewerPanel.setDatabaseConnection(databaseConnection);
+            new ErdViewerPanel(selectedTables, columnData, false);
+
+            erdViewerPanel.setDatabaseConnection(databaseConnection);
+            erdViewerPanel.cleanup();
+            erdViewerPanel.setTables(selectedTables, columnData);
+            erdViewerPanel.setTableDependencies(erdViewerPanel.buildTableRelationships());
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
-            //GUIUtilities.closeInternalFrame(GenerateErdPanel.TITLE);
-
             dispose();
-            GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
-                    ErdViewerPanel.FRAME_ICON,
-                    viewerPanel,
-                    null,
-                    true);
             GUIUtilities.showNormalCursor();
             selectedTables = null;
 

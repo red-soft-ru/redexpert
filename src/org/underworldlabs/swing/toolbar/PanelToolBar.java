@@ -101,6 +101,10 @@ public class PanelToolBar extends AbstractToolBarPanel {
         add(button);
     }
 
+    public static JSeparator getSeparator() {
+        return  new PanelToolBarSeparator();
+    }
+
     private static class PanelToolBarSeparator extends JSeparator {
 
         private static final int DEFAULT_WIDTH = 4;

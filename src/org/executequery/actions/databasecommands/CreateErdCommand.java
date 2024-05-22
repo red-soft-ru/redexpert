@@ -22,16 +22,10 @@ package org.executequery.actions.databasecommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.browser.GrantManagerPanel;
 import org.executequery.gui.erd.ErdViewerPanel;
-import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 /**
  * Command execution for Database | Create New ERD.
@@ -41,39 +35,15 @@ import java.util.List;
 public class CreateErdCommand extends OpenFrameCommand
         implements BaseCommand {
 
-
+    @Override
     public void execute(ActionEvent e) {
-        boolean execute_w = false;
-        List<DatabaseConnection> listConnections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-        for (DatabaseConnection dc : listConnections) {
-            if (dc.isConnected()) {
-                execute_w = true;
-                break;
-            }
-        }
-        if (execute_w) {
-            GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
-                    ErdViewerPanel.FRAME_ICON,
-                    new ErdViewerPanel(null, null, true),
-                    null,
-                    true);
-        } else
-            GUIUtilities.displayErrorMessage(Bundles.get(GrantManagerPanel.class, "message.notConnected"));
+        GUIUtilities.addCentralPane(
+                ErdViewerPanel.TITLE,
+                ErdViewerPanel.FRAME_ICON,
+                new ErdViewerPanel(null, null, true),
+                null,
+                true
+        );
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

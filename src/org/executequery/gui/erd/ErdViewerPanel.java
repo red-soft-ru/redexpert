@@ -844,7 +844,7 @@ public class ErdViewerPanel extends DefaultTabView
         scroll.resizeCanvas();
     }
 
-    public Vector getAllComponentsVector() {
+    public Vector<ErdTable> getAllComponentsVector() {
         return tables;
     }
 
@@ -1271,11 +1271,11 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public DatabaseConnection getDatabaseConnection() {
-        return databaseConnection;
+        return tools.getSelectedConnection();
     }
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
-        this.databaseConnection = databaseConnection;
+//        this.databaseConnection = databaseConnection;
     }
 
     // --------------------------------------------
@@ -1309,4 +1309,9 @@ public class ErdViewerPanel extends DefaultTabView
         return Bundles.get(ErdViewerPanel.class, key);
     }
 
+    public void setTableDependencies(Vector vector) {
+        dependsPanel.setTableDependencies(vector);
+        resizeCanvas();
+        layeredPane.validate();
+    }
 }

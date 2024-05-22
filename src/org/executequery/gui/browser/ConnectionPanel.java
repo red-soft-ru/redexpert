@@ -34,7 +34,7 @@ import org.executequery.event.*;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.gui.drivers.CreateDriverDialog;
 import org.executequery.gui.editor.TransactionIsolationCombobox;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -1708,7 +1708,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void addNewDriver() {
 
-        new DialogDriverPanel();
+        new CreateDriverDialog();
     }
 
     @Override

@@ -1163,4 +1163,20 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
             executor.releaseResources();
     }
 
+    public void reset() {
+        List<List<RecordDataItem>> newRows = new ArrayList<>();
+        for (List<RecordDataItem> row : tableData) {
+            if (row != null && row.size() > 0)
+                if (row.get(0).isNew())
+                    newRows.add(row);
+                else for (RecordDataItem recordDataItem : row)
+                    recordDataItem.reset();
+
+        }
+        for (List<RecordDataItem> row : newRows) {
+            tableData.remove(row);
+        }
+        fireTableDataChanged();
+    }
+
 }

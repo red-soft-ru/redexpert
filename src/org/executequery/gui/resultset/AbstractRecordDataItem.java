@@ -190,7 +190,7 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
 
     @Override
     public boolean isModificated() {
-        return isNew() || isDeleted() || isChanged() || isValueNull() || isNewValueNull();
+        return isNew() || isDeleted() || isChanged();
     }
 
     @Override
@@ -343,6 +343,13 @@ public abstract class AbstractRecordDataItem implements RecordDataItem {
         else if (compar_object.getDisplayValue() == null)
             return 1;
         else return -1;
+    }
+
+    @Override
+    public void reset() {
+        newValue = value;
+        deleted = false;
+        changed = false;
     }
 }
 

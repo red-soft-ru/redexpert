@@ -39,8 +39,6 @@ import java.util.regex.Pattern;
 public class QueryTokenizer {
 
     private String queryDelimiter = ";";
-    private final String beginPattern = "begin";
-    private final String endPattern = "end";
 
     private final List<Token> stringTokens;
     private final List<Token> singleLineCommentTokens;
@@ -50,7 +48,6 @@ public class QueryTokenizer {
     private static final int AS = NORMAL + 1;
     private static final int DECLARE = AS + 1;
     private static final int BEGIN_END = DECLARE + 1;
-    private List<String> beginEndBlocks;
 
     public QueryTokenizer() {
         stringTokens = new ArrayList<>();

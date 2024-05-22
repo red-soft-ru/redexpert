@@ -430,12 +430,11 @@ public class GUIUtils {
             if (frame != null)
                 frame.dispose();
 
-            if (formatDialogReturnValue(pane.getValue()) != JOptionPane.YES_OPTION) {
-                dialogReturnValue = JOptionPane.UNINITIALIZED_VALUE;
-                return;
+            if (wantsInput) {
+                dialogReturnValue = pane.getInputValue();
+            } else {
+                dialogReturnValue = pane.getValue();
             }
-
-            dialogReturnValue = wantsInput ? pane.getInputValue() : pane.getValue();
         };
         invokeAndWait(runnable);
 

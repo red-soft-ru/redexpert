@@ -21,6 +21,7 @@
 package org.executequery.actions.helpcommands;
 
 import org.executequery.actions.OpenFrameCommand;
+import org.executequery.gui.ChangelogDialog;
 import org.executequery.gui.InformationDialog;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.BaseCommand;
@@ -37,14 +38,12 @@ public class ChangelogCommand extends OpenFrameCommand
 
     @Override
     public void execute(ActionEvent e) {
-
-        new InformationDialog(
+        new ChangelogDialog(
                 Bundles.get("action.changelog-command"),
                 Bundles.get("action.changelog-command.path"),
                 InformationDialog.RESOURCE_PATH_VALUE,
-                "UTF8",
-                "text/html"
-        );
+                "UTF8"
+        ).display();
     }
 
 }

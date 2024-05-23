@@ -36,6 +36,9 @@ public class InformationDialog extends ActionDialog {
     public static final int RESOURCE_PATH_VALUE = 0;
     public static final int TEXT_CONTENT_VALUE = 1;
 
+    protected final JEditorPane editorPane;
+    protected final String loadedText;
+
     public InformationDialog(String name, String value, int valueType, String charSet) {
         this(name, value, valueType, charSet, "text/plain");
     }
@@ -43,25 +46,27 @@ public class InformationDialog extends ActionDialog {
     public InformationDialog(String name, String value, int valueType, String charSet, String contentType) {
         super(name, true);
 
-        String text = value;
-        if (valueType == RESOURCE_PATH_VALUE)
-            text = loadText(value, charSet);
+        loadedText = valueType == RESOURCE_PATH_VALUE ?
+                loadText(value, charSet) :
+                value;
 
-        JEditorPane pane = new JEditorPane();
-        pane.setContentType(contentType);
-        pane.setText(text);
-        pane.setCaretPosition(0);
-        pane.setEditable(false);
+        editorPane = new JEditorPane();
+        editorPane.setContentType(contentType);
+        editorPane.setText(loadedText);
+        editorPane.setCaretPosition(0);
+        editorPane.setEditable(false);
+    }
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(650, 500));
-        panel.add(
-                new JScrollPane(pane),
+    protected JPanel buildDisplayComponent() {
+
+        JPanel viewPanel = new JPanel(new GridBagLayout());
+        viewPanel.setPreferredSize(new Dimension(650, 500));
+        viewPanel.add(
+                new JScrollPane(editorPane),
                 new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY().get()
         );
 
-        addDisplayComponent(panel);
-        display();
+        return viewPanel;
     }
 
     private String loadText(String value, String charSet) {
@@ -75,6 +80,13 @@ public class InformationDialog extends ActionDialog {
         }
 
         return value;
+    }
+
+    @Override
+    public final void display() {
+        JPanel viewPanel = buildDisplayComponent();
+        addDisplayComponent(viewPanel);
+        super.display();
     }
 
 }

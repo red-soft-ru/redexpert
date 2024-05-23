@@ -34,11 +34,14 @@ import java.awt.event.ActionEvent;
 public class LicenseCommand extends OpenFrameCommand
         implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        new InformationDialog(bundledString("license"),
-                "org/executequery/gpl.license", InformationDialog.RESOURCE_PATH_VALUE, null);
+        new InformationDialog(
+                bundledString("license"),
+                "org/executequery/gpl.license",
+                InformationDialog.RESOURCE_PATH_VALUE,
+                null
+        ).display();
     }
 
 }
-

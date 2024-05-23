@@ -281,12 +281,14 @@ public class CheckForUpdateNotifier implements Interruptible {
                     String releaseNotes = JSONAPI.getJsonPropertyFromUrl(repository.getReleaseNotesUrl(), "body");
                     restoreProgressDialog();
 
-                    GUIUtils.invokeAndWait(() -> new InformationDialog(
-                            bundledString("latestVersionInfoTitle"),
-                            releaseNotes,
-                            InformationDialog.TEXT_CONTENT_VALUE,
-                            null
-                    ));
+                    GUIUtils.invokeAndWait(() ->
+                            new InformationDialog(
+                                    bundledString("latestVersionInfoTitle"),
+                                    releaseNotes,
+                                    InformationDialog.TEXT_CONTENT_VALUE,
+                                    null
+                            ).display()
+                    );
 
                 } catch (Exception e) {
                     restoreProgressDialog();

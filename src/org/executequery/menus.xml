@@ -359,7 +359,7 @@
         <menu-item id="license-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="release-notes-command"
+        <menu-item id="changelog-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>

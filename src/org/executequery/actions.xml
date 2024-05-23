@@ -85,12 +85,12 @@
             description="Save an open document"
             execute-class="org.executequery.actions.filecommands.SaveCommand"/>
 
-    <action id="release-notes-command"
-            name="Release Notes"
+    <action id="changelog-command"
+            name="Changelog"
             mnemonic="R"
             accel-editable="false"
-            description="Red Expert version release notes"
-            execute-class="org.executequery.actions.helpcommands.ReleaseNotesCommand"/>
+            description="Full RedExpert changelog"
+            execute-class="org.executequery.actions.helpcommands.ChangelogCommand"/>
 
     <action id="license-command"
             name="License"

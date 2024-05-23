@@ -20,7 +20,8 @@
 
 package org.executequery.gui;
 
-import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
@@ -35,74 +36,45 @@ public class InformationDialog extends ActionDialog {
     public static final int RESOURCE_PATH_VALUE = 0;
     public static final int TEXT_CONTENT_VALUE = 1;
 
-    /**
-     * Creates a new instance of InformationDialog
-     */
     public InformationDialog(String name, String value, int valueType, String charSet) {
+        this(name, value, valueType, charSet, "text/plain");
+    }
 
+    public InformationDialog(String name, String value, int valueType, String charSet, String contentType) {
         super(name, true);
 
+        String text = value;
+        if (valueType == RESOURCE_PATH_VALUE)
+            text = loadText(value, charSet);
+
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType(contentType);
+        pane.setText(text);
+        pane.setCaretPosition(0);
+        pane.setEditable(false);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(new Dimension(650, 500));
+        panel.add(
+                new JScrollPane(pane),
+                new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY().get()
+        );
+
+        addDisplayComponent(panel);
+        display();
+    }
+
+    private String loadText(String value, String charSet) {
         try {
-
-            String text = null;
-
-            if (valueType == RESOURCE_PATH_VALUE) {
-                if (charSet == null)
-                    text = FileUtils.loadResource(value);
-                else
-                    text = FileUtils.loadResource(value, charSet);
-
-            } else {
-
-                text = value;
-            }
-
-            JTextArea textArea = new JTextArea(text);
-            textArea.setFont(new Font("Arial", Font.PLAIN, 12));
-            textArea.setTabSize(2);
-            textArea.setLineWrap(true);
-            textArea.setWrapStyleWord(true);
-            textArea.setEditable(false);
-
-            JPanel panel = new JPanel(new GridBagLayout());
-            JButton closeButton = new DefaultPanelButton(this, Bundles.get("common.close.button"), "dispose");
-
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets.top = 5;
-            gbc.insets.bottom = 5;
-            gbc.insets.left = 5;
-            gbc.insets.right = 5;
-            gbc.gridy = 0;
-            gbc.gridx = 0;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            panel.add(new JScrollPane(textArea), gbc);
-            gbc.gridy++;
-            gbc.weightx = 0;
-            gbc.weighty = 0;
-            gbc.insets.top = 0;
-            gbc.fill = GridBagConstraints.NONE;
-            gbc.anchor = GridBagConstraints.CENTER;
-            panel.add(closeButton, gbc);
-
-            panel.setPreferredSize(new Dimension(650, 500));
-
-            addDisplayComponent(panel);
-            display();
+            if (charSet != null)
+                return FileUtils.loadResource(value, charSet);
+            return FileUtils.loadResource(value);
 
         } catch (IOException e) {
-
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
 
+        return value;
     }
 
 }
-
-
-
-
-
-

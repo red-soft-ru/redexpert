@@ -22,23 +22,29 @@ package org.executequery.actions.helpcommands;
 
 import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.InformationDialog;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;
 
 /**
- * The Help | Release Notes command execution.
+ * Release Notes command execution.
  *
  * @author Takis Diakoumis
  */
-public class ReleaseNotesCommand extends OpenFrameCommand
+public class ChangelogCommand extends OpenFrameCommand
         implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        new InformationDialog(bundledString("ReleaseNotes"),
-                bundledString("pathToNotes"), InformationDialog.RESOURCE_PATH_VALUE, "UTF8");
+        new InformationDialog(
+                Bundles.get("action.changelog-command"),
+                Bundles.get("action.changelog-command.path"),
+                InformationDialog.RESOURCE_PATH_VALUE,
+                "UTF8",
+                "text/html"
+        );
     }
 
 }
-

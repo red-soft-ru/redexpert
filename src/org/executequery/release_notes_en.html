@@ -1,0 +1,683 @@
+<h1>RedExpert Changelog</h1>
+<h2>Major changes - v2024.04</h2>
+<p>Added:</p>
+<ol>
+    <li>Ability to set display format for table data with types "TIME WITH TIMEZONE" and "TIMESTAMP WITH TIMEZONE"</li>
+    <li>Connection to the selected database by pressing the Enter key in the connection tree</li>
+    <li>Expand/collapse selected node by pressing the Enter key in the connection tree</li>
+    <li>Index selectivity display when editing a table</li>
+    <li>Closing ResultSet and statistics tabs by clicking on the mouse wheel</li>
+    <li>Connection to database from the SQL script in the "Execute SQL script" panel</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Attempting to run an application in a minimal Java runtime environment (headless)</li>
+    <li>Application updating using automatically downloaded Java</li>
+    <li>Updating by proxy</li>
+    <li>Updating the list of indexes when editing table</li>
+    <li>Root tree node display in the profiler panel</li>
+    <li>Restoring cell dimensions after editing it in the table "Data" tab</li>
+    <li>Determining the size of columns in a dataset according to the width of its contents</li>
+    <li>Cell editors for data with Date/Time types</li>
+    <li>Action of the "Switch data display" button and similar functionality in the drop-down menu on the table "Data"
+        tab
+    </li>
+    <li>Domains comparing</li>
+    <li>Display format changing of a field with the TIMESTAMP type when editing it</li>
+    <li>SQL scripts generation when extracting metadata for domains, exceptions, roles, indexes, external functions and
+        jobs
+    </li>
+    <li>"Metadata Export" tool behavior when objects to be extracted were not detected by the program</li>
+    <li>Retrieving information about objects with JOB type during metadata extraction</li>
+    <li>Connection tree refresh when automatically connecting to the database from other program modules</li>
+    <li>Ignoring the last query when executing SQL script if it does not have a delimiter character</li>
+    <li>New Query Editor panel opening for an automatically connected database</li>
+    <li>Application panels size adjusting when open new ones</li>
+    <li>Database connection properties saving</li>
+    <li>NPE when switching from the table "Data" tab without applying changes</li>
+    <li>"Find and Replace" tool behavior</li>
+    <li>Page Up/Page Down key actions when working with statistics</li>
+    <li>BLOB parameters recognizing in the UDF</li>
+    <li>Connection error output in the Database Statistics tool</li>
+    <li>Autocomplete in the Query Editor</li>
+    <li>Updating in the object tree when changes are made in the query editor</li>
+    <li>Changing the cursor position when ESC is pressed</li>
+</ol>
+<h2>Major changes - v2024.03</h2>
+<p>Added:</p>
+<ol>
+    <li>Update without authorization on reddatabase.ru</li>
+    <li>Tablespaces support when working with database statistics</li>
+    <li>Displaying information about "sorting memory usage" in the Trace table</li>
+    <li>Minimum values columns on the "Analysis" tab in the "Trace Manager"</li>
+    <li>Ability to export statistics tables data</li>
+    <li>Buttons "connect to all databases" and "disconnect from all"</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Rows numbering in the Query Editor, when the "Row Transfer" option is enabled</li>
+    <li>Columns and constraints data display after table reloading</li>
+    <li>Graphical defects of the procedures and functions execution window</li>
+    <li>Parameters input dialog displaying at repeated execution of a parameterized query</li>
+    <li>SQL scripts generation for Functions, Procedures, Users, DDL-triggers, UDF, Database connection strings, Table
+        comments, Table calculated fields
+    </li>
+    <li>User manager behavior when GostPassword_Manager plugin is enabled</li>
+    <li>Rework "User Manager" module</li>
+    <li>Errors of "Metadata Export" module</li>
+    <li>Copying a database in the connection tree by drag’n’drop with CTRL</li>
+    <li>Updating color settings for the "Query Editor" and the "Result Set" panel when switching between dark and light
+        application themes
+    </li>
+    <li>Loading information about users with the same name but different plugins</li>
+    <li>Case sensitivity of file type when importing data</li>
+    <li>Errors when importing data from Excel file</li>
+    <li>Displaying connection information</li>
+    <li>Behavior when changing encoding in Trace Manager</li>
+    <li>Duplicate Query Editor tabs</li>
+    <li>Column editing errors when system object display is disabled</li>
+    <li>Errors and freezing when quickly establishing/disconnecting database connection</li>
+    <li>Data alignment on the "Result Set" panel</li>
+    <li>Graphical defects when working with the application</li>
+</ol>
+<h2>Major changes - v2024.01</h2>
+<p>Added:</p>
+<ol>
+    <li>Support of work with database statistics:
+        <ul>
+            <li>Obtaining database statistics via services</li>
+            <li>Parsing DB statistics from a file</li>
+            <li>DB statistics comparing</li>
+        </ul>
+    </li>
+    <li>Data import support from XLSX and XML files</li>
+    <li>Export/import of data with BLOB type</li>
+    <li>Ability to select columns when exporting data</li>
+    <li>Ability to transfer data from one database to another</li>
+    <li>Database metadata extracting into SQL-script</li>
+    <li>SQL-queries executing to a file directly</li>
+    <li>Transaction parameters support in the Query Editor</li>
+    <li>Query execution in several connections simultaneously</li>
+    <li>Transaction confirmation window when closing the Query Editor and the "Data" tab of tables and views</li>
+    <li>Displaying connection and database properties (such as server, page size, database file size, etc.)</li>
+    <li>Ability to copy column names from a Result Set</li>
+    <li>“Triggers” tab for views</li>
+    <li>Ability to configure database connection timeout</li>
+    <li>Updated data import and export panels</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Display tables with “NONE” encoding</li>
+    <li>Recognizing VARCHAR and CHAR types other than undefined subtype and with fixed binary data</li>
+    <li>Reloading of views after making changes</li>
+    <li>Auto-completion: by occurrence, not by string start</li>
+    <li>UDF opening errors</li>
+    <li>Editing foreign keys</li>
+    <li>Copying connection with encoding</li>
+    <li>Editing data in columns with names containing spaces</li>
+    <li>Disappearance of the edited procedure text on the “DDL” tab when switching tabs</li>
+    <li>Searching for database objects in the connection tree with names containing '$'</li>
+    <li>GUI defects when double-clicking on a table name in the Query Editor</li>
+    <li>Limitations on the number of characters and maximum value when editing field value with INT128 type</li>
+    <li>SQL code generation for external UDR functions, indexes and constraints</li>
+    <li>Table Validation with a large number of fields and indexes</li>
+    <li>Profiler buttons availability when switching between application tabs</li>
+    <li>Display PUBLIC role in the "Users" group in the Grant Manager</li>
+    <li>Focus shift when changing a filter field in the Grant Manager</li>
+    <li>Updating the list of triggers for tables and views when adding a new trigger</li>
+    <li>Updating the list of table fields when they are changed</li>
+</ol>
+<h2>Major changes - v2023.10.1</h2>
+<p>Added:</p>
+<ol>
+    <li>“Properties” tab on the database table editing panel.</li>
+    <li>Configuring SQL templates from the Menu -> Tools.</li>
+    <li>Checkbox "Automatic text wrapping" in the text browser of data with the BLOB type.</li>
+    <li>Ability to specify a relative path to the log file in the settings.</li>
+    <li>View blobs of PDF type.</li>
+    <li>Autocomplete when editing table triggers for new. and old.</li>
+    <li>Ability to change column position.</li>
+    <li>Ability to (not)check changes in column positions during DB comparison.</li>
+    <li>Changing a cursor in the Query Editor while holding down the CTRL button when hovering over an object that can
+        be opened.
+    </li>
+    <li>Restart the application only after saving several settings.</li>
+    <li>Target and source database exchange button on the comparison panel.</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>ODBC driver support has been terminated.</li>
+    <li>Recreation a role when adding a comment for it.</li>
+    <li>Errors of editing table foreign keys.</li>
+    <li>Inability to add a comment to the index through the editing window.</li>
+    <li>Adding extra versions of Red Expert to the list of Windows applications when installing a new version of the
+        application over the old one.
+    </li>
+    <li>Action taken when clicking the Select Displayed Dataset Columns button when the Results Pane is closed.</li>
+    <li>Selecting table rows to be deleted after closing the “Data” tab and canceling the deletion.</li>
+    <li>An error when the “Close all tabs” button did not close all tabs.</li>
+    <li>Incorrect error handling during update.</li>
+    <li>Syntax highlighting for multi-line identifiers.</li>
+    <li>Application crash if user settings are broken.</li>
+    <li>DDL generation for ARRAY, NUMERIC and DECIMAL columns.</li>
+    <li>Improved autocomplete support for Firebird aliases and keywords.</li>
+    <li>Working with tables with name length more than31</li>
+    <li>Updated links for automatic Java downloads.</li>
+    <li>Unreasonable memory consumption.</li>
+    <li>Incorrect display of the red_expert.ico file.</li>
+    <li>Functioning of such application settings as: highlighting the current line; number of saved log files; selected
+        text color; alternative editor background; editor font color; alternative highlight color.
+    </li>
+</ol>
+<h2>Major changes - v2023.08</h2>
+<p>Added:</p>
+<ol>
+    <li>Online table validation.</li>
+    <li>Ability to set different date-time templates for fields with DATE, TIME and TIMESTAMP types.</li>
+    <li>Ability to enable line wrapping mode in the Query Editor.</li>
+    <li>Support of the PSQL-profiler.</li>
+    <li>Tree view display with a panel of differences for each object as a DB comparer result.</li>
+    <li>New Foreign Key selection panel on the “Data” tab when working with DB tables.</li>
+    <li>Ability to reset color to default by RMB click in the color settings.</li>
+    <li>Ability to filter columns by their names in the “Result Column Visibility” window for a Result Set.</li>
+    <li>Audit analysis.</li>
+    <li>Auto-complete for packages (procedures and functions are suggested after a dot).</li>
+    <li>Date display in the application log.</li>
+    <li>Ability to write trace to file without parsing in the application.</li>
+    <li>Ability to navigate tabs with a mouse wheel.</li>
+    <li>Ability to enable or disable parsing of variable declarations in Procedures and Functions.</li>
+    <li>Ability to recalculate index statistics from the corresponding tab of the table.</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Inability to add a comment for a table field when editing it.</li>
+    <li>An error due to which the content of the “SQL” tab during table creation was not updated when changing the
+        “Comment” tab content.
+    </li>
+    <li>Option “Show Grid” in the “Links” tab when working with a DB table.</li>
+    <li>Displaying the username in the “Select Result” tab when editing a user is confirmed.</li>
+    <li>Generation of the SQL scripts for packages, views, tables and jobs.</li>
+    <li>“Description” tabs renamed to “Comment”.</li>
+    <li>Incorrect application of theme and style for the Query Editor.</li>
+    <li>Wrong SQL script formatting in the Query Editor.</li>
+    <li>NPE when navigating through folders in the connection tree.</li>
+    <li>An error due to which the fields and constraints of the DB table disappeared when changing its comment.</li>
+    <li>Defects when moving multiple connections to a folder in the connection tree.</li>
+    <li>Error getting tablespaces and jobs from the Firebird connection during DB comparison.</li>
+    <li>Error editing cell in the Result Set.</li>
+    <li>An error due to which when installing an application with root, it was not added to the application menu.</li>
+    <li>Adding a post-install application shortcut for all users that could not be removed.</li>
+    <li>Errors while updating the application. Updates are now downloaded and unpacked into the temporary folder, and
+        only one copy of the application must be open to run the update.
+    </li>
+    <li>Error opening Trace Manager, if there are non-standard drivers.</li>
+    <li>Error saving ER-diagrams.</li>
+    <li>Displaying scale for NUMERIC type.</li>
+    <li>Sorting of visible columns of Trace Manager.</li>
+    <li>Errors working with column names starting with a space.</li>
+    <li>Failure to insert a password when creating a user.</li>
+    <li>Search in the object tree (by string occurrence).</li>
+    <li>Incorrect authentication error detection.</li>
+    <li>Failure to copy name when editing an object.</li>
+    <li>Generating DDL functions containing cursors.</li>
+    <li>Adjusting width of the Result Set columns by content.</li>
+    <li>Editing Primary Key fields by multiple fields.</li>
+    <li>Disabled the ability to use ARRAY data type.</li>
+    <li>Localized: Driver Selection Panel; Color Selection Panel; File Selection/Saving Panel; labels, hints and context
+        menus in the Query Editor; Password View Panel; Connection Details Panel; Notepad Panel; ER-diagram Editor.
+    </li>
+</ol>
+<h2>Major changes - v2023.05</h2>
+<p>Added:</p>
+<ol>
+    <li>Scheduler support</li>
+    <li>Database metadata comparison</li>
+    <li>Jaybird 5 support</li>
+    <li>Ability to recompile all views</li>
+    <li>Autocomplete for variables and parameters when working with procedures and functions</li>
+    <li>Highlighting paired brackets</li>
+    <li>Line number and cursor position in each SQL field</li>
+    <li>Ability to set font size greater than 16 pt. in the Query Editor</li>
+    <li>DDL tab for exceptions</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>The arrangement of elements on the panels for creating and editing objects has been redesigned</li>
+    <li>Reduced connection time to the database</li>
+    <li>Reduced metadata loading time for object recompilation</li>
+    <li>Generation CREATE and ALTER SQL-scripts for some objects</li>
+    <li>Error opening triggers, procedures and functions in Firebird</li>
+    <li>Memory leaks after closing objects</li>
+    <li>Trace parsing</li>
+    <li>Parameters were case-sensitive in the Query Editor</li>
+    <li>Working with object privileges</li>
+    <li>Problem with restarting RedExpert after installing an update on Linux systems</li>
+    <li>Incorrect display (spelling) of the keyword "TIME ZONE"</li>
+    <li>Behavior of the "Execute" button in the Query Editor (Now when you click on it, the script is executed as a
+        whole block and isn't divided into several queries in accordance with the delimiters. To execute an SQL-script
+        from several queries, you need to use the "Execute SQL-script" button)
+    </li>
+    <li>Buttons tooltips in the Query Editor and in the creation (editing) table panel</li>
+    <li>Error while editing tables foreign keys (the reference table name and its fields were not substituted into
+        SQL-query)
+    </li>
+</ol>
+<h2>Major changes - v2023.02</h2>
+<p>Fixed:</p>
+<ol>
+    <li>Bug in developer feedback module (request for new features, bug reports, comments)</li>
+    <li>Clearing a list of triggers on a "Triggers" tab in a table after opening one of them</li>
+    <li>Restoring to default settings for query editor colors</li>
+</ol>
+<h2>Major changes - v2023.01</h2>
+<p>Added:</p>
+<ol>
+    <li>Recompilation all triggers, procedures, functions and packages</li>
+    <li>Association of *.fdb files with RedExpert</li>
+    <li>Recalculation of index selectivity</li>
+    <li>Support for external triggers</li>
+    <li>SQL SECURITY support for procedures, functions and triggers</li>
+    <li>"Switch data display" button and key combination [ALT + NUM_ADD] in data tab</li>
+    <li>Exit confirmation dialog</li>
+    <li>Specifies explicitly how a table field is sorted (COLLATE) when creating a table</li>
+    <li>“DDL to create” tab in "Edit constraint" panel</li>
+    <li>Ability to view password during user creation and authorization at reddatabase.ru</li>
+    <li>Ability to replace "\n" with another symbol when exporting to file with separators</li>
+    <li>Ability to work with functions and packages in privilege manager</li>
+    <li>Support for triggers on views</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Trace recognition</li>
+    <li>Parsing SQL script with queries that have complex nested constructions</li>
+    <li>Incorrect default value generation for procedures and functions</li>
+    <li>Impossibility to create a new connection through the menu in the Russian localization</li>
+    <li>Generating of primary keys when creating a table, if their names must be escaped</li>
+    <li>Quotation mark when exporting into CSV</li>
+    <li>Error when interacting with table constraints that have invalid default names</li>
+    <li>Error when generating SQL script for adding table constraints when only one constraint was inserted into script
+        instead of multiple ones
+    </li>
+    <li>Red Expert hangs after a data access error in the “Data” tab of the “Table” menu.</li>
+    <li>Adding comments to database elements like “User” or “Domain” while editing them</li>
+    <li>Generating SQL script when adding a new column to a table</li>
+    <li>Export to a spreadsheet. Now export to Excel 2007 is possible</li>
+    <li>Automatic generation of table name on creation</li>
+    <li>Updating auto-complete cache after metadata changes</li>
+    <li>Incorrect displaying of procedure parameter sizes</li>
+    <li>Script execution error output if there is no connection</li>
+    <li>Executing non-selective procedures in the query editor</li>
+    <li>Wrong message about authentication error</li>
+    <li>Invalid connection status in the toolbar</li>
+    <li>Loading data in a table when moving the cursor to the last table row</li>
+    <li>Updated keyword list for syntax highlighting</li>
+    <li>Creating a database with default charset</li>
+    <li>Flickering interface in privilege manager</li>
+    <li>Invalid representation of “DATE” type when exporting to SQL</li>
+    <li>Undo/redo (Ctrl+Z/Ctrl+Y) in the query editor</li>
+    <li>Nonoptimal space usage by result set in query editor</li>
+    <li>Application hangs when opening objects</li>
+</ol>
+<h2>Major changes - v2022.09</h2>
+<p>Added:</p>
+<ol>
+    <li>Ability to save columns order and width in trace manager</li>
+    <li>Field with performance counters in Trace Manager</li>
+    <li>Export tables of Trace Manager</li>
+    <li>Import data from a text file with separator</li>
+    <li>Export data to SQL script</li>
+    <li>Ability to change activity for several triggers and indexes in the object tree</li>
+    <li>External tables support</li>
+    <li>Support for external procedures and functions</li>
+    <li>Support for comments on tables, procedures, functions and views</li>
+    <li>English version of the release notes</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Quoting of table names when generating INSERT, UPDATE, DELETE queries</li>
+    <li>Slow loading of tables</li>
+    <li>Incorrect recognition of default value for procedure parameters if '=' is used</li>
+    <li>Table column comment formatting in DDL query</li>
+    <li>Rollback transaction on closing request dialog</li>
+    <li>Error in generating date and time values in the test data generator</li>
+    <li>Wrong message about successful creation of external procedures and functions in request editor</li>
+    <li>Incorrect generation of “create generator” query</li>
+    <li>Errors of trace parsing</li>
+    <li>Autocomplete columns to alias escaped table</li>
+</ol>
+<h2>Major changes - v2022.05</h2>
+<p>Added:</p>
+<ol>
+    <li>Support for Firebird/RedDatabase 4 type</li>
+    <li>Tablespaces support</li>
+    <li>Explained plan support for Firebird/RedDatabase 3.0 and higher</li>
+    <li>Table related triggers tab and navigation</li>
+    <li>Editing objects in the database browser</li>
+    <li>Execution of procedures and functions when viewing and editing them</li>
+    <li>Ability to place the editor vertically or horizontally</li>
+    <li>Search by text in any SQL-field</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Calculating trigger type using bitwise operations</li>
+    <li>Reloading of system objects after creating a table via GUI</li>
+    <li>Continue data generation when data mismatch error occurs</li>
+    <li>Generating SQL for a procedure without parameters</li>
+    <li>Reloading the object tree during CREATE OR ALTER and RECREATE operations</li>
+    <li>Autocomplete freeze</li>
+    <li>Commenting/uncommenting using "CTRL + /"</li>
+    <li>Generate name for new connection</li>
+    <li>Display in the center of the primary monitor when there are two monitors in Linux systems</li>
+    <li>Show connection page without scrollbar</li>
+    <li>Generate INSERT queries for DEFAULT fields</li>
+</ol>
+<h2>Major changes - v2022.02</h2>
+<p>Added:</p>
+<ol>
+    <li>Edit object button</li>
+    <li>Password request dialog if password is empty</li>
+    <li>Ability to work with cursors in a procedure</li>
+    <li>Downloading updates in the background</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Request for saving data when closing a dialog box</li>
+    <li>Displaying tables on Firebird with version less than 2.5</li>
+    <li>Generating a function creation request with EXTERNAL NAME</li>
+    <li>Inability to set the order of the index fields</li>
+    <li>Incorrect display of dependencies</li>
+    <li>Wrong generated column edit query when using a domain</li>
+    <li>Syntax highlighting in views</li>
+    <li>Recognition of object names in queries if they are at the beginning of a string</li>
+    <li>Error adding a record with IDENTITY field</li>
+    <li>Autocomplete errors in queries with aliases</li>
+    <li>Tab-indexing order on connection page</li>
+    <li>Wrong error “TABLE is in use” on attempt to remove table</li>
+    <li>Error opening browser in Linux</li>
+    <li>Index is active by default when created</li>
+    <li>Modified the update dialogs</li>
+    <li>High CPU load after connect</li>
+    <li>DDL command generation error due to case-sensitive identifiers</li>
+    <li>Connecting to a database immediately after it is created</li>
+    <li>Commit transactions after they have been used</li>
+    <li>Re-executing an SQL script without mandatory commit/rollback after a previous run</li>
+    <li>Option to set null for string parameters in the parameter dialogue</li>
+</ol>
+<h2>Major changes - v2021.10</h2>
+<p>Added:</p>
+<ol>
+    <li>Display foreign key data while editing a table</li>
+    <li>Context menu in "Set NULL" table</li>
+    <li>A tab with object privileges</li>
+    <li>System generators in the object tree</li>
+    <li>Updating objects when they are changed in the query editor</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Autocomplete in query editor (not all tables were displayed in the list)</li>
+    <li>Syntax highlighting</li>
+    <li>Wrong table name after editing the trigger</li>
+    <li>Hiding system packages for version prior to 3</li>
+    <li>Connection cancellation</li>
+    <li>Displaying an error while fetching ResultSet</li>
+    <li>Parsing errors in the trace manager</li>
+    <li>Slow work of the grant manager</li>
+    <li>Inability to undo domain selection</li>
+    <li>Inability to add a column to a table if cursor is outside the fields area (while table creating).</li>
+    <li>Reloading objects in the tree after changing</li>
+    <li>Jump to an object from the dependency tree</li>
+    <li>Formatting of generated SELECT, INSERT, UPDATE queries</li>
+    <li>Changed name of constrained is generated immediately when the form is opened</li>
+</ol>
+<h2>Major changes - v2021.07</h2>
+<p>Added:</p>
+<ol>
+    <li>When selecting a database in the tree, the information about the database is not displayed; it is displayed by
+        selecting the appropriate context menu
+    </li>
+    <li>Reworked the syntax highlighting, used ANTLR (reduced load time).</li>
+    <li>Autocomplete added to all textbars that use SQL.</li>
+    <li>Jump to database objects added to all text panels that use SQL.</li>
+    <li>Added the "Users" node to the objects tree</li>
+    <li>Added Jaybird4 driver</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Data type selection is done through a drop-down list</li>
+    <li>When deleting a record in the table, the records marked for deletion are highlighted at once.</li>
+    <li>The message about unsuccessful DDL operations is corrected</li>
+    <li>In text blobs it's allowed to display unreadable characters</li>
+    <li>The editing of the function is fixed</li>
+    <li>Fixed SSH tunnel connection</li>
+    <li>Stopped using template when creating tables</li>
+    <li>Fixed column editing (when clicking on a column a new one was created).</li>
+    <li>Fixed errors on the SQL tab of a domain</li>
+    <li>Non-empty nodes in the tab with dependencies are highlighted in bold</li>
+    <li>Fixed parsing variables in procedures (invalid parsing generated an incorrect SQL request for procedure
+        creation).
+    </li>
+    <li>Packages that were not created by users were moved to a branch of system packages.</li>
+    <li>Fixed connection to RedDatabase and Firebird versions > 4</li>
+</ol>
+<h2>Major changes - v2021.03</h2>
+<ol>
+    <li>Added driver manager</li>
+    <li>Fixed creation of the database</li>
+    <li>Fixed bugs when editing procedures</li>
+    <li>Fixed reading of text blobs in the ResultSet</li>
+    <li>Fixed the title of the table with the description of the columns</li>
+</ol>
+<h2>Major changes - v2021.02</h2>
+<p>Added:</p>
+<ol>
+    <li>Improved application interface</li>
+    <li>Added support of DDL triggers</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Fixed generation of a query to create a column with collate.</li>
+    <li>Fixed bugs with auto-completion in the query editor.</li>
+    <li>Closing the Query Editor does not throw an exception.</li>
+    <li>Fixed display of domain size.</li>
+    <li>Fixed opening of the query editor on an empty database.</li>
+    <li>Executing the script: the script is taken from the text field if no file is selected.</li>
+    <li>Ability to specify a port when database if created using a script.</li>
+    <li>Displaying information about tables from external files.</li>
+    <li>Optimized loading of metadata.</li>
+    <li>Fixed opening packages in firebird database.</li>
+    <li>When generating a query, comments to columns are displayed each on a new line</li>
+</ol>
+<h2>Major changes - v2020.10</h2>
+<p>Added:</p>
+<ol>
+    <li>Added the ability to use autoddl when executing a script</li>
+    <li>Added the ability to manage update rule and delete rule for foreign keys</li>
+    <li>Added the ability to use autocomplete without hotkeys</li>
+    <li>Added the ability to delete user settings when uninstalling the application</li>
+    <li>Added the ability to work with collates of character sets in datatypes</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>A value of a variable is not lost when editing a procedure</li>
+    <li>Object names are quoted only when necessary</li>
+    <li>Removed redundancy in variable declarations</li>
+    <li>Generation of a random date (There was an error that the minimum is greater than the maximum)</li>
+    <li>Comments to variables are not lost when editing a procedure</li>
+    <li>Roles which were not created by a user have been moved under the system roles branch</li>
+    <li>Few first characters in the cell are displayed instead of 'CLOB DATA'</li>
+    <li>Removed the unreasonable occurrence of the error about the loss of connection with the server</li>
+    <li>Fixed generation of table DDL statement</li>
+    <li>Fixed generation of procedure DDL statement</li>
+    <li>Fixed generation of trigger DDL statement</li>
+    <li>Fixed display of table constraints</li>
+    <li>Fixed display of release notes in the application</li>
+</ol>
+<h2>Major changes - v2020.8</h2>
+<ol>
+    <li>The launch of the program and the search for java are completely redesigned. Now if java was not found, it is
+        suggested to select the path manually or download automatically.
+    </li>
+    <li>Fixed display of system objects (Generators, domains and functions that are not defined by the user are not
+        displayed in the main nodes)
+    </li>
+    <li>Fixed execution of a script containing "execute block"</li>
+    <li>Fixed editing procedure with declare variables block</li>
+    <li>Removed the type of object when copying the name</li>
+    <li>Fixed display of tables if "RDB$RELATION_TYPE IS NULL"</li>
+    <li>Fixed bugs with autoincrement that occurred when creating and editing tables.</li>
+    <li>Other minor fixes</li>
+</ol>
+<h2>Major changes - v2020.04.01</h2>
+<ol>
+    <li>Added ability to see and navigate object dependencies</li>
+    <li>Added test data generator</li>
+    <li>Fixed updating from reddatabase.ru</li>
+    <li>Some minor bugs fixed</li>
+</ol>
+<h2>Major changes - v1.0.7</h2>
+<ol>
+    <li>Fixed execution of large scripts</li>
+    <li>Added autoincrement with identity</li>
+    <li>Fixed bug with java search in folders with brackets in their names</li>
+</ol>
+<h2>Major changes - v1.0.6</h2>
+<ol>
+    <li>Fixed incorrect formatting of procedure body during editing</li>
+    <li>Fixed error of launching from shortcuts in linux systems when searching for a driver</li>
+    <li>Fixed bug of launching in Windows systems and added explanation in the log if there is java on the computer, but
+        not supported architecture
+    </li>
+    <li>Fixed bug with feedback and updates</li>
+    <li>Fixed blob reading bug</li>
+</ol>
+<h2>Major changes - v1.0.5</h2>
+<ol>
+    <li>Added license for installer in linux</li>
+    <li>Added selection of active/inactive indexes and triggers in the object tree</li>
+    <li>Added opening an object with the ENTER key</li>
+</ol>
+<h2>Major changes - v1.0.4</h2>
+<ol>
+    <li>Native executable files for Linux and Windows are improved. In Linux, Java is searched for in potential
+        installation locations (Oracle JDK and Open JDK), in Windows, Java is searched for in the registry. In the
+        absence of Java in potential installation sites and in the registry, the search is performed using the JAVA_HOME
+        environment variable and the PATH environment variable.
+    </li>
+    <li>Red Expert got the opportunity to install using the installer. After installation, shortcuts for quick launch of
+        the program are created.
+    </li>
+    <li>Libraries from the Visual C ++ package for Visual Studio 2013 are linked statically, which eliminates the need
+        to install the package on Windows systems
+    </li>
+    <li>Added the ability to connect to the database by double-clicking and using the button on the connections panel
+    </li>
+    <li>In the object tree, the display of the symbol for further disclosure of a node that has no descendants is
+        removed. Also for the database displays the number of objects (for example, TABLES (6451))
+    </li>
+    <li>Added option in settings to hide system objects in the object tree</li>
+    <li>Improved table metadata editor
+        <ul>
+            <li>Added editing and deleting column</li>
+            <li>Creation, editing and deletion of constraints and indexes is added (editing is performed by
+                double-clicking on the object)
+            </li>
+            <li>Automatic name constraint generation added</li>
+        </ul>
+    </li>
+    <li>Fixed and improved script artist
+        <ul>
+            <li>Fixed loading script from file</li>
+            <li>Script parsing fixed</li>
+            <li>Fixed recognition of database creation statements, set term, commit, commit work</li>
+            <li>Added display of the script on the panel</li>
+            <li>Added the ability to edit the script</li>
+            <li>Added ability to save script to file</li>
+            <li>You can execute the script without active connections (a CREATE DATABASE statement must be present to
+                create and connect to the database)
+            </li>
+            <li>Ability to select active connection</li>
+            <li>Displaying the result of statement execution and errors in the presence of</li>
+        </ul>
+    </li>
+    <li>Removed items for creating, editing and deleting in system branches</li>
+    <li>Improved interface for performing procedures and functions with the ability to enter parameters and request
+        parameters if the user has not specified them
+    </li>
+    <li>Changes made via the user interface are displayed in the object tree. Tree nodes are updated automatically upon
+        successful completion of add, edit, delete operations.
+    </li>
+    <li>Added differentiation of roles and users in the user manager (separate icons)</li>
+    <li>Changed display of connection windows in the user manager (removed unnecessary windows when there are no
+        connections)
+    </li>
+    <li>On the Membership tab, the option “User → Role” is enabled by default. The remaining options are deactivated.
+    </li>
+    <li>Before sorting the data in the table, a full fetch is done.</li>
+    <li>Added the distinction between the display of the total and the loaded (recorded) number of records in the table.
+        Automatic counting of the number of entries is disabled by default, is enabled in the settings. Added button to
+        immediately get the number of records.
+    </li>
+    <li>When pressing the ESC key in the mode of creating and editing objects, an exit confirmation is requested.</li>
+    <li>Added feature of feedback without authorization on reddatabase.ru</li>
+    <li>Fixed display of menu items for nodes in the object tree (removed inaccessible actions that were never
+        available, for example, reboot to connect)
+    </li>
+    <li>Fixed error saving connection settings</li>
+    <li>Fixed display of the window title when connecting to the server through the user manager</li>
+    <li>Fixed creation of objects whose names match server's reserved words (escaped by double quotes)</li>
+    <li>Fixed a double click on the object in the object tree (the tree does not expand when it is)</li>
+    <li>Fixed table editing mode. When you click "Apply" did not exit the edit mode, as a result, changes in the
+        editable field were not displayed.
+    </li>
+    <li>Fixed procedure call using “execute procedure” in query editor</li>
+    <li>Fixed reconnection (Recycle) to the database (not performed at all)</li>
+    <li>Fixed closing cursors when closing a table</li>
+    <li>Fixed deletion of objects (if the object is open, it cannot be deleted)</li>
+    <li>Fixed the location of menu objects (removed inaccessible and under development)</li>
+    <li>Fixed display of the "Database Tools" menu (hiding, although it was active)</li>
+    <li>Hidden schemes (in the “Firebird” and “Red Database” they are missing)</li>
+    <li>Fixed display of errors in dialog boxes (structured output)</li>
+    <li>Fixed working with tables if OpenJDK is used as Java (NPE when clicking on a table cell)</li>
+    <li>Fixed bug where after adding a role it is impossible to create (change and delete) a user</li>
+    <li>Fixed error output when editing connections</li>
+    <li>Fixed opening procedure when using Firebird 2.1.5</li>
+    <li>Fixed bug when assigning a role in the "Membership" tab</li>
+    <li>Fixed grant roles if there were users with identical names.</li>
+    <li>Fixed error when assigning a role to a role.</li>
+    <li>Fixed closing the connection if there were open objects</li>
+    <li>Fixed display of errors when connecting to an inaccessible database, if the connection is performed by clicking
+        on the connection button
+    </li>
+    <li>Fixed display of the search window when you press ALT in Windows (when clicked, the window disappeared)</li>
+    <li>Fixed bug with double-clicking on “Favorite” connections</li>
+    <li>Fixed definition of hot keys in the application settings</li>
+    <li>Fixed display of columns in the table when fetching data</li>
+    <li>Optimized loading of the Membership tab in the user manager</li>
+    <li>Fixed display of the body VIEW. The body is displayed as it is stored in the database, a separate button has
+        been added for formatting.
+    </li>
+</ol>
+<h2>Major changes - v1.0.3</h2>
+<p>First public release of database manager RedExpert!
+    <br>RedExpert based on Execute Query and use Java technologies under hood.
+    <br>It features:</p>
+<ol>
+    <li>Simultaneous work with multiple databases</li>
+    <li>Development and execution of any SQL commands supported by the DBMS using the query editor view query - results
+        (including Result Set datasets)
+    </li>
+    <li>Formatting SQL code</li>
+    <li>Code autocompletion mechanism</li>
+    <li>Designing the database structure in the visual designer of ER-diagrams with Reverse Engineering functions and
+        exporting diagrams to various formats.
+    </li>
+</ol>
+<p>Also, RedExpert exclusively provide next features:</p>
+<ol>
+    <li>Support for any versions of the RedDatabase and Firebird from out of the box</li>
+    <li>Creating and editing database objects using the visual editor</li>
+    <li>Tracking of any operations with the database in real time using the trace manager</li>
+    <li>User management through a user interface graphical interface</li>
+    <li>Visual privilege management with rights manager</li>
+    <li>Support all types of authentication</li>
+</ol>

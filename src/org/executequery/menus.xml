@@ -320,11 +320,6 @@
         <menu-item id="drivers-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
-        <menu-item id="compare-data-types"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="separator"/>
-
         <menu-item id="heap-memory-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

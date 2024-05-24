@@ -426,13 +426,6 @@
             small-icon="/org/executequery/icons/ExecuteSqlScript16.png"
             execute-class="org.executequery.actions.databasecommands.ExecuteSqlScriptCommand"/>
 
-    <action id="compare-data-types"
-            name="Compare Data Types"
-            mnemonic="D"
-            accel-editable="true"
-            description="Compare data types across different database products"
-            execute-class="org.executequery.actions.databasecommands.CompareDataTypesCommand"/>
-
     <action id="preferences-command"
             name="Preferences"
             mnemonic="P"

@@ -14,7 +14,7 @@
             name="Open..."
             mnemonic="O"
             small-icon="/org/executequery/icons/New16.png"
-            accel-key="control L"
+            accel-key="control O"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
 

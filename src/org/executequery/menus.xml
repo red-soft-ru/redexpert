@@ -320,13 +320,13 @@
         <menu-item id="drivers-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="application-logs-command"
+                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
         <menu-item id="heap-memory-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="console-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
-        <menu-item id="application-logs-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
         <menu-item id="separator"/>

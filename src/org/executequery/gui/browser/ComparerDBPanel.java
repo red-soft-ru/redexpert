@@ -1075,6 +1075,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         public Component getTreeCellRendererComponent(
                 JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
+            this.selected = selected;
+            this.hasFocus = hasFocus;
+
             ComparerTreeNode treeNode = (ComparerTreeNode) value;
             switch (treeNode.type) {
 

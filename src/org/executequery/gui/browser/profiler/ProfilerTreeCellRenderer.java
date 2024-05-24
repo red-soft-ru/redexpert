@@ -12,6 +12,9 @@ public class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
     public Component getTreeCellRendererComponent(
             JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
+        this.selected = selected;
+        this.hasFocus = hasFocus;
+
         ProfilerTreeTableNode node = (ProfilerTreeTableNode) value;
         setText((String) node.getProcessName());
 

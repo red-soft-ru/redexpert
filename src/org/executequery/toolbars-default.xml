@@ -109,7 +109,7 @@
             </button>
 
             <button id="204" action-id="trace-manager-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>4</order>
             </button>
 
@@ -124,12 +124,12 @@
             </button>
 
             <button id="207" action-id="profiler-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>7</order>
             </button>
 
             <button id="208" action-id="table-validation-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>8</order>
             </button>
 
@@ -164,12 +164,12 @@
         <buttons>
 
             <button id="301" action-id="console-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>1</order>
             </button>
 
             <button id="302" action-id="application-logs-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>2</order>
             </button>
 
@@ -261,7 +261,7 @@
             </button>
 
             <button id="408" action-id="manage-bookmarks-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>11</order>
             </button>
 
@@ -292,7 +292,7 @@
             </button>
 
             <button id="413" action-id="editor-rs-metadata-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>17</order>
             </button>
 
@@ -302,28 +302,28 @@
             </button>
 
             <button id="415" action-id="print-plan-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>19</order>
             </button>
 
             <button id="416" action-id="print-explained-plan-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>20</order>
             </button>
 
             <button id="-1">
                 <!-- separator -->
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>21</order>
             </button>
 
             <button id="417" action-id="toggle-editor-output-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>22</order>
             </button>
 
             <button id="418" action-id="change-split-orientation-command">
-                <visible>true</visible>
+                <visible>false</visible>
                 <order>23</order>
             </button>
 

@@ -349,11 +349,6 @@
                    class="org.underworldlabs.swing.menu.MainMenuItem"
                    action-command="userComments"/>
 
-        <menu-item id="separator"/>
-
-        <menu-item id="license-command"
-                   class="org.underworldlabs.swing.menu.MainMenuItem"/>
-
         <menu-item id="changelog-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

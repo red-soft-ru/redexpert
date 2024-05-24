@@ -34,13 +34,6 @@
             description="Full RedExpert changelog"
             execute-class="org.executequery.actions.helpcommands.ChangelogCommand"/>
 
-    <action id="license-command"
-            name="License"
-            mnemonic="L"
-            accel-editable="false"
-            description="Red Expert release license"
-            execute-class="org.executequery.actions.helpcommands.LicenseCommand"/>
-
     <action id="save-as-command"
             name="Save As..."
             mnemonic="A"

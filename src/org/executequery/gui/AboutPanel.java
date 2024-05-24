@@ -26,7 +26,6 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.HeapMemoryPanel;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -69,7 +68,6 @@ public class AboutPanel extends BaseDialog
         tabPane.add(bundledString("System"), systemDetails());
         tabPane.add(bundledString("Resources"), systemResources());
         tabPane.add(bundledString("License"), license());
-        //tabPane.add("Credits", credits());
 
 
         imagePanel = new AboutImagePanel();
@@ -207,9 +205,15 @@ public class AboutPanel extends BaseDialog
 
         }
 
-        JButton button = new JButton(ActionBuilder.get("license-command"));
+        JButton button = new JButton();
         button.setText(bundledString("ViewLicense"));
-        button.setIcon(null);
+        button.addActionListener(e -> new InformationDialog(
+                        bundledString("License"),
+                        "org/executequery/gpl.license",
+                        InformationDialog.RESOURCE_PATH_VALUE,
+                        null
+                ).display()
+        );
 
         base.setBorder(BorderFactory.createEtchedBorder());
 

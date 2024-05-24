@@ -21,9 +21,6 @@
 package org.executequery.gui.text;
 
 import org.executequery.Constants;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
@@ -46,8 +43,7 @@ import java.io.File;
  *
  * @author Takis Diakoumis
  */
-public class SimpleSqlTextPanel extends DefaultTextEditorContainer
-        implements KeywordListener {
+public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
 
     private final boolean autocompleteOnlyHotKey;
 
@@ -135,10 +131,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         return popup;
     }
 
-    public void setSQLKeywords() {
-        textPane.setSQLKeywords(true);
-    }
-
     public void setDefaultBorder() {
         queryScroll.setBorder(defaultBorder);
     }
@@ -173,21 +165,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public void cleanup() {
         textPane.cleanup();
-    }
-
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        setSQLKeywords();
-    }
-
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
-        setSQLKeywords();
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return event instanceof KeywordEvent;
     }
 
     @Override

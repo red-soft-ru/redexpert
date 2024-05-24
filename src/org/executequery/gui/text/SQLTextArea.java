@@ -436,8 +436,8 @@ public class SQLTextArea extends RSyntaxTextArea
         maker.setParameters(parameters);
         autoCompletePopup.setParameters(parameters);
     }
-    private KeywordRepository keywords() {
 
+    private KeywordRepository keywords() {
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 

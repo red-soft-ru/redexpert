@@ -373,8 +373,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = getBuilderForPackageChildren(metatag).getSQLQuery();
 
         try {
-
-
             ResultSet rs = querySender.getResultSet(query).getResultSet();
 
 

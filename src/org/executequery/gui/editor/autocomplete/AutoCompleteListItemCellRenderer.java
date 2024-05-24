@@ -33,7 +33,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final int TEXT_ICON_GAP = 10;
 
     private static final Icon sql92Keyword;
-    private static final Icon userDefinedKeyword;
     private static final Icon databaseSpecificKeyword;
     private static final Icon databaseTable;
     private static final Icon nothingFound;
@@ -50,7 +49,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     static {
         sql92Keyword = GUIUtilities.loadIcon("Sql92.png", true);
         animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16.gif", true);
-        userDefinedKeyword = GUIUtilities.loadIcon("User16.png", true);
         databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16.png", true);
         nothingFound = GUIUtilities.loadIcon("Warning16.png", true);
         databaseTable = GUIUtilities.loadIcon("PlainTable16.png", true);
@@ -61,7 +59,7 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
         databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
         databasePackage = GUIUtilities.loadIcon("package16.png", true);
         variable = GUIUtilities.loadIcon("Variable16.png", true);
-        parameter = GUIUtilities.loadIcon("Argument16.png",true);
+        parameter = GUIUtilities.loadIcon("Argument16.png", true);
     }
 
 
@@ -85,10 +83,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
                 case DATABASE_DEFINED_KEYWORD:
                     setIcon(databaseSpecificKeyword);
-                    break;
-
-                case USER_DEFINED_KEYWORD:
-                    setIcon(userDefinedKeyword);
                     break;
 
                 case DATABASE_TABLE:

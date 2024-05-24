@@ -22,7 +22,6 @@ package org.executequery.gui;
 
 import org.executequery.ActiveComponent;
 import org.executequery.Constants;
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -56,10 +55,6 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
      * The script file
      */
     private File file;
-
-    public GeneratedScriptViewer(String text, String path) {
-        this(text, new File(path));
-    }
 
     /**
      * Constructs a new instance.
@@ -103,7 +98,6 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
     private void jbInit() throws Exception {
         setDefaultBorder();
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        EventMediator.registerListener(this);
     }
 
     private void setContent(String text) {
@@ -146,14 +140,6 @@ public class GeneratedScriptViewer extends SimpleSqlTextPanel
     }
 
     // --------------------------------------------
-
-
-    /**
-     * Releases database resources before closing.
-     */
-    public void cleanup() {
-        EventMediator.deregisterListener(this);
-    }
 
     public String getPrintJobName() {
         return "Red Expert - SQL scripts";

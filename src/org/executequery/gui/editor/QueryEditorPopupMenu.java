@@ -80,7 +80,6 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createMenuItem("copy-command", Bundles.get("common.copy.button")));
         add(createMenuItem("cut-command", Bundles.get("common.cut")));
         add(createMenuItem("paste-command", Bundles.get("common.paste")));
-        add(createMenuItem("editor-add-user-keyword", null, executableButtons));
 
         addSeparator();
         add(createMenuItem("execute-script-command", null, executableButtons));

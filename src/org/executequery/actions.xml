@@ -185,12 +185,6 @@
             small-icon="/org/executequery/icons/FormatSql16.png"
             execute-class="org.executequery.actions.queryeditor.FormatSQLCommand"/>
 
-    <action id="editor-add-user-keyword"
-            name="Add to User Defined Keywords"
-            accel-key="control shift K"
-            accel-editable="true"
-            execute-class="org.executequery.actions.queryeditor.AddToUserDefinedKeywordsCommand"/>
-
     <action id="manage-bookmarks-command"
             name="Manage Query Bookmarks"
             mnemonic="M"

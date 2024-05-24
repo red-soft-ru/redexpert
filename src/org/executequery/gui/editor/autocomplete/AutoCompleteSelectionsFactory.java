@@ -35,8 +35,6 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
-import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.spi.KeywordRepositoryImpl;
 
 import java.sql.*;
 import java.util.*;
@@ -145,17 +143,14 @@ public class AutoCompleteSelectionsFactory {
 
     public List<AutoCompleteListItem> buildKeywords(DatabaseHost databaseHost, boolean autoCompleteKeywords) {
 
-        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
+        List<AutoCompleteListItem> listSelections = new ArrayList<>();
         if (autoCompleteKeywords) {
-            addUserDefinedKeywords(listSelections);
-
             if (databaseHost != null && databaseHost.isConnected()) {
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
-
             }
 
-            Collections.sort(listSelections, new AutoCompleteListItemComparator());
+            listSelections.sort(new AutoCompleteListItemComparator());
         }
 
         return listSelections;
@@ -288,17 +283,8 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void addFirebirdDefinedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list) {
-        List<String> keywords = new ArrayList<>();
-        keywords.addAll(databaseHost.getDatabaseConnection().getKeywords());
-        addKeywordsFromList(keywords,
-                list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
-    }
-
-
-    private void addUserDefinedKeywords(List<AutoCompleteListItem> list) {
-
-        addKeywordsFromList(keywords().getUserDefinedSQL(),
-                list, "User Defined Keyword", AutoCompleteListItemType.USER_DEFINED_KEYWORD);
+        List<String> keywords = new ArrayList<>(databaseHost.getDatabaseConnection().getKeywords());
+        addKeywordsFromList(keywords, list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
     }
 
     private void addTablesToProvider(String databaseObjectDescription,
@@ -329,11 +315,6 @@ public class AutoCompleteSelectionsFactory {
             }
         }
 
-    }
-
-    private KeywordRepository keywords() {
-
-        return new KeywordRepositoryImpl();
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {

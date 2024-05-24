@@ -779,17 +779,17 @@ public final class MiscUtils {
         return str.equals(str.toUpperCase());
     }
 
-    private static KeywordRepository keywordRepository;
-
     public static boolean checkKeyword(String str, DatabaseConnection connection) {
 
-        if (keywordRepository == null)
-            keywordRepository = (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
-
-        TreeSet<String> keywords = keywordRepository.getSQLKeywords();
+        TreeSet<String> keywords = keywords().getSQLKeywords();
         if (connection != null)
             keywords = connection.getKeywords();
+
         return keywords.contains(str.toUpperCase());
+    }
+
+    private static KeywordRepository keywords() {
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     public final static String LATIN_OR_DIGIT_OR_SPEC_SYMBOL_RDB = "([A-Za-z]+[$_0-9A-Za-z\\.]*)";

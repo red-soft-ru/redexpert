@@ -36,7 +36,6 @@ import org.executequery.repository.ConnectionFoldersRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.KeywordRepository;
 import org.executequery.repository.RepositoryCache;
-import org.executequery.repository.spi.KeywordRepositoryImpl;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
@@ -857,8 +856,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     }
 
     private KeywordRepository keywords() {
-
-        return new KeywordRepositoryImpl();
+        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     private static final long serialVersionUID = 950081216942320441L;

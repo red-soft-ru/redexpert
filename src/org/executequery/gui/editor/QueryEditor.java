@@ -72,7 +72,6 @@ public class QueryEditor extends DefaultTabView
         QueryShortcutListener,
         UserPreferenceListener,
         TextEditor,
-        KeywordListener,
         FocusablePanel {
 
     public static final String TITLE = Bundles.get(QueryEditor.class, "title");
@@ -503,22 +502,6 @@ public class QueryEditor extends DefaultTabView
      * to the user defined keywords.
      */
     public void updateSQLKeywords() {
-        editorPanel.setSQLKeywords(true);
-    }
-
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        editorPanel.setSQLKeywords(true);
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
         editorPanel.setSQLKeywords(true);
     }
 
@@ -957,10 +940,6 @@ public class QueryEditor extends DefaultTabView
 
     public void preExecute(DatabaseConnection dc) {
         resultsPanel.preExecute(dc);
-    }
-
-    public String getCompleteWordEndingAtCursor() {
-        return editorPanel.getCompleteWordEndingAtCursor();
     }
 
     private boolean isExecuting() {
@@ -1429,7 +1408,6 @@ public class QueryEditor extends DefaultTabView
     @Override
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent)
-                || (event instanceof KeywordEvent)
                 || (event instanceof UserPreferenceEvent)
                 || (event instanceof QueryShortcutEvent)
                 || (event instanceof QueryBookmarkEvent);

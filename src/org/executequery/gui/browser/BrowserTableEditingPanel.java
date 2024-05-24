@@ -20,7 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -29,10 +28,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.DefaultKeywordEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
@@ -81,7 +76,6 @@ import java.util.stream.Collectors;
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
-        KeywordListener,
         FocusListener,
         TableConstraintFunction,
         ChangeListener,
@@ -508,7 +502,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // --- base ---
 
         setContentPanel(mainPanel);
-        EventMediator.registerListener(this);
     }
 
     private void editColumnIndex(MouseEvent e) {
@@ -605,29 +598,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     public void focusLost(FocusEvent e) {
         if (e.getSource() == alterSqlText)
             table.setModifiedSQLText(alterSqlText.getSQLText());
-    }
-
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        alterSqlText.setSQLKeywords();
-        createSqlText.setSQLKeywords();
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
-        alterSqlText.setSQLKeywords();
-        createSqlText.setSQLKeywords();
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof DefaultKeywordEvent);
     }
 
     @Override
@@ -734,8 +704,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         if (referencesPanel != null)
             referencesPanel.cleanup();
-
-        EventMediator.deregisterListener(this);
     }
 
 

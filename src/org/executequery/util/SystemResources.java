@@ -327,7 +327,6 @@ public class SystemResources {
                                 "querybookmarks.xml",
                                 "print.setup",
                                 "savedconnections.xml",
-                                "sql.user.keywords",
                                 "ConnectionHistory.xml"
                         };
 
@@ -361,32 +360,12 @@ public class SystemResources {
                 System.exit(0);
             }
 
-            boolean created = false;
-
-            // -------------------------------------------
-            // -- Check for ~/.executequery/conf/sql.user.keywords
-            // -------------------------------------------
-            File props = new File(confDir, "sql.user.keywords");
-
-            // create the user defined keywords file
-            if (!props.exists()) {
-
-                created = props.createNewFile();
-
-            } else {
-
-                created = true;
-            }
-
-            if (!created) {
-
-                return false;
-            }
-
             // -------------------------------------------
             // -- Check for ~/audit.properties
             // -------------------------------------------
-            props = new File(confDir, "audit.properties");
+
+            boolean created;
+            File props = new File(confDir, "audit.properties");
 
             // create the user defined keywords file
             if (!props.exists()) {

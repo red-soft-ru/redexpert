@@ -260,18 +260,6 @@ public class QueryEditorTextPanel extends JPanel {
         return queryPane.getSelectionEnd();
     }
 
-    public String getCompleteWordEndingAtCursor() {
-        return queryPane.getCompleteWordEndingAtCursor();
-    }
-
-    protected QueryWithPosition getQueryAtCursor() {
-        return queryPane.getQueryAtCursor();
-    }
-
-    protected void setExecutingQuery(String query) {
-        queryPane.setExecutingQuery(query);
-    }
-
     public void goToRow(int row) {
         queryPane.goToRow(row);
     }
@@ -285,10 +273,6 @@ public class QueryEditorTextPanel extends JPanel {
      */
     public void setResultSet(ResultSet resultSet, String query, DatabaseConnection dc) throws SQLException {
         queryEditor.setResultSet(resultSet, query, dc);
-    }
-
-    public void setResult(DatabaseConnection dc, int updateCount, int type, String metaName) {
-        queryEditor.setResultText(dc, updateCount, type, metaName);
     }
 
     public String getQueryAreaText() {

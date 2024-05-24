@@ -49,7 +49,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     private final BrowserController controller;
     private DatabaseHost host;
 
-    private KeyWordsPanel keyWordsPanel;
     private DataTypesPanel dataTypesPanel;
     private ConnectionPanel connectionPanel;
     private DatabasePropertiesPanel propertiesPanel;
@@ -68,7 +67,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
     private void init() {
 
-        keyWordsPanel = new KeyWordsPanel();
         dataTypesPanel = new DataTypesPanel();
         connectionPanel = new ConnectionPanel(controller);
         propertiesPanel = new DatabasePropertiesPanel();
@@ -135,23 +133,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     }
 
     /**
-     * Loads the sql keywords for this host.
-     */
-    protected void updateDatabaseKeywords() {
-
-        if (!host.getDatabaseConnection().isConnected()) {
-            return;
-        }
-
-        try {
-            keyWordsPanel.setDatabaseKeywords(host.getDatabaseKeywords());
-        } catch (DataSourceException e) {
-            controller.handleException(e);
-            keyWordsPanel.setDatabaseKeywords(new String[0]);
-        }
-    }
-
-    /**
      * Loads the data type info for this host.
      */
     protected void updateDatabaseTypeInfo() {
@@ -170,7 +151,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
     private void changePanelData() {
         updateDatabaseProperties();
-        updateDatabaseKeywords();
         updateDatabaseTypeInfo();
     }
 

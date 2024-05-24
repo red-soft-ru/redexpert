@@ -149,7 +149,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         add(mainPanel);
         pack();
 
-        defaultHeight = getHeight() - 32;
+        defaultHeight = getHeight();
         setMinimumSize(new Dimension(Math.max(DEFAULT_WIDTH, getWidth()), defaultHeight));
         setSize(getMinimumSize());
 

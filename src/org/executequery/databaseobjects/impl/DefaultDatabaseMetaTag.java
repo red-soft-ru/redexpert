@@ -36,8 +36,10 @@ import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.util.InterruptibleThread;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -1477,6 +1479,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "FROM RDB$DEPENDENCIES T2\n" +
                 "WHERE (T2.RDB$DEPENDENT_NAME = '" + dependedObject.getName() + "')\n" +
                 comparingCondition +
+                "\nAND (T2.RDB$PACKAGE_NAME IS NOT NULL)\n" +
                 "UNION ALL\n";
 
 
@@ -1524,6 +1527,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             query = packageQuery + query;
         if (typeObject == 0)
             query = tableQuery + query;
+        try {
+            FileUtils.writeFile("D:\\queries.txt", query + ";", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return query;
     }
 
@@ -1623,6 +1631,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         if (typeObject == 0)
             query += tableQuery;
+        try {
+            FileUtils.writeFile("D:\\queries.txt", query + ";", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return query;
+
     }
 }

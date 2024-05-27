@@ -199,7 +199,7 @@ public class WindowsSchedulerPanel extends JPanel
             first = true;
             sb = new StringBuilder();
             for (int i = 1; i <= 31; i++) {
-                if (daysCheckCombo.getModel().isChecked(i)) {
+                if (daysCheckCombo.getModel().isChecked(String.valueOf(i))) {
                     if (!first)
                         sb.append(",");
                     first = false;

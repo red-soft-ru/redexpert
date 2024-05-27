@@ -59,87 +59,7 @@ public class WindowsSchedulerPanel extends JPanel
         updateVisibile();
     }
 
-    private void init() {
-
-        months = new ArrayList<>();
-        months.addAll(Arrays.asList(ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault())));
-
-        weekdays = new ArrayList<>();
-        weekdays.addAll(Arrays.asList(new DateFormatSymbols(Locale.getDefault()).getWeekdays()));
-        weekdays.remove(0);
-
-        List<String> intervalItems = Arrays.asList(
-                bundleString("min", 5),
-                bundleString("min", 10),
-                bundleString("min", 15),
-                bundleString("min", 30),
-                bundleString("h", 1)
-        );
-
-        // --- radio buttons ---
-
-        everyDayRadio = WidgetFactory.createRadioButton("everyDayRadio", bundleString("EveryDay"), true);
-        everyDayRadio.addItemListener(e -> update());
-
-        everyWeekdayRadio = WidgetFactory.createRadioButton("everyWeekdayRadio", bundleString("EveryWeek"));
-        everyWeekdayRadio.addItemListener(e -> update());
-
-        everyMonthRadio = WidgetFactory.createRadioButton("everyMonthRadio", bundleString("EveryMonth"));
-        everyMonthRadio.addItemListener(e -> update());
-
-        everyYearRadio = WidgetFactory.createRadioButton("everyYearRadio", bundleString("once"));
-        everyYearRadio.addItemListener(e -> update());
-
-        ButtonGroup radioButtons = new ButtonGroup();
-        radioButtons.add(everyDayRadio);
-        radioButtons.add(everyWeekdayRadio);
-        radioButtons.add(everyMonthRadio);
-        radioButtons.add(everyYearRadio);
-
-        // --- date/time pickers ---
-
-        timePicker = new TimePicker();
-        timePicker.setVisibleNullCheck(false);
-        timePicker.setDisplayPattern("HH:mm");
-        timePicker.addChangeListener(e -> generateCron());
-
-        timestampPicker = new TimestampPicker();
-        timestampPicker.setVisibleNullCheck(false);
-        timestampPicker.getTimePicker().setDisplayPattern("HH:mm");
-        timestampPicker.getTimePicker().addChangeListener(e -> generateCron());
-        timestampPicker.getDatePicker().addDocumentListener(this);
-
-        // --- check-combo boxes ---
-
-        daysCheckCombo = WidgetFactory.createCheckComboBox("daysCheckCombo", IntStream.range(1, 32).mapToObj(Integer::toString).toArray());
-        daysCheckCombo.getModel().addListCheckListener(this);
-
-        weekdaysCheckCombo = WidgetFactory.createCheckComboBox("weekdaysCheckCombo", weekdays.toArray());
-        weekdaysCheckCombo.getModel().addListCheckListener(this);
-
-        monthCheckCombo = WidgetFactory.createCheckComboBox("monthCheckCombo", months.toArray());
-        monthCheckCombo.getModel().addListCheckListener(this);
-
-        // --- interval components  ---
-
-        //noinspection unchecked
-        intervalCombo = WidgetFactory.createComboBox("intervalCombo", new Vector<>(intervalItems));
-        intervalCombo.setPreferredSize(new Dimension(70, intervalCombo.getPreferredSize().height));
-        intervalCombo.addItemListener(e -> update());
-
-        intervalField = WidgetFactory.createNumberTextField("intervalField", "1", 2);
-        intervalField.getDocument().addDocumentListener(this);
-
-        // --- repeat checkBox ---
-
-        repeatCheck = WidgetFactory.createCheckBox("repeatCheck", bundleString("repeat"));
-        repeatCheck.addItemListener(e -> update());
-
-        // ---
-
-        everyLabel = new JLabel(bundleString("Every"));
-        unitLabel = new JLabel(bundleString("Day/s"));
-    }
+    boolean needUpdatePicker = false;
 
     private void arrange() {
         GridBagHelper gbh;
@@ -217,18 +137,18 @@ public class WindowsSchedulerPanel extends JPanel
         if (everyYearRadio.isSelected()) {
             LocalDateTime localDate = timestampPicker.getDateTimeOrNull();
             if (localDate != null) {
-                crons[0] = localDate.getMinute() + "";
-                crons[1] = localDate.getHour() + "";
-                crons[2] = localDate.getDayOfMonth() + "";
-                crons[3] = localDate.getMonthValue() + "";
+                crons[0] = String.valueOf(localDate.getMinute());
+                crons[1] = String.valueOf(localDate.getHour());
+                crons[2] = String.valueOf(localDate.getDayOfMonth());
+                crons[3] = String.valueOf(localDate.getMonthValue());
             }
             crons[4] = "*";
 
         } else {
             LocalTime localTime = timePicker.getLocalTime();
             if (localTime != null) {
-                crons[0] = localTime.getMinute() + "";
-                crons[1] = localTime.getHour() + "";
+                crons[0] = String.valueOf(localTime.getMinute());
+                crons[1] = String.valueOf(localTime.getHour());
             }
         }
 
@@ -320,6 +240,101 @@ public class WindowsSchedulerPanel extends JPanel
         }
 
         cronField.setText(sb.toString());
+    }
+
+    private void init() {
+
+        months = new ArrayList<>();
+        months.addAll(Arrays.asList(ExtraDateStrings.getDefaultStandaloneLongMonthNamesForLocale(Locale.getDefault())));
+
+        weekdays = new ArrayList<>();
+        weekdays.addAll(Arrays.asList(new DateFormatSymbols(Locale.getDefault()).getWeekdays()));
+        weekdays.remove(0);
+
+        List<String> intervalItems = Arrays.asList(
+                bundleString("min", 5),
+                bundleString("min", 10),
+                bundleString("min", 15),
+                bundleString("min", 30),
+                bundleString("h", 1)
+        );
+
+        // --- radio buttons ---
+
+        everyDayRadio = WidgetFactory.createRadioButton("everyDayRadio", bundleString("EveryDay"), true);
+        everyDayRadio.addItemListener(e -> changeRadioButton());
+
+        everyWeekdayRadio = WidgetFactory.createRadioButton("everyWeekdayRadio", bundleString("EveryWeek"));
+        everyWeekdayRadio.addItemListener(e -> changeRadioButton());
+
+        everyMonthRadio = WidgetFactory.createRadioButton("everyMonthRadio", bundleString("EveryMonth"));
+        everyMonthRadio.addItemListener(e -> changeRadioButton());
+
+        everyYearRadio = WidgetFactory.createRadioButton("everyYearRadio", bundleString("once"));
+        everyYearRadio.addItemListener(e -> changeRadioButton());
+
+        ButtonGroup radioButtons = new ButtonGroup();
+        radioButtons.add(everyDayRadio);
+        radioButtons.add(everyWeekdayRadio);
+        radioButtons.add(everyMonthRadio);
+        radioButtons.add(everyYearRadio);
+
+        // --- date/time pickers ---
+
+        timePicker = new TimePicker();
+        timePicker.setVisibleNullCheck(false);
+        timePicker.setDisplayPattern("HH:mm");
+        timePicker.addChangeListener(e -> generateCron());
+
+        timestampPicker = new TimestampPicker();
+        timestampPicker.setVisibleNullCheck(false);
+        timestampPicker.getTimePicker().setDisplayPattern("HH:mm");
+        timestampPicker.getTimePicker().addChangeListener(e -> generateCron());
+        timestampPicker.getDatePicker().addDocumentListener(this);
+
+        // --- check-combo boxes ---
+
+        daysCheckCombo = WidgetFactory.createCheckComboBox("daysCheckCombo", IntStream.range(1, 32).mapToObj(Integer::toString).toArray());
+        daysCheckCombo.getModel().addListCheckListener(this);
+
+        weekdaysCheckCombo = WidgetFactory.createCheckComboBox("weekdaysCheckCombo", weekdays.toArray());
+        weekdaysCheckCombo.getModel().addListCheckListener(this);
+
+        monthCheckCombo = WidgetFactory.createCheckComboBox("monthCheckCombo", months.toArray());
+        monthCheckCombo.getModel().addListCheckListener(this);
+
+        // --- interval components  ---
+
+        //noinspection unchecked
+        intervalCombo = WidgetFactory.createComboBox("intervalCombo", new Vector<>(intervalItems));
+        intervalCombo.setPreferredSize(new Dimension(70, intervalCombo.getPreferredSize().height));
+        intervalCombo.addItemListener(e -> update());
+
+        intervalField = WidgetFactory.createNumberTextField("intervalField", "1", 2);
+        intervalField.getDocument().addDocumentListener(this);
+
+        // --- repeat checkBox ---
+
+        repeatCheck = WidgetFactory.createCheckBox("repeatCheck", bundleString("repeat"));
+        repeatCheck.addItemListener(e -> update());
+
+        // ---
+
+        everyLabel = new JLabel(bundleString("Every"));
+        unitLabel = new JLabel(bundleString("Day/s"));
+    }
+
+    void changeRadioButton() {
+        if (everyYearRadio.isSelected()) {
+            timestampPicker.setDateTime(LocalDateTime.of(timestampPicker.getDateTime().toLocalDate(), timePicker.getLocalTime()));
+            needUpdatePicker = true;
+        } else {
+            if (needUpdatePicker) {
+                needUpdatePicker = false;
+                timePicker.setTime(timestampPicker.getDateTime().toLocalTime());
+            }
+        }
+        update();
     }
 
     public void update() {

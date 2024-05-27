@@ -302,12 +302,12 @@
             </button>
 
             <button id="415" action-id="print-plan-command">
-                <visible>false</visible>
+                <visible>true</visible>
                 <order>19</order>
             </button>
 
             <button id="416" action-id="print-explained-plan-command">
-                <visible>false</visible>
+                <visible>true</visible>
                 <order>20</order>
             </button>
 

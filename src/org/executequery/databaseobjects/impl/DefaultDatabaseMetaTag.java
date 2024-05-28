@@ -1475,6 +1475,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "FROM RDB$DEPENDENCIES T2\n" +
                 "WHERE (T2.RDB$DEPENDENT_NAME = '" + dependedObject.getName() + "')\n" +
                 comparingCondition +
+                "\nAND (T2.RDB$PACKAGE_NAME IS NOT NULL)\n" +
                 "UNION ALL\n";
 
 
@@ -1622,5 +1623,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         if (typeObject == 0)
             query += tableQuery;
         return query;
+
     }
 }

@@ -27,8 +27,8 @@
             description="Save an open document"
             execute-class="org.executequery.actions.filecommands.SaveCommand"/>
 
-    <action id="changelog-command"
-            name="Changelog"
+    <action id="release-notes-command"
+            name="Release Notes"
             mnemonic="R"
             accel-editable="false"
             description="Full RedExpert changelog"

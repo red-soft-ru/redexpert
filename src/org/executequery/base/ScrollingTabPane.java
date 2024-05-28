@@ -744,9 +744,9 @@ public class ScrollingTabPane extends AbstractTabPane
             implements ActionListener {
 
         private int popupTabIndex;
-        private JMenuItem close;
-        private JMenuItem closeAll;
-        private JMenuItem closeOther;
+        private final JMenuItem close;
+        private final JMenuItem closeAll;
+        private final JMenuItem closeOther;
 
         public TabPopupMenu() {
             if (popupMenuFont == null) {
@@ -1189,7 +1189,7 @@ public class ScrollingTabPane extends AbstractTabPane
         /**
          * the close icon for each tab
          */
-        private transient Icon closeIcon = new DockedTabCloseIcon();
+        private final transient Icon closeIcon = new DockedTabCloseIcon();
 
         private void initDefaults() {
             Font _font = getFont();
@@ -1200,7 +1200,7 @@ public class ScrollingTabPane extends AbstractTabPane
             }
 
             background = getTabBackground();
-            activeNoFocusColor = getNofocusTabBackground();
+            activeNoFocusColor = getSelectedTabBackground();
 
             foreground = getTabForeground();
             activeColor = getSelectedTabBackground();
@@ -1391,7 +1391,6 @@ public class ScrollingTabPane extends AbstractTabPane
                 // if the index is not the current index, select the tab
                 if (index != selectedIndex) {
                     setSelectedIndex(index);
-                    return;
                 }
 
             } finally {

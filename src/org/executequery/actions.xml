@@ -27,7 +27,7 @@
             description="Save an open document"
             execute-class="org.executequery.actions.filecommands.SaveCommand"/>
 
-    <action id="release-notes-command"
+    <action id="changelog-command"
             name="Release Notes"
             mnemonic="R"
             accel-editable="false"

@@ -27,17 +27,15 @@ import org.underworldlabs.swing.actions.BaseCommand;
 import java.awt.event.ActionEvent;
 
 /**
- * The Help | About command execution.
+ * The About command execution.
  *
  * @author Takis Diakoumis
  */
 public class AboutCommand extends OpenFrameCommand
         implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
         new AboutPanel();
     }
-
 }
-

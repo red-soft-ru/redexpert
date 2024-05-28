@@ -454,6 +454,20 @@ public final class WidgetFactory {
         return progressBar;
     }
 
+    /**
+     * Create JLabel class instance
+     *
+     * @param text     text to be displayed by the label
+     * @param fontSize the point size of the <code>Font</code>
+     */
+    public static JLabel createLabel(String text, int fontSize) {
+
+        JLabel label = new JLabel(text);
+        label.setFont(new Font(label.getFont().getFontName(), Font.PLAIN, fontSize));
+
+        return label;
+    }
+
 
     // -------------------------
     // --- Custom Components ---
@@ -674,6 +688,36 @@ public final class WidgetFactory {
         return checkCombox;
     }
 
+    /**
+     * Create named LinkLabel class instance
+     *
+     * @param name the component's name
+     * @param text the text to be displayed by the label
+     * @param link the string of the link to browse
+     */
+    public static LinkLabel createLinkLabel(String name, String text, String link) {
+
+        LinkLabel linkLabel = new LinkLabel(text, link);
+        linkLabel.setName(name);
+
+        return linkLabel;
+    }
+
+    /**
+     * Create named LinkLabel class instance
+     *
+     * @param name     the component's name
+     * @param text     the text to be displayed by the label
+     * @param link     the string of the link to browse
+     * @param fontSize the point size of the <code>Font</code>
+     */
+    public static LinkLabel createLinkLabel(String name, String text, String link, int fontSize) {
+
+        LinkLabel linkLabel = createLinkLabel(name, text, link);
+        linkLabel.setFont(new Font(linkLabel.getFont().getFontName(), Font.PLAIN, fontSize));
+
+        return linkLabel;
+    }
 
     // -----------------------
     // --- Utility Methods ---

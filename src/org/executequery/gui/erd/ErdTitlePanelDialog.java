@@ -26,12 +26,12 @@ import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
-import org.underworldlabs.util.DateUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.LocalDate;
 
 /**
  * @author Takis Diakoumis
@@ -243,12 +243,8 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     }
 
     private void initialiseValues() {
-        //MetaDataValues meta = new MetaDataValues();
-        //databaseTextField.setText(meta.getDatabaseProductName());
-
-        DateUtils time = new DateUtils();
-        dateTextField.setText(time.getDate());
-
+        LocalDate time = LocalDate.now();
+        dateTextField.setText(time.toString());
         fileTextField.setText(parent.getErdFileName());
     }
 

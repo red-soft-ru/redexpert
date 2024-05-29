@@ -395,8 +395,12 @@ public class SimplePreferencesPanel extends JPanel
                         SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
                         PropertiesPanel.setUpdateEnvNeed(true);
                     }
+
                 } else
                     SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+
+                if (preference.getKey().equals("startup.display.language"))
+                    System.setProperty("user.language", preference.getSaveValue());
             }
         }
 

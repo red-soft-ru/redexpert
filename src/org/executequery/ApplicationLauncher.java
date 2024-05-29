@@ -104,20 +104,12 @@ public class ApplicationLauncher {
             applyKeyboardFocusManager();
 
 
-            if (hasLocaleSettings()) {
-
-                setSystemLocaleProperties();
-
-            } else {
-
-                if (Log.isDebugEnabled()) {
-
-                    Log.debug("User locale settings not available - resetting");
-                }
-
+            if (!hasLocaleSettings()) {
+                Log.debug("User locale settings not available - resetting");
                 storeSystemLocaleProperties();
 
-            }
+            } else
+                setSystemLocaleProperties();
 
             advanceSplash(splash);
 
@@ -264,17 +256,7 @@ public class ApplicationLauncher {
     }
 
     private boolean hasLocaleSettings() {
-
-        String language = userProperties().getStringProperty("locale.language");
-//        String country = userProperties().getStringProperty("locale.country");
-//        String timezone = userProperties().getStringProperty("locale.timezone");
-
-        /*
-        return !(MiscUtils.isNull(language))
-                && !(MiscUtils.isNull(country))
-                && !(MiscUtils.isNull(timezone));
-        */
-
+        String language = userProperties().getStringProperty("startup.display.language");
         return StringUtils.isNotBlank(language);
     }
 
@@ -360,23 +342,16 @@ public class ApplicationLauncher {
     }
 
     private void storeSystemLocaleProperties() {
-
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.country",
-                System.getProperty("user.country"));
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.language",
-                System.getProperty("user.language"));
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.timezone",
-                System.getProperty("user.timezone"));
+        SystemProperties.setProperty(
+                Constants.USER_PROPERTIES_KEY,
+                "startup.display.language",
+                System.getProperty("user.language")
+        );
     }
 
     private void setSystemLocaleProperties() {
-
-        // set locale and timezone info
-        System.setProperty("user.country", stringUserProperty("locale.country"));
-        System.setProperty("user.language", stringUserProperty("locale.language"));
-        System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
-
-        Locale.setDefault(new Locale(stringUserProperty("locale.language")));
+        System.setProperty("user.language", stringUserProperty("startup.display.language"));
+        Locale.setDefault(new Locale(stringUserProperty("startup.display.language")));
         LocaleManager.updateLocaleEverywhere();
     }
 

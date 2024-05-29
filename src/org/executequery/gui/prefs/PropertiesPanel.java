@@ -67,12 +67,9 @@ public class PropertiesPanel extends JPanel
             "internet.proxy.port",
             "internet.proxy.user",
             "internet.proxy.password",
-            // -- PropertiesLocales --
-            "locale.country",
-            "locale.language",
-            "locale.timezone",
             // -- PropertiesAppearance --
             "startup.display.lookandfeel",
+            "startup.display.language",
             "display.aa.fonts",
             "decorate.frame.look",
             // -- PropertiesEditorGeneral --
@@ -142,7 +139,6 @@ public class PropertiesPanel extends JPanel
         branches.add(new PropertyNode(PropertyTypes.SQL_SHORTCUTS, bundledString("SqlShortcuts")));
 
         PropertyNode node = new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display"));
-        node.addChild(new PropertyNode(PropertyTypes.LOCALE, bundledString("Locale")));
         node.addChild(new PropertyNode(PropertyTypes.LOOK_PLUGIN, bundledString("LookFeelPlugins")));
         branches.add(node);
 
@@ -288,8 +284,6 @@ public class PropertiesPanel extends JPanel
 
             case PropertyTypes.APPEARANCE:
                 return new PropertiesAppearance();
-            case PropertyTypes.LOCALE:
-                return new PropertiesLocales();
             case PropertyTypes.LOOK_PLUGIN:
                 return new PropertiesLookPlugins();
 

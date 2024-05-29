@@ -21,6 +21,7 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.InterfaceLanguage;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
@@ -103,6 +104,15 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 lookAndFeelValuePairs()
         ));
 
+        key = "startup.display.language";
+        list.add(new UserPreference(
+                UserPreference.ENUM_TYPE,
+                key,
+                bundledStaticString("language"),
+                InterfaceLanguage.valueOf(stringUserProperty(key)),
+                languageValuePairs()
+        ));
+
         key = "display.aa.fonts";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
@@ -171,6 +181,17 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
             LookAndFeelType lookAndFeelType = lookAndFeelTypes[i];
             values[i] = new LabelValuePair(lookAndFeelType, lookAndFeelType.getDescription());
         }
+
+        return values;
+    }
+
+    private LabelValuePair[] languageValuePairs() {
+
+        InterfaceLanguage[] languages = InterfaceLanguage.values();
+
+        LabelValuePair[] values = new LabelValuePair[languages.length];
+        for (int i = 0; i < languages.length; i++)
+            values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
 
         return values;
     }

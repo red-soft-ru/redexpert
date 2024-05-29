@@ -25,8 +25,7 @@ public interface PropertyTypes {
     int SYSTEM = 0;
     int GENERAL = SYSTEM + 1;
     int CONNECTIONS = GENERAL + 1;
-    int LOOK_PLUGIN = CONNECTIONS + 1;
-    int APPEARANCE = LOOK_PLUGIN + 1;
+    int APPEARANCE = CONNECTIONS + 1;
     int SHORTCUTS = APPEARANCE + 1;
     int SQL_SHORTCUTS = SHORTCUTS + 1;
     int EDITOR = SQL_SHORTCUTS + 1;

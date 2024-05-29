@@ -135,18 +135,14 @@ public class PropertiesPanel extends JPanel
         List<PropertyNode> branches = new ArrayList<>();
 
         branches.add(new PropertyNode(PropertyTypes.GENERAL, bundledString("General")));
+        branches.add(new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display")));
         branches.add(new PropertyNode(PropertyTypes.SHORTCUTS, bundledString("Shortcuts")));
         branches.add(new PropertyNode(PropertyTypes.SQL_SHORTCUTS, bundledString("SqlShortcuts")));
-
-        PropertyNode node = new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display"));
-        node.addChild(new PropertyNode(PropertyTypes.LOOK_PLUGIN, bundledString("LookFeelPlugins")));
-        branches.add(node);
-
         branches.add(new PropertyNode(PropertyTypes.CONNECTIONS, bundledString("Connection")));
         branches.add(new PropertyNode(PropertyTypes.EDITOR, bundledString("Editor")));
         branches.add(new PropertyNode(PropertyTypes.RESULT_SET, bundledString("ResultSetTable")));
 
-        node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
+        PropertyNode node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_APPLICATION, bundledString("ApplicationTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
@@ -281,12 +277,8 @@ public class PropertiesPanel extends JPanel
                 return new PropertiesKeyShortcuts();
             case PropertyTypes.SQL_SHORTCUTS:
                 return new PropertiesSqlShortcuts();
-
             case PropertyTypes.APPEARANCE:
                 return new PropertiesAppearance();
-            case PropertyTypes.LOOK_PLUGIN:
-                return new PropertiesLookPlugins();
-
             case PropertyTypes.CONNECTIONS:
                 return new PropertiesConnections();
             case PropertyTypes.EDITOR:

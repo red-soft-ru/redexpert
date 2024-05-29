@@ -573,33 +573,10 @@
     <!-- DO NOT REMOVE (that's actions called by hotkeys) -->
 
     <action id="comment-lines-command"
-            name="Comment/Uncomment"
+            name="Comment text"
             accel-key="control SLASH"
             accel-editable="true"
-            small-icon="/org/executequery/icons/AddComment16.png"
             execute-class="org.executequery.actions.queryeditor.CommentLineCommand"/>
-
-    <action id="create-view-command"
-            name="Create View"
-            mnemonic="T"
-            accel-editable="true"
-            description="Create a new database view"
-            execute-class="org.executequery.actions.databasecommands.CreateViewCommand"/>
-
-    <action id="create-index-command"
-            name="Create Index"
-            mnemonic="I"
-            accel-editable="true"
-            small-icon="/org/executequery/icons/NewIndex16.png"
-            description="Create a new database table index"
-            execute-class="org.executequery.actions.databasecommands.CreateIndexCommand"/>
-
-    <action id="create-sequence-command"
-            name="Create Sequence"
-            mnemonic="T"
-            accel-editable="true"
-            description="Create a new database sequence"
-            execute-class="org.executequery.actions.databasecommands.CreateSequenceCommand"/>
 
     <action id="shift-text-right-command"
             name="Shift Text Right"
@@ -615,7 +592,6 @@
 
     <action id="exit-program-command"
             name="Exit"
-            mnemonic="X"
             accel-key="alt F4"
             accel-editable="false"
             execute-class="org.executequery.actions.filecommands.ExitCommand"/>

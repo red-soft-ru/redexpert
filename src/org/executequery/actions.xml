@@ -45,7 +45,7 @@
     <action id="print-command"
             name="Print"
             mnemonic="P"
-            small-icon="/org/executequery/icons/Print16.png"
+            small-icon="/org/executequery/icons/PrintPreview16.png"
             accel-key="control P"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.PrintCommand"/>

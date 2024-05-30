@@ -687,11 +687,9 @@ public final class SQLUtils {
                     sb.append("(").append(cd.getSelectOperator()).append(")");
 
                 } else {
-
                     if (!variable)
                         sb.append("\t");
-                    sb.append(formattedParameter(cd));
-
+                    sb.append(formattedParameter(cd, variable));
                 }
 
                 if (variable) {
@@ -718,15 +716,11 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String formattedParameter(ColumnData cd) {
-        return formattedParameter(cd, true);
-    }
-
-    public static String formattedParameter(ColumnData cd, boolean appendName) {
+    public static String formattedParameter(ColumnData cd, boolean variable) {
         StringBuilder sb = new StringBuilder();
 
-        if (appendName)
-            sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).append(SPACE);
+        String formattedName = variable ? cd.getColumnName() : format(cd.getColumnName(), cd.getConnection());
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : formattedName).append(SPACE);
 
         if (MiscUtils.isNull(cd.getComputedBy())) {
 

@@ -36,6 +36,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -295,17 +296,20 @@ public class DefaultRemoteHttpClient implements RemoteHttpClient {
 
             int statusCode = client.executeMethod(method);
             StringBuilder text = new StringBuilder();
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(method.getResponseBodyAsStream(), StandardCharsets.UTF_8));
+            InputStream is = method.getResponseBodyAsStream();
+            if (is != null) {
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(is, StandardCharsets.UTF_8));
 
-            String inputLine;
+                String inputLine;
 
 
-            while ((inputLine = br.readLine()) != null) {
-                text.append(inputLine).append("\n");
+                while ((inputLine = br.readLine()) != null) {
+                    text.append(inputLine).append("\n");
+                }
+
+                br.close();
             }
-
-            br.close();
 
             return new RemoteHttpResponse(statusCode, text.toString());
 

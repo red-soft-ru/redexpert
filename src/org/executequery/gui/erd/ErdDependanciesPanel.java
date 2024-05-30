@@ -229,8 +229,9 @@ public class ErdDependanciesPanel extends JComponent {
             return;
         }
 
-        g2d.setColor(lineColour);
+
         for (int i = 0; i < dependencies.length; i++) {
+            g2d.setColor(ErdViewerPanel.LINE_COLORS[dependencies[i].getTable_1().getTitleBarBgColor()]);
             determinePositions(dependencies[i]);
             drawLines(g2d, dependencies[i], xOffset, yOffset);
         }

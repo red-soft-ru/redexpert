@@ -99,10 +99,11 @@ public class ErdTable extends ErdMoveableComponent
 
     private boolean displayReferencedKeysOnly;
 
+
     private static final String PRIMARY = "(PK) ";
     private static final String FOREIGN = "(FK)";
 
-    private static final Color TITLE_BAR_BG_COLOR = new Color(255, 251, 203);
+    private int titleBarBgColor = 0;
 
     private transient ErdTableConnectionPoint[] verticalLeftJoins;
     private transient ErdTableConnectionPoint[] verticalRightJoins;
@@ -547,7 +548,7 @@ public class ErdTable extends ErdMoveableComponent
         Font columnNameFont = parent.getColumnNameFont();
 
         // set the table value background
-        g.setColor(TITLE_BAR_BG_COLOR);
+        g.setColor(ErdViewerPanel.TITLE_COLORS[titleBarBgColor]);
         g.fillRect(offsetX, offsetY, FINAL_WIDTH - 1, TITLE_BAR_HEIGHT);
 
         // set the table value
@@ -582,7 +583,6 @@ public class ErdTable extends ErdMoveableComponent
         int drawCount = 0;
         String value = null;
         if (ArrayUtils.isNotEmpty(columns)) {
-
             for (int i = 0; i < columns.length; i++) {
                 ColumnData column = columns[i];
                 if (displayReferencedKeysOnly && !column.isKey()) {
@@ -591,7 +591,6 @@ public class ErdTable extends ErdMoveableComponent
 
                 int y = (((drawCount++) + 1) * lineHeight) + heightPlusSep;
                 int x = leftMargin;
-
                 // draw the column value string
                 value = column.getColumnName();
                 g.drawString(value, x, y);
@@ -865,6 +864,10 @@ public class ErdTable extends ErdMoveableComponent
         verticalRightJoins = null;
         horizontalTopJoins = null;
         horizontalBottomJoins = null;
+    }
+
+    public int getTitleBarBgColor() {
+        return titleBarBgColor;
     }
 
     static class ErdTableConnectionPoint {

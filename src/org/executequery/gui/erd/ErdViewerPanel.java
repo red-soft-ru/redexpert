@@ -185,6 +185,26 @@ public class ErdViewerPanel extends DefaultTabView
 
     private List columnData;
 
+    public final static Color[] TITLE_COLORS = new Color[]{
+            new Color(255, 173, 173),
+            new Color(255, 214, 165),
+            new Color(253, 255, 182),
+            new Color(202, 255, 191),
+            new Color(155, 246, 255),
+            new Color(189, 178, 255),
+            new Color(255, 198, 255)
+    };
+
+    public final static Color[] LINE_COLORS = new Color[]{
+            new Color(255, 0, 0),
+            new Color(255, 128, 0),
+            new Color(255, 255, 0),
+            new Color(0, 255, 0),
+            new Color(0, 0, 255),
+            new Color(128, 128, 255),
+            new Color(255, 0, 255)
+    };
+
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, null, true, showTools, editable);
     }
@@ -405,6 +425,8 @@ public class ErdViewerPanel extends DefaultTabView
 
             // add to the vector
             tables.add(table);
+            table.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
+
 
         }
 
@@ -467,8 +489,14 @@ public class ErdViewerPanel extends DefaultTabView
                                             tempHash.get(table) == tables_array[k])) {
                                 break;
                             }
-
-                            dependency = new ErdTableDependency(tables_array[k], table);
+                            ColumnData refCol = null;
+                            for (ColumnData col : table.getTableColumns()) {
+                                if (col.getColumnName().contentEquals(cca[n].getRefColumn())) {
+                                    refCol = col;
+                                    break;
+                                }
+                            }
+                            dependency = new ErdTableDependency(tables_array[k], table, cda[i], refCol);
 
                             // place the tables in the temp HashMap so
                             // the combination is not added a second time
@@ -722,6 +750,7 @@ public class ErdViewerPanel extends DefaultTabView
                 return false;
         }
         tables.add(newTable);
+        newTable.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
 
         // place the new table in the center of the canvas
         newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
@@ -989,6 +1018,7 @@ public class ErdViewerPanel extends DefaultTabView
 
             layeredPane.add(table);
             tables.add(table);
+            table.setTitleBarBgColor(tables.size() - 1 % TITLE_COLORS.length);
             table.toFront();
         }
 

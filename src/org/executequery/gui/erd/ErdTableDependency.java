@@ -20,6 +20,8 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.gui.browser.ColumnData;
+
 import java.io.Serializable;
 
 /**
@@ -29,6 +31,9 @@ public class ErdTableDependency implements Serializable {
 
     private ErdTable table_1;
     private ErdTable table_2;
+
+    private final ColumnData column1;
+    private final ColumnData column2;
 
     /**
      * Start x position
@@ -66,9 +71,11 @@ public class ErdTableDependency implements Serializable {
     protected static final int POSITION_5 = 4;
     protected static final int POSITION_6 = 5;
 
-    public ErdTableDependency(ErdTable table_1, ErdTable table_2) {
+    public ErdTableDependency(ErdTable table_1, ErdTable table_2, ColumnData column1, ColumnData column2) {
         this.table_1 = table_1;
         this.table_2 = table_2;
+        this.column1 = column1;
+        this.column2 = column2;
         reset();
     }
 
@@ -151,6 +158,13 @@ public class ErdTableDependency implements Serializable {
         table_2 = null;
     }
 
+    public ColumnData getColumn1() {
+        return column1;
+    }
+
+    public ColumnData getColumn2() {
+        return column2;
+    }
 }
 
 

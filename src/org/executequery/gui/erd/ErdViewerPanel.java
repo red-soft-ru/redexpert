@@ -265,7 +265,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         // initialise the fonts
         tableFontName = "Dialog";
-        tableFontSize = 10;
+        tableFontSize = 14;
         tableNameFontStyle = Font.PLAIN;
         columnNameFontStyle = Font.PLAIN;
 

@@ -61,7 +61,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
     /**
      * The dependency panel where changes will occur
      */
-    private ErdDependanciesPanel dependsPanel;
+    private final ErdDependanciesPanel dependsPanel;
 
     /**
      * <p>Creates a new instance with the specified values
@@ -190,14 +190,14 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         panel.add(arrowCombo, gbc);
         gbc.gridy = 3;
         gbc.fill = GridBagConstraints.BOTH;
-        panel.add(colourButton, gbc);
+        //panel.add(colourButton, gbc);
         gbc.insets.left = 10;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
-        panel.add(new JLabel(bundleString("LineColourLabel")), gbc);
+        //panel.add(new JLabel(bundleString("LineColourLabel")), gbc);
 
 
         gbc.gridx = 1;
@@ -266,7 +266,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
             }
 
             dependsPanel.setLineWeight(lineWeight);
-            dependsPanel.setArrowStyle(arrowCombo.getSelectedIndex() == 0 ? true : false);
+            dependsPanel.setArrowStyle(arrowCombo.getSelectedIndex() == 0);
             dependsPanel.setLineColour(colourButton.getColour());
             dependsPanel.setLineStyle(styleCombo.getSelectedIndex());
             dependsPanel.repaint();
@@ -294,7 +294,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
  */
 class ArrowStyleIcon extends ImageIcon {
 
-    private int type;
+    private final int type;
 
     public ArrowStyleIcon(int type) {
         super();
@@ -381,7 +381,7 @@ class LineWeightIcon extends ImageIcon {
     private static final String ONE_FIVE = "1.5";
     private static final String TWO = "2.0";
 
-    private int type;
+    private final int type;
 
     public LineWeightIcon(int type) {
         super();
@@ -443,15 +443,15 @@ class LineStyleIcon extends ImageIcon {
 
     private static final BasicStroke solidStroke = new BasicStroke(1.0f);
 
-    private static final float dash1[] = {2.0f};
+    private static final float[] dash1 = {2.0f};
     private static final BasicStroke dashedStroke_1 =
             new BasicStroke(1.0f, 0, 0, 10f, dash1, 0.0f);
 
-    private static final float dash2[] = {5f, 2.0f};
+    private static final float[] dash2 = {5f, 2.0f};
     private static final BasicStroke dashedStroke_2 =
             new BasicStroke(1.0f, 0, 0, 10f, dash2, 0.0f);
 
-    private int type;
+    private final int type;
 
     public LineStyleIcon(int type) {
         super();

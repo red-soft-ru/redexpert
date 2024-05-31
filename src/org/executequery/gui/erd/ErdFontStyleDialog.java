@@ -54,7 +54,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The table name style combo
@@ -136,7 +136,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         Vector<String> fontNames = GUIUtils.getSystemFonts();
         fontList = new JList(fontNames);
 
-        String[] fontSizes = {"7", "8", "9", "10", "11", "12", "14"};
+        String[] fontSizes = {"7", "8", "9", "10", "11", "12", "14", "16", "18", "22", "24", "32"};
         sizeList = new JList(fontSizes);
 
         JScrollPane fontScroll = new JScrollPane(fontList);

@@ -34,74 +34,20 @@ package org.executequery.plaf;
  */
 public class LookAndFeelDefinition {
 
-    /**
-     * The look and feel name
-     */
     private String name;
-
-    /**
-     * The path to the library jar file
-     */
     private String libPath;
-
-    /**
-     * The look and feel class name
-     */
     private String className;
-
-    /**
-     * The path to the theme pack ZIP file for Skin L&F
-     */
-    private String themePack;
-
-    /**
-     * Identifies whether this is a Skin L&F
-     */
-    private int skinLookAndFeel;
-
-    /**
-     * Whethet this look and feel is selected
-     */
-    private boolean installed;
-
 
     public LookAndFeelDefinition(String name) {
         this.name = name;
     }
 
-    public LookAndFeelDefinition() {
+    public String getName() {
+        return name;
     }
 
-    public boolean isInstalled() {
-        return installed;
-    }
-
-    public void setInstalled(boolean installed) {
-        this.installed = installed;
-    }
-
-    public boolean isSkinLookAndFeel() {
-        return skinLookAndFeel == 1;
-    }
-
-    public void setIsSkinLookAndFeel(int skinLookAndFeel) {
-        this.skinLookAndFeel = skinLookAndFeel;
-    }
-
-    public String getThemePack() {
-        return themePack;
-    }
-
-    public void setThemePack(String themePack) {
-        this.themePack = themePack;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getLibraryPath() {
@@ -112,18 +58,17 @@ public class LookAndFeelDefinition {
         this.libPath = libPath;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getClassName() {
+        return className;
     }
 
-    public String getName() {
-        return name;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
+    @Override
     public String toString() {
-        return name;
+        return getName();
     }
 
 }
-
-

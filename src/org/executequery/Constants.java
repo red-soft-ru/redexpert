@@ -86,6 +86,7 @@ public interface Constants {
     char NEW_LINE_CHAR = '\n';
     char TAB_CHAR = '\t';
     char COMMA_CHAR = ',';
+    char COLON_CHAR = ';';
 
     //-------------------------
     // literal SQL keywords

@@ -140,22 +140,12 @@ public final class LookAndFeelLoader {
     }
 
     private void loadCustomLookAndFeel() {
-
-        PluginLookAndFeelManager pluginManager = new PluginLookAndFeelManager();
         try {
-
-            pluginManager.loadLookAndFeel();
+            new PluginLookAndFeelManager().loadLookAndFeel();
 
         } catch (Exception e) {
-
             throw new ApplicationException(e);
         }
-
-        if (!pluginManager.isInstalled()) {
-
-            loadDefaultLookAndFeel();
-        }
-
     }
 
     /**

@@ -27,6 +27,7 @@ import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import java.util.List;
 public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private SimplePreferencesPanel preferencesPanel;
+    private CustomLafSelectionPanel lafSelectionPanel;
     private boolean lafChangeWarningShown = false;
 
     public PropertiesAppearance() {
@@ -145,9 +147,14 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
+        lafSelectionPanel = new CustomLafSelectionPanel();
+
         preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
+
         addContent(preferencesPanel);
         lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
+        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(getCurrentlySelectedLookAndFeel()));
     }
 
     @SuppressWarnings("rawtypes")
@@ -162,15 +169,17 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
             lafChangeWarningShown = true;
         }
 
-        AbstractPropertiesColours.setSelectedLookAndFeel(getCurrentlySelectedLookAndFeel());
+        LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
+        AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
+        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
 
         PropertiesEditorColours editorColours = new PropertiesEditorColours();
         editorColours.restoreDefaults();
         editorColours.save();
 
-        PropertiesResultSetTableColours resultsetColours = new PropertiesResultSetTableColours();
-        resultsetColours.restoreDefaults();
-        resultsetColours.save();
+        PropertiesResultSetTableColours resultSetColours = new PropertiesResultSetTableColours();
+        resultSetColours.restoreDefaults();
+        resultSetColours.save();
     }
 
     private Object[] lookAndFeelValuePairs() {
@@ -207,12 +216,14 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     @Override
     public void restoreDefaults() {
+        lafSelectionPanel.restore();
         preferencesPanel.savePreferences();
         apply();
     }
 
     @Override
     public void save() {
+        lafSelectionPanel.save();
         preferencesPanel.savePreferences();
         apply();
     }

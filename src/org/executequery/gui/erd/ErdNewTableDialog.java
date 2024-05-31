@@ -35,6 +35,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -244,7 +246,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
     }
 
-    class CreateTableERDPanel extends CreateTablePanel {
+    public class CreateTableERDPanel extends CreateTablePanel {
 
 
         /**
@@ -291,6 +293,24 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
         public SimpleSqlTextPanel getSQLTextAreal() {
             return sqlText;
+        }
+
+        public List<ErdTable> getErdTables() {
+            return erdViewerPanel.getAllComponentsVector();
+        }
+
+        public List<String> getColumns(String table) {
+            List<String> cols = new ArrayList<>();
+            List<ErdTable> list = getErdTables();
+            if (list != null)
+                for (ErdTable erd : list) {
+                    if (erd.getTableName() != null && erd.getTableName().contentEquals(table)) {
+                        for (ColumnData cd : erd.getTableColumns()) {
+                            cols.add(cd.getColumnName());
+                        }
+                    }
+                }
+            return cols;
         }
 
     }

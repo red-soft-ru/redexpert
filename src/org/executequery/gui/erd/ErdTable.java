@@ -154,11 +154,12 @@ public class ErdTable extends ErdMoveableComponent
         if (columns != null) {
             for (int i = 0; i < columns.length; i++) {
                 ColumnData column = columns[i];
-
-                int valueWidth = fmColumns.stringWidth(column.getColumnName());
+                int valueWidth = 10;
+                if (column.getColumnName() != null)
+                    valueWidth = fmColumns.stringWidth(column.getColumnName());
                 dataTypeOffset = Math.max(dataTypeOffset, valueWidth);
-
-                valueWidth = fmColumns.stringWidth(column.getFormattedDataType());
+                if (column.getFormattedColumnName() != null)
+                    valueWidth = fmColumns.stringWidth(column.getFormattedDataType());
                 keyLabelOffset = Math.max(keyLabelOffset, valueWidth);
             }
         }
@@ -517,12 +518,14 @@ public class ErdTable extends ErdMoveableComponent
                 int x = leftMargin;
                 // draw the column value string
                 value = column.getColumnName();
-                g.drawString(value, x, y);
+                if (value != null)
+                    g.drawString(value, x, y);
 
                 // draw the data type and size string
                 x = leftMargin + dataTypeOffset;
                 value = column.getFormattedDataType();
-                g.drawString(value, x, y);
+                if (value != null)
+                    g.drawString(value, x, y);
 
                 // draw the key label
                 if (column.isKey()) {

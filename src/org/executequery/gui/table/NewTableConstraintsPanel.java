@@ -22,6 +22,7 @@ package org.executequery.gui.table;
 
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.erd.ErdNewTableDialog;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
 import java.util.Vector;
@@ -68,7 +69,7 @@ public class NewTableConstraintsPanel extends TableConstraintsPanel
 
                 if (cc.getType() != -1 && cc.getTypeName() == ColumnConstraint.FOREIGN) {
                     setCellEditor(REFERENCE_TABLE, new ComboBoxCellEditor(
-                            new Vector<>(creator.getTables())));
+                            new Vector<>(creator instanceof ErdNewTableDialog.CreateTableERDPanel ? ((ErdNewTableDialog.CreateTableERDPanel) creator).getErdTables() : creator.getTables())));
                     setCellEditor(UPDATE_RULE, new ComboBoxCellEditor(
                             ColumnConstraint.RULES
                     ));

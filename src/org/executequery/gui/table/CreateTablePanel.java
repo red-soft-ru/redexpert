@@ -23,7 +23,9 @@ package org.executequery.gui.table;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.T;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
@@ -217,12 +219,13 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         if (this instanceof CreateGlobalTemporaryTable) {
             topGbh.addLabelFieldPair(topPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, null, false);
         }
+        if (connection != null) {
+            if (getDatabaseVersion() >= 3 && !(this instanceof CreateGlobalTemporaryTable)) {
 
-        if (getDatabaseVersion() >= 3 && !(this instanceof CreateGlobalTemporaryTable)) {
+                topPanel.add(isExternalTable, topGbh.nextRowFirstCol().setLabelDefault().get());
 
-            topPanel.add(isExternalTable, topGbh.nextRowFirstCol().setLabelDefault().get());
-
-            topPanel.add(isAdapterNeeded, topGbh.nextCol().get());
+                topPanel.add(isAdapterNeeded, topGbh.nextCol().get());
+            }
         }
 
         // ----- external panel -----
@@ -257,12 +260,16 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
 
         // check initial values for possible value inits
-
-        tablePanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
-        tablePanel.setDomains(getDomains());
-        tablePanel.setGenerators(getGenerators());
+        if (connection != null) {
+            tablePanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
+            tablePanel.setDomains(getDomains());
+            tablePanel.setGenerators(getGenerators());
+        } else {
+            tablePanel.setDataTypes(T.DEFAULT_TYPES, DatabaseTypeConverter.getSQLDataTypesFromNames(T.DEFAULT_TYPES));
+        }
         tablePanel.setDatabaseConnection(connection);
-        populateTablespaces(connection);
+        if (connection != null)
+            populateTablespaces(connection);
 
         externalTablePropsChanged();
         conTools.enableButtons(false);
@@ -516,7 +523,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     }
 
     public void setColumnDataArray(ColumnData[] cda) {
-        tablePanel.setColumnDataArray(cda, null);
+        tablePanel.setColumnDataArray(cda);
     }
 
     public void setColumnConstraintVector(Vector ccv, boolean fillCombos) {
@@ -620,7 +627,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         for (ColumnData columnData : cda) {
 
             // reset the keys
-            columnData.setPrimaryKey(false);
+            //columnData.setPrimaryKey(false);
             columnData.setForeignKey(false);
             columnData.resetConstraints();
 

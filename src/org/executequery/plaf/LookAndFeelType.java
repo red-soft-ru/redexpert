@@ -20,55 +20,40 @@
 
 package org.executequery.plaf;
 
+import org.executequery.localization.Bundles;
 
 public enum LookAndFeelType {
 
-    EXECUTE_QUERY("Red Expert Default"),
-    EXECUTE_QUERY_DARK("Red Expert Dark Theme"),
-    EXECUTE_QUERY_GRADIENT("Red Expert Default 3D"),
-    SMOOTH_GRADIENT("Smooth Gradient"),
-    BUMPY_GRADIENT("Bumpy Gradient"),
-    EXECUTE_QUERY_THEME("Red Expert Theme"),
-    METAL("Metal - Classic"),
-    OCEAN("Metal - Ocean (JDK1.5+)"),
-    WINDOWS("Windows"),
-    MOTIF("CDE/Motif"),
-    GTK("GTK+"),
-    PLUGIN("Plugin"),
-    NATIVE("Native");
+    DEFAULT_LIGHT(bundleString("DefaultLight")),
+    DEFAULT_DARK(bundleString("DefaultDark")),
+    NATIVE(bundleString("System")),
+    PLUGIN(bundleString("UserDefined"));
 
-    private String description;
+    private final String description;
 
-    private LookAndFeelType(String description) {
-
+    LookAndFeelType(String description) {
         this.description = description;
     }
 
     public String getDescription() {
-
         return description;
+    }
+
+    public boolean isDarkTheme() {
+        return this == LookAndFeelType.DEFAULT_DARK;
+    }
+
+    public boolean isDefaultTheme() {
+        return this == DEFAULT_LIGHT || this == DEFAULT_DARK;
+    }
+
+    private static String bundleString(String key) {
+        return Bundles.get(LookAndFeelType.class, key);
     }
 
     @Override
     public String toString() {
-
         return getDescription();
     }
 
-    public boolean isDarkTheme() {
-
-        return (this == LookAndFeelType.EXECUTE_QUERY_DARK);
-    }
-
-    public boolean isExecuteQueryLookCompatible() {
-
-        return (this == SMOOTH_GRADIENT ||
-                this == EXECUTE_QUERY_THEME ||
-                this == EXECUTE_QUERY ||
-                this == EXECUTE_QUERY_DARK ||
-                this == EXECUTE_QUERY_GRADIENT);
-    }
-
 }
-
-

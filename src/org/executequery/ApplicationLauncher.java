@@ -280,22 +280,14 @@ public class ApplicationLauncher {
     }
 
     private void loadDefaultLookAndFeel(LookAndFeelLoader loader) {
-
         try {
-
-            loader.loadLookAndFeel(LookAndFeelType.EXECUTE_QUERY);
-            userProperties().setStringProperty(
-                    "startup.display.lookandfeel", LookAndFeelType.EXECUTE_QUERY.name());
+            loader.loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
+            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.DEFAULT_LIGHT.name());
 
         } catch (ApplicationException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Error loading default EQ look and feel", e);
-            }
+            Log.debug("Error loading default EQ look and feel", e);
             loader.loadCrossPlatformLookAndFeel();
         }
-
     }
 
     private void applySystemProperties() {

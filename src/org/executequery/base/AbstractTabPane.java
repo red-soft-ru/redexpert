@@ -95,8 +95,7 @@ public abstract class AbstractTabPane extends JPanel
      */
     protected Color getSelectedTabBackground() {
         if (selectedTabBackground == null) {
-            if ((UIUtils.isMetalLookAndFeel()) ||// && !UIUtils.usingOcean()) ||
-                    UIUtils.isMotifLookAndFeel() || UIUtils.isWindowsLookAndFeel()) {
+            if ((UIUtils.isMetalLookAndFeel()) || UIUtils.isWindowsLookAndFeel()) {
 
                 selectedTabBackground = UIUtils.getDefaultActiveBackgroundColour();
 

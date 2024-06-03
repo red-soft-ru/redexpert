@@ -45,7 +45,7 @@ public class ConnectCommand extends OpenFrameCommand implements BaseCommand {
         ConnectionsTreePanel panel = connectionsPanel();
 
         String command = e.getActionCommand();
-        if (MiscUtils.isNull(command) || Bundles.get("action.connect-command").equals(command)) {
+        if (MiscUtils.isNull(command) || Bundles.get("action.new-connection-command").equals(command)) {
 
             panel.newConnection();
 

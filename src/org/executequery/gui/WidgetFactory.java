@@ -84,6 +84,22 @@ public final class WidgetFactory {
     /**
      * Create named JButton class instance
      *
+     * @param name     the component's name
+     * @param icon     the icon used as the default image
+     * @param listener the ActionListener to be added
+     */
+    public static JButton createButton(String name, Icon icon, ActionListener listener) {
+
+        JButton button = createButton(name, icon, Constants.EMPTY);
+        button.setPreferredSize(getPreferredSize(button));
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
+     * Create named JButton class instance
+     *
      * @param name    the component's name
      * @param text    the displayed button text
      * @param icon    the icon used as the default image
@@ -94,9 +110,9 @@ public final class WidgetFactory {
         JButton button = createButton(name, icon, toolTip);
         button.setText(text);
 
-        Dimension defaultPrefered = getPreferredSize(button);
-        defaultPrefered.width += button.getFontMetrics(button.getFont()).stringWidth(text) + button.getMargin().left + button.getMargin().right;
-        button.setPreferredSize(defaultPrefered);
+        Dimension preferredSize = getPreferredSize(button);
+        preferredSize.width += button.getFontMetrics(button.getFont()).stringWidth(text) + icon.getIconWidth();
+        button.setPreferredSize(preferredSize);
 
         return button;
     }

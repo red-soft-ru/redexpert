@@ -43,17 +43,26 @@ abstract class AbstractPropertiesBasePanel extends JPanel
         PreferenceTableModelListener {
 
     public static final int TABLE_ROW_HEIGHT = 26;
+    private final PropertiesPanel parent;
 
+    private JButton applyButton;
     private JButton restoreButton;
     private List<PreferenceChangeListener> listeners;
 
-    public AbstractPropertiesBasePanel() {
+    public AbstractPropertiesBasePanel(PropertiesPanel parent) {
         super(new GridBagLayout());
+        this.parent = parent;
         init();
     }
 
     private void init() {
         listeners = new ArrayList<>();
+
+        applyButton = WidgetFactory.createButton(
+                "applyButton",
+                e -> parent.save(true),
+                Bundles.get("AbstractPropertiesBasePanel.apply")
+        );
 
         restoreButton = WidgetFactory.createButton(
                 "restoreButton",
@@ -62,15 +71,11 @@ abstract class AbstractPropertiesBasePanel extends JPanel
         );
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(applyButton);
         bottomPanel.add(restoreButton);
 
         setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
-        add(bottomPanel, new GridBagHelper()
-                .anchorSouthEast()
-                .fillNone()
-                .setY(2)
-                .get()
-        );
+        add(bottomPanel, new GridBagHelper().anchorSouthEast().fillNone().setY(2).get());
     }
 
     protected final void addContent(JPanel panel) {
@@ -88,7 +93,8 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
     // ---
 
-    protected final void hideRestoreButton() {
+    protected final void hideBottomButtons() {
+        applyButton.getParent().setVisible(false);
         restoreButton.getParent().setVisible(false);
     }
 

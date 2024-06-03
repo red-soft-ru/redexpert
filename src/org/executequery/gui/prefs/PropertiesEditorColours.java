@@ -46,20 +46,16 @@ import java.util.*;
 /**
  * @author Takis Diakoumis
  */
-public class PropertiesEditorColours extends AbstractPropertiesColours implements Constants {
+public class PropertiesEditorColours extends AbstractPropertiesColours
+        implements Constants {
 
     private SamplePanel samplePanel;
     private SyntaxColorTableModel syntaxColoursTableModel;
     private EditorColourPreferencesTableModel editorColoursPreferencesTableModel;
 
-    public PropertiesEditorColours() {
-        super();
-        try {
-            init();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesEditorColours(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
     private void init() {

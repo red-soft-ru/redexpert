@@ -42,7 +42,8 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
             Bundles.get("preferences.allign.center")
     };
 
-    public PropertiesResultSetTableGeneral() {
+    public PropertiesResultSetTableGeneral(PropertiesPanel parent) {
+        super(parent);
         init();
     }
 

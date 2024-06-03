@@ -40,7 +40,8 @@ import java.util.Objects;
 public class PropertiesConnections extends AbstractPropertiesBasePanel {
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesConnections() {
+    public PropertiesConnections(PropertiesPanel parent) {
+        super(parent);
         init();
     }
 

@@ -60,7 +60,8 @@ public class PropertiesSqlShortcuts extends AbstractPropertiesBasePanel
 
     private int lastSelectedIndex = -1;
 
-    public PropertiesSqlShortcuts() {
+    public PropertiesSqlShortcuts(PropertiesPanel parent) {
+        super(parent);
         init();
         arrange();
     }
@@ -120,7 +121,7 @@ public class PropertiesSqlShortcuts extends AbstractPropertiesBasePanel
         // --- base ---
 
         addContent(mainPanel);
-        hideRestoreButton();
+        hideBottomButtons();
     }
 
     @SuppressWarnings("unchecked")

@@ -38,8 +38,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
 
@@ -49,9 +47,7 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class PropertiesPanel extends JPanel
-        implements ActiveComponent,
-        ActionListener,
-        PreferenceChangeListener,
+        implements PreferenceChangeListener,
         TreeSelectionListener {
 
     public static final String TITLE = Bundles.get("preferences.Preferences");
@@ -86,6 +82,7 @@ public class PropertiesPanel extends JPanel
     private JTree tree;
     private JPanel rightPanel;
     private CardLayout cardLayout;
+    private UserPreferenceFunction currentlySelectedPanel;
     private Map<Integer, UserPreferenceFunction> panelMap;
 
     private final ActionContainer parent;
@@ -198,7 +195,12 @@ public class PropertiesPanel extends JPanel
 
         mainPanel.add(splitPane, BorderLayout.CENTER);
         mainPanel.add(new BottomButtonPanel(
-                this, null, "prefs", parent.isDialog()), BorderLayout.SOUTH);
+                        e -> save(false),
+                        null,
+                        "prefs",
+                        parent.isDialog()
+                ), BorderLayout.SOUTH
+        );
 
         add(mainPanel, BorderLayout.CENTER);
         panelMap = new HashMap<>();
@@ -254,13 +256,13 @@ public class PropertiesPanel extends JPanel
         if (panel == null)
             return;
 
-        UserPreferenceFunction userPreferenceFunction = (UserPreferenceFunction) panel;
-        userPreferenceFunction.addPreferenceChangeListener(this);
-        panelMap.put(nodeId, userPreferenceFunction);
+        currentlySelectedPanel = (UserPreferenceFunction) panel;
+        currentlySelectedPanel.addPreferenceChangeListener(this);
+        panelMap.put(nodeId, currentlySelectedPanel);
 
         // apply all previously applied prefs that the new panel might be interested in
         for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet())
-            userPreferenceFunction.preferenceChange(event.getValue());
+            currentlySelectedPanel.preferenceChange(event.getValue());
 
         rightPanel.add(panel, String.valueOf(nodeId));
         cardLayout.show(rightPanel, String.valueOf(nodeId));
@@ -272,44 +274,44 @@ public class PropertiesPanel extends JPanel
             case PropertyTypes.SYSTEM:
                 return new PropertiesRootPanel();
             case PropertyTypes.GENERAL:
-                return new PropertiesGeneral();
+                return new PropertiesGeneral(this);
             case PropertyTypes.SHORTCUTS:
-                return new PropertiesKeyShortcuts();
+                return new PropertiesKeyShortcuts(this);
             case PropertyTypes.SQL_SHORTCUTS:
-                return new PropertiesSqlShortcuts();
+                return new PropertiesSqlShortcuts(this);
             case PropertyTypes.APPEARANCE:
-                return new PropertiesAppearance();
+                return new PropertiesAppearance(this);
             case PropertyTypes.CONNECTIONS:
-                return new PropertiesConnections();
+                return new PropertiesConnections(this);
             case PropertyTypes.EDITOR:
-                return new PropertiesEditorGeneral();
+                return new PropertiesEditorGeneral(this);
             case PropertyTypes.RESULT_SET:
-                return new PropertiesResultSetTableGeneral();
+                return new PropertiesResultSetTableGeneral(this);
 
             case PropertyTypes.TOOLBAR_GENERAL:
-                return new PropertiesToolBarGeneral();
+                return new PropertiesToolBarGeneral(this);
             case PropertyTypes.TOOLBAR_DATABASE:
-                return new PropertiesToolBar(ToolBarManager.DATABASE_TOOLS);
+                return new PropertiesToolBar(this, ToolBarManager.DATABASE_TOOLS);
             case PropertyTypes.TOOLBAR_APPLICATION:
-                return new PropertiesToolBar(ToolBarManager.APPLICATION_TOOLS);
+                return new PropertiesToolBar(this, ToolBarManager.APPLICATION_TOOLS);
             case PropertyTypes.TOOLBAR_QUERY_EDITOR:
-                return new PropertiesToolBar(ToolBarManager.QUERY_EDITOR_TOOLS);
+                return new PropertiesToolBar(this, ToolBarManager.QUERY_EDITOR_TOOLS);
             case PropertyTypes.TOOLBAR_SYSTEM:
-                return new PropertiesToolBar(ToolBarManager.SYSTEM_TOOLS);
+                return new PropertiesToolBar(this, ToolBarManager.SYSTEM_TOOLS);
 
             case PropertyTypes.FONTS_GENERAL:
             case PropertyTypes.EDITOR_FONTS:
-                return new PropertiesEditorFonts();
+                return new PropertiesEditorFonts(this);
             case PropertyTypes.CONNECTIONS_TREE_FONTS:
-                return new PropertiesTreeConnectionsFonts();
+                return new PropertiesTreeConnectionsFonts(this);
             case PropertyTypes.CONSOLE_FONTS:
-                return new PropertiesConsoleFonts();
+                return new PropertiesConsoleFonts(this);
 
             case PropertyTypes.COLORS_GENERAL:
             case PropertyTypes.EDITOR_COLOURS:
-                return new PropertiesEditorColours();
+                return new PropertiesEditorColours(this);
             case PropertyTypes.RESULT_SET_COLOURS:
-                return new PropertiesResultSetTableColours();
+                return new PropertiesResultSetTableColours(this);
 
             default:
                 return null;
@@ -326,13 +328,15 @@ public class PropertiesPanel extends JPanel
         checkAndSetRestartNeed(e.getKey());
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    public void save(boolean isApplyAction) {
 
         try {
             GUIUtilities.showWaitCursor();
 
-            panelMap.values().forEach(UserPreferenceFunction::save);
+            if (isApplyAction)
+                currentlySelectedPanel.save();
+            else
+                panelMap.values().forEach(UserPreferenceFunction::save);
             ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
             if (isRestartNeed()) {
@@ -347,20 +351,12 @@ public class PropertiesPanel extends JPanel
             GUIUtilities.showNormalCursor();
         }
 
-        parent.finished();
+        if (!isApplyAction)
+            parent.finished();
     }
 
     private UserPreferenceEvent createUserPreferenceEvent() {
         return new DefaultUserPreferenceEvent(this, null, UserPreferenceEvent.ALL);
-    }
-
-    @SuppressWarnings("SuspiciousMethodCalls")
-    @Override
-    public void cleanup() {
-        if (panelMap.containsKey("Colours") && panelMap.get("Colours") instanceof PropertiesEditorBackground) {
-            PropertiesEditorBackground panel = (PropertiesEditorBackground) panelMap.get("Colours");
-            panel.stopCaretDisplayTimer();
-        }
     }
 
     public boolean isRestartNeed() {

@@ -36,6 +36,10 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
 
     private static LookAndFeelType selectedLookAndFeel;
 
+    protected AbstractPropertiesColours(PropertiesPanel parent) {
+        super(parent);
+    }
+
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
 

@@ -33,7 +33,8 @@ import java.util.List;
 public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesEditorGeneral() {
+    public PropertiesEditorGeneral(PropertiesPanel parent) {
+        super(parent);
         init();
     }
 

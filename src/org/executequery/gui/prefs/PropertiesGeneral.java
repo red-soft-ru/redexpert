@@ -38,7 +38,8 @@ import java.util.SortedMap;
 public class PropertiesGeneral extends AbstractPropertiesBasePanel {
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesGeneral() {
+    public PropertiesGeneral(PropertiesPanel parent) {
+        super(parent);
         init();
     }
 

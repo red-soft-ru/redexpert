@@ -58,27 +58,16 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
     private JButton addSeparatorButton;
     private JButton removeSeparatorButton;
 
-    /**
-     * The tool bar name
-     */
-    private String toolBarName;
-    /**
-     * The tool bar wrapper
-     */
+    private final String toolBarName;
     private ToolBarWrapper toolBar;
 
-    public PropertiesToolBar(String toolBarName) {
+    public PropertiesToolBar(PropertiesPanel parent, String toolBarName) {
+        super(parent);
         this.toolBarName = toolBarName;
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
     }
 
-    private void jbInit() {
+    private void init() {
         ReflectiveAction action = new ReflectiveAction(this);
 
         moveUpButton = ActionUtilities.createButton(

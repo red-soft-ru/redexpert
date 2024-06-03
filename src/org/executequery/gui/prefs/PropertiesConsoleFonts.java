@@ -9,16 +9,12 @@ import javax.swing.*;
 
 public class PropertiesConsoleFonts extends PropertiesEditorFonts {
 
-    public PropertiesConsoleFonts() {
-        super();
-        try {
-            initValues();
-        } catch (Exception e) {
-            Log.error("Error init Class PropertiesConsoleFonts:", e);
-        }
+    public PropertiesConsoleFonts(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    private void initValues() {
+    private void init() {
         String _fontName = SystemProperties.getProperty("user", "console.font.name");
         String _fontSize = SystemProperties.getProperty("user", "console.font.size");
 

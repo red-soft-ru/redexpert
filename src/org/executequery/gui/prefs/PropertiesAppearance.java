@@ -42,7 +42,8 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     private CustomLafSelectionPanel lafSelectionPanel;
     private boolean lafChangeWarningShown = false;
 
-    public PropertiesAppearance() {
+    public PropertiesAppearance(PropertiesPanel parent) {
+        super(parent);
         init();
     }
 
@@ -173,11 +174,11 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
         lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
 
-        PropertiesEditorColours editorColours = new PropertiesEditorColours();
+        PropertiesEditorColours editorColours = new PropertiesEditorColours(null);
         editorColours.restoreDefaults();
         editorColours.save();
 
-        PropertiesResultSetTableColours resultSetColours = new PropertiesResultSetTableColours();
+        PropertiesResultSetTableColours resultSetColours = new PropertiesResultSetTableColours(null);
         resultSetColours.restoreDefaults();
         resultSetColours.save();
     }

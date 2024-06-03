@@ -21,7 +21,6 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.gui.text.SQLTextArea;
-import org.executequery.log.Log;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.NumberTextField;
@@ -49,15 +48,12 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
 
     SQLTextArea samplePanel;
 
-    public PropertiesEditorFonts() {
-        try {
-            jbInit();
-        } catch (Exception e) {
-            Log.error("Error init Class PropertiesEditorFonts:", e);
-        }
+    public PropertiesEditorFonts(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    private void jbInit() {
+    private void init() {
         selectedFontField = new DisabledField();
         selectedSizeField = new NumberTextField();
 

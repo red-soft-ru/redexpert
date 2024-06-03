@@ -48,18 +48,15 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
     /**
      * <p>Constructs a new instance.
      */
-    public PropertiesToolBarGeneral() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesToolBarGeneral(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
     /**
      * <p>Initializes the state of this instance.
      */
-    private void init() throws Exception {
+    private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 

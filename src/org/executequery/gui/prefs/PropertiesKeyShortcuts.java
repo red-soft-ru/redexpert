@@ -52,26 +52,19 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
     private Properties userDefinedShortcuts;
     private ShortcutsTableModel tableModel;
 
-    public PropertiesKeyShortcuts() {
-
-        try {
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+    public PropertiesKeyShortcuts(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         Vector<ShortcutKey> shortcuts = formatValues(ActionBuilder.getActions());
         tableModel = new ShortcutsTableModel(shortcuts);
         table = new JTable(tableModel);
         table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         table.addMouseListener(new MouseHandler());
-        
+
         table.setRowHeight(TABLE_ROW_HEIGHT);
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);

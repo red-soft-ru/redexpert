@@ -36,13 +36,9 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
 
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesResultSetTableColours() {
-        super();
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesResultSetTableColours(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
     private void init() {

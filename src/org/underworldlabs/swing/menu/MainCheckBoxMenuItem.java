@@ -24,29 +24,28 @@ import org.executequery.gui.GUIConstants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 public class MainCheckBoxMenuItem extends JCheckBoxMenuItem {
 
+    @SuppressWarnings("unused")
     public MainCheckBoxMenuItem() {
-
         super();
     }
 
     public MainCheckBoxMenuItem(String text) {
-
         super(text);
     }
 
     public MainCheckBoxMenuItem(Action action) {
-
         super(action);
     }
 
     public MainCheckBoxMenuItem(String text, boolean selected) {
-
         super(text, selected);
     }
 
+    @Override
     public Dimension getPreferredSize() {
 
         Dimension preferredSize = super.getPreferredSize();
@@ -55,5 +54,16 @@ public class MainCheckBoxMenuItem extends JCheckBoxMenuItem {
         return preferredSize;
     }
 
-}
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
 
+        if (e.getID() == MouseEvent.MOUSE_RELEASED && contains(e.getPoint())) {
+            doClick();
+            setArmed(true);
+            return;
+        }
+
+        super.processMouseEvent(e);
+    }
+
+}

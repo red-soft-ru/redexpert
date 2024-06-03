@@ -580,14 +580,14 @@
 
     <action id="shift-text-right-command"
             name="Shift Text Right"
-            accel-key="control shift T"
-            accel-editable="true"
+            accel-key="TAB"
+            accel-editable="false"
             execute-class="org.executequery.actions.queryeditor.ShiftTextRightCommand"/>
 
     <action id="shift-text-left-command"
             name="Shift Text Left"
-            accel-key="control shift D"
-            accel-editable="true"
+            accel-key="shift TAB"
+            accel-editable="false"
             execute-class="org.executequery.actions.queryeditor.ShiftTextLeftCommand"/>
 
     <action id="exit-program-command"

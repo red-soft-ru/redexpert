@@ -20,6 +20,8 @@
 
 package org.executequery.actions.queryeditor;
 
+import org.underworldlabs.util.MiscUtils;
+
 import java.awt.event.ActionEvent;
 
 /**
@@ -29,24 +31,11 @@ import java.awt.event.ActionEvent;
  */
 public class ShiftTextRightCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
-            queryEditor().shiftTextRight();
-        }
-
+        if (!MiscUtils.isNull(e.getActionCommand()))
+            if (isQueryEditorTheCentralPanel())
+                queryEditor().shiftTextRight();
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -398,8 +398,7 @@ public class QueryEditorTextPanel extends JPanel {
                 robot.keyRelease(KeyEvent.VK_TAB);
 
             } catch (AWTException e) {
-                if (Log.isDebugEnabled())
-                    Log.error("Error simulating tab key events", e);
+                Log.debug("Error simulating tab key events", e);
             }
         }
     }
@@ -443,8 +442,7 @@ public class QueryEditorTextPanel extends JPanel {
                 robot.keyRelease(KeyEvent.VK_SHIFT);
 
             } catch (AWTException e) {
-                if (Log.isDebugEnabled())
-                    Log.error("Error simulating tab key events", e);
+                Log.debug("Error simulating tab key events", e);
             }
         }
     }

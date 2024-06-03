@@ -85,14 +85,14 @@ public class AboutPanel extends BaseDialog {
 
         viewLicenseButton = WidgetFactory.createButton(
                 "viewLicenseButton",
-                e -> displayLicense(),
-                bundledString("ViewLicense")
+                bundledString("ViewLicense"),
+                e -> displayLicense()
         );
 
         closeButton = WidgetFactory.createButton(
                 "closeButton",
-                e -> dispose(),
-                Bundles.get("common.close.button")
+                Bundles.get("common.close.button"),
+                e -> dispose()
         );
     }
 

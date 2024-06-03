@@ -58,6 +58,7 @@ public final class WidgetFactory {
 
         JButton button = new JButton(text);
         button.setPreferredSize(getPreferredSize(button));
+        button.setFocusPainted(false);
         button.setName(name);
 
         return button;
@@ -541,13 +542,14 @@ public final class WidgetFactory {
     /**
      * Create named DefaultButton class instance
      *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param actionListener the ActionListener to be added
+     * @param name     the component's name
+     * @param text     the displayed button text
+     * @param listener the ActionListener to be added
      */
-    public static JButton createButton(String name, ActionListener actionListener, String text) {
+    public static JButton createDefaultButton(String name, String text, ActionListener listener) {
 
-        DefaultButton button = new DefaultButton(actionListener, text, null);
+        DefaultButton button = new DefaultButton(listener, text, null);
+        button.setFocusPainted(false);
         button.setName(name);
 
         return button;
@@ -727,4 +729,7 @@ public final class WidgetFactory {
         return new Dimension((int) component.getPreferredSize().getWidth(), DEFAULT_HEIGHT);
     }
 
+    public static int defaultHeight() {
+        return DEFAULT_HEIGHT;
+    }
 }

@@ -82,16 +82,16 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         stackTracePanel = new JPanel(new GridBagLayout());
         stackTracePanel.setVisible(false);
 
-        showStackButton = WidgetFactory.createButton(
+        showStackButton = WidgetFactory.createDefaultButton(
                 "showStackButton",
-                e -> showHideStack(),
-                bundleString("ShowStackTrace")
+                bundleString("ShowStackTrace"),
+                e -> showHideStack()
         );
 
-        sendReportButton = WidgetFactory.createButton(
+        sendReportButton = WidgetFactory.createDefaultButton(
                 "sendReportButton",
-                e -> new FeedbackCommand().bugReport(exceptions),
-                bundleString("sendReportButton")
+                bundleString("sendReportButton"),
+                e -> new FeedbackCommand().bugReport(exceptions)
         );
 
         copyButton = WidgetFactory.createRolloverButton(
@@ -103,16 +103,16 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
                         .setContents(new StringSelection(textPane.getText()), null)
         );
 
-        nextButton = WidgetFactory.createButton(
+        nextButton = WidgetFactory.createDefaultButton(
                 "nextButton",
-                e -> showNextStack(),
-                bundleString("NextException")
+                bundleString("NextException"),
+                e -> showNextStack()
         );
 
-        previousButton = WidgetFactory.createButton(
+        previousButton = WidgetFactory.createDefaultButton(
                 "previousButton",
-                e -> showPrewStack(),
-                bundleString("PreviousException")
+                bundleString("PreviousException"),
+                e -> showPrewStack()
         );
         previousButton.setEnabled(false);
     }

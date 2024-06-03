@@ -45,14 +45,14 @@ public class CustomLafSelectionPanel extends JPanel {
 
         browseClassButton = WidgetFactory.createButton(
                 "browseClassButton",
-                e -> browseClass(),
-                Bundles.get("common.browse.button")
+                Bundles.get("common.browse.button"),
+                e -> browseClass()
         );
 
         browseLibraryButton = WidgetFactory.createButton(
                 "browseLibraryButton",
-                e -> browseLibrary(),
-                Bundles.get("common.browse.button")
+                Bundles.get("common.browse.button"),
+                e -> browseLibrary()
         );
 
         userLaf = LookAndFeelProperties.getLookAndFeel();

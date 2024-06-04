@@ -53,9 +53,10 @@ public final class ChangelogDialog extends InformationDialog {
         navigationTree = new JTree(root);
         navigationTree.setRootVisible(false);
         navigationTree.setCellRenderer(new NavigationTreeRenderer());
+        navigationTree.addKeyListener(new InitialSearchKeyAdapter());
         navigationTree.addMouseListener(new NavigationTreeMouseAdapter());
 
-        // --- bing search tool ---
+        // --- bind search tool ---
 
         getRootPane().getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK), "search");
         getRootPane().getActionMap().put("search", new AbstractAction() {
@@ -65,13 +66,11 @@ public final class ChangelogDialog extends InformationDialog {
             }
         });
 
-        editorPane.addKeyListener(new NavigationTreeKeyAdapter());
-        navigationTree.addKeyListener(new NavigationTreeKeyAdapter());
+        editorPane.addKeyListener(new InitialSearchKeyAdapter());
         setSearchPanelVisible(false);
     }
 
     @Override
-
     protected JPanel buildDisplayComponent() {
         GridBagHelper gbh;
 
@@ -226,7 +225,7 @@ public final class ChangelogDialog extends InformationDialog {
 
     } // NavigationTreeMouseAdapter class
 
-    private final class NavigationTreeKeyAdapter extends KeyAdapter {
+    private final class InitialSearchKeyAdapter extends KeyAdapter {
 
         @Override
         public void keyTyped(KeyEvent e) {
@@ -235,7 +234,7 @@ public final class ChangelogDialog extends InformationDialog {
             searchField.setText(String.valueOf(e.getKeyChar()));
         }
 
-    } // NavigationTreeKeyAdapter class
+    } // InitialSearchKeyAdapter class
 
     private final class SearchFieldKeyAdapter extends KeyAdapter {
 

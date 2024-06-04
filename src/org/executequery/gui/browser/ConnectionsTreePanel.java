@@ -60,9 +60,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,6 +126,7 @@ public class ConnectionsTreePanel extends TreePanel
 
         tree = new SchemaTree(createTreeStructure(), this);
         tree.addMouseListener(new MouseHandler());
+        tree.addKeyListener(new KeyHandler());
 
         treeFindAction = new TreeFindAction();
         treeFindAction.install(tree);
@@ -1545,6 +1544,38 @@ public class ConnectionsTreePanel extends TreePanel
         }
     }
 
+    private void updateDatabasePropertiesFromPath(TreePath path) {
+
+        Object node = path.getLastPathComponent();
+        if (node instanceof DatabaseHostNode) {
+            DatabaseConnection dc = ((DatabaseHostNode) node).getDatabaseConnection();
+            updateProperties(dc);
+
+        } else if (node instanceof ConnectionsFolderNode) {
+            ConnectionsFolder connectionsFolder = ((ConnectionsFolderNode) node).getConnectionsFolder();
+            updateProperties(connectionsFolder.getConnections());
+
+        } else if (node instanceof RootDatabaseObjectNode) {
+            Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+            if (repo instanceof DatabaseConnectionRepository)
+                updateProperties(((DatabaseConnectionRepository) repo).findAll());
+
+        } else if (node instanceof DatabaseObjectNode) {
+
+            NamedObject databaseObject = ((DatabaseObjectNode) node).getDatabaseObject();
+            if (databaseObject instanceof AbstractDatabaseObject) {
+                DatabaseConnection dc = ((AbstractDatabaseObject) databaseObject).getHost().getDatabaseConnection();
+                updateProperties(dc);
+
+            } else if (databaseObject instanceof DefaultDatabaseMetaTag) {
+                DatabaseConnection dc = ((DefaultDatabaseMetaTag) databaseObject).getHost().getDatabaseConnection();
+                updateProperties(dc);
+            }
+
+        } else
+            propertiesPanel.setDatabaseProperties(new HashMap<>());
+    }
+
     @Override
     public void pathChanged(TreePath oldPath, TreePath newPath) {
         pathChanged(oldPath, newPath, true);
@@ -1615,38 +1646,10 @@ public class ConnectionsTreePanel extends TreePanel
         public void mouseClicked(MouseEvent e) {
 
             TreePath path = pathFromMouseEvent(e);
-            if (path != null && path == getTreeSelectionPath()) {
+            if (path == null || path != getTreeSelectionPath())
+                return;
 
-                Object node = path.getLastPathComponent();
-                if (node instanceof DatabaseHostNode) {
-                    DatabaseConnection dc = ((DatabaseHostNode) node).getDatabaseConnection();
-                    updateProperties(dc);
-
-                } else if (node instanceof ConnectionsFolderNode) {
-                    ConnectionsFolder connectionsFolder = ((ConnectionsFolderNode) node).getConnectionsFolder();
-                    updateProperties(connectionsFolder.getConnections());
-
-                } else if (node instanceof RootDatabaseObjectNode) {
-                    Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-                    if (repo instanceof DatabaseConnectionRepository)
-                        updateProperties(((DatabaseConnectionRepository) repo).findAll());
-
-                } else if (node instanceof DatabaseObjectNode) {
-
-                    NamedObject databaseObject = ((DatabaseObjectNode) node).getDatabaseObject();
-                    if (databaseObject instanceof AbstractDatabaseObject) {
-                        DatabaseConnection dc = ((AbstractDatabaseObject) databaseObject).getHost().getDatabaseConnection();
-                        updateProperties(dc);
-
-                    } else if (databaseObject instanceof DefaultDatabaseMetaTag) {
-                        DatabaseConnection dc = ((DefaultDatabaseMetaTag) databaseObject).getHost().getDatabaseConnection();
-                        updateProperties(dc);
-                    }
-
-                } else
-                    propertiesPanel.setDatabaseProperties(new HashMap<>());
-            }
-
+            updateDatabasePropertiesFromPath(path);
             if (e.getClickCount() > 1)
                 twoClicks(e);
         }
@@ -1744,5 +1747,26 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
     } // MouseHandler class
+
+    private class KeyHandler extends KeyAdapter {
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (isArrowKey(e)) {
+                TreePath path = getTreeSelectionPath();
+                if (path != null)
+                    updateDatabasePropertiesFromPath(getTreeSelectionPath());
+            }
+        }
+
+        private boolean isArrowKey(KeyEvent e) {
+            int code = e.getKeyCode();
+            return code == KeyEvent.VK_UP
+                    || code == KeyEvent.VK_DOWN
+                    || code == KeyEvent.VK_RIGHT
+                    || code == KeyEvent.VK_LEFT;
+        }
+
+    } // KeyHandler class
 
 }

@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -287,10 +288,16 @@ public abstract class FindAction<T> extends AbstractAction
 
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
+
         if (e.getKeyCode() == KeyEvent.VK_ALT) {
             e.consume();
+            return;
         }
+
+        if (e.getSource() instanceof SchemaTree)
+            searchField.setText(String.valueOf(e.getKeyChar()));
     }
 
     public void keyReleased(KeyEvent e) {

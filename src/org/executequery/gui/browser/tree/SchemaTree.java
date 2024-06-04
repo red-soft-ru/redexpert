@@ -29,6 +29,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
+import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.depend.DependPanel;
 import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
@@ -54,6 +55,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author Takis Diakoumis
@@ -76,6 +78,19 @@ public class SchemaTree extends DynamicTree
         addTreeSelectionListener(this);
         addMouseListener(this);
         addKeyListener(this);
+
+        SchemaTree tree = this;
+        getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK), "search");
+        getActionMap().put("search", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TreeFindAction treeFindAction = new TreeFindAction();
+                treeFindAction.install(tree);
+                treeFindAction.actionPerformed(new ActionEvent(this, -1, null));
+                if (e.getSource() instanceof KeyEvent)
+                    treeFindAction.keyTyped((KeyEvent) e.getSource());
+            }
+        });
 
         DefaultTreeCellRenderer renderer = new BrowserTreeCellRenderer();
         setCellRenderer(renderer);
@@ -258,7 +273,9 @@ public class SchemaTree extends DynamicTree
 
             if (!node.isCatalog())
                 panel.valueChanged(node);
-        }
+
+        } else if (Pattern.compile("\\w").matcher(String.valueOf(e.getKeyChar())).find())
+            getActionMap().get("search").actionPerformed(new ActionEvent(e, -1, null));
     }
 
     @Override

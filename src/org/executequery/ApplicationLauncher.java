@@ -281,8 +281,8 @@ public class ApplicationLauncher {
 
     private void loadDefaultLookAndFeel(LookAndFeelLoader loader) {
         try {
-            loader.loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
-            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.DEFAULT_LIGHT.name());
+            loader.loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT);
+            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.CLASSIC_LIGHT.name());
 
         } catch (ApplicationException e) {
             Log.debug("Error loading default EQ look and feel", e);

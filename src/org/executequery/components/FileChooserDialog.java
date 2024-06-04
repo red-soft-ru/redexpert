@@ -185,7 +185,7 @@ class DefaultFileView extends FileView {
         LOG_ICON = GUIUtilities.loadIcon("LogFile16.png", true);
         RE_ICON = GUIUtilities.loadIcon("ApplicationIcon.png", true);
 
-        if (isDefaultLookAndFeel()) {
+        if (isClassicLookAndFeel()) {
             ZIP_ICON = GUIUtilities.loadIcon("ZipFile16.png", true);
             TEXT_ICON = GUIUtilities.loadIcon("TextFile16.png", true);
             JPEG_ICON = GUIUtilities.loadIcon("JpegFile16.png", true);
@@ -271,7 +271,7 @@ class DefaultFileView extends FileView {
 
         else {
 
-            if (isDefaultLookAndFeel()) {
+            if (isClassicLookAndFeel()) {
 
                 if (name.endsWith(".zip"))
                     icon = ZIP_ICON;
@@ -311,8 +311,8 @@ class DefaultFileView extends FileView {
 
     }
 
-    private boolean isDefaultLookAndFeel() {
-        return GUIUtilities.getLookAndFeel().isDefaultTheme();
+    private boolean isClassicLookAndFeel() {
+        return GUIUtilities.getLookAndFeel().isClassicTheme();
     }
 
     public Boolean isTraversable(File f) {

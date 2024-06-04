@@ -23,9 +23,7 @@ package org.executequery.util;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.ApplicationException;
 import org.executequery.plaf.LookAndFeelType;
-import org.underworldlabs.swing.plaf.UIUtils;
-import org.underworldlabs.swing.plaf.UnderworldLabsDarkFlatLookAndFeel;
-import org.underworldlabs.swing.plaf.UnderworldLabsFlatLookAndFeel;
+import org.underworldlabs.swing.plaf.*;
 import org.underworldlabs.swing.plaf.base.CustomTextAreaUI;
 import org.underworldlabs.swing.plaf.base.CustomTextPaneUI;
 
@@ -38,11 +36,11 @@ public final class LookAndFeelLoader {
     public LookAndFeelType loadLookAndFeel(String lookAndFeelType) {
         try {
             return NumberUtils.isDigits(lookAndFeelType) ?
-                    loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT) :
+                    loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT) :
                     loadLookAndFeel(LookAndFeelType.valueOf(lookAndFeelType));
 
         } catch (IllegalArgumentException e) {
-            return loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
+            return loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT);
         }
     }
 
@@ -50,8 +48,14 @@ public final class LookAndFeelLoader {
         try {
 
             switch (lookAndFeelType) {
+                case DEFAULT_LIGHT:
+                    loadDefaultLightLookAndFeel();
+                    break;
                 case DEFAULT_DARK:
                     loadDefaultDarkLookAndFeel();
+                    break;
+                case CLASSIC_DARK:
+                    loadClassicDarkLookAndFeel();
                     break;
                 case NATIVE:
                     loadSystemLookAndFeel();
@@ -59,8 +63,9 @@ public final class LookAndFeelLoader {
                 case PLUGIN:
                     loadCustomLookAndFeel();
                     break;
+                case CLASSIC_LIGHT:
                 default:
-                    loadDefaultLookAndFeel();
+                    loadClassicLightLookAndFeel();
                     break;
             }
 
@@ -104,7 +109,25 @@ public final class LookAndFeelLoader {
         }
     }
 
-    private void loadDefaultLookAndFeel() {
+    private void loadDefaultLightLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(new DefaultLightLookAndFeel());
+
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new ApplicationException(e);
+        }
+    }
+
+    private void loadDefaultDarkLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(new DefaultDarkLookAndFeel());
+
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new ApplicationException(e);
+        }
+    }
+
+    private void loadClassicLightLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new UnderworldLabsFlatLookAndFeel());
 
@@ -113,7 +136,7 @@ public final class LookAndFeelLoader {
         }
     }
 
-    private void loadDefaultDarkLookAndFeel() {
+    private void loadClassicDarkLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new UnderworldLabsDarkFlatLookAndFeel());
 

@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing.menu;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.GUIConstants;
 
 import javax.swing.*;
@@ -28,28 +29,28 @@ import java.awt.*;
 public class MainMenu extends JMenu {
 
     public MainMenu() {
-
         super();
     }
 
     public MainMenu(String text) {
-
         super(text);
     }
 
     @Override
     public Insets getInsets() {
-
         return new Insets(0, 0, 0, 10);
     }
 
+    @Override
     public Dimension getPreferredSize() {
 
-        Dimension preferredSize = super.getPreferredSize();
-        preferredSize.height = Math.max(getHeight(), GUIConstants.DEFAULT_MENU_HEIGHT);
+        if (GUIUtilities.getLookAndFeel().isClassicTheme()) {
+            Dimension preferredSize = super.getPreferredSize();
+            preferredSize.height = Math.max(getHeight(), GUIConstants.DEFAULT_MENU_HEIGHT);
+            return preferredSize;
+        }
 
-        return preferredSize;
+        return super.getPreferredSize();
     }
 
 }
-

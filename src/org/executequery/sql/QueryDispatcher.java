@@ -1088,7 +1088,7 @@ public class QueryDispatcher {
                     else if (query.getQueryType() == QueryTypes.INSERT)
                         statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
                     else
-                        statement = querySender.getPreparedStatement(queryToExecute);
+                        statement = prepareStatementWithParameters(queryToExecute, "");
 
                     SqlStatementResult result = querySender.execute(type, statement);
 

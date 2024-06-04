@@ -257,6 +257,12 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
     @Override
     public void save() {
+
+        for (int i = 0; i < selections.size(); i++) {
+            ToolBarButton toolBarButton = selections.elementAt(i);
+            toolBarButton.setOrder(i);
+        }
+
         toolBar.setButtonsVector(selections);
         ToolBarProperties.resetToolBar(toolBarName, toolBar);
     }

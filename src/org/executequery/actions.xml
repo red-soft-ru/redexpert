@@ -206,20 +206,21 @@
 
     <action id="execute-script-command"
             name="Execute Script"
-            accel-key="F10"
+            accel-key="F9"
             accel-editable="true"
             small-icon="/org/executequery/icons/Execute16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteScriptCommand"/>
 
     <action id="execute-statement-command"
             name="Execute"
-            accel-key="control shift ENTER"
+            accel-key="F5"
             accel-editable="true"
             small-icon="/org/executequery/icons/ExecuteAtCursor16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteStatementCommand"/>
 
     <action id="execute-in-profiler-command"
             name="Execute Script In Profiler"
+            accel-key="shift F5"
             accel-editable="true"
             small-icon="/org/executequery/icons/ExecuteInProfiler16.png"
             execute-class="org.executequery.actions.queryeditor.ExecuteInProfilerCommand"/>

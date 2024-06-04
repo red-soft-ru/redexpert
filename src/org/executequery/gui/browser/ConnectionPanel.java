@@ -35,7 +35,7 @@ import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.CreateDriverDialog;
-import org.executequery.gui.editor.TransactionIsolationCombobox;
+import org.executequery.gui.editor.TransactionIsolationComboBox;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -113,7 +113,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JLabel statusLabel;
 
-    private TransactionIsolationCombobox txCombo;
+    private TransactionIsolationComboBox txCombo;
     private JButton txApplyButton;
     private Border redBorder;
     private Border blackBorder;
@@ -497,7 +497,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
-        txCombo = new TransactionIsolationCombobox();
+        txCombo = new TransactionIsolationComboBox();
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));

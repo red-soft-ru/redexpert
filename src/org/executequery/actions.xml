@@ -307,6 +307,12 @@
             small-icon="/org/executequery/icons/ToggleEditorOutput16.png"
             execute-class="org.executequery.actions.queryeditor.ToggleEditorOutputCommand"/>
 
+    <action id="toggle-editor-transaction-params-command"
+            name="Show/Hide Transaction Parameters"
+            accel-editable="false"
+            small-icon="/org/executequery/icons/ToggleTransactionParams16.png"
+            execute-class="org.executequery.actions.queryeditor.ToggleEditorTransactionParamsCommand"/>
+
     <action id="editor-rs-metadata-command"
             name="Result Meta Data"
             accel-editable="false"

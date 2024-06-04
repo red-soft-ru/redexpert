@@ -317,14 +317,19 @@
                 <order>21</order>
             </button>
 
-            <button id="417" action-id="toggle-editor-output-command">
+            <button id="419" action-id="toggle-editor-transaction-params-command">
                 <visible>false</visible>
                 <order>22</order>
             </button>
 
-            <button id="418" action-id="change-split-orientation-command">
+            <button id="417" action-id="toggle-editor-output-command">
                 <visible>false</visible>
                 <order>23</order>
+            </button>
+
+            <button id="418" action-id="change-split-orientation-command">
+                <visible>false</visible>
+                <order>24</order>
             </button>
 
         </buttons>

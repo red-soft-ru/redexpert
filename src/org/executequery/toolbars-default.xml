@@ -203,133 +203,134 @@
 
         <buttons>
 
-            <button id="401" action-id="execute-script-command">
+            <button id="400" action-id="connection-combo-template">
                 <visible>true</visible>
                 <order>0</order>
             </button>
 
+            <button id="401" action-id="execute-script-command">
+                <visible>true</visible>
+                <order>1</order>
+            </button>
+
             <button id="402" action-id="execute-statement-command">
                 <visible>false</visible>
-                <order>1</order>
+                <order>2</order>
             </button>
 
             <button id="403" action-id="execute-in-profiler-command">
                 <visible>true</visible>
-                <order>2</order>
+                <order>3</order>
             </button>
 
             <button id="404" action-id="stop-execution-command">
                 <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="-1">
-                <!-- separator -->
-                <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="405" action-id="commit-command">
+            <button id="-1">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-            <button id="406" action-id="rollback-command">
+            <button id="405" action-id="commit-command">
                 <visible>true</visible>
                 <order>6</order>
             </button>
 
-            <button id="407" action-id="toggle-autocommit-command">
+            <button id="406" action-id="rollback-command">
                 <visible>true</visible>
                 <order>7</order>
             </button>
 
-            <button id="419" action-id="editor-stop-on-error-command">
+            <button id="407" action-id="toggle-autocommit-command">
                 <visible>true</visible>
                 <order>8</order>
             </button>
 
-            <button id="420" action-id="editor-execute-to-file-command">
+            <button id="408" action-id="editor-stop-on-error-command">
                 <visible>true</visible>
                 <order>9</order>
             </button>
 
-            <button id="-1">
-                <!-- separator -->
+            <button id="409" action-id="editor-execute-to-file-command">
                 <visible>true</visible>
                 <order>10</order>
             </button>
 
-            <button id="408" action-id="manage-bookmarks-command">
-                <visible>false</visible>
+            <button id="-1">
+                <visible>true</visible>
                 <order>11</order>
             </button>
 
-            <button id="409" action-id="sql-history-command">
-                <visible>true</visible>
+            <button id="410" action-id="manage-bookmarks-command">
+                <visible>false</visible>
                 <order>12</order>
             </button>
 
-            <button id="410" action-id="editor-previous-command">
+            <button id="411" action-id="sql-history-command">
                 <visible>true</visible>
                 <order>13</order>
             </button>
 
-            <button id="411" action-id="editor-next-command">
+            <button id="412" action-id="editor-previous-command">
                 <visible>true</visible>
                 <order>14</order>
             </button>
 
-            <button id="-1">
-                <!-- separator -->
+            <button id="413" action-id="editor-next-command">
                 <visible>true</visible>
                 <order>15</order>
             </button>
 
-            <button id="412" action-id="editor-export-command">
+            <button id="-1">
                 <visible>true</visible>
                 <order>16</order>
             </button>
 
-            <button id="413" action-id="editor-rs-metadata-command">
-                <visible>false</visible>
+            <button id="414" action-id="editor-export-command">
+                <visible>true</visible>
                 <order>17</order>
             </button>
 
-            <button id="414" action-id="editor-result-set-filter-command">
-                <visible>true</visible>
+            <button id="415" action-id="editor-rs-metadata-command">
+                <visible>false</visible>
                 <order>18</order>
             </button>
 
-            <button id="415" action-id="print-plan-command">
+            <button id="416" action-id="editor-result-set-filter-command">
                 <visible>true</visible>
                 <order>19</order>
             </button>
 
-            <button id="416" action-id="print-explained-plan-command">
+            <button id="417" action-id="print-plan-command">
                 <visible>true</visible>
                 <order>20</order>
             </button>
 
-            <button id="-1">
-                <!-- separator -->
-                <visible>false</visible>
+            <button id="418" action-id="print-explained-plan-command">
+                <visible>true</visible>
                 <order>21</order>
             </button>
 
-            <button id="419" action-id="toggle-editor-transaction-params-command">
+            <button id="-1">
                 <visible>false</visible>
                 <order>22</order>
             </button>
 
-            <button id="417" action-id="toggle-editor-output-command">
+            <button id="419" action-id="toggle-editor-transaction-params-command">
                 <visible>false</visible>
                 <order>23</order>
             </button>
 
-            <button id="418" action-id="change-split-orientation-command">
+            <button id="420" action-id="toggle-editor-output-command">
                 <visible>false</visible>
                 <order>24</order>
+            </button>
+
+            <button id="421" action-id="change-split-orientation-command">
+                <visible>false</visible>
+                <order>25</order>
             </button>
 
         </buttons>

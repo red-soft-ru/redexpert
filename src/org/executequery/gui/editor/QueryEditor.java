@@ -121,10 +121,10 @@ public class QueryEditor extends DefaultTabView
     private int queryEditorNumber;
     private int maxRecordsCount;
 
+    private boolean useMultipleConnections;
     private boolean isQueryEditorClosed;
     private boolean isContentChanged;
     private boolean executeToFile;
-    private boolean useMultiplleConnections;
 
     public QueryEditor() {
         this(null, null);
@@ -168,7 +168,7 @@ public class QueryEditor extends DefaultTabView
         queryEditorNumber = -1;
         executeToFile = false;
         isQueryEditorClosed = false;
-        useMultiplleConnections = SystemProperties.getBooleanProperty("user", "editor.use.multiple.connections");
+        useMultipleConnections = SystemProperties.getBooleanProperty("user", "editor.use.multiple.connections");
         delegates = new HashMap<>();
         selectedConnections = new ArrayList<>();
 
@@ -182,14 +182,16 @@ public class QueryEditor extends DefaultTabView
         // --- connection combos ---
 
         connectionsCombo = new OpenConnectionsComboBox(this, ConnectionManager.getActiveConnections());
+        connectionsCombo.setMaximumSize(new Dimension(200, 30));
         connectionsCombo.addItemListener(this::connectionChanged);
-        connectionsCombo.setVisible(!useMultiplleConnections);
+        connectionsCombo.setVisible(!useMultipleConnections);
 
         connectionsCheckCombo = WidgetFactory.createCheckComboBox("connectionCheckCombo", ConnectionManager.getActiveConnections().toArray());
+        connectionsCheckCombo.setMaximumSize(new Dimension(200, 30));
         connectionsCheckCombo.getModel().addListCheckListener(this);
-        connectionsCheckCombo.setVisible(useMultiplleConnections);
+        connectionsCheckCombo.setVisible(useMultipleConnections);
 
-        oldConnection = useMultiplleConnections ?
+        oldConnection = useMultipleConnections ?
                 getSelectedConnection() :
                 (DatabaseConnection) connectionsCombo.getSelectedItem();
 
@@ -209,6 +211,7 @@ public class QueryEditor extends DefaultTabView
         editorPanel.addEditorPaneMouseListener(popup);
 
         toolBar = new QueryEditorToolBar(
+                new Component[]{connectionsCombo, connectionsCheckCombo},
                 editorPanel.getTextPaneActionMap(),
                 editorPanel.getTextPaneInputMap()
         );
@@ -255,10 +258,8 @@ public class QueryEditor extends DefaultTabView
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        gbh = new GridBagHelper().setInsets(8, 8, 0, 0).anchorNorthWest().fillHorizontally();
-        mainPanel.add(connectionsCheckCombo, gbh.setWeightX(0.3).setMinWeightY().get());
-        mainPanel.add(connectionsCombo, gbh.get());
-        mainPanel.add(toolBar, gbh.nextCol().leftGap(5).rightGap(8).setMinWeightX().spanX().get());
+        gbh = new GridBagHelper().setInsets(6, 8, 8, 0).anchorNorthWest().fillHorizontally();
+        mainPanel.add(toolBar, gbh.setMinWeightX().spanX().get());
         mainPanel.add(transactionParametersPanel, gbh.leftGap(0).topGap(5).nextRowFirstCol().spanX().get());
         mainPanel.add(splitPane, gbh.nextRowFirstCol().setInsets(5, 8, 5, 5).setMaxWeightY().fillBoth().spanY().get());
 
@@ -433,7 +434,7 @@ public class QueryEditor extends DefaultTabView
     public void setEditorPreferences() {
         setPanelBackgrounds();
 
-        useMultiplleConnections = SystemProperties.getBooleanProperty("user", "editor.use.multiple.connections");
+        useMultipleConnections = SystemProperties.getBooleanProperty("user", "editor.use.multiple.connections");
         maxRecordsCount = SystemProperties.getBooleanProperty("user", "editor.limit.records.count") ?
                 SystemProperties.getIntProperty("user", "editor.max.records.count") : -1;
 
@@ -453,8 +454,8 @@ public class QueryEditor extends DefaultTabView
         if (!isAutoCompleteOn())
             editorPanel.getQueryArea().deregisterAutoCompletePopup();
 
-        connectionsCombo.setVisible(isToolsPanelVisible() && !useMultiplleConnections);
-        connectionsCheckCombo.setVisible(isToolsPanelVisible() && useMultiplleConnections);
+        connectionsCombo.setVisible(isToolsPanelVisible() && !useMultipleConnections);
+        connectionsCheckCombo.setVisible(isToolsPanelVisible() && useMultipleConnections);
 
         updateStopOnError(false);
         updateAutoCommitMode(false);
@@ -906,7 +907,7 @@ public class QueryEditor extends DefaultTabView
      */
     public DatabaseConnection getSelectedConnection() {
 
-        if (useMultiplleConnections) {
+        if (useMultipleConnections) {
             return selectedConnections != null && !selectedConnections.isEmpty() ?
                     (DatabaseConnection) selectedConnections.get(0) :
                     null;
@@ -924,13 +925,13 @@ public class QueryEditor extends DefaultTabView
             connectionsCheckCombo.getModel().removeChecks();
             connectionsCheckCombo.getModel().addCheck(databaseConnection);
 
-        } else if (useMultiplleConnections)
+        } else if (useMultipleConnections)
             connectionToSelect = databaseConnection;
 
         if (connectionsCombo.contains(databaseConnection)) {
             connectionsCombo.getModel().setSelectedItem(databaseConnection);
 
-        } else if (!useMultiplleConnections)
+        } else if (!useMultipleConnections)
             connectionToSelect = databaseConnection;
     }
 
@@ -956,7 +957,7 @@ public class QueryEditor extends DefaultTabView
         query = getQueryToExecute(query);
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
-        if (useMultiplleConnections && selectedConnections.size() > 1) {
+        if (useMultipleConnections && selectedConnections.size() > 1) {
             for (Object object : selectedConnections) {
                 DatabaseConnection connection = (DatabaseConnection) object;
 
@@ -992,7 +993,7 @@ public class QueryEditor extends DefaultTabView
 
         query = getQueryToExecute(query);
 
-        if (useMultiplleConnections && selectedConnections.size() > 1) {
+        if (useMultipleConnections && selectedConnections.size() > 1) {
             for (Object object : selectedConnections) {
                 DatabaseConnection connection = (DatabaseConnection) object;
 
@@ -1021,7 +1022,7 @@ public class QueryEditor extends DefaultTabView
         query = getQueryToExecute(query);
         boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
 
-        if (useMultiplleConnections && selectedConnections.size() > 1) {
+        if (useMultipleConnections && selectedConnections.size() > 1) {
             for (Object object : selectedConnections) {
                 DatabaseConnection connection = (DatabaseConnection) object;
 

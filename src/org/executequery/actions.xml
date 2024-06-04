@@ -552,6 +552,10 @@
 
     <!-- actions that must be configured dynamically from the code -->
 
+    <action id="connection-combo-template"
+            small-icon="/org/executequery/icons/Database16.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
     <action id="connect-to-database-command"
             small-icon="/org/executequery/icons/Disconnected.png"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>

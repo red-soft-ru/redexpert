@@ -31,9 +31,10 @@ import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.toolbar.*;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -61,13 +62,15 @@ class QueryEditorToolBar extends PanelToolBar {
     private static final String EDITOR_RS_METADATA_COMMAND = "editor-rs-metadata-command";
     private static final String EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND = "editor-result-set-filter-command";
 
+    private final Component[] connectionCombos;
     private final InputMap queryEditorInputMap;
     private final ActionMap queryEditorActionMap;
     private final Map<String, RolloverButton> buttons;
 
-    public QueryEditorToolBar(ActionMap queryEditorActionMap, InputMap queryEditorInputMap) {
+    public QueryEditorToolBar(Component[] connectionCombos, ActionMap queryEditorActionMap, InputMap queryEditorInputMap) {
         this.queryEditorActionMap = queryEditorActionMap;
         this.queryEditorInputMap = queryEditorInputMap;
+        this.connectionCombos = connectionCombos;
         this.buttons = new HashMap<>();
         init();
     }
@@ -85,10 +88,16 @@ class QueryEditorToolBar extends PanelToolBar {
     }
 
     private void addToolBarButton(ToolBarButton button) {
+
         if (button.isSeparator()) {
             addSeparator();
+
+        } else if (Objects.equals(button.getActionId(), "connection-combo-template")) {
+            Arrays.stream(connectionCombos).forEach(this::add);
+
         } else if (Objects.equals(button.getActionId(), QUERY_BOOKMARKS)) {
             addButton(createQueryBookmarkButton());
+
         } else
             addButton(createButton(button.getActionId()));
     }

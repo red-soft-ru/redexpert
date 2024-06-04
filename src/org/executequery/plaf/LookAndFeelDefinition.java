@@ -37,6 +37,8 @@ public class LookAndFeelDefinition {
     private String name;
     private String libPath;
     private String className;
+    private boolean decorateFrame;
+    private boolean decorateDialogs;
 
     public LookAndFeelDefinition(String name) {
         this.name = name;
@@ -64,6 +66,22 @@ public class LookAndFeelDefinition {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public boolean isDecorateFrame() {
+        return decorateFrame;
+    }
+
+    public void setDecorateFrame(boolean decorateFrame) {
+        this.decorateFrame = decorateFrame;
+    }
+
+    public boolean isDecorateDialogs() {
+        return decorateDialogs;
+    }
+
+    public void setDecorateDialogs(boolean decorateDialogs) {
+        this.decorateDialogs = decorateDialogs;
     }
 
     @Override

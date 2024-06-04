@@ -183,7 +183,7 @@ class DefaultFileView extends FileView {
         SQL_ICON = GUIUtilities.loadIcon("DBImage16.png", true);
         JAR_ICON = GUIUtilities.loadIcon("Jar16.png", true);
         LOG_ICON = GUIUtilities.loadIcon("LogFile16.png", true);
-        RE_ICON = GUIUtilities.loadIcon("ApplicationIcon.png", true);
+        RE_ICON = GUIUtilities.loadIcon("ApplicationIcon.svg", true);
 
         if (isClassicLookAndFeel()) {
             ZIP_ICON = GUIUtilities.loadIcon("ZipFile16.png", true);

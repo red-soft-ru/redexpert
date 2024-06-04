@@ -45,7 +45,7 @@ public class ExecuteQueryFrame extends JFrame
 
     public static final String TITLE = "Red Expert";
 
-    private static final String APPLICATION_ICON = "ApplicationIcon.png";
+    private static final String APPLICATION_ICON = "ApplicationIcon.svg";
 
     private static final String WINDOW_POSITION_KEY = "window.position";
 

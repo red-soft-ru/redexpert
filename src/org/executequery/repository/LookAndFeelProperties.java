@@ -50,6 +50,8 @@ public class LookAndFeelProperties {
 
     private static final String NAME = "name";
     private static final String PATH = "path";
+    private static final String DECORATE_FRAME = "decorate-frame";
+    private static final String DECORATE_DIALOGS = "decorate-dialogs";
     private static final String CLASS_NAME = "classname";
     private static final String MAIN_NODE = "lookandfeel";
     private static final String ROOT = "customlookandfeels";
@@ -148,6 +150,14 @@ public class LookAndFeelProperties {
                 case CLASS_NAME:
                     lookAndFeel.setClassName(contents.toString());
                     break;
+
+                case DECORATE_FRAME:
+                    lookAndFeel.setDecorateFrame(Boolean.parseBoolean(contents.toString()));
+                    break;
+
+                case DECORATE_DIALOGS:
+                    lookAndFeel.setDecorateDialogs(Boolean.parseBoolean(contents.toString()));
+                    break;
             }
         }
 
@@ -206,6 +216,8 @@ public class LookAndFeelProperties {
                     writeXML(NAME, lookAndFeelDefinition.getName(), INDENT_2);
                     writeXML(PATH, lookAndFeelDefinition.getLibraryPath(), INDENT_2);
                     writeXML(CLASS_NAME, lookAndFeelDefinition.getClassName(), INDENT_2);
+                    writeXML(DECORATE_FRAME, String.valueOf(lookAndFeelDefinition.isDecorateFrame()), INDENT_2);
+                    writeXML(DECORATE_DIALOGS, String.valueOf(lookAndFeelDefinition.isDecorateDialogs()), INDENT_2);
 
                     handler.ignorableWhitespace(INDENT_1.toCharArray(), 0, INDENT_1.length());
                     handler.endElement(Constants.EMPTY, MAIN_NODE, MAIN_NODE);

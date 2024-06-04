@@ -66,10 +66,13 @@ public class PluginLookAndFeelManager {
             urls[i] = file.toURL();
         }
 
-        loadCustomLookAndFeel(urls);
+        if (loadCustomLookAndFeel(urls)) {
+            UserProperties.getInstance().setBooleanProperty("decorate.frame.look", lookAndFeelDefinition.isDecorateFrame());
+            UserProperties.getInstance().setBooleanProperty("decorate.dialog.look", lookAndFeelDefinition.isDecorateDialogs());
+        }
     }
 
-    private void loadCustomLookAndFeel(URL[] urls) throws Exception {
+    private boolean loadCustomLookAndFeel(URL[] urls) throws Exception {
         try {
 
             DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
@@ -78,9 +81,8 @@ public class PluginLookAndFeelManager {
             LookAndFeel laf = (LookAndFeel) loadedClass.newInstance();
 
             if (!laf.isSupportedLookAndFeel()) {
-                GUIUtilities.displayErrorMessage(
-                        "The selected Look and Feel is not supported");
-                return;
+                GUIUtilities.displayErrorMessage("The selected Look and Feel is not supported");
+                return false;
             }
 
             LookAndFeelInfo info = new LookAndFeelInfo(laf.getName(), loadedClass.getName());
@@ -89,13 +91,15 @@ public class PluginLookAndFeelManager {
             UIManager.getLookAndFeelDefaults().put("ClassLoader", loader);
 
         } catch (ClassNotFoundException cExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The specified Look and Feel class was not found");
+            GUIUtilities.displayErrorMessage("The specified Look and Feel class was not found");
+            return false;
+
         } catch (UnsupportedLookAndFeelException ulfExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The selected Look and Feel is not supported");
+            GUIUtilities.displayErrorMessage("The selected Look and Feel is not supported");
+            return false;
         }
 
+        return true;
     }
 
 }

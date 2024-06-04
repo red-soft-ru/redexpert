@@ -67,7 +67,6 @@ public class PropertiesPanel extends JPanel
             "startup.display.lookandfeel",
             "startup.display.language",
             "display.aa.fonts",
-            "decorate.frame.look",
             // -- PropertiesEditorGeneral --
             "editor.tabs.tospaces",
             "editor.tab.spaces",

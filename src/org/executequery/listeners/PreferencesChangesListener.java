@@ -60,7 +60,6 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
             panel.reloadOpenedConnections();
         }
 
-        applyComponentLookAndFeel();
         GUIUtilities.setDockedTabViews(true);
 
         layoutProperties.save();
@@ -71,11 +70,6 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
                 ConnectionsTreePanel.PROPERTY_KEY,
                 SystemOutputPanel.PROPERTY_KEY
         };
-    }
-
-    private void applyComponentLookAndFeel() {
-        JDialog.setDefaultLookAndFeelDecorated(systemUserBooleanProperty("decorate.dialog.look"));
-        JFrame.setDefaultLookAndFeelDecorated(systemUserBooleanProperty("decorate.frame.look"));
     }
 
 }

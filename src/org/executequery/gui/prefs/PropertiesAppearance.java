@@ -30,6 +30,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * System preferences appearance panel.
@@ -124,38 +125,17 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
-        key = "desktop.background.custom.colour";
-        list.add(new UserPreference(
-                UserPreference.COLOUR_TYPE,
-                key,
-                bundledStaticString("DesktopBackground"),
-                SystemProperties.getColourProperty("user", key)
-        ));
-
-        key = "decorate.dialog.look";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("DecorateDialogs"),
-                Boolean.valueOf(stringUserProperty(key))
-        ));
-
-        key = "decorate.frame.look";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("DecorateFrame"),
-                Boolean.valueOf(stringUserProperty(key))
-        ));
-
         lafSelectionPanel = new CustomLafSelectionPanel();
+        lafSelectionPanel.setVisible(Objects.equals(
+                LookAndFeelType.PLUGIN,
+                LookAndFeelType.valueOf(stringUserProperty("startup.display.lookandfeel"))
+        ));
 
         preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
         preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
 
         addContent(preferencesPanel);
         lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
-        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(getCurrentlySelectedLookAndFeel()));
     }
 
     @SuppressWarnings("rawtypes")

@@ -112,6 +112,7 @@ public final class LookAndFeelLoader {
     private void loadDefaultLightLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new DefaultLightLookAndFeel());
+            setDecorating(true, true);
 
         } catch (UnsupportedLookAndFeelException e) {
             throw new ApplicationException(e);
@@ -121,6 +122,7 @@ public final class LookAndFeelLoader {
     private void loadDefaultDarkLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new DefaultDarkLookAndFeel());
+            setDecorating(true, true);
 
         } catch (UnsupportedLookAndFeelException e) {
             throw new ApplicationException(e);
@@ -130,6 +132,7 @@ public final class LookAndFeelLoader {
     private void loadClassicLightLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new UnderworldLabsFlatLookAndFeel());
+            setDecorating(false, false);
 
         } catch (UnsupportedLookAndFeelException e) {
             throw new ApplicationException(e);
@@ -139,6 +142,7 @@ public final class LookAndFeelLoader {
     private void loadClassicDarkLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new UnderworldLabsDarkFlatLookAndFeel());
+            setDecorating(false, false);
 
         } catch (UnsupportedLookAndFeelException e) {
             throw new ApplicationException(e);
@@ -148,6 +152,7 @@ public final class LookAndFeelLoader {
     public void loadSystemLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            setDecorating(false, false);
 
         } catch (Exception e) {
             throw new ApplicationException(e);
@@ -157,10 +162,16 @@ public final class LookAndFeelLoader {
     public void loadCrossPlatformLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            setDecorating(false, false);
 
         } catch (Exception e) {
             throw new ApplicationException(e);
         }
+    }
+
+    private void setDecorating(boolean decorateDialogs, boolean decorateFrames) {
+        UserProperties.getInstance().setBooleanProperty("decorate.frame.look", decorateFrames);
+        UserProperties.getInstance().setBooleanProperty("decorate.dialog.look", decorateDialogs);
     }
 
     public void decorateDialogsAndFrames(boolean decorateDialogs, boolean decorateFrames) {

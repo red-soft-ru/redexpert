@@ -14,9 +14,11 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Objects;
 
 /**
  * @author Alexey K.
@@ -29,6 +31,8 @@ public class CustomLafSelectionPanel extends JPanel {
     private JTextField libraryField;
     private JButton browseClassButton;
     private JButton browseLibraryButton;
+    private JCheckBox decorateFrameCheck;
+    private JCheckBox decorateDialogsCheck;
 
     public CustomLafSelectionPanel() {
         super(new GridBagLayout());
@@ -55,6 +59,18 @@ public class CustomLafSelectionPanel extends JPanel {
                 e -> browseLibrary()
         );
 
+        decorateFrameCheck = WidgetFactory.createCheckBox(
+                "decorateFrameCheck",
+                bundleString("DecorateFrame"),
+                this::setDecorating
+        );
+
+        decorateDialogsCheck = WidgetFactory.createCheckBox(
+                "decorateDialogsCheck",
+                bundleString("DecorateDialogs"),
+                this::setDecorating
+        );
+
         userLaf = LookAndFeelProperties.getLookAndFeel();
         if (userLaf == null)
             restore();
@@ -62,6 +78,14 @@ public class CustomLafSelectionPanel extends JPanel {
 
     private void arrange() {
         GridBagHelper gbh;
+
+        // --- check panel ---
+
+        JPanel checkPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillHorizontally();
+        checkPanel.add(decorateFrameCheck, gbh.get());
+        checkPanel.add(decorateDialogsCheck, gbh.nextCol().leftGap(5).spanX().get());
 
         // --- main panel ---
 
@@ -71,9 +95,10 @@ public class CustomLafSelectionPanel extends JPanel {
         mainPanel.add(new JLabel(bundleString("LibraryPath")), gbh.get());
         mainPanel.add(libraryField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
         mainPanel.add(browseLibraryButton, gbh.nextCol().leftGap(0).setMinWeightX().get());
-        mainPanel.add(new JLabel(bundleString("ClassName")), gbh.nextRowFirstCol().bottomGap(0).get());
+        mainPanel.add(new JLabel(bundleString("ClassName")), gbh.nextRowFirstCol().get());
         mainPanel.add(classField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
         mainPanel.add(browseClassButton, gbh.nextCol().leftGap(0).setMinWeightX().get());
+        mainPanel.add(checkPanel, gbh.nextRowFirstCol().bottomGap(0).spanX().get());
 
         // --- base ---
 
@@ -154,9 +179,19 @@ public class CustomLafSelectionPanel extends JPanel {
         }
     }
 
+    private void setDecorating(ActionEvent event) {
+        Object source = event.getSource();
+        if (Objects.equals(source, decorateFrameCheck))
+            userLaf.setDecorateFrame(decorateFrameCheck.isSelected());
+        if (Objects.equals(source, decorateDialogsCheck))
+            userLaf.setDecorateDialogs(decorateDialogsCheck.isSelected());
+    }
+
     private void updateFields() {
         libraryField.setText(userLaf.getLibraryPath());
         classField.setText(userLaf.getClassName());
+        decorateFrameCheck.setSelected(userLaf.isDecorateFrame());
+        decorateDialogsCheck.setSelected(userLaf.isDecorateDialogs());
     }
 
     public void save() {

@@ -487,7 +487,7 @@ public class ErdTable extends ErdMoveableComponent
 
         // draw the line separator
         lineHeight = TITLE_BAR_HEIGHT + offsetY - 1;
-        g.drawLine(offsetX, lineHeight, offsetX + FINAL_WIDTH - 1, lineHeight);
+        g.drawLine(offsetX + 1, lineHeight, offsetX + FINAL_WIDTH - 1, lineHeight);
 
         // fill the white background
         g.setColor(tableBackground);
@@ -561,7 +561,7 @@ public class ErdTable extends ErdMoveableComponent
             g.setColor(Color.BLACK);
         }
 
-        g.drawRect(offsetX, offsetY, FINAL_WIDTH - 1, FINAL_HEIGHT - 1);
+        g.drawRect(offsetX + 1, offsetY + 1, FINAL_WIDTH - 2, FINAL_HEIGHT - 2);
         //    g.setColor(Color.DARK_GRAY);
         //    g.draw3DRect(offsetX, offsetY, FINAL_WIDTH - 2, FINAL_HEIGHT - 2, true);
     }

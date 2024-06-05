@@ -42,7 +42,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
@@ -432,7 +431,6 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTableDependency dependency = null;
 
         ErdTable table = null;
-        HashMap tempHash = new HashMap();
 
         for (int k = 0, m = tables.size(); k < m; k++) {
 
@@ -463,14 +461,6 @@ public class ErdViewerPanel extends DefaultTabView
 
                             table = tables.elementAt(j);
 
-                            // check to see that the combination
-                            // does not already exist
-                            if ((tempHash.containsKey(tables_array[k]) &&
-                                    tempHash.get(tables_array[k]) == table) ||
-                                    (tempHash.containsKey(table) &&
-                                            tempHash.get(table) == tables_array[k])) {
-                                break;
-                            }
                             ColumnData refCol = null;
                             for (ColumnData col : table.getTableColumns()) {
                                 if (col.getColumnName().contentEquals(cca[n].getRefColumn())) {
@@ -482,8 +472,6 @@ public class ErdViewerPanel extends DefaultTabView
 
                             // place the tables in the temp HashMap so
                             // the combination is not added a second time
-                            tempHash.put(tables_array[k], table);
-                            tempHash.put(table, tables_array[k]);
 
                             tableDependencies.add(dependency);
                             break;

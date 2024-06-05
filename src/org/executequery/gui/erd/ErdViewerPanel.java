@@ -191,6 +191,7 @@ public class ErdViewerPanel extends DefaultTabView
             new Color(253, 255, 182),
             new Color(202, 255, 191),
             new Color(155, 246, 255),
+            new Color(0, 150, 255),
             new Color(189, 178, 255),
             new Color(255, 198, 255)
     };
@@ -200,6 +201,7 @@ public class ErdViewerPanel extends DefaultTabView
             new Color(255, 128, 0),
             new Color(255, 255, 0),
             new Color(0, 255, 0),
+            new Color(128, 255, 255),
             new Color(0, 0, 255),
             new Color(128, 128, 255),
             new Color(255, 0, 255)
@@ -315,27 +317,8 @@ public class ErdViewerPanel extends DefaultTabView
 
             layeredPane.displayPopupMenuViewItemsOnly();
         }
-        
-        /*
-        ActionMap actionMap = getActionMap();
-        actionMap.put("zoom-in", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                zoom(true);
-            }
-        });
-        
-        actionMap.put("zoom-out", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                zoom(false);
-            }
-        });
-        
-        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke("control EQUALS"), "zoom-in");
-        inputMap.put(KeyStroke.getKeyStroke("control MINUS"), "zoom-out");
-        */
+
+
     }
 
     public void addTitlePanel(ErdTitlePanel erdTitlePanel) {

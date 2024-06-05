@@ -133,9 +133,11 @@ public class ApplicationLauncher {
             GUIUtilities.initDesktop(frame);
 
             // initialise the actions from actions.xml
-            ActionBuilder.build(GUIUtilities.getActionMap(),
+            ActionBuilder.build(
+                    GUIUtilities.getActionMap(),
                     GUIUtilities.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
-                    Constants.ACTION_CONF_PATH);
+                    Constants.ACTION_CONF_PATH
+            );
 
             advanceSplash(splash);
 
@@ -164,7 +166,10 @@ public class ApplicationLauncher {
             // set proxy server settings
             initProxySettings();
 
-            ActionBuilder.setActionMaps(frame.getRootPane(), SystemResources.getUserActionShortcuts());
+            ActionBuilder.updateUserDefinedShortcuts(
+                    GUIUtilities.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
+                    SystemResources.getUserActionShortcuts()
+            );
 
             GUIUtilities.initPanels();
 

@@ -1552,6 +1552,9 @@ public class ConnectionsTreePanel extends TreePanel
 
     private void updateDatabasePropertiesFromPath(TreePath path) {
 
+        if (path == null)
+            return;
+
         Object node = path.getLastPathComponent();
         if (node instanceof DatabaseHostNode) {
             DatabaseConnection dc = ((DatabaseHostNode) node).getDatabaseConnection();

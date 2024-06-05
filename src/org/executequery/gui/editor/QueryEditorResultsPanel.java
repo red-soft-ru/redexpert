@@ -888,7 +888,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     public void tabRollOverCancelled(TabRolloverEvent e) {
         if (queryPopup != null) {
-            queryPopup.disposeNow();
+            queryPopup.forceDispose();
         }
     }
 

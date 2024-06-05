@@ -637,6 +637,21 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named LinkButton class instance
+     *
+     * @param name     the component's name
+     * @param text     the text for display on this component
+     * @param listener <code>ActionListener</code> to be added
+     */
+    public static LinkButton createLinkButton(String name, String text, ActionListener listener) {
+
+        LinkButton button = createLinkButton(name, text);
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
      * Create named NumberTextField class instance
      *
      * @param name the component's name

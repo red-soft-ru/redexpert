@@ -126,7 +126,6 @@ public class ConnectionsTreePanel extends TreePanel
 
         tree = new SchemaTree(createTreeStructure(), this);
         tree.addMouseListener(new MouseHandler());
-        tree.addKeyListener(new KeyHandler());
 
         treeFindAction = new TreeFindAction();
         treeFindAction.install(tree);
@@ -1486,6 +1485,7 @@ public class ConnectionsTreePanel extends TreePanel
             return;
 
         controller.selectionChanging();
+        updateDatabasePropertiesFromPath(getTreeSelectionPath());
 
         if (object == tree.getConnectionsBranchNode()) { // root node
             controller.displayConnectionList();
@@ -1505,6 +1505,12 @@ public class ConnectionsTreePanel extends TreePanel
             DatabaseHostNode hostNode = (DatabaseHostNode) node;
             if (refreshButtons)
                 enableButtons(hostNode.isConnected(), true);
+
+            if (hostNode.getParentFolder() != null) {
+                controller.displayConnectionList(hostNode.getParentFolder().getConnectionsFolder());
+
+            } else if (Objects.equals(hostNode.getParent(), tree.getConnectionsBranchNode()))
+                controller.displayConnectionList();
 
         } else if (refreshButtons)
             enableButtons(true);
@@ -1644,12 +1650,6 @@ public class ConnectionsTreePanel extends TreePanel
 
         @Override
         public void mouseClicked(MouseEvent e) {
-
-            TreePath path = pathFromMouseEvent(e);
-            if (path == null || path != getTreeSelectionPath())
-                return;
-
-            updateDatabasePropertiesFromPath(path);
             if (e.getClickCount() > 1)
                 twoClicks(e);
         }
@@ -1747,26 +1747,5 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
     } // MouseHandler class
-
-    private class KeyHandler extends KeyAdapter {
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            if (isArrowKey(e)) {
-                TreePath path = getTreeSelectionPath();
-                if (path != null)
-                    updateDatabasePropertiesFromPath(getTreeSelectionPath());
-            }
-        }
-
-        private boolean isArrowKey(KeyEvent e) {
-            int code = e.getKeyCode();
-            return code == KeyEvent.VK_UP
-                    || code == KeyEvent.VK_DOWN
-                    || code == KeyEvent.VK_RIGHT
-                    || code == KeyEvent.VK_LEFT;
-        }
-
-    } // KeyHandler class
 
 }

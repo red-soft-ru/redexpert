@@ -207,7 +207,7 @@ public class ErdViewerPanel extends DefaultTabView
             new Color(255, 128, 0),
             new Color(255, 255, 0),
             new Color(0, 255, 0),
-            new Color(128, 255, 255),
+            new Color(0, 255, 255),
             new Color(0, 0, 255),
             new Color(128, 128, 255),
             new Color(255, 0, 255)

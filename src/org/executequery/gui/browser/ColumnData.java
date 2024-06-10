@@ -189,6 +189,14 @@ public class ColumnData implements Serializable {
         setDefaultValue(cd.getDefaultValue());
         setDomain(cd.getDomain(), loadDomainInfo);
         autoincrement.setIdentity(cd.isIdentity());
+        if (cd.hasConstraints()) {
+            columnConstraints = new Vector<>();
+            for (org.executequery.databaseobjects.impl.ColumnConstraint cc : cd.getConstraints()) {
+                ColumnConstraint ccX = new ColumnConstraint();
+                ccX.setValues(cc);
+                columnConstraints.add(ccX);
+            }
+        }
     }
 
     private void getDomainInfo() {
@@ -958,7 +966,7 @@ public class ColumnData implements Serializable {
 
     } // DefaultValue class
 
-    public static class Dimension {
+    public static class Dimension implements Serializable {
 
         protected int lowerBound;
         protected int upperBound;

@@ -56,6 +56,9 @@ public class ErdViewerPanel extends DefaultTabView
         SaveFunction,
         ActiveComponent {
 
+    private static final int VERT_DIFF = 50;
+    private static final int HORIZ_DIFF = 50;
+
     /**
      * The panel's title
      */
@@ -183,6 +186,10 @@ public class ErdViewerPanel extends DefaultTabView
     private List tableNames;
 
     private List columnData;
+
+    private int next_x = 20;
+    private int next_y = 20;
+    private int lastWidth = 0;
 
     public final static Color[] TITLE_COLORS = new Color[]{
             new Color(255, 173, 173),
@@ -353,19 +360,15 @@ public class ErdViewerPanel extends DefaultTabView
         this.columnData = columnData;
 
         // next position of component added
-        int next_x = 20;
-        int next_y = 20;
+
 
         // height and width of current table
         int height = -1;
         int width = -1;
 
         // width of last table
-        int lastWidth = 0;
 
         // vertical and horizontal differences
-        int vertDiff = 50;
-        int horizDiff = 50;
 
         int size = tableNames.size();
         tables = new Vector(size);
@@ -388,7 +391,7 @@ public class ErdViewerPanel extends DefaultTabView
                 next_y = 20;
 
                 if (i > 0)
-                    next_x += lastWidth + horizDiff;
+                    next_x += lastWidth + HORIZ_DIFF;
 
                 lastWidth = 0;
 
@@ -400,7 +403,7 @@ public class ErdViewerPanel extends DefaultTabView
 
             table.toFront();
 
-            next_y += height + vertDiff;
+            next_y += height + VERT_DIFF;
 
             if (lastWidth < width)
                 lastWidth = width;
@@ -710,21 +713,39 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * <p>Adds a new table to the canvas.
      */
-    protected boolean addNewTable(ErdTable newTable) {
+    protected boolean addNewTable(ErdTable newTable, boolean setCentered) {
 
         if (tables == null) {
             tables = new Vector();
         }
         for (ErdTable table : tables) {
-            if (table.getTableName().contentEquals(newTable.getTableName()))
+            if (table.getTableName().contentEquals(newTable.getTableName())) {
+                table.setTableColumns(newTable.getTableColumns());
+                table.tableColumnsChanged();
                 return false;
+            }
         }
         addTableToList(newTable);
 
-        // place the new table in the center of the canvas
-        newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
-                (layeredPane.getHeight() - newTable.getHeight()) / 2,
-                newTable.getWidth(), newTable.getHeight());
+        int width = newTable.getWidth();
+        int height = newTable.getHeight();
+
+        if (setCentered) {
+            newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
+                    (layeredPane.getHeight() - newTable.getHeight()) / 2,
+                    width, height);
+        } else {
+
+            if (next_y + height + 20 > INITIAl_VIEW_HEIGHT) {
+                next_y = 20;
+                next_x += width + HORIZ_DIFF;
+                lastWidth = 0;
+            }
+
+            newTable.setBounds(next_x, next_y, width, height);
+
+            next_y += height + VERT_DIFF;
+        }
 
         layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
         newTable.toFront();
@@ -778,6 +799,28 @@ public class ErdViewerPanel extends DefaultTabView
             }
 
         }
+
+        if (tablesRemoved)
+            dependsPanel.setTableDependencies(buildTableRelationships());
+
+        if (erdTitlePanel != null) {
+
+            if (erdTitlePanel.isSelected()) {
+                layeredPane.remove(erdTitlePanel);
+                erdTitlePanel = null;
+            }
+
+        }
+
+        layeredPane.repaint();
+    }
+
+    public void removeTable(ErdTable table) {
+        boolean tablesRemoved = false;
+        table.clean();
+        layeredPane.remove(table);
+        tables.remove(table);
+        tablesRemoved = true;
 
         if (tablesRemoved)
             dependsPanel.setTableDependencies(buildTableRelationships());

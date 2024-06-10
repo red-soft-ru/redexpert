@@ -178,7 +178,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             table.setCreateTableScript(sqlText.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
-            if (!erdViewerPanel.addNewTable(table)) {
+            if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
             }

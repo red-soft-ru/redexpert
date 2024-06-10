@@ -22,9 +22,13 @@ package org.executequery.gui.erd;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
+import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -42,7 +46,7 @@ import java.util.Vector;
 public class ErdToolBarPalette extends PanelToolBar
         implements ActionListener {
 
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     private RolloverButton createTableButton;
     private RolloverButton addTableButton;
     private RolloverButton relationButton;
@@ -56,6 +60,7 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton canvasFgButton;
     private RolloverButton erdTitleButton;
 
+    private RolloverButton updateFromDatabase;
     /**
      * The zoom in button
      */
@@ -68,6 +73,9 @@ public class ErdToolBarPalette extends PanelToolBar
      * The scale combo box
      */
     private JComboBox scaleCombo;
+    private DynamicComboBoxModel connectionModel;
+
+    private OpenConnectionsComboboxPanel connectionsComboBox;
 
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
@@ -86,6 +94,8 @@ public class ErdToolBarPalette extends PanelToolBar
 
 //        commitButton = new RolloverButton("/org/executequery/icons/Commit16.png",
 //                                         "Commit any schema changes");
+
+        connectionsComboBox = new OpenConnectionsComboboxPanel();
 
         relationButton = new RolloverButton("/org/executequery/icons/TableRelationship16.png",
                 bundleString("relation"));
@@ -118,6 +128,8 @@ public class ErdToolBarPalette extends PanelToolBar
         erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
                 bundleString("erdTitle"));
 
+        updateFromDatabase = new RolloverButton("/org/executequery/icons/RecycleConnection16.png",
+                bundleString("updateFromDatabase"));
         genScriptsButton.addActionListener(this);
         canvasFgButton.addActionListener(this);
         canvasBgButton.addActionListener(this);
@@ -130,7 +142,7 @@ public class ErdToolBarPalette extends PanelToolBar
         relationButton.addActionListener(this);
         deleteRelationButton.addActionListener(this);
         erdTitleButton.addActionListener(this);
-
+        updateFromDatabase.addActionListener(this);
         addButton(createTableButton);
         //addButton(addTableButton);
         addButton(relationButton);
@@ -165,7 +177,8 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(zoomOutButton);
         //addComboBox(scaleCombo);
         addButton(zoomInButton);
-
+        addSeparator();
+        addButton(updateFromDatabase);
     }
 
     private void setBackgroundColours(boolean forCanvas) {
@@ -340,8 +353,31 @@ public class ErdToolBarPalette extends PanelToolBar
 
             parent.setPopupMenuScaleValue(index);
 
+        } else if (btnObject == updateFromDatabase) {
+            updateFromDatabase();
+
         }
 
+    }
+
+    private void updateFromDatabase() {
+
+        try {
+            GUIUtilities.showWaitCursor();
+            BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
+            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(dialog, parent, getSelectedConnection()));
+            dialog.setResizable(false);
+            dialog.display();
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+
+        parent.repaintLayeredPane();
+    }
+
+    private DatabaseConnection getSelectedConnection() {
+        DatabaseConnection selectedConnection = connectionsComboBox.getSelectedConnection();
+        return selectedConnection;
     }
 
     /**

@@ -24,9 +24,7 @@ import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.Vector;
 
@@ -36,17 +34,18 @@ import java.util.Vector;
 @SuppressWarnings({"rawtypes"})
 public class ErdLayeredPane extends JLayeredPane
         implements MouseListener,
-        MouseMotionListener {
+        MouseMotionListener,
+        MouseWheelListener {
 
     /**
      * The controller for the ERD viewer
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The popup menu
      */
-    private ErdPopupMenu popup;
+    private final ErdPopupMenu popup;
 
     /**
      * The currently selected component
@@ -66,6 +65,7 @@ public class ErdLayeredPane extends JLayeredPane
         popup = new ErdPopupMenu(parent);
         addMouseListener(this);
         addMouseMotionListener(this);
+        addMouseWheelListener(this);
     }
 
     public void setScale(double scale) {
@@ -286,6 +286,16 @@ public class ErdLayeredPane extends JLayeredPane
 
     public void displayPopupMenuViewItemsOnly() {
         popup.displayViewItemsOnly();
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        if (e.isControlDown()) {
+            if (e.getWheelRotation() < 0)
+                parent.zoom(true);
+            else if (e.getWheelRotation() > 0)
+                parent.zoom(false);
+        }
     }
 
     /**

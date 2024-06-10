@@ -647,10 +647,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             switch (col) {
                 case VALID:
-                    return GUIUtilities.loadIcon(action.executed ?
-                            "grant.png" :
-                            "no_grant.png"
-                    );
+                    return GUIUtilities.loadIcon(action.executed ? "grant.svg" : "no_grant.svg");
 
                 case NAME:
                     return action.nameOperation;

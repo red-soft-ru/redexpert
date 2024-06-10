@@ -724,6 +724,12 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         closeStat(db, panel);
                 }
             });
+            lbl.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    tabPane.setSelectedComponent(panel);
+                }
+            });
             //lbl.setToolTipText(tooltip);
             JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable.png"));
 

@@ -75,7 +75,7 @@ public class ErdSelectionPanel extends JPanel
     /**
      * the database connection props object
      */
-    private final DatabaseConnection databaseConnection;
+    private DatabaseConnection databaseConnection;
     private final ErdViewerPanel erdViewer;
 
     private boolean useCatalogs;
@@ -216,9 +216,9 @@ public class ErdSelectionPanel extends JPanel
     private void connectionChanged() {
         try {
             // retrieve connection selection
-            DatabaseConnection connection =
+            databaseConnection =
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
-            List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+            List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
             if (erdViewer != null) {
                 for (ErdTable table : erdViewer.getAllComponentsArray()) {
                     if (!tables.contains(table.getTableName()))

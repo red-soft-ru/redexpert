@@ -50,12 +50,12 @@ public class ErdTitlePanel extends ErdMoveableComponent implements Serializable 
     /**
      * The label font
      */
-    private Font labelFont;
+    private final Font labelFont;
 
     /**
      * The text font
      */
-    private Font font;
+    private final Font font;
 
     /**
      * The ERD name
@@ -109,8 +109,8 @@ public class ErdTitlePanel extends ErdMoveableComponent implements Serializable 
         super(parent);
 
         String fontName = "Dialog";
-        font = new Font(fontName, Font.PLAIN, 11);
-        labelFont = new Font(fontName, Font.PLAIN, 8);
+        font = new Font(fontName, Font.PLAIN, 14);
+        labelFont = new Font(fontName, Font.PLAIN, 12);
 
         String EMPTY = "";
 
@@ -122,7 +122,7 @@ public class ErdTitlePanel extends ErdMoveableComponent implements Serializable 
         erdAuthor = author == null ? EMPTY : author;
         erdFileName = fileName == null ? EMPTY : fileName;
 
-        width = 300;
+        width = 400;
         calculateHeight();
     }
 
@@ -458,7 +458,7 @@ public class ErdTitlePanel extends ErdMoveableComponent implements Serializable 
             description.add(sb.toString().trim());
         }
 
-        descriptionLines = (String[]) description.toArray(new String[description.size()]);
+        descriptionLines = description.toArray(new String[description.size()]);
 
     }
 

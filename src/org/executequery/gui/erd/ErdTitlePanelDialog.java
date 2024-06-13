@@ -41,7 +41,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     /**
      * The name text field
      */
@@ -73,7 +73,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     /**
      * Whether this is a new title panel
      */
-    private boolean isNew;
+    private final boolean isNew;
 
     public ErdTitlePanelDialog(ErdViewerPanel parent) {
         super(GUIUtilities.getParentFrame(), bundleString("title"), true);
@@ -130,7 +130,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         JButton createButton = new DefaultPanelButton(Bundles.get("common.add.button"));
         createButton.setActionCommand("Add");
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-        createButton.setActionCommand("Cancel");
+        cancelButton.setActionCommand("Cancel");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {

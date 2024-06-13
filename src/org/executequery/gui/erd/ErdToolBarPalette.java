@@ -22,6 +22,7 @@ package org.executequery.gui.erd;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
@@ -273,7 +274,7 @@ public class ErdToolBarPalette extends PanelToolBar
             for (int i = 0; i < v_size; i++) {
                 _tables.add(tables.elementAt(i));
             }
-            new ErdScriptGenerator(_tables, parent);
+            new ComparerDBCommands().erdScript(tables, null);
         } else if (btnObject == addTableButton) {
             new ErdSelectionDialog(parent);
         } else if (btnObject == commitButton) {

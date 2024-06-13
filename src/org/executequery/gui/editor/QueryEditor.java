@@ -83,8 +83,11 @@ public class QueryEditor extends DefaultTabView
     public static final String STOP_ON_ERROR_CMD = "editor-stop-on-error-command";
     public static final String EXECUTE_TO_FILE_CMD = "editor-execute-to-file-command";
     public static final String AUTOCOMMIT_MODE_CMD = "toggle-autocommit-command";
+    public static final String LIMIT_RS_MODE_CMD = "toggle-rs-limit-command";
     public static final String STOP_ON_ERROR_PROP = "editor.stop.on.error";
     public static final String AUTOCOMMIT_MODE_PROP = "editor.connection.commit";
+    public static final String LIMIT_RS_MODE_PROP = "editor.limit.records.count";
+    public static final String LIMIT_RS_COUNT_PROP = "editor.max.records.count";
 
     // --- GUI elements ---
 
@@ -104,6 +107,7 @@ public class QueryEditor extends DefaultTabView
     private JButton stopOnErrorButton;
     private JButton executeToFileButton;
     private JButton autoCommitModeButton;
+    private JButton resultSetLimitModeButton;
 
     // ---
 
@@ -243,6 +247,12 @@ public class QueryEditor extends DefaultTabView
             autoCommitModeButton.addActionListener(e -> updateAutoCommitMode(true));
             updateAutoCommitMode(false);
         }
+
+        resultSetLimitModeButton = toolBar.getButton(LIMIT_RS_MODE_CMD);
+        if (resultSetLimitModeButton != null) {
+            resultSetLimitModeButton.addActionListener(e -> updateResultSetLimitMode(true));
+            updateResultSetLimitMode(false);
+        }
     }
 
     private void arrange() {
@@ -347,6 +357,28 @@ public class QueryEditor extends DefaultTabView
         autoCommitModeButton.setToolTipText(Bundles.get(newValue ?
                 "action.toggle-autocommit-command-off" :
                 "action.toggle-autocommit-command"
+        ));
+    }
+
+    private void updateResultSetLimitMode(boolean toggle) {
+
+        boolean newValue = SystemProperties.getBooleanProperty("user", LIMIT_RS_MODE_PROP);
+        if (toggle) {
+            newValue = !newValue;
+
+            SystemProperties.setBooleanProperty("user", LIMIT_RS_MODE_PROP, newValue);
+            EventMediator.fireEvent(new DefaultUserPreferenceEvent(this, LIMIT_RS_MODE_PROP, UserPreferenceEvent.QUERY_EDITOR));
+        }
+
+        resultSetLimitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
+                "LimitRowCount16_off.png" :
+                "LimitRowCount16_on.png"
+        ));
+        resultSetLimitModeButton.setToolTipText(String.format(Bundles.get(newValue ?
+                        "action.toggle-rs-limit-command-off" :
+                        "action.toggle-rs-limit-command-on"
+                ),
+                SystemProperties.getIntProperty("user", LIMIT_RS_COUNT_PROP)
         ));
     }
 
@@ -459,6 +491,7 @@ public class QueryEditor extends DefaultTabView
 
         updateStopOnError(false);
         updateAutoCommitMode(false);
+        updateResultSetLimitMode(false);
     }
 
     private boolean isAutoCompleteOn() {

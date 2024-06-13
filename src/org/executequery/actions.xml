@@ -581,6 +581,10 @@
             small-icon="/org/executequery/icons/AutoCommit16_off.png"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
+    <action id="toggle-rs-limit-command"
+            small-icon="/org/executequery/icons/LimitRowCount16_off.png"
+            execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
+
     <!-- DO NOT REMOVE (that's actions called by hotkeys) -->
 
     <action id="comment-lines-command"

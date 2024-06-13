@@ -299,7 +299,7 @@
     <action id="editor-result-set-filter-command"
             name="Visible Result Set Columns"
             accel-editable="false"
-            small-icon="/org/executequery/icons/TableColumn16.png"
+            small-icon="/org/executequery/icons/Filter16.png"
             execute-class="org.executequery.actions.othercommands.ResultSetFilterCommand"/>
 
     <action id="toggle-editor-output-command"

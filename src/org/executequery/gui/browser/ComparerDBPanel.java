@@ -567,12 +567,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
 
             if (isErd && isExtractMetadata) {
-                if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
-                    loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
-                    if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
-                        loggingOutputPanel.append(comparer.getComputedFieldsList());
-                    comparer.createComputedFields();
-                }
                 ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
                         .add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.TABLE,
                                 Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE]), ComparerTreeNode.TYPE_FOLDER));
@@ -580,6 +574,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
                         Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE])));
                 comparer.createErds(erdTables);
+                if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
+                    loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                    if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                        loggingOutputPanel.append(comparer.getComputedFieldsList());
+                    comparer.createComputedFields();
+                }
             } else for (Integer type : scriptGenerationOrder) {
 
                 if (isCanceled())
@@ -863,7 +863,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
+        QueryEditor queryEditor = new QueryEditor(isErd() ? sqlTextPanel.getSQLText() : sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
         queryEditor.setSelectedConnection(comparer.getMasterConnection());
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE, QueryEditor.FRAME_ICON,

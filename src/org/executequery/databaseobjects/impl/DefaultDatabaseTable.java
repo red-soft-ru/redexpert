@@ -700,8 +700,17 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
+        List<ColumnData> listCD;
         if (erd == null) {
             updateListCD();
+            listCD = this.getListCD();
+        } else {
+            listCD = new ArrayList<>();
+            for (ColumnData cd : this.getListCD()) {
+                ColumnData cdX = new ColumnData(null);
+                cdX.setValues(cd);
+                listCD.add(cdX);
+            }
         }
         updateListCC();
         return SQLUtils.generateCreateTable(
@@ -730,9 +739,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
+        List<ColumnData> listCD;
         if (erd == null) {
             updateListCD();
+            listCD = this.getListCD();
+        } else {
+            listCD = new ArrayList<>();
+            for (ColumnData cd : this.getListCD()) {
+                ColumnData cdX = new ColumnData(null);
+                cdX.setValues(cd);
+                listCD.add(cdX);
+            }
         }
+
         updateListCC();
         if (Comparer.isComputedFieldsNeed())
             listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));

@@ -1357,4 +1357,7 @@ public class ErdViewerPanel extends DefaultTabView
         return Bundles.get(ErdViewerPanel.class, key);
     }
 
+    public ErdScrollPane getScroll() {
+        return scroll;
+    }
 }

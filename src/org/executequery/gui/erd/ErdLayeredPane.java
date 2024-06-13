@@ -296,6 +296,36 @@ public class ErdLayeredPane extends JLayeredPane
             else if (e.getWheelRotation() > 0)
                 parent.zoom(false);
         }
+        int units = Math.abs(e.getUnitsToScroll()) * 3;
+        Rectangle viewRect = parent.getScroll().getViewport().getViewRect();
+        int max = parent.getScroll().getVerticalScrollBar().getVisibleAmount();
+        if (e.isAltDown() || max == parent.getScroll().getVerticalScrollBar().getMaximum()) {
+            if (e.getWheelRotation() < 0) {
+                viewRect.x -= units;
+                if (viewRect.x <= parent.getScroll().getHorizontalScrollBar().getMinimum()) {
+                    viewRect.x = parent.getScroll().getHorizontalScrollBar().getMinimum();
+                }
+            } else { // (direction > 0
+                viewRect.x += units;
+                if (viewRect.x >= parent.getScroll().getHorizontalScrollBar().getMaximum()) {
+                    viewRect.x = parent.getScroll().getHorizontalScrollBar().getMaximum();
+                }
+            }
+            parent.getScroll().getHorizontalScrollBar().setValue(viewRect.x);
+        } else {
+            if (e.getWheelRotation() < 0) {
+                viewRect.y -= units;
+                if (viewRect.y <= parent.getScroll().getVerticalScrollBar().getMinimum()) {
+                    viewRect.y = parent.getScroll().getVerticalScrollBar().getMinimum();
+                }
+            } else { // (direction > 0
+                viewRect.y += units;
+                if (viewRect.y >= parent.getScroll().getVerticalScrollBar().getMaximum()) {
+                    viewRect.y = parent.getScroll().getVerticalScrollBar().getMaximum();
+                }
+            }
+            parent.getScroll().getVerticalScrollBar().setValue(viewRect.y);
+        }
     }
 
     /**

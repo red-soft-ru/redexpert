@@ -296,9 +296,9 @@ public class QueryEditor extends DefaultTabView
         transactionParametersPanel.setDatabaseConnection(getSelectedConnection());
     }
 
-    private void updateExecuteDestination(boolean toogle) {
+    private void updateExecuteDestination(boolean toggle) {
 
-        if (toogle)
+        if (toggle)
             executeToFile = !executeToFile;
 
         if (executeToFileButton == null)
@@ -306,11 +306,11 @@ public class QueryEditor extends DefaultTabView
 
         executeToFileButton.setToolTipText(Bundles.get(executeToFile ?
                 "action.editor-execute-to-file-command-off" :
-                "action.editor-execute-to-file-command"
+                "action.editor-execute-to-file-command-on"
         ));
         executeToFileButton.setIcon(GUIUtilities.loadIcon(executeToFile ?
-                "ExecuteToFile16_off.png" :
-                "ExecuteToFile16_on.png"
+                "ExecuteToFile16_on.png" :
+                "ExecuteToFile16_off.png"
         ));
     }
 
@@ -328,7 +328,7 @@ public class QueryEditor extends DefaultTabView
 
         stopOnErrorButton.setToolTipText(Bundles.get(newValue ?
                 "action.editor-stop-on-error-command-off" :
-                "action.editor-stop-on-error-command"
+                "action.editor-stop-on-error-command-on"
         ));
         stopOnErrorButton.setIcon(GUIUtilities.loadIcon(newValue ?
                 "StopOnError16_off.png" :
@@ -356,7 +356,7 @@ public class QueryEditor extends DefaultTabView
         ));
         autoCommitModeButton.setToolTipText(Bundles.get(newValue ?
                 "action.toggle-autocommit-command-off" :
-                "action.toggle-autocommit-command"
+                "action.toggle-autocommit-command-on"
         ));
     }
 

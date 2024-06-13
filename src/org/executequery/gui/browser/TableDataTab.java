@@ -48,6 +48,7 @@ import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.swing.table.RowNumberHeader;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -116,6 +117,7 @@ public class TableDataTab extends JPanel
     private Timer timer;
 
     public ResultSet resultSet;
+    private RowNumberHeader rowNumberHeader;
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -491,14 +493,12 @@ public class TableDataTab extends JPanel
                 public void presorting(SortingEvent e) {
                     tableModel.setFetchAll(true);
                     tableModel.fetchMoreData();
-                    if (displayRowCount) {
+                    if (displayRowCount)
                         rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                    }
                 }
 
                 @Override
                 public void postsorting(SortingEvent e) {
-
                 }
 
                 @Override
@@ -510,6 +510,25 @@ public class TableDataTab extends JPanel
             table.setModel(sorter);
             tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
+
+            boolean showLineLumbers = SystemProperties.getBooleanProperty("user", "results.table.row.numbers");
+            if (showLineLumbers) {
+                Color background = SystemProperties.getColourProperty("user", "editor.results.background.colour");
+
+                if (rowNumberHeader == null) {
+                    rowNumberHeader = new RowNumberHeader(table);
+                    rowNumberHeader.setBackground(background);
+                } else
+                    rowNumberHeader.setTable(table);
+
+                table.addPropertyChangeListener("rowHeight", e -> rowNumberHeader.setTable(table));
+                scroller.setRowHeaderView(rowNumberHeader);
+
+            } else {
+                if (rowNumberHeader != null)
+                    scroller.setRowHeaderView(null);
+                rowNumberHeader = null;
+            }
 
             if (isDatabaseTable()) {
 
@@ -662,6 +681,9 @@ public class TableDataTab extends JPanel
             tableModel.fetchMoreData();
             if (displayRowCount)
                 rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+
+            if (rowNumberHeader != null)
+                rowNumberHeader.setTable(table);
         }
     }
 
@@ -1162,6 +1184,8 @@ public class TableDataTab extends JPanel
                                         add(rowCountPanel, rowCountPanelConstraints);
                                         rowCountField.setText(String.valueOf(tableModel.getRowCount()));
                                     }
+                                    if (rowNumberHeader != null)
+                                        rowNumberHeader.setTable(table);
                                     setTableProperties();
                                     validate();
                                     repaint();

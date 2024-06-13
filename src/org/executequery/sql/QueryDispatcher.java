@@ -1228,15 +1228,14 @@ public class QueryDispatcher {
 
 
                 } catch (SQLException e) {
-
                     processException(e, anyConnections);
-                    return "SQLException";
+                    if (stopOnError)
+                        return "SQLException";
 
                 } catch (InterruptedException e) {
-
-                    //Log.debug("InterruptedException");
                     statementCancelled = true; // make sure its set
-                    return "Interrupted";
+                    if (stopOnError)
+                        return "Interrupted";
 
                 } catch (OutOfMemoryError e) {
 
@@ -1247,28 +1246,20 @@ public class QueryDispatcher {
                     setStatusMessage(ERROR_EXECUTING);
 
                 } catch (Exception e) {
-
                     if (!statementCancelled) {
-
-
-                        e.printStackTrace();
-
-
+                        Log.error(e.getMessage(), e);
                         processException(e, anyConnections);
                     }
 
                 } finally {
-
                     querySender.releaseResources();
                     if (error && stopOnError)
                         break;
                 }
-
             }
-            if (end == 0) {
 
+            if (end == 0)
                 end = System.currentTimeMillis();
-            }
 
             long timeTaken = end - start;
             totalDuration += timeTaken;

@@ -380,16 +380,8 @@ public class ScrollingTabPane extends AbstractTabPane
         viewport.setViewPosition(new Point(0, 0));
     }
 
-    /**
-     * Overide to do nothing.
-     */
+    @Override
     protected void fireTabMinimised(DockedTabEvent e) {
-    }
-
-    /**
-     * Overide to do nothing.
-     */
-    protected void fireTabRestored(DockedTabEvent e) {
     }
 
     /**

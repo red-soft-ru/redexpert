@@ -21,8 +21,8 @@
 package org.executequery.gui.prefs;
 
 
-import org.executequery.Constants;
-import org.executequery.localization.Bundles;
+import org.executequery.gui.resultset.ResultSetCellAlign;
+import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
@@ -35,12 +35,6 @@ import java.util.List;
  */
 public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel {
     private SimplePreferencesPanel preferencesPanel;
-
-    public static final String[] ALIIGNS = {
-            Bundles.get("preferences.allign.right"),
-            Bundles.get("preferences.allign.left"),
-            Bundles.get("preferences.allign.center")
-    };
 
     public PropertiesResultSetTableGeneral(PropertiesPanel parent) {
         super(parent);
@@ -180,47 +174,47 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.table.align.numeric";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignNumericValues"),
-                alignUserProperty(key),
-                ALIIGNS
+                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                alignsValuePairs()
         ));
 
         key = "results.table.align.text";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignTextValues"),
-                alignUserProperty(key),
-                ALIIGNS
+                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                alignsValuePairs()
         ));
 
         key = "results.table.align.bool";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignBoolValues"),
-                alignUserProperty(key),
-                ALIIGNS
+                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                alignsValuePairs()
         ));
 
         key = "results.table.align.null";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignNullValues"),
-                alignUserProperty(key),
-                ALIIGNS
+                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                alignsValuePairs()
         ));
 
         key = "results.table.align.other";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignOtherValues"),
-                alignUserProperty(key),
-                ALIIGNS
+                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                alignsValuePairs()
         ));
 
         key = "results.table.use.form.adding.deleting";
@@ -259,13 +253,15 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         addContent(preferencesPanel);
     }
 
-    protected String alignUserProperty(String key) {
+    private LabelValuePair[] alignsValuePairs() {
 
-        String property = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
-        if (property != null && property.contains("default-"))
-            property = Bundles.get("preferences.allign." + property.replace("default-", ""));
+        ResultSetCellAlign[] languages = ResultSetCellAlign.values();
 
-        return property;
+        LabelValuePair[] values = new LabelValuePair[languages.length];
+        for (int i = 0; i < languages.length; i++)
+            values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
+
+        return values;
     }
 
     @Override

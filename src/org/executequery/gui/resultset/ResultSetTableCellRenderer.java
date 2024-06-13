@@ -158,7 +158,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    protected void setAllign(String align) {
+    protected void setAlign(String align) {
         if (align != null) {
             switch (align) {
                 case "left":
@@ -176,7 +176,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     private void formatValueForDisplay(Object value, boolean isSelected) {
 
-        setAllign(alignOther);
+        setAlign(alignOther);
         if (value != null) {
             if (value instanceof RecordDataItem) {
 
@@ -229,13 +229,13 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.NVARCHAR:
                 case Types.CLOB:
                     color = charValueDisplayColor;
-                    setAllign(alignText);
+                    setAlign(alignText);
                     break;
 
                 case Types.BIT:
                 case Types.BOOLEAN:
                     color = booleanValueDisplayColor;
-                    setAllign(alignBool);
+                    setAlign(alignBool);
                     break;
 
                 case Types.TINYINT:
@@ -249,7 +249,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
                 case Types.REAL:
                 case Types.DOUBLE:
                     color = numericValueDisplayColor;
-                    setAllign(alignNumeric);
+                    setAlign(alignNumeric);
                     break;
 
                 case Types.DATE:
@@ -310,7 +310,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private void formatForNullValue(boolean isSelected, boolean changed, boolean deleted, boolean newValue) {
 
         setValue(nullValueDisplayString);
-        setAllign(alignNull);
+        setAlign(alignNull);
 
         if (!isSelected) {
 
@@ -350,20 +350,20 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         timestampTimezoneFormat = !MiscUtils.isNull(timestampTimezonePattern) ? DateTimeFormatter.ofPattern(timestampTimezonePattern) : null;
 
 
-        alignNumeric = getAlignKey(SystemProperties.getStringProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.align.numeric"));
+        alignNumeric = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.numeric");
 
-        alignText = getAlignKey(SystemProperties.getStringProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.align.text"));
+        alignText = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.text");
 
-        alignBool = getAlignKey(SystemProperties.getStringProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.align.bool"));
+        alignBool = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.bool");
 
-        alignNull = getAlignKey(SystemProperties.getStringProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.align.null"));
+        alignNull = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.null");
 
-        alignOther = getAlignKey(SystemProperties.getStringProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.align.other"));
+        alignOther = SystemProperties.getStringProperty(
+                Constants.USER_PROPERTIES_KEY, "results.table.align.other");
 
         nullValueDisplayColor = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.cell.null.background.colour");
@@ -503,16 +503,6 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     @Override
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    }
-
-    private String getAlignKey(String bundledValue) {
-
-        if (bundledValue.equals(Bundles.get("preferences.allign.right")))
-            return "right";
-        if (bundledValue.equals(Bundles.get("preferences.allign.left")))
-            return "left";
-
-        return "center";
     }
 
 }

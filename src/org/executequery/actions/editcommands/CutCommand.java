@@ -34,37 +34,11 @@ import java.awt.event.ActionEvent;
  */
 public class CutCommand implements BaseCommand {
 
-    /**
-     * Executes the cut command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
         TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
-        if (textFunction != null) {
+        if (textFunction != null)
             textFunction.cut();
-        }
-        textFunction = null;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

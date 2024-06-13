@@ -33,32 +33,11 @@ import java.awt.event.ActionEvent;
  */
 public class ToUpperCaseCommand implements BaseCommand {
 
-    /**
-     * Executes the to-upper-case command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
-        TextEditor textFunction = (TextEditor) GUIUtilities.getTextEditorInFocus();
-        if (textFunction != null) {
+        TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
+        if (textFunction != null)
             textFunction.changeSelectionCase(true);
-        }
-        textFunction = null;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

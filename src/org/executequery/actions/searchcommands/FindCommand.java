@@ -34,31 +34,19 @@ import java.awt.event.ActionEvent;
  */
 public class FindCommand extends AbstractFindReplaceCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        if (!canOpenDialog(e.getSource())) {
-
+        if (!canOpenDialog(e.getSource()))
             return;
-        }
-        TextEditor textEditor;
-        if (e.getSource() instanceof TextEditor)
-            textEditor = (TextEditor) e.getSource();
-        else textEditor = GUIUtilities.getTextEditorInFocus();
+
+        TextEditor textEditor = e.getSource() instanceof TextEditor ?
+                (TextEditor) e.getSource() :
+                GUIUtilities.getTextEditorInFocus();
+
         BaseDialog dialog = createFindReplaceDialog();
-        dialog.addDisplayComponent(
-                new FindReplaceDialog(dialog, FindReplaceDialog.FIND, textEditor));
+        dialog.addDisplayComponent(new FindReplaceDialog(dialog, FindReplaceDialog.FIND, textEditor));
         dialog.display();
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

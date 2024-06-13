@@ -34,37 +34,11 @@ import java.awt.event.ActionEvent;
  */
 public class CopyCommand implements BaseCommand {
 
-    /**
-     * Executes the copy command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
         TextEditor textEditor = GUIUtilities.getTextEditorInFocus();
-        if (textEditor != null) {
+        if (textEditor != null)
             textEditor.copy();
-        }
-        textEditor = null;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

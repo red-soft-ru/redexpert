@@ -33,32 +33,11 @@ import java.awt.event.ActionEvent;
  */
 public class ToLowerCaseCommand implements BaseCommand {
 
-    /**
-     * Executes the to-lower-case command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
-        TextEditor textFunction = (TextEditor) GUIUtilities.getTextEditorInFocus();
-        if (textFunction != null) {
+        TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
+        if (textFunction != null)
             textFunction.changeSelectionCase(false);
-        }
-        textFunction = null;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

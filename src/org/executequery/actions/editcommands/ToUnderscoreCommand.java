@@ -30,37 +30,14 @@ import java.awt.event.ActionEvent;
  * To Camel Case command execution.
  *
  * @author Takis Diakoumis
- * @version $Revision$
- * @date $Date$
  */
 public class ToUnderscoreCommand implements BaseCommand {
 
-    /**
-     * Executes the to-camel-case command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
-        TextEditor textFunction = (TextEditor) GUIUtilities.getTextEditorInFocus();
-        if (textFunction != null) {
+        TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
+        if (textFunction != null)
             textFunction.changeSelectionToUnderscore();
-        }
-        textFunction = null;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -20,11 +20,8 @@
 
 package org.executequery.base;
 
-import org.executequery.EventMediator;
-import org.executequery.event.EditToolsEvent;
-import org.executequery.event.EditToolsListener;
+import org.executequery.gui.menu.EditToolsManager;
 import org.executequery.gui.browser.BrowserViewPanel;
-import org.executequery.gui.editor.QueryEditor;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -333,6 +330,7 @@ public abstract class AbstractTabPane extends JPanel
             ((TabView) tabComponent.getComponent()).tabViewSelected();
 
         parent.fireTabSelected(e);
+        EditToolsManager.checkEnable();
     }
 
     /**

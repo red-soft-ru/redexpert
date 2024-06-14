@@ -51,7 +51,7 @@ public class ErdScriptGenerator extends BaseScriptGeneratorPanel
     /**
      * The parent process
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The cancel button
@@ -66,7 +66,7 @@ public class ErdScriptGenerator extends BaseScriptGeneratorPanel
     /**
      * The tables to generate scripts for as an array
      */
-    private ErdTable[] tables;
+    private final ErdTable[] tables;
 
     /**
      * The dialog container
@@ -79,7 +79,7 @@ public class ErdScriptGenerator extends BaseScriptGeneratorPanel
         this.parent = parent;
 
         int v_size = _tables.size();
-        tables = parent.getAllComponentsArray();
+        tables = parent.getAllTablesArray();
 
         try {
             jbInit();

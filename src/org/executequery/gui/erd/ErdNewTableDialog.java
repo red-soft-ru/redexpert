@@ -296,7 +296,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         }
 
         public List<ErdTable> getErdTables() {
-            return erdViewerPanel.getAllComponentsVector();
+            return erdViewerPanel.getAllTablesVector();
         }
 
         public List<String> getColumns(String table) {

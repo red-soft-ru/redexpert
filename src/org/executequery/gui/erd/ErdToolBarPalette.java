@@ -60,6 +60,7 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton canvasBgButton;
     private RolloverButton canvasFgButton;
     private RolloverButton erdTitleButton;
+    private RolloverButton erdTextBlockButton;
 
     private RolloverButton updateFromDatabase;
     /**
@@ -129,6 +130,9 @@ public class ErdToolBarPalette extends PanelToolBar
         erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
                 bundleString("erdTitle"));
 
+        erdTextBlockButton = new RolloverButton("/org/executequery/icons/AddComment16.png",
+                bundleString("erdText"));
+
         updateFromDatabase = new RolloverButton("/org/executequery/icons/RecycleConnection16.png",
                 bundleString("updateFromDatabase"));
         genScriptsButton.addActionListener(this);
@@ -143,6 +147,7 @@ public class ErdToolBarPalette extends PanelToolBar
         relationButton.addActionListener(this);
         deleteRelationButton.addActionListener(this);
         erdTitleButton.addActionListener(this);
+        erdTextBlockButton.addActionListener(this);
         updateFromDatabase.addActionListener(this);
         addButton(createTableButton);
         //addButton(addTableButton);
@@ -153,6 +158,7 @@ public class ErdToolBarPalette extends PanelToolBar
         //addButton(commitButton);
         addSeparator();
         addButton(erdTitleButton);
+        addButton(erdTextBlockButton);
         addButton(fontStyleButton);
         addButton(lineStyleButton);
         addButton(canvasFgButton);
@@ -192,7 +198,7 @@ public class ErdToolBarPalette extends PanelToolBar
         }
 
         boolean tablesSelected = false;
-        ErdTable[] selectedTables = parent.getSelectedTablesArray();
+        ErdMoveableComponent[] selectedTables = parent.getSelectedComponentsArray();
         if (selectedTables != null) {
             tablesSelected = true;
             if (selectedTables.length == 1) {
@@ -262,7 +268,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else if (btnObject == createTableButton) {
             new ErdNewTableDialog(parent);
         } else if (btnObject == genScriptsButton) {
-            Vector tables = parent.getAllComponentsVector();
+            Vector tables = parent.getAllTablesVector();
             int v_size = tables.size();
 
             if (v_size == 0) {
@@ -295,9 +301,13 @@ public class ErdToolBarPalette extends PanelToolBar
             else
                 new ErdTitlePanelDialog(parent);
 
+        } else if (btnObject == erdTextBlockButton) {
+
+            new ErdTextBlockDialog(parent);
+
         } else if (btnObject == relationButton) {
 
-            if (parent.getAllComponentsVector().size() <= 1) {
+            if (parent.getAllTablesVector().size() <= 1) {
                 GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
                 return;
             }

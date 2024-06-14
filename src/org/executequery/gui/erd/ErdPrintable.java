@@ -41,7 +41,7 @@ public class ErdPrintable implements Printable {
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The maximum number of pages
@@ -54,7 +54,7 @@ public class ErdPrintable implements Printable {
     //private BufferedImage image;
     //private Image image;
 
-    private ErdTable[] tablesArray;
+    private final ErdTable[] tablesArray;
 
     /**
      * Constructs a new instance with the specified <code>
@@ -64,7 +64,7 @@ public class ErdPrintable implements Printable {
         this.parent = parent;
         maxNumPages = 1;
 
-        tablesArray = parent.getAllComponentsArray();
+        tablesArray = parent.getAllTablesArray();
 
 /*
         ErdTable[] _tablesArray = parent.getAllComponentsArray();

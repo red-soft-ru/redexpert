@@ -76,6 +76,7 @@ public abstract class ErdMoveableComponent extends JComponent {
      * The table's focus border stroke
      */
     protected static BasicStroke focusBorderStroke;
+    protected Color tableBackground;
 
     public ErdMoveableComponent(ErdViewerPanel parent) {
         this.parent = parent;
@@ -181,6 +182,13 @@ public abstract class ErdMoveableComponent extends JComponent {
      */
     public abstract void doubleClicked(MouseEvent e);
 
+    public Color getTableBackground() {
+        return tableBackground;
+    }
+
+    public void setTableBackground(Color tableBackground) {
+        this.tableBackground = tableBackground;
+    }
 }
 
 

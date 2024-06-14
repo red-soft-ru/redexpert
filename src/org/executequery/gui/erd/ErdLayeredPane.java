@@ -125,7 +125,7 @@ public class ErdLayeredPane extends JLayeredPane
         ErdMoveableComponent component = null;
 
         for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdTable) tables.elementAt(i);
+            component = (ErdMoveableComponent) tables.elementAt(i);
 
             if (component.isSelected()) {
                 component.setSelected(false);
@@ -161,13 +161,19 @@ public class ErdLayeredPane extends JLayeredPane
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (selectedComponent != null) {
+        /*if (selectedComponent != null) {
             selectedComponent.dragging(e);
+        }*/
+        ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
+        if (selectComponents.length > 0) {
+            for (int i = 0; i < selectComponents.length; i++) {
+                selectComponents[i].dragging(e);
+            }
         }
     }
 
     private void determineSelectedTable(MouseEvent e) {
-        Vector tables = parent.getAllComponentsVector();
+        Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
         ErdMoveableComponent component = null;
         ErdMoveableComponent selectedTable = null;
 
@@ -179,8 +185,8 @@ public class ErdLayeredPane extends JLayeredPane
         int mouseX = (int) (e.getX() / scale);
         int mouseY = (int) (e.getY() / scale);
 
-        for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdMoveableComponent) tables.elementAt(i);
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
 
             intersects = component.getBounds().contains(mouseX, mouseY);
 
@@ -327,158 +333,6 @@ public class ErdLayeredPane extends JLayeredPane
             parent.getScroll().getVerticalScrollBar().setValue(viewRect.y);
         }
     }
-
-    /**
-     * ERD panel popup menu.
-     */
-    /*
-    class PopMenu extends JPopupMenu 
-                  implements ActionListener {
-        
-        private JCheckBoxMenuItem[] scaleChecks;
-        private JCheckBoxMenuItem gridCheck;
-        
-        public PopMenu() {
-            
-            MenuBuilder builder = new MenuBuilder();
-            
-            JMenu newMenu = MenuItemFactory.createMenu("New");
-            JMenuItem newTable = builder.createMenuItem(newMenu, "Database Table",
-                    MenuBuilder.ITEM_PLAIN, "Create a new database table");
-            JMenuItem newRelation = builder.createMenuItem(newMenu, "Relationship",
-                    MenuBuilder.ITEM_PLAIN, "Create a new table relationship");
-            
-            JMenuItem fontProperties = MenuItemFactory.createMenuItem("Font Style");
-            JMenuItem lineProperties = MenuItemFactory.createMenuItem("Line Style");
-            
-            JMenu viewMenu = MenuItemFactory.createMenu("View");
-            
-            JMenuItem zoomIn = builder.createMenuItem(viewMenu, "Zoom In",
-                    MenuBuilder.ITEM_PLAIN, null);
-            JMenuItem zoomOut = builder.createMenuItem(viewMenu, "Zoom Out",
-                    MenuBuilder.ITEM_PLAIN, null);
-            viewMenu.addSeparator();
-            
-            ButtonGroup bg = new ButtonGroup();
-            String[] scaleValues = ErdViewerPanel.scaleValues;
-            scaleChecks = new JCheckBoxMenuItem[scaleValues.length];
-            
-            String defaultZoom = "75%";
-            
-            for (int i = 0; i < scaleValues.length; i++) {
-                scaleChecks[i] = MenuItemFactory.createCheckBoxMenuItem(scaleValues[i]);
-                viewMenu.add(scaleChecks[i]);
-                if (scaleValues[i].equals(defaultZoom)) {
-                    scaleChecks[i].setSelected(true);
-                }                
-                scaleChecks[i].addActionListener(this);
-                bg.add(scaleChecks[i]);
-            }
-
-            gridCheck = new JCheckBoxMenuItem("Display grid", parent.shouldDisplayGrid());
-            
-            JCheckBoxMenuItem marginCheck = MenuItemFactory.createCheckBoxMenuItem(
-                                                        "Display page margin",
-                                                        parent.shouldDisplayMargin());
-            JCheckBoxMenuItem displayColumnsCheck = MenuItemFactory.createCheckBoxMenuItem(
-                                                        "Display referenced keys only", true);
-            
-            viewMenu.addSeparator();
-            viewMenu.add(displayColumnsCheck);
-            viewMenu.add(gridCheck);
-            viewMenu.add(marginCheck);
-            
-            displayColumnsCheck.addActionListener(this);
-            marginCheck.addActionListener(this);
-            gridCheck.addActionListener(this);
-            zoomIn.addActionListener(this);
-            zoomOut.addActionListener(this);
-            newTable.addActionListener(this);
-            newRelation.addActionListener(this);
-            fontProperties.addActionListener(this);
-            lineProperties.addActionListener(this);
-            
-            JMenuItem help = MenuItemFactory.createMenuItem(ActionBuilder.get("help-command"));
-            help.setIcon(null);
-            help.setActionCommand("erd");
-            help.setText("Help");
-            
-            add(newMenu);
-            addSeparator();
-            add(fontProperties);
-            add(lineProperties);
-            addSeparator();
-            add(viewMenu);
-            addSeparator();
-            add(help);
-            
-        }
-        
-        public void setGridDisplayed(boolean display) {
-            gridCheck.setSelected(display);
-        }
-        
-        public void setMenuScaleSelection(int index) {
-            scaleChecks[index].setSelected(true);
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
-            
-            //Log.debug(command);
-            
-            if (command.equals("Font Style")) {
-                parent.showFontStyleDialog();
-            }
-            else if (command.equals("Line Style")) {
-                parent.showLineStyleDialog();
-            }
-            else if (command.equals("Database Table")) {
-                new ErdNewTableDialog(parent);
-            }
-            else if (command.equals("Relationship")) {
-                
-                if (parent.getAllComponentsVector().size() <= 1) {
-                    GUIUtilities.displayErrorMessage(
-                         "You need at least 2 tables to create a relationship");
-                    return;
-                }
-
-                new ErdNewRelationshipDialog(parent);
-                
-            }            
-            else if (command.endsWith("%")) {
-                String scaleString = command.substring(0,command.indexOf("%"));
-                double scale = Double.parseDouble(scaleString) / 100;
-                parent.setScaledView(scale);
-                parent.setScaleComboValue(command);
-            }
-            else if (command.equals("Zoom In")) {
-                parent.zoom(true);
-            }
-            else if (command.equals("Zoom Out")) {
-                parent.zoom(false);
-            }
-            else if (command.equals("Display grid")) {
-                parent.swapCanvasBackground();
-            }
-            else if (command.equals("Display page margin")) {
-                parent.swapPageMargin();
-            }
-            else if (command.equals("Display referenced keys only")) {
-                JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-                parent.setDisplayKeysOnly(item.isSelected());
-            }
-
-        }
-        
-        public void removeAll() {
-            scaleChecks = null;
-            super.removeAll();
-        }
-        
-    } // class PopMenu
-    */
 
 }
 

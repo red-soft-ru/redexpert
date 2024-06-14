@@ -220,7 +220,7 @@ public class ErdSelectionPanel extends JPanel
                     (DatabaseConnection) connectionsCombo.getSelectedItem();
             List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
             if (erdViewer != null) {
-                for (ErdTable table : erdViewer.getAllComponentsArray()) {
+                for (ErdTable table : erdViewer.getAllTablesArray()) {
                     if (!tables.contains(table.getTableName()))
                         tables.add(table.getTableName());
                 }

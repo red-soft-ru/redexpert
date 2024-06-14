@@ -33,12 +33,12 @@ import java.awt.event.ActionListener;
 
 public class ErdPopupMenu extends JPopupMenu implements ActionListener {
 
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     private JCheckBoxMenuItem[] scaleChecks;
-    private JCheckBoxMenuItem gridCheck;
+    private final JCheckBoxMenuItem gridCheck;
 
-    private JMenu viewMenu;
+    private final JMenu viewMenu;
 
     public ErdPopupMenu(ErdViewerPanel parent) {
 
@@ -155,7 +155,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
             new ErdNewTableDialog(parent);
         } else if (command.equals(bundleString("Relationship"))) {
 
-            if (parent.getAllComponentsVector().size() <= 1) {
+            if (parent.getAllTablesVector().size() <= 1) {
                 GUIUtilities.displayErrorMessage(bundleString("needMoreTablesError"));
                 return;
             }

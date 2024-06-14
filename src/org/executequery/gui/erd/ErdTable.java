@@ -82,7 +82,6 @@ public class ErdTable extends ErdMoveableComponent
     /**
      * The table's background colour
      */
-    private Color tableBackground;
 
     /**
      * This components calculated width
@@ -454,14 +453,6 @@ public class ErdTable extends ErdMoveableComponent
         g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
                 RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         drawTable(g2d, 0, 0);
-    }
-
-    protected Color getTableBackground() {
-        return tableBackground;
-    }
-
-    protected void setTableBackground(Color tableBackground) {
-        this.tableBackground = tableBackground;
     }
 
     protected void drawTable(Graphics2D g, int offsetX, int offsetY) {

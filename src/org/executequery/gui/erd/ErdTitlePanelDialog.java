@@ -25,6 +25,7 @@ import org.executequery.components.TextFieldPanel;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.util.DateUtils;
 
@@ -69,7 +70,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     /**
      * The description text area
      */
-    private JTextArea descTextArea;
+    private RSyntaxTextArea descTextArea;
     /**
      * Whether this is a new title panel
      */
@@ -147,7 +148,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         databaseTextField = WidgetFactory.createTextField("databaseTextField");
         authorTextField = WidgetFactory.createTextField("authorTextField");
         fileTextField = WidgetFactory.createTextField("fileTextField");
-        descTextArea = new JTextArea();
+        descTextArea = new RSyntaxTextArea();
 
         descTextArea.setLineWrap(true);
         descTextArea.setWrapStyleWord(true);

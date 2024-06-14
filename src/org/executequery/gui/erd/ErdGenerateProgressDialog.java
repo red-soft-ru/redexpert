@@ -267,7 +267,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             for (int i = 0, n = selectedTables.size(); i < n; i++) {
                 ColumnData[] cds = (ColumnData[]) columnData.elementAt(i);
                 if (cds.length == 0) {
-                    for (ErdTable t : parent.getAllComponentsArray())
+                    for (ErdTable t : parent.getAllTablesArray())
                         if (t.getTableName().contentEquals((String) selectedTables.elementAt(i))) {
                             parent.removeTable(t);
                             break;

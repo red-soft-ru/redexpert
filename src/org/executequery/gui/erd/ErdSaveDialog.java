@@ -534,7 +534,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
 
         parent.resetAllTableJoins();
         parent.getDependenciesPanel().drawDependencies(g);
-        ErdTable[] tablesArray = parent.getAllComponentsArray();
+        ErdTable[] tablesArray = parent.getAllTablesArray();
 
         for (int i = 0; i < tablesArray.length; i++) {
             tablesArray[i].setSelected(false);

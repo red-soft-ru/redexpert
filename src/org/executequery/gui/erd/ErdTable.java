@@ -145,6 +145,8 @@ public class ErdTable extends ErdMoveableComponent
      * <p>Initialises the state of this instance.
      */
     private void jbInit() throws Exception {
+        dataTypeOffset = 0;
+        keyLabelOffset = 0;
         Font tableNameFont = parent.getTableNameFont();
         Font columnNameFont = parent.getColumnNameFont();
 

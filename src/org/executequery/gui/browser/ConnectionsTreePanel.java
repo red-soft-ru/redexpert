@@ -125,6 +125,7 @@ public class ConnectionsTreePanel extends TreePanel
         controller = new BrowserController(this);
 
         tree = new SchemaTree(createTreeStructure(), this);
+        tree.setRootVisible(false);
         tree.addMouseListener(new MouseHandler());
 
         treeFindAction = new TreeFindAction();

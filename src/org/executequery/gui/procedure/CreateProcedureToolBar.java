@@ -98,7 +98,7 @@ public class CreateProcedureToolBar extends JPanel
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnDelete16"),
+                GUIUtilities.getAbsoluteIconPath("delete_16"),
                 "Delete the selected value",
                 null);
 

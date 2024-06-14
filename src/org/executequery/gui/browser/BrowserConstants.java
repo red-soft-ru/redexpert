@@ -32,11 +32,11 @@ public class BrowserConstants {
 
     public static final String DATABASE_OBJECT_IMAGE = "DatabaseObject16";
     public static final String CONNECTIONS_IMAGE = "DatabaseConnections16";
-    public static final String CONNECTIONS_FOLDER_IMAGE = "ConnectionsFolder16";
+    public static final String CONNECTIONS_FOLDER_IMAGE = "Open16";
     public static final String CATALOG_IMAGE = "DBImage16";
     public static final String HOST_IMAGE = "Database16";
-    public static final String HOST_NOT_CONNECTED_IMAGE = "Database16";
-    public static final String HOST_CONNECTED_IMAGE = "DatabaseConnected16";
+    public static final String HOST_NOT_CONNECTED_IMAGE = "Disconnected";
+    public static final String HOST_CONNECTED_IMAGE = "Connected";
     public static final String SCHEMA_IMAGE = "User16";
     public static final String FUNCTIONS_IMAGE = "Function16";
     public static final String INDEXES_IMAGE = "TableIndex16";
@@ -82,7 +82,6 @@ public class BrowserConstants {
     public static final String FIELD_GRANT_IMAGE = "grantPart.svg";
 
     public static final String[] NODE_ICONS = {
-            CONNECTIONS_IMAGE,
             CONNECTIONS_FOLDER_IMAGE,
             CATALOG_IMAGE,
             HOST_IMAGE,

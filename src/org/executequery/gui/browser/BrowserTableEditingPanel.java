@@ -365,13 +365,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         PanelToolBar bar = new PanelToolBar();
 
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16"));
         addRolloverButton.setToolTipText("Insert column");
         addRolloverButton.addActionListener(actionEvent -> insertAfter());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16"));
         deleteRolloverButton.setToolTipText("Delete column");
         deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
         bar.add(deleteRolloverButton);
@@ -415,13 +415,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16"));
+        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16"));
         addRolloverButton.setToolTipText("Insert constraint");
         addRolloverButton.addActionListener(actionEvent -> insertAfter());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16"));
+        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16"));
         deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
         bar.add(deleteRolloverButton);

@@ -111,7 +111,7 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnDelete16"),
+                GUIUtilities.getAbsoluteIconPath("delete_16"),
                 bundleString("DeleteSelection"),
                 null
         );

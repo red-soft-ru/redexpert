@@ -91,14 +91,14 @@ class QueryTextPopup extends JPanel {
         previousQueryButton = WidgetFactory.createRolloverButton(
                 "previousQueryButton",
                 bundleString("PreviousExecutedResultSet"),
-                "PreviousResultSetQuery16",
+                "Previous16",
                 e -> previousQuery());
         previousQueryButton.addMouseListener(mouseListener);
 
         nextQueryButton = WidgetFactory.createRolloverButton(
                 "nextQueryButton",
                 bundleString("NextExecutedResultSet"),
-                "NextResultSetQuery16",
+                "Forward16",
                 e -> nextQuery());
         nextQueryButton.addMouseListener(mouseListener);
 

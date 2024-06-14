@@ -861,7 +861,7 @@ public final class GUIUtilities {
      * @return the loaded icon image
      */
     public static ImageIcon loadIcon(String name, boolean store) {
-        return IconUtilities.loadIcon(getAbsoluteIconPath(name), store);
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name), store, 18, 18);
     }
 
     public static ImageIcon loadIcon(String name, String type, boolean store) {

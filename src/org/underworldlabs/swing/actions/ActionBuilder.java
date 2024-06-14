@@ -21,6 +21,7 @@
 package org.underworldlabs.swing.actions;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -244,10 +245,8 @@ public final class ActionBuilder {
 
                 //value = attrs.getValue(LARGE_ICON);
                 value = attrs.getValue(SMALL_ICON);
-                if (!MiscUtils.isNull(value)) {
-
-                    actionCommand.putValue(Action.SMALL_ICON, loadIcon(value));
-                }
+                if (!MiscUtils.isNull(value))
+                    actionCommand.putValue(Action.SMALL_ICON, GUIUtilities.loadIcon(value));
 
                 value = attrs.getValue(ACCEL_EDITABLE);
                 if (!MiscUtils.isNull(value)) {

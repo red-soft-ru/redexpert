@@ -130,13 +130,17 @@ public abstract class ErdMoveableComponent extends JComponent {
     public void deselected(MouseEvent e) {
         dragging = false;
 
+        finishedDragging();
+
+    }
+
+    public void finishedDragging() {
         if (outlinePanel != null) {
             setBounds(outlinePanel.getBounds());
             parent.removeOutlinePanel(outlinePanel);
             parent.resizeCanvas();
             outlinePanel = null;
         }
-
     }
 
     /**
@@ -164,12 +168,15 @@ public abstract class ErdMoveableComponent extends JComponent {
      */
     public void selected(MouseEvent e) {
 
+        //calculateDragging(e);
+    }
+
+    public void calculateDragging(MouseEvent e) {
         if (!e.isControlDown()) {
             toFront();
             outlinePanel = new OutlineDragPanel(getBounds(), focusBorder);
             parent.addOutlinePanel(outlinePanel);
         }
-
         xDifference = e.getX() / scale;
         yDifference = e.getY() / scale;
         dragging = true;

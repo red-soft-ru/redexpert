@@ -164,12 +164,40 @@ public class ErdLayeredPane extends JLayeredPane
         /*if (selectedComponent != null) {
             selectedComponent.dragging(e);
         }*/
-        ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
-        if (selectComponents.length > 0) {
-            for (int i = 0; i < selectComponents.length; i++) {
-                selectComponents[i].dragging(e);
+        if (!e.isControlDown()) {
+            ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
+            for (ErdMoveableComponent selectComponent : selectComponents) {
+                selectComponent.dragging(e);
             }
         }
+    }
+
+    private ErdMoveableComponent getClickedComponent(MouseEvent e) {
+        Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
+        ErdMoveableComponent component = null;
+        ErdMoveableComponent selectedTable = null;
+
+        boolean intersects = false;
+
+        int index = -1;
+        int lastIndex = Integer.MAX_VALUE;
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
+
+            intersects = component.getBounds().contains(mouseX, mouseY);
+
+            index = getIndexOf(component);
+
+            if (intersects && index < lastIndex) {
+                lastIndex = index;
+                selectedTable = component;
+            }
+
+        }
+        return selectedTable;
     }
 
     private void determineSelectedTable(MouseEvent e) {
@@ -229,17 +257,22 @@ public class ErdLayeredPane extends JLayeredPane
     // -------------------------------------------
 
     public void mousePressed(MouseEvent e) {
-        determineSelectedTable(e);
-        if (selectedComponent != null) {
-            selectedComponent.selected(e);
+        ErdMoveableComponent clickedComponent = getClickedComponent(e);
+        if (clickedComponent != null && !clickedComponent.isSelected()) {
+            determineSelectedTable(e);
+            if (selectedComponent != null) {
+                selectedComponent.selected(e);
+            }
         }
-        maybeShowPopup(e);
+        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        for (ErdMoveableComponent comp : comps)
+            comp.calculateDragging(e);
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (selectedComponent != null) {
-            selectedComponent.deselected(e);
-        }
+        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        for (ErdMoveableComponent comp : comps)
+            comp.finishedDragging();
         maybeShowPopup(e);
     }
 

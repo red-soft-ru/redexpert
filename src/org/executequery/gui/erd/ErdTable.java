@@ -776,11 +776,7 @@ public class ErdTable extends ErdMoveableComponent
     public void selected(MouseEvent e) {
         super.selected(e);
 
-        Rectangle bounds = getBounds();
-        Rectangle titleBar = new Rectangle((int) bounds.getX(), (int) bounds.getY(),
-                FINAL_WIDTH, TITLE_BAR_HEIGHT);
 
-        dragging = titleBar.contains(xDifference, yDifference);
 
         // need to repaint layered pane to show
         // selected border on tables

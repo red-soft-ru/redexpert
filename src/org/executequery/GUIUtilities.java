@@ -138,9 +138,14 @@ public final class GUIUtilities {
     public static final String IMAGE_PATH = "/org/executequery/images/";
 
     /**
-     * the resource path to the icon directory
+     * the resource path to the classic icons directory
      */
-    public static final String ICON_PATH = "/org/executequery/icons/";
+    public static final String CLASSIC_ICONS_PATH = "/org/executequery/icons/classic/";
+
+    /**
+     * the resource path to the default icons directory
+     */
+    public static final String DEFAULT_ICONS_PATH = "/org/executequery/icons/default/";
 
     /**
      * System.err logger
@@ -849,8 +854,6 @@ public final class GUIUtilities {
 
     /**
      * Loads and returns the specified icon with the specified name.
-     * The default path to the icon dir appended to the start of
-     * the name is /org/executequery/icons.
      *
      * @param name  the icon file name to load
      * @param store whether to store the icon in the icon cache
@@ -858,11 +861,18 @@ public final class GUIUtilities {
      * @return the loaded icon image
      */
     public static ImageIcon loadIcon(String name, boolean store) {
-        return IconUtilities.loadIcon(ICON_PATH + name, store);
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name), store);
     }
 
+    /**
+     * Loads and returns the specified icon with the specified name.
+     *
+     * @param name     the icon file name to load
+     * @param iconSize the size to scale icon
+     * @return the loaded icon image
+     */
     public static ImageIcon loadIcon(String name, int iconSize) {
-        return IconUtilities.loadIcon(ICON_PATH + name, iconSize);
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name), iconSize);
     }
 
     /**
@@ -873,7 +883,7 @@ public final class GUIUtilities {
      * @return the absolute package path of the icon
      */
     public static String getAbsoluteIconPath(String name) {
-        return ICON_PATH + name;
+        return CLASSIC_ICONS_PATH + name;
     }
 
     /**

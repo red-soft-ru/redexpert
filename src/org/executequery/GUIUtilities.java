@@ -864,15 +864,23 @@ public final class GUIUtilities {
         return IconUtilities.loadIcon(getAbsoluteIconPath(name), store);
     }
 
+    public static ImageIcon loadIcon(String name, String type, boolean store) {
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name, type), store);
+    }
+
     /**
-     * Loads and returns the specified icon with the specified name.
+     * Loads and returns the specified SVG icon with the specified name.
      *
      * @param name     the icon file name to load
      * @param iconSize the size to scale icon
      * @return the loaded icon image
      */
-    public static ImageIcon loadIcon(String name, int iconSize) {
-        return IconUtilities.loadIcon(getAbsoluteIconPath(name), iconSize);
+    public static ImageIcon loadVectorIcon(String name, int iconSize) {
+        return IconUtilities.loadIcon(DEFAULT_ICONS_PATH + name, iconSize);
+    }
+
+    public static ImageIcon loadVectorIcon(String name, boolean store) {
+        return IconUtilities.loadIcon(DEFAULT_ICONS_PATH + name, store);
     }
 
     /**
@@ -883,7 +891,16 @@ public final class GUIUtilities {
      * @return the absolute package path of the icon
      */
     public static String getAbsoluteIconPath(String name) {
-        return CLASSIC_ICONS_PATH + name;
+        return GUIUtilities.getLookAndFeel().isClassicTheme() ?
+                CLASSIC_ICONS_PATH + name + ".png" :
+                DEFAULT_ICONS_PATH + name + ".svg";
+    }
+
+    public static String getAbsoluteIconPath(String name, String type) {
+        name += "." + type;
+        return GUIUtilities.getLookAndFeel().isClassicTheme() ?
+                CLASSIC_ICONS_PATH + name :
+                DEFAULT_ICONS_PATH + name;
     }
 
     /**

@@ -97,21 +97,21 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
 
         insertAfterButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16"),
                 bundleString("InsertAfter"),
                 null
         );
 
         insertBeforeButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16"),
                 bundleString("InsertBefore"),
                 null
         );
 
         deleteRowButton = ActionUtilities.createToolbarButton(
                 this,
-                GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
+                GUIUtilities.getAbsoluteIconPath("ColumnDelete16"),
                 bundleString("DeleteSelection"),
                 null
         );
@@ -127,14 +127,14 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
 
             moveUpButton = ActionUtilities.createToolbarButton(
                     this,
-                    "Up16.png",
+                    GUIUtilities.getAbsoluteIconPath("Up16"),
                     bundleString("MoveUp"),
                     null
             );
 
             moveDownButton = ActionUtilities.createToolbarButton(
                     this,
-                    "Down16.png",
+                    GUIUtilities.getAbsoluteIconPath("Down16"),
                     bundleString("MoveDown"),
                     null
             );

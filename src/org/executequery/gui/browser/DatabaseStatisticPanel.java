@@ -82,9 +82,9 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         statDatabaseList = new ArrayList<>();
         toolBar = WidgetFactory.createToolBar("toolBar");
         toolBar.setFloatable(false);
-        fileStatButton = WidgetFactory.createRolloverButton("fileStatButton", bundleString("OpenFileLog"), "Open16.png");
+        fileStatButton = WidgetFactory.createRolloverButton("fileStatButton", bundleString("OpenFileLog"), "Open16");
         toolBar.add(fileStatButton);
-        compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "ComparerDB_16.png");
+        compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "ComparerDB_16");
         toolBar.add(compareButton);
         fileStatButton.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
@@ -731,7 +731,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             });
             //lbl.setToolTipText(tooltip);
-            JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable.png"));
+            JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable"));
 
             icon.addMouseListener(new MouseAdapter() {
                 @Override

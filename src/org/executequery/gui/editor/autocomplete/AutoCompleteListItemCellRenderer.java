@@ -47,19 +47,19 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final ImageIcon databaseTableView;
 
     static {
-        sql92Keyword = GUIUtilities.loadIcon("Sql92.png", true);
-        animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16.gif", true);
-        databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16.png", true);
-        nothingFound = GUIUtilities.loadIcon("Warning16.png", true);
-        databaseTable = GUIUtilities.loadIcon("PlainTable16.png", true);
-        databaseTableColumn = GUIUtilities.loadIcon("TableColumn16.png", true);
-        databaseTableView = GUIUtilities.loadIcon("TableView16.png", true);
-        systemFunction = GUIUtilities.loadIcon("SystemFunction16.png", true);
-        databaseFunction = GUIUtilities.loadIcon("Function16.png", true);
-        databaseProcedure = GUIUtilities.loadIcon("Procedure16.png", true);
-        databasePackage = GUIUtilities.loadIcon("package16.png", true);
-        variable = GUIUtilities.loadIcon("Variable16.png", true);
-        parameter = GUIUtilities.loadIcon("Argument16.png", true);
+        sql92Keyword = GUIUtilities.loadIcon("Sql92", true);
+        animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16", "gif", true);
+        databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16", true);
+        nothingFound = GUIUtilities.loadIcon("Warning16", true);
+        databaseTable = GUIUtilities.loadIcon("PlainTable16", true);
+        databaseTableColumn = GUIUtilities.loadIcon("TableColumn16", true);
+        databaseTableView = GUIUtilities.loadIcon("TableView16", true);
+        systemFunction = GUIUtilities.loadIcon("SystemFunction16", true);
+        databaseFunction = GUIUtilities.loadIcon("Function16", true);
+        databaseProcedure = GUIUtilities.loadIcon("Procedure16", true);
+        databasePackage = GUIUtilities.loadIcon("package16", true);
+        variable = GUIUtilities.loadIcon("Variable16", true);
+        parameter = GUIUtilities.loadIcon("Argument16", true);
     }
 
 

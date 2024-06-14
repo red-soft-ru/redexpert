@@ -65,7 +65,7 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * The panel's icon
      */
-    public static final String FRAME_ICON = "ErdPanel16.png";
+    public static final String FRAME_ICON = "ErdPanel16";
 
     /**
      * Whether this instance has a tool bar palatte

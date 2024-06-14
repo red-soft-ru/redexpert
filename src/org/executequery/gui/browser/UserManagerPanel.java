@@ -50,11 +50,11 @@ import java.util.stream.Collectors;
 public class UserManagerPanel extends JPanel implements Runnable {
 
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "user_manager_16.png";
+    public static final String FRAME_ICON = "user_manager_16";
 
-    private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-    private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-    private static final Icon GRANT_ADMIN_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+    private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.GRANT_IMAGE, false);
+    private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.NO_GRANT_IMAGE, false);
+    private static final Icon GRANT_ADMIN_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.ADMIN_OPTION_IMAGE, false);
 
     private enum Action {
         REFRESH,
@@ -972,8 +972,8 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private static class MembershipListCellRenderer extends RowHeaderRenderer {
 
-        private final ImageIcon roleIcon = GUIUtilities.loadIcon("user_manager_16.png");
-        private final ImageIcon userIcon = GUIUtilities.loadIcon("User16.png");
+        private final ImageIcon roleIcon = GUIUtilities.loadIcon("user_manager_16");
+        private final ImageIcon userIcon = GUIUtilities.loadIcon("User16");
 
         public MembershipListCellRenderer(JTable table) {
             super(table);

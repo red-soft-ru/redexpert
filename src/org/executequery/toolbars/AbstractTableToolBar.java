@@ -18,19 +18,19 @@ public abstract class AbstractTableToolBar extends JPanel {
         toolbar.add(WidgetFactory.createRolloverButton(
                 "addColumnButton",
                 toolTipInsert,
-                "ColumnInsert16.png",
+                "ColumnInsert16",
                 this::insert
         ));
         toolbar.add(WidgetFactory.createRolloverButton(
                 "deleteColumnButton",
                 toolTipDelete,
-                "ColumnDelete16.png",
+                "ColumnDelete16",
                 this::delete
         ));
         toolbar.add(WidgetFactory.createRolloverButton(
                 "refreshColumnsButton",
                 toolTipRefresh,
-                "Refresh16.png",
+                "Refresh16",
                 this::refresh
         ));
 

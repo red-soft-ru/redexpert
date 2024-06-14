@@ -53,7 +53,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         implements NamedView {
 
     public static final String TITLE = Bundles.get(ImportDataPanel.class, "Title");
-    public static final String FRAME_ICON = "ImportDelimited16.png";
+    public static final String FRAME_ICON = "ImportDelimited16";
 
     private static final int PREVIEW_ROWS_COUNT = 50;
     private static final int MIN_COLUMN_WIDTH = 100;

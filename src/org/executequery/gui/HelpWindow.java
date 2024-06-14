@@ -200,7 +200,7 @@ public class HelpWindow {
     private JFrame createFrame() {
 
         JFrame frame = new JFrame("Red Expert Help");
-        ImageIcon frameIcon = GUIUtilities.loadIcon("Help16.png");
+        ImageIcon frameIcon = GUIUtilities.loadIcon("Help16");
 
         frame.setIconImage(frameIcon.getImage());
 

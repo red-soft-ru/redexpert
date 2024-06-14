@@ -51,8 +51,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("title");
     public static final String TITLE_EXPORT = bundleString("title-export");
-    public static final String COMPARE_ICON = "ComparerDB_16.png";
-    public static final String EXTRACT_ICON = "CreateScripts16.png";
+    public static final String COMPARE_ICON = "ComparerDB_16";
+    public static final String EXTRACT_ICON = "CreateScripts16";
 
     private static final int CHECK_CREATE = 0;
     private static final int CHECK_ALTER = 1;
@@ -1082,79 +1082,79 @@ public class ComparerDBPanel extends JPanel implements TabView {
             switch (treeNode.type) {
 
                 case NamedObject.DOMAIN:
-                    setIcon(GUIUtilities.loadIcon("domain16.png"));
+                    setIcon(GUIUtilities.loadIcon("domain16"));
                     break;
 
                 case NamedObject.TABLE:
-                    setIcon(GUIUtilities.loadIcon("PlainTable16.png"));
+                    setIcon(GUIUtilities.loadIcon("PlainTable16"));
                     break;
 
                 case NamedObject.GLOBAL_TEMPORARY:
-                    setIcon(GUIUtilities.loadIcon("GlobalTable16.png"));
+                    setIcon(GUIUtilities.loadIcon("GlobalTable16"));
                     break;
 
                 case NamedObject.VIEW:
-                    setIcon(GUIUtilities.loadIcon("TableView16.png"));
+                    setIcon(GUIUtilities.loadIcon("TableView16"));
                     break;
 
                 case NamedObject.PROCEDURE:
-                    setIcon(GUIUtilities.loadIcon("Procedure16.png"));
+                    setIcon(GUIUtilities.loadIcon("Procedure16"));
                     break;
 
                 case NamedObject.FUNCTION:
-                    setIcon(GUIUtilities.loadIcon("Function16.png"));
+                    setIcon(GUIUtilities.loadIcon("Function16"));
                     break;
 
                 case NamedObject.PACKAGE:
-                    setIcon(GUIUtilities.loadIcon("package16.png"));
+                    setIcon(GUIUtilities.loadIcon("package16"));
                     break;
 
                 case NamedObject.TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("Trigger.png"));
+                    setIcon(GUIUtilities.loadIcon("Trigger"));
                     break;
 
                 case NamedObject.DDL_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDDL.png"));
+                    setIcon(GUIUtilities.loadIcon("TriggerDDL"));
                     break;
 
                 case NamedObject.DATABASE_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDB.png"));
+                    setIcon(GUIUtilities.loadIcon("TriggerDB"));
                     break;
 
                 case NamedObject.SEQUENCE:
-                    setIcon(GUIUtilities.loadIcon("Sequence16.png"));
+                    setIcon(GUIUtilities.loadIcon("Sequence16"));
                     break;
 
                 case NamedObject.EXCEPTION:
-                    setIcon(GUIUtilities.loadIcon("exception16.png"));
+                    setIcon(GUIUtilities.loadIcon("exception16"));
                     break;
 
                 case NamedObject.UDF:
-                    setIcon(GUIUtilities.loadIcon("udf16.png"));
+                    setIcon(GUIUtilities.loadIcon("udf16"));
                     break;
 
                 case NamedObject.USER:
-                    setIcon(GUIUtilities.loadIcon("User16.png"));
+                    setIcon(GUIUtilities.loadIcon("User16"));
                     break;
 
                 case NamedObject.ROLE:
-                    setIcon(GUIUtilities.loadIcon("user_manager_16.png"));
+                    setIcon(GUIUtilities.loadIcon("user_manager_16"));
                     break;
 
                 case NamedObject.INDEX:
-                    setIcon(GUIUtilities.loadIcon("TableIndex16.png"));
+                    setIcon(GUIUtilities.loadIcon("TableIndex16"));
                     break;
 
                 case NamedObject.TABLESPACE:
-                    setIcon(GUIUtilities.loadIcon("tablespace16.png"));
+                    setIcon(GUIUtilities.loadIcon("tablespace16"));
                     break;
 
                 case NamedObject.JOB:
-                    setIcon(GUIUtilities.loadIcon("job16.png"));
+                    setIcon(GUIUtilities.loadIcon("job16"));
                     break;
 
                 case NamedObject.COLLATION:
-                    setIcon(GUIUtilities.loadIcon("XmlFile16.png"));
+                    setIcon(GUIUtilities.loadIcon("XmlFile16"));
                     break;
 
                 default:

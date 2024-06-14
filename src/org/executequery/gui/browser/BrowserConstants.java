@@ -20,10 +20,8 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.localization.Bundles;
-
 /**
- * Reuseable constants for construction and reference
+ * Reusable constants for construction and reference
  * to the tree structure within the Database Browser Panel.<br>
  * This is purely a convenience class due to the large
  * use of the same String objects in many places.
@@ -32,168 +30,59 @@ import org.executequery.localization.Bundles;
  */
 public class BrowserConstants {
 
-    // --------------------------------------------
-    // parent labels and hashtable keys for images
-    // --------------------------------------------
+    public static final String DATABASE_OBJECT_IMAGE = "DatabaseObject16";
+    public static final String CONNECTIONS_IMAGE = "DatabaseConnections16";
+    public static final String CONNECTIONS_FOLDER_IMAGE = "ConnectionsFolder16";
+    public static final String CATALOG_IMAGE = "DBImage16";
+    public static final String HOST_IMAGE = "Database16";
+    public static final String HOST_NOT_CONNECTED_IMAGE = "Database16";
+    public static final String HOST_CONNECTED_IMAGE = "DatabaseConnected16";
+    public static final String SCHEMA_IMAGE = "User16";
+    public static final String FUNCTIONS_IMAGE = "Function16";
+    public static final String INDEXES_IMAGE = "TableIndex16";
+    public static final String PROCEDURES_IMAGE = "Procedure16";
+    public static final String SEQUENCES_IMAGE = "Sequence16";
+    public static final String SYNONYMS_IMAGE = "Synonym16";
+    public static final String TABLES_IMAGE = "PlainTable16";
+    public static final String GLOBAL_TABLES_IMAGE = "GlobalTable16";
+    public static final String COLUMNS_IMAGE = "TableColumn16";
+    public static final String PRIMARY_COLUMNS_IMAGE = "TableColumnPrimary16";
+    public static final String FOREIGN_COLUMNS_IMAGE = "TableColumnForeign16";
+    public static final String VIEWS_IMAGE = "TableView16";
+    public static final String TABLE_TRIGGER_IMAGE = "Trigger";
+    public static final String DB_TRIGGER_IMAGE = "TriggerDB";
+    public static final String DDL_TRIGGER_IMAGE = "TriggerDDL";
+    public static final String DOMAIN_IMAGE = "domain16";
+    public static final String EXCEPTION_IMAGE = "exception16";
+    public static final String UDF_IMAGE = "udf16";
+    public static final String PACKAGE_IMAGE = "package16";
+    public static final String ROLE_IMAGE = "user_manager_16";
+    public static final String USER_IMAGE = "User16";
+    public static final String TABLESPACE_IMAGE = "tablespace16";
+    public static final String JOB_IMAGE = "job16";
 
+    public static final String FOLDER_FOREIGN_KEYS_IMAGE = "FolderForeignKeys16";
+    public static final String FOLDER_PRIMARY_KEYS_IMAGE = "FolderPrimaryKeys16";
+    public static final String FOLDER_COLUMNS_IMAGE = "FolderColumns16";
+    public static final String FOLDER_INDEXES_IMAGE = "FolderIndexes16";
 
-
-
-
-    // ------------------------------------------
-    // to add a new node - ALL icons must be in same order as META_TYPES
-    // ------------------------------------------
-
-     // system function
-
-    /** The String 'All Types' */
-    //  String ALL_TYPES = "All Types";
-    /**
-     * The String 'All Types Closed'
-     *
-
-    // -----------------------------
-    // image icons for tree nodes
-    // -----------------------------
-     */
-
-    public static final String DATABASE_OBJECT_IMAGE = "DatabaseObject16.png";
-
-    /**
-     * The image icon 'SavedConnection16.png'
-     */
-    public static final String CONNECTIONS_IMAGE = "DatabaseConnections16.png";
-
-    public static final String CONNECTIONS_FOLDER_IMAGE = "ConnectionsFolder16.png";
-
-    /**
-     * The image icon 'Database16.png'
-     */
-    public static final String CATALOG_IMAGE = "DBImage16.png";
-
-    /**
-     * The image icon 'Database16.png'
-     */
-    public static final String HOST_IMAGE = "Database16.png";
-
-    /**
-     * The image icon 'DatabaseNotConnected16.png'
-     */
-    public static final String HOST_NOT_CONNECTED_IMAGE = "DatabaseNotConnected16.png";
-
-    /**
-     * The image icon 'DatabaseConnected16.png'
-     */
-    public static final String HOST_CONNECTED_IMAGE = "DatabaseConnected16.png";
-
-    /**
-     * The image icon 'User16.png'
-     */
-    public static final String SCHEMA_IMAGE = "User16.png";
-
-    /**
-     * The image icon 'SystemFunction16.png'
-     */
-    public static final String SYSTEM_FUNCTIONS_IMAGE = "SystemFunction16.png";
-
-    /**
-     * The image icon 'Function16.png'
-     */
-    public static final String FUNCTIONS_IMAGE = "Function16.png";
-
-    /**
-     * The image icon 'TableIndex16.png'
-     */
-    public static final String INDEXES_IMAGE = "TableIndex16.png";
-
-    /**
-     * The image icon 'Procedure16.png'
-     */
-    public static final String PROCEDURES_IMAGE = "Procedure16.png";
-
-    /**
-     * The image icon 'Sequence16.png'
-     */
-    public static final String SEQUENCES_IMAGE = "Sequence16.png";
-    public static final String SYSTEM_SEQUENCES_IMAGE = "SystemSequence16.png";
-
-    /**
-     * The image icon 'Synonym16.png'
-     */
-    public static final String SYNONYMS_IMAGE = "Synonym16.png";
-
-    /**
-     * The image icon 'SystemTables16.png'
-     */
-    public static final String SYSTEM_TABLES_IMAGE = "SystemTable16.png";
-
-    /**
-     * The image icon 'PlainTable16.png'
-     */
-    public static final String TABLES_IMAGE = "PlainTable16.png";
-
-    public static final String GLOBAL_TABLES_IMAGE = "GlobalTable16.png";
-
-    /**
-     * The image icon 'TableColumn16.png'
-     */
-    public static final String COLUMNS_IMAGE = "TableColumn16.png";
-
-    public static final String PRIMARY_COLUMNS_IMAGE = "TableColumnPrimary16.png";
-
-    public static final String FOREIGN_COLUMNS_IMAGE = "TableColumnForeign16.png";
-
-    public static final String VIEWS_IMAGE = "TableView16.png";
-
-    public static final String SYSTEM_VIEWS_IMAGE = "SystemTableView16.png";
-
-    public static final String TABLE_TRIGGER_IMAGE = "Trigger.png";
-
-    public static final String DB_TRIGGER_IMAGE = "TriggerDB.png";
-
-    public static final String DDL_TRIGGER_IMAGE = "TriggerDDL.png";
-
-    public static final String FOLDER_FOREIGN_KEYS_IMAGE = "FolderForeignKeys16.png";
-
-    public static final String FOLDER_PRIMARY_KEYS_IMAGE = "FolderPrimaryKeys16.png";
-
-    public static final String FOLDER_COLUMNS_IMAGE = "FolderColumns16.png";
-
-    public static final String FOLDER_INDEXES_IMAGE = "FolderIndexes16.png";
-
-    public static final String DOMAIN_IMAGE = "domain16.png";
-
-    public static final String EXCEPTION_IMAGE = "exception16.png";
-
-    public static final String UDF_IMAGE = "udf16.png";
-
-    public static final String SYSTEM_DOMAIN_IMAGE = "SystemDomain16.png";
-
-    public static final String SYSTEM_INDEX_IMAGE = "SystemIndex16.png";
-
-    public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger.png";
-
-    public static final String PACKAGE_IMAGE = "package16.png";
-
-    public static final String SYSTEM_PACKAGE_IMAGE = "system_package16.png";
-
-    public static final String ROLE_IMAGE = "user_manager_16.png";
-
-    public static final String SYSTEM_ROLE_IMAGE = "system_role_16.png";
-
-    public static final String USER_IMAGE = "User16.png";
-
-    public static final String TABLESPACE_IMAGE = "tablespace16.png";
-    public static final String JOB_IMAGE = "job16.png";
-
+    public static final String SYSTEM_DOMAIN_IMAGE = "SystemDomain16";
+    public static final String SYSTEM_TABLES_IMAGE = "SystemTable16";
+    public static final String SYSTEM_VIEWS_IMAGE = "SystemTableView16";
+    public static final String SYSTEM_INDEX_IMAGE = "SystemIndex16";
+    public static final String SYSTEM_TRIGGER_IMAGE = "SystemTrigger";
+    public static final String SYSTEM_FUNCTIONS_IMAGE = "SystemFunction16";
+    public static final String SYSTEM_SEQUENCES_IMAGE = "SystemSequence16";
+    public static final String SYSTEM_PACKAGE_IMAGE = "system_package16";
+    public static final String SYSTEM_ROLE_IMAGE = "system_role_16";
 
     public static final String GRANT_IMAGE = "grant.svg";
     public static final String NO_GRANT_IMAGE = "no_grant.svg";
     public static final String ADMIN_OPTION_IMAGE = "admin_option.svg";
     public static final String FIELD_GRANT_IMAGE = "grantPart.svg";
 
-
-    public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
+    public static final String[] NODE_ICONS = {
+            CONNECTIONS_IMAGE,
             CONNECTIONS_FOLDER_IMAGE,
             CATALOG_IMAGE,
             HOST_IMAGE,
@@ -237,14 +126,4 @@ public class BrowserConstants {
             SYSTEM_SEQUENCES_IMAGE
     };
 
-    private static String bundleString(String key) {
-
-        return Bundles.get(BrowserConstants.class, key);
-    }
 }
-
-
-
-
-
-

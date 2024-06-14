@@ -92,98 +92,98 @@ public class ErdToolBarPalette extends JPanel {
         createTableButton = WidgetFactory.createRolloverButton(
                 "createTableButton",
                 bundleString("createTable"),
-                "NewTable16.png",
+                "NewTable16",
                 e -> new ErdNewTableDialog(parent)
         );
 
         addTableButton = WidgetFactory.createRolloverButton(
                 "addTableButton",
                 bundleString("addTable"),
-                "AddTable16.png",
+                "AddTable16",
                 e -> new ErdSelectionDialog(parent)
         );
 
         dropTableButton = WidgetFactory.createRolloverButton(
                 "dropTableButton",
                 bundleString("dropTable"),
-                "DropTable16.png",
+                "DropTable16",
                 e -> parent.removeSelectedTables()
         );
 
         createRelationButton = WidgetFactory.createRolloverButton(
                 "createRelationButton",
                 bundleString("relation"),
-                "TableRelationship16.png",
+                "TableRelationship16",
                 e -> createRelation()
         );
 
         deleteRelationButton = WidgetFactory.createRolloverButton(
                 "deleteRelationButton",
                 bundleString("deleteRelation"),
-                "TableRelationshipDelete16.png",
+                "TableRelationshipDelete16",
                 e -> deleteRelation()
         );
 
         generateScriptButton = WidgetFactory.createRolloverButton(
                 "generateScriptsButton",
                 bundleString("genScripts"),
-                "CreateScripts16.png",
+                "CreateScripts16",
                 e -> generateScript()
         );
 
         generateDiagramButton = WidgetFactory.createRolloverButton(
                 "generateDiagramButton",
                 bundleString("generateDiagram"),
-                "TableTrigger16.png",
+                "TableTrigger16",
                 e -> generateDiagram()
         );
 
         erdTitleButton = WidgetFactory.createRolloverButton(
                 "erdTitleButton",
                 bundleString("erdTitle"),
-                "ErdTitle16.png",
+                "ErdTitle16",
                 e -> createTitle()
         );
 
         fontStyleButton = WidgetFactory.createRolloverButton(
                 "fontStyleButton",
                 bundleString("fontStyle"),
-                "FontStyle16.png",
+                "FontStyle16",
                 e -> parent.showFontStyleDialog()
         );
 
         lineStyleButton = WidgetFactory.createRolloverButton(
                 "lineStyleButton",
                 bundleString("lineStyle"),
-                "LineStyle16.png",
+                "LineStyle16",
                 e -> parent.showLineStyleDialog()
         );
 
         canvasBgButton = WidgetFactory.createRolloverButton(
                 "canvasBgButton",
                 bundleString("canvasBg"),
-                "ErdBackground16.png",
+                "ErdBackground16",
                 e -> setBackgroundColours(true)
         );
 
         canvasFgButton = WidgetFactory.createRolloverButton(
                 "canvasFgButton",
                 bundleString("canvasFg"),
-                "ErdForeground16.png",
+                "ErdForeground16",
                 e -> setBackgroundColours(false)
         );
 
         zoomInButton = WidgetFactory.createRolloverButton(
                 "zoomInButton",
                 bundleString("zoomIn"),
-                "ZoomIn16.png",
+                "ZoomIn16",
                 e -> parent.zoom(true)
         );
 
         zoomOutButton = WidgetFactory.createRolloverButton(
                 "zoomOutButton",
                 bundleString("zoomOut"),
-                "ZoomOut16.png",
+                "ZoomOut16",
                 e -> parent.zoom(false)
         );
 

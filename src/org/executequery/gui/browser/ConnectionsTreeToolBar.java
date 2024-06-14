@@ -51,8 +51,8 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
     }
 
     private void init() {
-        connectedIcon = GUIUtilities.loadIcon("Connected.png");
-        disconnectedIcon = GUIUtilities.loadIcon("Disconnected.png");
+        connectedIcon = GUIUtilities.loadIcon("Connected");
+        disconnectedIcon = GUIUtilities.loadIcon("Disconnected");
 
         connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
         if (connectButton != null) {

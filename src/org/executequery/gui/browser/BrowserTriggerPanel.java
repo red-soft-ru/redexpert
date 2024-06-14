@@ -203,7 +203,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(trigger);
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("DatabaseTrigger"));
-        setHeaderIcon(GUIUtilities.loadIcon("TableTrigger16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.DB_TRIGGER_IMAGE, true));
 
         try {
             triggerNameField.setText(trigger.getName());
@@ -248,21 +248,14 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("Database Trigger"));
-        setHeaderIcon("Trigger16.png");
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.DB_TRIGGER_IMAGE, true));
 
         if (trigger != null) {
             triggerNameField.setText(trigger.getName());
-            //model.setValues(procedure.getParametersArray());
         } else {
             triggerNameField.setText(metaObject.getName());
         }
 
-        //schemaNameField.setText(metaObject.getSchemaName());
-    }
-
-    private void setHeaderIcon(String icon) {
-
-//        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
     }
 
 }

@@ -99,10 +99,10 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         this.grantManagerPanel = grantManagerPanel;
         this.typeTable = typeTable;
         icons = new Icon[4];
-        icons[GRANT] = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-        icons[REVOKE] = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-        icons[GRANT_OPTION] = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        icons[GRANT_FIELD] = GUIUtilities.loadIcon(BrowserConstants.FIELD_GRANT_IMAGE);
+        icons[GRANT] = GUIUtilities.loadVectorIcon(BrowserConstants.GRANT_IMAGE, false);
+        icons[REVOKE] = GUIUtilities.loadVectorIcon(BrowserConstants.NO_GRANT_IMAGE, false);
+        icons[GRANT_OPTION] = GUIUtilities.loadVectorIcon(BrowserConstants.ADMIN_OPTION_IMAGE, false);
+        icons[GRANT_FIELD] = GUIUtilities.loadVectorIcon(BrowserConstants.FIELD_GRANT_IMAGE, false);
         objectVector = new Vector<>();
         tableMap = new HashMap<>();
         tableForColumnsMap = new HashMap<>();

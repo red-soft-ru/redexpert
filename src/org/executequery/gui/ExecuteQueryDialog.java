@@ -647,7 +647,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             switch (col) {
                 case VALID:
-                    return GUIUtilities.loadIcon(action.executed ? "grant.svg" : "no_grant.svg");
+                    return GUIUtilities.loadVectorIcon(action.executed ? "grant.svg" : "no_grant.svg", false);
 
                 case NAME:
                     return action.nameOperation;
@@ -657,7 +657,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
                 case COPY:
                     return action.copyScript ?
-                            GUIUtilities.loadIcon("CloseDockable.png") :
+                            GUIUtilities.loadIcon("CloseDockable") :
                             Constants.EMPTY;
 
                 default:

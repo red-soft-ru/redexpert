@@ -97,7 +97,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         copyButton = WidgetFactory.createRolloverButton(
                 "copyButton",
                 bundleString("pasteToClipboard"),
-                "Paste16.png",
+                "Paste16",
                 e -> Toolkit.getDefaultToolkit()
                         .getSystemClipboard()
                         .setContents(new StringSelection(textPane.getText()), null)

@@ -50,7 +50,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         ActionListener {
 
     public static final String TITLE = bundleString("title");
-    public static final String FRAME_ICON = "SystemOutput.png";
+    public static final String FRAME_ICON = "SystemOutput";
 
     private JTextArea textArea;
     private JComboBox<?> logCombo;
@@ -88,8 +88,8 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         textArea = simpleTextArea.getTextAreaComponent();
         textComponent = textArea;
 
-        reloadButton = new RolloverButton(GUIUtilities.loadIcon("Refresh16.png"), bundleString("reload"));
-        trashButton = new RolloverButton(GUIUtilities.loadIcon("Delete16.png"), bundleString("reset"));
+        reloadButton = new RolloverButton(GUIUtilities.loadIcon("Refresh16"), bundleString("reload"));
+        trashButton = new RolloverButton(GUIUtilities.loadIcon("Delete16"), bundleString("reset"));
 
         reloadButton.addActionListener(this);
         trashButton.addActionListener(this);

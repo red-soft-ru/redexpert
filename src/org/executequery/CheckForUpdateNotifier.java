@@ -386,7 +386,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
-        label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
+        label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16", "gif", false));
         label.setToolTipText(newVersionAvailableText());
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));

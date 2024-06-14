@@ -26,6 +26,7 @@ import org.executequery.UserPreferencesManager;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.gui.LoggingOutputPanel;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -133,8 +134,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         outputTextPane = new LoggingOutputPanel();
 
-        outputTabIcon = GUIUtilities.loadIcon("SystemOutput.png", true);
-        resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16.png", true);
+        outputTabIcon = GUIUtilities.loadIcon("SystemOutput", true);
+        resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16", true);
 
         addTextOutputTab();
 
@@ -761,7 +762,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             // otherwise add it
             insertTab(ResultSetMetaDataPanel.TITLE,
-                    GUIUtilities.loadIcon("RSMetaData16.png", true),
+                    GUIUtilities.loadIcon("RSMetaData16", true),
                     metaDataPanel,
                     getToolTipTextAt(index),
                     index + 1);

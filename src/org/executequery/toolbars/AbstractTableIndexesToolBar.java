@@ -12,7 +12,7 @@ public abstract class AbstractTableIndexesToolBar extends AbstractTableToolBar {
         toolbar.add(WidgetFactory.createRolloverButton(
                 "recalculateSelectivityButton",
                 toolTip,
-                "reselectivityAllIndicies16.png",
+                "reselectivityAllIndicies16",
                 this::reselectivity
         ));
     }

@@ -188,7 +188,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         gbhToolBar.setDefaultsStatic().defaults();
         gbhToolBar.setInsets(0, 0, 0, 0);
         toolBar.setFloatable(false);
-        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16.png");
+        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16");
         toolBar.add(openFileLog, gbhToolBar.nextCol().setLabelDefault().get());
         encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
         encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
@@ -207,7 +207,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         });
         toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
         //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
-        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16.png");
+        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16");
         visibleColumnsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

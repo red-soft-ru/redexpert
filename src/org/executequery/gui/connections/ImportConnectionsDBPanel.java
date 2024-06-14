@@ -24,7 +24,7 @@ import java.util.Properties;
 public class ImportConnectionsDBPanel extends JPanel {
 
     public static final String TITLE = "Import Connections";
-    public static final String FRAME_ICON = "ImportConnections16.png";
+    public static final String FRAME_ICON = "ImportConnections16";
     ActionContainer parent;
     OpenConnectionsComboboxPanel connectionsComboboxPanel;
     DatabaseConnectionFactory databaseConnectionFactory;

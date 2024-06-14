@@ -135,7 +135,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
 
         setHeaderText("Database UDF");
-        setHeaderIcon(GUIUtilities.loadIcon("TableIndex16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -186,7 +186,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("IndexName"));
         setHeaderText(bundleString("DatabaseIndex"));
-        setHeaderIcon(GUIUtilities.loadIcon("TableIndex16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
 
         try {
             indexNameField.setText(index.getName());
@@ -206,7 +206,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("IndexName"));
         setHeaderText(bundleString("DatabaseIndex"));
-        setHeaderIcon("TableIndex16.png");
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
 
         if (index != null) {
             indexNameField.setText(index.getName());
@@ -218,8 +218,4 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
     }
 
-    private void setHeaderIcon(String icon) {
-
-        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
-    }
 }

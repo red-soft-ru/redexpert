@@ -20,25 +20,25 @@ public class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
 
         switch ((String) node.getProcessType()) {
             case ProfilerData.BLOCK:
-                setIcon(GUIUtilities.loadIcon("CreateScripts16.png"));
+                setIcon(GUIUtilities.loadIcon("CreateScripts16"));
                 break;
             case ProfilerData.FUNCTION:
-                setIcon(GUIUtilities.loadIcon("Function16.png"));
+                setIcon(GUIUtilities.loadIcon("Function16"));
                 break;
             case ProfilerData.PROCEDURE:
-                setIcon(GUIUtilities.loadIcon("Procedure16.png"));
+                setIcon(GUIUtilities.loadIcon("Procedure16"));
                 break;
             case ProfilerData.SELF_TIME:
-                setIcon(GUIUtilities.loadIcon("Information16.png"));
+                setIcon(GUIUtilities.loadIcon("Information16"));
                 break;
             case ProfilerData.PSQL:
-                setIcon(GUIUtilities.loadIcon("ShiftTextRight16.png"));
+                setIcon(GUIUtilities.loadIcon("ShiftTextRight16"));
                 break;
             case ProfilerData.ROOT:
-                setIcon(GUIUtilities.loadIcon("JDBCDriver16.png"));
+                setIcon(GUIUtilities.loadIcon("JDBCDriver16"));
                 break;
             default:
-                setIcon(GUIUtilities.loadIcon("DefaultFile16.png"));
+                setIcon(GUIUtilities.loadIcon("DefaultFile16"));
                 break;
         }
 

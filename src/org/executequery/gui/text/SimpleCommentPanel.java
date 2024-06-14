@@ -58,12 +58,12 @@ public class SimpleCommentPanel {
         updateButtonActionListener = e -> updateComment();
 
         updateCommentButton = new RolloverButton();
-        updateCommentButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        updateCommentButton.setIcon(GUIUtilities.loadIcon("Commit16"));
         updateCommentButton.addActionListener(updateButtonActionListener);
         updateCommentButton.setEnabled(currentDatabaseObject != null);
 
         rollbackCommentButton = new RolloverButton();
-        rollbackCommentButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackCommentButton.setIcon(GUIUtilities.loadIcon("Rollback16"));
         rollbackCommentButton.addActionListener(e -> resetComment());
 
         GridBagHelper gridBagHelper = new GridBagHelper();

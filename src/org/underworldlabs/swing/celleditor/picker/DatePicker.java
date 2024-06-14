@@ -14,7 +14,7 @@ public class DatePicker extends com.github.lgooddatepicker.components.DatePicker
 
         getComponentToggleCalendarButton().setMargin(new Insets(0, 0, 0, 0));
         getComponentToggleCalendarButton().setText("");
-        getComponentToggleCalendarButton().setIcon(GUIUtilities.loadIcon("clndr_ico.svg", 16));
+        getComponentToggleCalendarButton().setIcon(GUIUtilities.loadIcon("clndr_ico"));
         getComponentDateTextField().setMargin(new Insets(0, 0, 0, 0));
         getSettings().setGapBeforeButtonPixels(0);
 

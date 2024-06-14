@@ -168,7 +168,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(sequence);
         objectNameLabel.setText(bundleString("SequenceName"));
         setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence16.png", true));
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.SEQUENCES_IMAGE, true));
 
         try {
             sequenceNameField.setText(sequence.getName());
@@ -190,7 +190,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Sequence Name:");
         setHeaderText("Database Sequence");
-        setHeaderIcon("Sequence16.png");
+        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.SEQUENCES_IMAGE, true));
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());
@@ -203,11 +203,5 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         }
 
     }
-
-    private void setHeaderIcon(String icon) {
-
-        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
-    }
-
 
 }

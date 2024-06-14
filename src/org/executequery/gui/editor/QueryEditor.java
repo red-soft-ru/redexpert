@@ -75,7 +75,7 @@ public class QueryEditor extends DefaultTabView
         FocusablePanel {
 
     public static final String TITLE = Bundles.get(QueryEditor.class, "title");
-    public static final String FRAME_ICON = "Edit16.png";
+    public static final String FRAME_ICON = "Edit16";
 
     private static final String DEFAULT_SCRIPT_PREFIX = Bundles.get(QueryEditor.class, "script");
     private static final String DEFAULT_SCRIPT_SUFFIX = ".sql";
@@ -309,8 +309,8 @@ public class QueryEditor extends DefaultTabView
                 "action.editor-execute-to-file-command-on"
         ));
         executeToFileButton.setIcon(GUIUtilities.loadIcon(executeToFile ?
-                "ExecuteToFile16_on.png" :
-                "ExecuteToFile16_off.png"
+                "ExecuteToFile16_on" :
+                "ExecuteToFile16_off"
         ));
     }
 
@@ -331,8 +331,8 @@ public class QueryEditor extends DefaultTabView
                 "action.editor-stop-on-error-command-on"
         ));
         stopOnErrorButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "StopOnError16_off.png" :
-                "StopOnError16_on.png"
+                "StopOnError16_off" :
+                "StopOnError16_on"
         ));
     }
 
@@ -351,8 +351,8 @@ public class QueryEditor extends DefaultTabView
         }
 
         autoCommitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "AutoCommit16_off.png" :
-                "AutoCommit16_on.png"
+                "AutoCommit16_off" :
+                "AutoCommit16_on"
         ));
         autoCommitModeButton.setToolTipText(Bundles.get(newValue ?
                 "action.toggle-autocommit-command-off" :
@@ -371,8 +371,8 @@ public class QueryEditor extends DefaultTabView
         }
 
         resultSetLimitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "LimitRowCount16_off.png" :
-                "LimitRowCount16_on.png"
+                "LimitRowCount16_off" :
+                "LimitRowCount16_on"
         ));
         resultSetLimitModeButton.setToolTipText(String.format(Bundles.get(newValue ?
                         "action.toggle-rs-limit-command-off" :

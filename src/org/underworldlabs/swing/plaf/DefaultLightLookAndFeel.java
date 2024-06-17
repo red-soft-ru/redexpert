@@ -18,4 +18,10 @@ public class DefaultLightLookAndFeel extends FlatIntelliJLaf {
         return defaults;
     }
 
+    @Override
+    public void initialize() {
+        super.initialize();
+        PopupFactory.setSharedInstance(new PopupFactory());
+    }
+
 }

@@ -350,6 +350,9 @@ public class QueryEditor extends DefaultTabView
             EventMediator.fireEvent(new DefaultUserPreferenceEvent(this, AUTOCOMMIT_MODE_PROP, UserPreferenceEvent.QUERY_EDITOR));
         }
 
+        if (autoCommitModeButton == null)
+            return;
+
         autoCommitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
                 "AutoCommit16_off" :
                 "AutoCommit16_on"
@@ -369,6 +372,9 @@ public class QueryEditor extends DefaultTabView
             SystemProperties.setBooleanProperty("user", LIMIT_RS_MODE_PROP, newValue);
             EventMediator.fireEvent(new DefaultUserPreferenceEvent(this, LIMIT_RS_MODE_PROP, UserPreferenceEvent.QUERY_EDITOR));
         }
+
+        if (resultSetLimitModeButton == null)
+            return;
 
         resultSetLimitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
                 "LimitRowCount16_off" :

@@ -204,7 +204,9 @@ public class ErdViewerPanel extends DefaultTabView
             new Color(155, 246, 255),
             new Color(0, 150, 255),
             new Color(189, 178, 255),
-            new Color(255, 198, 255)
+            new Color(255, 198, 255),
+            new Color(192, 192, 192),
+            new Color(248, 211, 201)
     };
 
     public final static Color[] LINE_COLORS = new Color[]{
@@ -215,7 +217,9 @@ public class ErdViewerPanel extends DefaultTabView
             new Color(0, 255, 255),
             new Color(0, 0, 255),
             new Color(128, 128, 255),
-            new Color(255, 0, 255)
+            new Color(255, 0, 255),
+            new Color(85, 85, 85),
+            new Color(237, 146, 119)
     };
 
     public ErdViewerPanel(boolean showTools, boolean editable) {

@@ -719,7 +719,9 @@ public class ErdViewerPanel extends DefaultTabView
 
         return selectedTables;
     }
-    Stack<UndoRedoAction> undoRedoActions;
+
+    Stack<UndoRedoAction> undoActions;
+    Stack<UndoRedoAction> redoActions;
 
     static List<ErdMoveableComponent> listFromSingleComponent(ErdMoveableComponent component) {
         List<ErdMoveableComponent> list = new ArrayList<>();
@@ -1430,14 +1432,21 @@ public class ErdViewerPanel extends DefaultTabView
                     removeSelectedTables();
                 }
                 if (e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown()) {
-                    if (!undoRedoActions.isEmpty()) {
-                        UndoRedoAction undoRedoAction = undoRedoActions.pop();
+                    if (!undoActions.isEmpty()) {
+                        UndoRedoAction undoRedoAction = undoActions.pop();
+                        undoRedoAction.undoExecute();
+                    }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
+                    if (!redoActions.isEmpty()) {
+                        UndoRedoAction undoRedoAction = redoActions.pop();
                         undoRedoAction.undoExecute();
                     }
                 }
             }
         });
-        undoRedoActions = new Stack<>();
+        undoActions = new Stack<>();
+        redoActions = new Stack<>();
 
     }
 
@@ -1450,7 +1459,7 @@ public class ErdViewerPanel extends DefaultTabView
         layeredPane.moveToFront(erdTextPanel);
         textPanels.add(erdTextPanel);
         layeredPane.repaint();
-        undoRedoActions.push(new UndoRedoAction(NEW_OBJECT, erdTextPanel));
+        fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, erdTextPanel));
     }
 
     public ErdScrollPane getScroll() {
@@ -1481,7 +1490,7 @@ public class ErdViewerPanel extends DefaultTabView
             newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
                     (layeredPane.getHeight() - newTable.getHeight()) / 2,
                     width, height);
-            undoRedoActions.push(new UndoRedoAction(NEW_OBJECT, newTable));
+            fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, newTable));
         } else {
 
             if (next_y + height + 20 > INITIAl_VIEW_HEIGHT) {
@@ -1546,7 +1555,7 @@ public class ErdViewerPanel extends DefaultTabView
             }
 
         }
-        undoRedoActions.push(new UndoRedoAction(DELETE, removedComponents));
+        fireSaveUndoAction(new UndoRedoAction(DELETE, removedComponents));
         if (tablesRemoved)
             dependsPanel.setTableDependencies(buildTableRelationships());
 
@@ -1563,11 +1572,16 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void fireDragging() {
-        undoRedoActions.push(new UndoRedoAction(ErdViewerPanel.CHANGE_LOCATION, getSelectedComponents()));
+        fireSaveUndoAction(new UndoRedoAction(ErdViewerPanel.CHANGE_LOCATION, getSelectedComponents()));
     }
 
     public void fireChangedBgColor() {
-        undoRedoActions.push(new UndoRedoAction(ErdViewerPanel.CHANGE_BG_COLOR, getSelectedComponents()));
+        fireSaveUndoAction(new UndoRedoAction(ErdViewerPanel.CHANGE_BG_COLOR, getSelectedComponents()));
+    }
+
+    void fireSaveUndoAction(UndoRedoAction undoRedoAction) {
+        undoActions.push(undoRedoAction);
+        redoActions.clear();
     }
 
     class UndoRedoAction {
@@ -1575,12 +1589,18 @@ public class ErdViewerPanel extends DefaultTabView
         List<ErdMoveableComponent> listComponents;
         List<Color> bgColors;
         List<Rectangle> boundsComponents;
+        boolean undoAction;
 
         public UndoRedoAction(int typeAction, ErdMoveableComponent component) {
             this(typeAction, listFromSingleComponent(component));
         }
 
         public UndoRedoAction(int typeAction, List<ErdMoveableComponent> listComponents) {
+            this(typeAction, listComponents, true);
+        }
+
+        public UndoRedoAction(int typeAction, List<ErdMoveableComponent> listComponents, boolean undoAction) {
+            this.undoAction = undoAction;
             this.typeAction = typeAction;
             this.listComponents = listComponents;
             bgColors = new ArrayList<>();
@@ -1606,6 +1626,9 @@ public class ErdViewerPanel extends DefaultTabView
                             layeredPane.moveToFront(emc);
                         }
                     }
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, true));
                 }
                 break;
                 case NEW_OBJECT: {
@@ -1619,15 +1642,24 @@ public class ErdViewerPanel extends DefaultTabView
                             layeredPane.remove(emc);
                         }
                     }
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(DELETE, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(DELETE, listComponents, true));
                 }
                 break;
                 case CHANGE_BG_COLOR: {
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setTableBackground(bgColors.get(i));
                     }
                 }
                 break;
                 case CHANGE_LOCATION: {
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setBounds(boundsComponents.get(i));
                     }

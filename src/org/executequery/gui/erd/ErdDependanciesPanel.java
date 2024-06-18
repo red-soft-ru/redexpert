@@ -42,7 +42,7 @@ public class ErdDependanciesPanel extends JComponent {
     /**
      * The line colour
      */
-    private Color lineColour;
+    private int lineColour;
     /**
      * The dashed stroke
      */
@@ -96,7 +96,7 @@ public class ErdDependanciesPanel extends JComponent {
     public ErdDependanciesPanel(ErdViewerPanel parent) {
         super();
 
-        lineColour = Color.BLACK;
+        lineColour = 0;
         colourIndex = 0;
         lineStyle = 0;
         lineWeight = 2.0f;
@@ -174,12 +174,12 @@ public class ErdDependanciesPanel extends JComponent {
 
     }
 
-    public void setLineColour(Color lineColour) {
-        this.lineColour = lineColour;
+    public int getLineColour() {
+        return lineColour;
     }
 
-    public Color getLineColour() {
-        return lineColour;
+    public void setLineColour(int lineColour) {
+        this.lineColour = lineColour;
     }
 
     protected void setTableDependencies(Vector v) {
@@ -231,7 +231,9 @@ public class ErdDependanciesPanel extends JComponent {
 
 
         for (int i = 0; i < dependencies.length; i++) {
-            g2d.setColor(ErdViewerPanel.LINE_COLORS[dependencies[i].getTable_1().getTitleBarBgColor()]);
+            if (getLineColour() == 0)
+                g2d.setColor(ErdViewerPanel.LINE_COLORS[dependencies[i].getTable_1().getTitleBarBgColor()]);
+            else g2d.setColor(Color.BLACK);
             determinePositions(dependencies[i]);
             drawLines(g2d, dependencies[i], xOffset, yOffset);
         }
@@ -299,6 +301,9 @@ public class ErdDependanciesPanel extends JComponent {
                            int xOffset,
                            int yOffset) {
 
+        int poliSize = 10;
+        poliSize += 2 * lineWeight;
+        int poliSize2 = poliSize / 2;
         int xPosn_1 = dependency.getXPosn_1() + xOffset;
         int xPosn_2 = dependency.getXPosn_2() + xOffset;
         int xPosn_3 = dependency.getXPosn_3() + xOffset;
@@ -316,10 +321,10 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + poliSize, yPosn_3);
 
-            int[] polyXs = {xPosn_3 + 10, xPosn_3, xPosn_3 + 10};
-            int[] polyYs = {yPosn_3 - 5, yPosn_3, yPosn_3 + 5};
+            int[] polyXs = {xPosn_3 + poliSize, xPosn_3, xPosn_3 + poliSize};
+            int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};
 
             if (isDashed)
                 g.setStroke(solidStroke);
@@ -333,10 +338,10 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 - poliSize, yPosn_3);
 
-            int[] polyXs = {xPosn_3 - 10, xPosn_3, xPosn_3 - 10};
-            int[] polyYs = {yPosn_3 - 5, yPosn_3, yPosn_3 + 5};
+            int[] polyXs = {xPosn_3 - poliSize, xPosn_3, xPosn_3 - poliSize};
+            int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};
 
             if (isDashed)
                 g.setStroke(solidStroke);
@@ -350,10 +355,10 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + poliSize, yPosn_3);
 
-            int[] polyXs = {xPosn_3 + 10, xPosn_3, xPosn_3 + 10};
-            int[] polyYs = {yPosn_3 - 5, yPosn_3, yPosn_3 + 5};
+            int[] polyXs = {xPosn_3 + poliSize, xPosn_3, xPosn_3 + poliSize};
+            int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};
 
             if (isDashed)
                 g.setStroke(solidStroke);

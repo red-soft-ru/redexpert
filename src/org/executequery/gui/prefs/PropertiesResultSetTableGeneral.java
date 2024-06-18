@@ -21,12 +21,14 @@
 package org.executequery.gui.prefs;
 
 
+import org.executequery.Constants;
 import org.executequery.gui.resultset.ResultSetCellAlign;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The properties for the editor's results panel
@@ -177,7 +179,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignNumericValues"),
-                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                getAlignValueOrDefault(key),
                 alignsValuePairs()
         ));
 
@@ -186,7 +188,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignTextValues"),
-                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                getAlignValueOrDefault(key),
                 alignsValuePairs()
         ));
 
@@ -195,7 +197,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignBoolValues"),
-                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                getAlignValueOrDefault(key),
                 alignsValuePairs()
         ));
 
@@ -204,7 +206,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignNullValues"),
-                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                getAlignValueOrDefault(key),
                 alignsValuePairs()
         ));
 
@@ -213,7 +215,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("alignOtherValues"),
-                ResultSetCellAlign.valueOf(stringUserProperty(key)),
+                getAlignValueOrDefault(key),
                 alignsValuePairs()
         ));
 
@@ -262,6 +264,18 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
             values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
 
         return values;
+    }
+
+    private ResultSetCellAlign getAlignValueOrDefault(String key) {
+        try {
+            return ResultSetCellAlign.valueOf(stringUserProperty(key));
+
+        } catch (Exception e) {
+            ResultSetCellAlign value = ResultSetCellAlign.valueOf(SystemProperties.getProperty("defaults", key));
+            SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, key, value.name());
+
+            return value;
+        }
     }
 
     @Override

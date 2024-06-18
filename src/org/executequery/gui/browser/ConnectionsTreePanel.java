@@ -80,6 +80,7 @@ public class ConnectionsTreePanel extends TreePanel
     public static final String MENU_ITEM_KEY = "viewConnections";
 
     private boolean moveScroll;
+    private int dividerLocation;
     private boolean treeExpanding;
     private boolean rootSelectOnDisconnect;
     private boolean moveScrollAfterExpansion;
@@ -97,6 +98,7 @@ public class ConnectionsTreePanel extends TreePanel
 
     // --- GUI components ---
 
+    private JSplitPane splitPane;
     private JScrollPane treeScrollPane;
     private ConnectionsTreeToolBar toolBar;
     private DatabasePropertiesPanel propertiesPanel;
@@ -111,7 +113,6 @@ public class ConnectionsTreePanel extends TreePanel
         super(new GridBagLayout());
 
         init();
-        setPropertiesPanelVisible(SystemProperties.getBooleanProperty("user", "browser.show.connection.properties"));
         EventMediator.registerListener(this);
         enableButtons(false);
     }
@@ -131,20 +132,27 @@ public class ConnectionsTreePanel extends TreePanel
         treeFindAction.install(tree);
 
         propertiesPanel = new DatabasePropertiesPanel();
+        propertiesPanel.setMinimumSize(new Dimension(0, 250));
         propertiesPanel.getTable().setFont(new Font(propertiesPanel.getTable().getFont().getFontName(), Font.PLAIN, 12));
+        propertiesPanel.setVisible(SystemProperties.getBooleanProperty("user", "browser.show.connection.properties"));
 
         Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
         if (repo instanceof DatabaseConnectionRepository)
             updateProperties(((DatabaseConnectionRepository) repo).findAll());
 
         toolBar = new ConnectionsTreeToolBar(this);
+
         treeScrollPane = new JScrollPane(tree);
+        treeScrollPane.setMinimumSize(new Dimension(0, 300));
+
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setBottomComponent(propertiesPanel);
+        splitPane.setTopComponent(treeScrollPane);
+        splitPane.setDividerLocation(10000);
 
         // --- arrange ---
 
-        GridBagHelper ghh = new GridBagHelper().fillBoth();
-        add(treeScrollPane, ghh.setMaxWeightY().spanX().get());
-        add(propertiesPanel, ghh.setWeightY(0.4).nextRow().get());
+        add(splitPane, new GridBagHelper().fillBoth().spanY().spanX().get());
         setPreferredSize(new Dimension(250, 0));
         setMinimumSize(getPreferredSize());
 
@@ -156,7 +164,15 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     public void setPropertiesPanelVisible(boolean visible) {
+
+        if (Objects.equals(visible, propertiesPanel.isVisible()))
+            return;
+
         propertiesPanel.setVisible(visible);
+        if (visible)
+            splitPane.setDividerLocation(dividerLocation);
+
+        dividerLocation = treeScrollPane.getHeight();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

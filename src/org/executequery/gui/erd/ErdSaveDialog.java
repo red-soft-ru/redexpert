@@ -531,8 +531,6 @@ public class ErdSaveDialog extends AbstractBaseDialog
                 RenderingHints.VALUE_STROKE_NORMALIZE);
         g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
                 RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-
-        parent.resetAllTableJoins();
         parent.getDependenciesPanel().drawDependencies(g);
         ErdTable[] tablesArray = parent.getAllTablesArray();
 

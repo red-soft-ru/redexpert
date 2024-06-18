@@ -366,7 +366,11 @@ class ColorStyleIcon extends ImageIcon {
         // draw the line
         switch (type) {
             case 0:
-                g.setColor(Color.MAGENTA);
+                Graphics2D en = (Graphics2D) g;
+                GradientPaint gp = new GradientPaint(0, 0, Color.red, 100, 0,
+                        Color.BLUE
+                        , true);
+                en.setPaint(gp);
                 break;
             case 1:
                 g.setColor(Color.BLACK);

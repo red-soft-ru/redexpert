@@ -22,6 +22,7 @@ package org.executequery.gui.erd;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.TreeSet;
 import java.util.Vector;
 
 /**
@@ -212,7 +213,6 @@ public class ErdDependanciesPanel extends JComponent {
      * @param the <code>Graphics</code> object
      */
     protected void paintComponent(Graphics g) {
-        parent.resetAllTableJoins();
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -223,23 +223,28 @@ public class ErdDependanciesPanel extends JComponent {
         drawDependencies(g2d, 0, 0);
     }
 
+    TreeSet<Integer> verticalLines;
+
     protected void drawDependencies(Graphics2D g2d, int xOffset, int yOffset) {
 
         if (dependencies == null) {
             return;
         }
-
+        parent.resetAllTableJoins();
+        if (verticalLines == null)
+            verticalLines = new TreeSet<>();
+        verticalLines.clear();
 
         for (int i = 0; i < dependencies.length; i++) {
             if (getLineColour() == 0)
                 g2d.setColor(ErdViewerPanel.LINE_COLORS[dependencies[i].getTable_1().getTitleBarBgColor()]);
             else g2d.setColor(Color.BLACK);
-            determinePositions(dependencies[i]);
+            determinePositions(dependencies[i], 20);
             drawLines(g2d, dependencies[i], xOffset, yOffset);
         }
     }
 
-    private void determinePositions(ErdTableDependency dependency) {
+    private void determinePositions(ErdTableDependency dependency, int indent) {
 
         dependency.reset();
 
@@ -249,7 +254,7 @@ public class ErdDependanciesPanel extends JComponent {
         Rectangle rec1 = table1.getColumnBounds(dependency.getColumn1());
         Rectangle rec2 = table2.getColumnBounds(dependency.getColumn2());
 
-        if (rec2.x < (rec1.x + rec1.width + 20) && (rec2.x + rec2.width + 20) > rec1.x) {
+        if (rec2.x < (rec1.x + rec1.width + indent) && (rec2.x + rec2.width + indent) > rec1.x) {
 
             dependency.setPosition(ErdTableDependency.POSITION_1);
 
@@ -263,35 +268,54 @@ public class ErdDependanciesPanel extends JComponent {
             int x = dependency.getXPosn_1();
             if (dependency.getXPosn_3() > x)
                 x = dependency.getXPosn_3();
+            while (verticalLines.contains(Integer.valueOf(x + 20)))
+                x += 10;
             dependency.setXPosn_2(x + 20);
+            verticalLines.add(Integer.valueOf(x + 20));
 
 
-        } else if (rec2.x > (rec1.x + rec1.width + 20)) {
+        } else if (rec2.x > (rec1.x + rec1.width + indent)) {
 
             dependency.setPosition(ErdTableDependency.POSITION_2);
 
             dependency.setXPosn_1(rec1.x + rec1.width);
-            dependency.setYPosn_1(rec1.y + table1.getNextJoin(ErdTable.RIGHT_JOIN, dependency.getColumn1()));
 
-            dependency.setXPosn_2(dependency.getXPosn_1() +
-                    ((rec2.x - dependency.getXPosn_1()) / 2));
 
-            dependency.setXPosn_3(rec2.x);
-            dependency.setYPosn_3(rec2.y + table2.getNextJoin(ErdTable.LEFT_JOIN, dependency.getColumn2()));
+            int x = dependency.getXPosn_1() +
+                    ((rec2.x - dependency.getXPosn_1()) / 2);
+            while (verticalLines.contains(Integer.valueOf(x))) {
+                x += 10;
+            }
+            if (x < rec2.x - 20) {
+                dependency.setXPosn_2(x);
+                verticalLines.add(Integer.valueOf(x));
+                dependency.setYPosn_1(rec1.y + table1.getNextJoin(ErdTable.RIGHT_JOIN, dependency.getColumn1()));
+
+                dependency.setXPosn_3(rec2.x);
+                dependency.setYPosn_3(rec2.y + table2.getNextJoin(ErdTable.LEFT_JOIN, dependency.getColumn2()));
+
+            } else determinePositions(dependency, indent + 10);
 
 
         } else {
             dependency.setPosition(ErdTableDependency.POSITION_3);
             dependency.setXPosn_1(rec1.x);
-            dependency.setYPosn_1(rec1.y + table1.getNextJoin(ErdTable.LEFT_JOIN, dependency.getColumn1()));
+
 
             dependency.setXPosn_3(rec2.x + rec2.width);
-            dependency.setYPosn_3(rec2.y + table2.getNextJoin(ErdTable.RIGHT_JOIN, dependency.getColumn2()));
-
-            dependency.setXPosn_2(dependency.getXPosn_3() +
-                    ((rec1.x - dependency.getXPosn_3()) / 2));
 
 
+            int x = dependency.getXPosn_3() +
+                    ((rec1.x - dependency.getXPosn_3()) / 2);
+            while (verticalLines.contains(Integer.valueOf(x))) {
+                x -= 10;
+            }
+            if (x > rec2.x + rec2.width + 20) {
+                dependency.setXPosn_2(x);
+                verticalLines.add(Integer.valueOf(x));
+                dependency.setYPosn_1(rec1.y + table1.getNextJoin(ErdTable.LEFT_JOIN, dependency.getColumn1()));
+                dependency.setYPosn_3(rec2.y + table2.getNextJoin(ErdTable.RIGHT_JOIN, dependency.getColumn2()));
+            } else determinePositions(dependency, indent + 10);
         }
 
     }
@@ -321,7 +345,7 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + poliSize, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + (int) lineWeight, yPosn_3);
 
             int[] polyXs = {xPosn_3 + poliSize, xPosn_3, xPosn_3 + poliSize};
             int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};
@@ -338,7 +362,7 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3 - poliSize, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 - (int) lineWeight, yPosn_3);
 
             int[] polyXs = {xPosn_3 - poliSize, xPosn_3, xPosn_3 - poliSize};
             int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};
@@ -355,7 +379,7 @@ public class ErdDependanciesPanel extends JComponent {
 
             g.drawLine(xPosn_1, yPosn_1, xPosn_2, yPosn_1);
             g.drawLine(xPosn_2, yPosn_1, xPosn_2, yPosn_3);
-            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + poliSize, yPosn_3);
+            g.drawLine(xPosn_2, yPosn_3, xPosn_3 + (int) lineWeight, yPosn_3);
 
             int[] polyXs = {xPosn_3 + poliSize, xPosn_3, xPosn_3 + poliSize};
             int[] polyYs = {yPosn_3 - poliSize2, yPosn_3, yPosn_3 + poliSize2};

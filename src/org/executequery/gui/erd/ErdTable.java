@@ -861,8 +861,8 @@ public class ErdTable extends ErdMoveableComponent
         private final transient ErdTableConnectionPoint[] verticalRightJoins;
 
         public ColumnJoins() {
-            int joinSpacing = 4;
-            int vertSize = (getLineHeght() / joinSpacing) - 1;
+            int joinSpacing = 6;
+            int vertSize = (getLineHeght() * 2 / joinSpacing) - 1;
             verticalLeftJoins = new ErdTableConnectionPoint[vertSize];
             verticalRightJoins = new ErdTableConnectionPoint[vertSize];
             int midPointVert = vertSize / 2;
@@ -881,7 +881,7 @@ public class ErdTable extends ErdMoveableComponent
                 } else if (i % 2 == 0) {
                     belowMidPoint -= joinSpacing;
 
-                    if (belowMidPoint < vertSize - 4) {
+                    if (belowMidPoint < vertSize) {
                         verticalLeftJoins[i].setPosition(belowMidPoint);
                         verticalRightJoins[i].setPosition(belowMidPoint);
                     }
@@ -889,7 +889,7 @@ public class ErdTable extends ErdMoveableComponent
                 } else {
                     aboveMidPoint += joinSpacing;
 
-                    if (aboveMidPoint > 4) {
+                    if (aboveMidPoint > 0) {
                         verticalLeftJoins[i].setPosition(aboveMidPoint);
                         verticalRightJoins[i].setPosition(aboveMidPoint);
                     }

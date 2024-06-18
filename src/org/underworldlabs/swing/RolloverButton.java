@@ -40,6 +40,7 @@ public class RolloverButton extends JButton
         implements MouseListener {
 
     private String toolTip;
+    private boolean isPressedByUser;
     private boolean selectionEnabled;
     private boolean mouseEnteredContentAreaFill;
 
@@ -106,6 +107,11 @@ public class RolloverButton extends JButton
         setMaximumSize(new Dimension(width, height));
     }
 
+    private void setPressedBackground(boolean paintBorder, boolean fillBackground) {
+        setBorderPainted(paintBorder);
+        setContentAreaFilled(fillBackground);
+    }
+
     /**
      * Sets the image associated with the button.
      *
@@ -129,6 +135,15 @@ public class RolloverButton extends JButton
         this.mouseEnteredContentAreaFill = mouseEnteredContentAreaFill;
     }
 
+    public boolean isPressedByUser() {
+        return isPressedByUser;
+    }
+
+    public void setPressed(boolean pressed) {
+        this.isPressedByUser = pressed;
+        setPressedBackground(pressed, pressed);
+    }
+
     // --- MouseListener impl ---
 
     /**
@@ -136,11 +151,8 @@ public class RolloverButton extends JButton
      */
     @Override
     public void mouseEntered(MouseEvent e) {
-        if (isEnabled() && isSelectionRolloverEnabled()) {
-            setBorderPainted(true);
-            if (mouseEnteredContentAreaFill)
-                setContentAreaFilled(true);
-        }
+        if (isEnabled() && isSelectionRolloverEnabled())
+            setPressedBackground(true, mouseEnteredContentAreaFill);
     }
 
     /**
@@ -149,8 +161,8 @@ public class RolloverButton extends JButton
      */
     @Override
     public void mouseExited(MouseEvent e) {
-        setBorderPainted(false);
-        setContentAreaFilled(false);
+        if (!isPressedByUser())
+            setPressedBackground(false, false);
     }
 
     @Override

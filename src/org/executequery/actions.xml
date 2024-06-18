@@ -570,19 +570,19 @@
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="editor-stop-on-error-command"
-            small-icon="StopOnError16_on"
+            small-icon="StopOnError16"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="editor-execute-to-file-command"
-            small-icon="ExecuteToFile16_on"
+            small-icon="ExecuteToFile16"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="toggle-autocommit-command"
-            small-icon="AutoCommit16_off"
+            small-icon="AutoCommit16"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="toggle-rs-limit-command"
-            small-icon="LimitRowCount16_off"
+            small-icon="LimitRowCount16"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <!-- DO NOT REMOVE (that's actions called by hotkeys) -->

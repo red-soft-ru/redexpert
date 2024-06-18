@@ -43,6 +43,7 @@ import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -104,10 +105,10 @@ public class QueryEditor extends DefaultTabView
     private JPanel baseEditorPanel;
     private JSplitPane splitPane;
 
-    private JButton stopOnErrorButton;
-    private JButton executeToFileButton;
-    private JButton autoCommitModeButton;
-    private JButton resultSetLimitModeButton;
+    private RolloverButton stopOnErrorButton;
+    private RolloverButton executeToFileButton;
+    private RolloverButton autoCommitModeButton;
+    private RolloverButton resultSetLimitModeButton;
 
     // ---
 
@@ -230,25 +231,25 @@ public class QueryEditor extends DefaultTabView
 
         // --- toolbar buttons ---
 
-        stopOnErrorButton = toolBar.getButton(STOP_ON_ERROR_CMD);
+        stopOnErrorButton = (RolloverButton) toolBar.getButton(STOP_ON_ERROR_CMD);
         if (stopOnErrorButton != null) {
             stopOnErrorButton.addActionListener(e -> updateStopOnError(true));
             updateStopOnError(false);
         }
 
-        executeToFileButton = toolBar.getButton(EXECUTE_TO_FILE_CMD);
+        executeToFileButton = (RolloverButton) toolBar.getButton(EXECUTE_TO_FILE_CMD);
         if (executeToFileButton != null) {
             executeToFileButton.addActionListener(e -> updateExecuteDestination(true));
             updateExecuteDestination(false);
         }
 
-        autoCommitModeButton = toolBar.getButton(AUTOCOMMIT_MODE_CMD);
+        autoCommitModeButton = (RolloverButton) toolBar.getButton(AUTOCOMMIT_MODE_CMD);
         if (autoCommitModeButton != null) {
             autoCommitModeButton.addActionListener(e -> updateAutoCommitMode(true));
             updateAutoCommitMode(false);
         }
 
-        resultSetLimitModeButton = toolBar.getButton(LIMIT_RS_MODE_CMD);
+        resultSetLimitModeButton = (RolloverButton) toolBar.getButton(LIMIT_RS_MODE_CMD);
         if (resultSetLimitModeButton != null) {
             resultSetLimitModeButton.addActionListener(e -> updateResultSetLimitMode(true));
             updateResultSetLimitMode(false);
@@ -304,13 +305,10 @@ public class QueryEditor extends DefaultTabView
         if (executeToFileButton == null)
             return;
 
+        executeToFileButton.setPressed(executeToFile);
         executeToFileButton.setToolTipText(Bundles.get(executeToFile ?
                 "action.editor-execute-to-file-command-off" :
                 "action.editor-execute-to-file-command-on"
-        ));
-        executeToFileButton.setIcon(GUIUtilities.loadIcon(executeToFile ?
-                "ExecuteToFile16_on" :
-                "ExecuteToFile16_off"
         ));
     }
 
@@ -326,13 +324,10 @@ public class QueryEditor extends DefaultTabView
         if (stopOnErrorButton == null)
             return;
 
+        stopOnErrorButton.setPressed(newValue);
         stopOnErrorButton.setToolTipText(Bundles.get(newValue ?
                 "action.editor-stop-on-error-command-off" :
                 "action.editor-stop-on-error-command-on"
-        ));
-        stopOnErrorButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "StopOnError16_off" :
-                "StopOnError16_on"
         ));
     }
 
@@ -353,10 +348,7 @@ public class QueryEditor extends DefaultTabView
         if (autoCommitModeButton == null)
             return;
 
-        autoCommitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "AutoCommit16_off" :
-                "AutoCommit16_on"
-        ));
+        autoCommitModeButton.setPressed(newValue);
         autoCommitModeButton.setToolTipText(Bundles.get(newValue ?
                 "action.toggle-autocommit-command-off" :
                 "action.toggle-autocommit-command-on"
@@ -376,10 +368,7 @@ public class QueryEditor extends DefaultTabView
         if (resultSetLimitModeButton == null)
             return;
 
-        resultSetLimitModeButton.setIcon(GUIUtilities.loadIcon(newValue ?
-                "LimitRowCount16_off" :
-                "LimitRowCount16_on"
-        ));
+        resultSetLimitModeButton.setPressed(newValue);
         resultSetLimitModeButton.setToolTipText(String.format(Bundles.get(newValue ?
                         "action.toggle-rs-limit-command-off" :
                         "action.toggle-rs-limit-command-on"

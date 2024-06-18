@@ -582,7 +582,6 @@ public final class WidgetFactory {
 
         RolloverButton button = new RolloverButton();
         button.setIcon(GUIUtilities.loadIcon(icon));
-        button.setMouseEnteredContentAreaFill(false);
         button.setToolTipText(toolTip);
         button.setName(name);
 
@@ -615,7 +614,6 @@ public final class WidgetFactory {
     public static RolloverButton createRolloverButton(String name, Action action, String toolTip) {
 
         RolloverButton button = new RolloverButton(action, toolTip);
-        button.setMouseEnteredContentAreaFill(false);
         button.setText(Constants.EMPTY);
         button.setName(name);
 

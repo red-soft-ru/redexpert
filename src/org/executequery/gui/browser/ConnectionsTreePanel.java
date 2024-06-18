@@ -146,6 +146,8 @@ public class ConnectionsTreePanel extends TreePanel
         GridBagHelper ghh = new GridBagHelper().fillBoth();
         add(treeScrollPane, ghh.setMaxWeightY().spanX().get());
         add(propertiesPanel, ghh.setWeightY(0.4).nextRow().get());
+        setPreferredSize(new Dimension(250, 0));
+        setMinimumSize(getPreferredSize());
 
         // ---
 

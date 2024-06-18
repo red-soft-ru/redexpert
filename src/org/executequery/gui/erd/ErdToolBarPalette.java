@@ -223,6 +223,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else {
 
             if (tablesSelected) {
+                parent.fireChangedBgColor();
                 for (int i = 0; i < selectedTables.length; i++) {
                     selectedTables[i].setTableBackground(newColour);
                 }

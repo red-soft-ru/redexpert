@@ -160,17 +160,7 @@ public class ErdLayeredPane extends JLayeredPane
         return UIUtils.getColour("executequery.Erd.background", Color.WHITE);
     }
 
-    public void mouseDragged(MouseEvent e) {
-        /*if (selectedComponent != null) {
-            selectedComponent.dragging(e);
-        }*/
-        if (!e.isControlDown()) {
-            ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
-            for (ErdMoveableComponent selectComponent : selectComponents) {
-                selectComponent.dragging(e);
-            }
-        }
-    }
+    boolean dragged = false;
 
     private ErdMoveableComponent getClickedComponent(MouseEvent e) {
         Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
@@ -198,6 +188,36 @@ public class ErdLayeredPane extends JLayeredPane
 
         }
         return selectedTable;
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        /*if (selectedComponent != null) {
+            selectedComponent.dragging(e);
+        }*/
+        if (!e.isControlDown()) {
+            ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
+            for (ErdMoveableComponent selectComponent : selectComponents) {
+                selectComponent.dragging(e);
+            }
+            dragged = true;
+        }
+    }
+
+    // -------------------------------------------
+    // ------ MouseListener implementations ------
+    // -------------------------------------------
+
+    public void mousePressed(MouseEvent e) {
+        ErdMoveableComponent clickedComponent = getClickedComponent(e);
+        if (clickedComponent != null && !clickedComponent.isSelected()) {
+            determineSelectedTable(e);
+            if (selectedComponent != null) {
+                selectedComponent.selected(e);
+            }
+        }
+        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        for (ErdMoveableComponent comp : comps)
+            comp.calculateDragging(e);
     }
 
     private void determineSelectedTable(MouseEvent e) {
@@ -249,30 +269,18 @@ public class ErdLayeredPane extends JLayeredPane
             }
 
         }
+        parent.requestFocusInWindow();
 
-    }
-
-    // -------------------------------------------
-    // ------ MouseListener implementations ------
-    // -------------------------------------------
-
-    public void mousePressed(MouseEvent e) {
-        ErdMoveableComponent clickedComponent = getClickedComponent(e);
-        if (clickedComponent != null && !clickedComponent.isSelected()) {
-            determineSelectedTable(e);
-            if (selectedComponent != null) {
-                selectedComponent.selected(e);
-            }
-        }
-        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
-        for (ErdMoveableComponent comp : comps)
-            comp.calculateDragging(e);
     }
 
     public void mouseReleased(MouseEvent e) {
         ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        if (dragged) {
+            parent.fireDragging();
+        }
         for (ErdMoveableComponent comp : comps)
             comp.finishedDragging();
+        dragged = false;
         maybeShowPopup(e);
     }
 

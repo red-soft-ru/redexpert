@@ -197,7 +197,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
         for (int i = 0; i < grantFieldButtons.length; i++) {
             grantFieldButtons[i] = new RolloverButton();
-            grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/classic/" + iconNamesForFields[i] + ".svg", buttonSize));
+            grantFieldButtons[i].setIcon(GUIUtilities.loadVectorIcon(iconNamesForFields[i] + ".svg", buttonSize));
             grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             grantFieldButtons[i].setActionCommand("field_" + i);
             grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
@@ -213,7 +213,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantButtons = new RolloverButton[iconNames.length];
         for (int i = 0; i < grantButtons.length; i++) {
             grantButtons[i] = new RolloverButton();
-            grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/classic/" + iconNames[i] + ".svg", buttonSize));
+            grantButtons[i].setIcon(GUIUtilities.loadVectorIcon(iconNames[i] + ".svg", buttonSize));
             grantButtons[i].setActionCommand(iconNames[i]);
             grantButtons[i].setMouseEnteredContentAreaFill(false);
             grantButtons[i].setToolTipText(toolTips[i]);
@@ -300,13 +300,13 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         refreshButton = new RolloverButton();
         refreshButton.setToolTipText(bundleString("Refresh"));
-        refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/classic/Refresh16.svg", buttonSize));
+        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16"));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
         cancelButton.setToolTipText(bundleString("CancelFill"));
-        cancelButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/classic/Stop16.svg", buttonSize));
+        cancelButton.setIcon(GUIUtilities.loadIcon("Stop16"));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);
 

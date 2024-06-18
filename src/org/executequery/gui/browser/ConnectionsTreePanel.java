@@ -125,7 +125,6 @@ public class ConnectionsTreePanel extends TreePanel
         controller = new BrowserController(this);
 
         tree = new SchemaTree(createTreeStructure(), this);
-        tree.setRootVisible(false);
         tree.addMouseListener(new MouseHandler());
 
         treeFindAction = new TreeFindAction();
@@ -153,6 +152,7 @@ public class ConnectionsTreePanel extends TreePanel
 
         tree.setSelectionRow(0);
         tree.setToggleClickCount(-1);
+        tree.setRootVisible(false);
     }
 
     public void setPropertiesPanelVisible(boolean visible) {

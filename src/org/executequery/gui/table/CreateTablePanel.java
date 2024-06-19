@@ -646,6 +646,8 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
                         columnData.setPrimaryKey(true);
                     } else if (columnConstraint.isForeignKey()) {
                         columnData.setForeignKey(true);
+                    } else if (columnConstraint.isUniqueKey()) {
+                        columnData.setUniqueKey(true);
                     }
 
                     columnConstraint.setTable(tableName);

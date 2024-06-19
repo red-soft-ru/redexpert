@@ -42,6 +42,7 @@ public class ErdTable extends ErdMoveableComponent
      * The table name displayed
      */
     private String tableName;
+    private static final String UNIQUE = "(UQ) ";
     /**
      * The table's columns
      */
@@ -527,6 +528,10 @@ public class ErdTable extends ErdMoveableComponent
 
                         value = PRIMARY + FOREIGN;
 
+                    } else if (column.isUniqueKey() && column.isForeignKey()) {
+
+                        value = UNIQUE + FOREIGN;
+
                     } else if (column.isPrimaryKey()) {
 
                         value = PRIMARY;
@@ -534,6 +539,9 @@ public class ErdTable extends ErdMoveableComponent
                     } else if (column.isForeignKey()) {
 
                         value = FOREIGN;
+                    } else if (column.isUniqueKey()) {
+
+                        value = UNIQUE;
                     }
 
                     x = leftMargin + dataTypeOffset + keyLabelOffset;

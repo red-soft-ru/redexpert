@@ -168,6 +168,10 @@ public class ColumnConstraint implements Serializable {
         return type == PRIMARY_KEY;
     }
 
+    public boolean isUniqueKey() {
+        return type == UNIQUE_KEY;
+    }
+
     public boolean isNewConstraint() {
         return newConstraint;
     }

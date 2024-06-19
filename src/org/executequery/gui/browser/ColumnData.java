@@ -73,6 +73,7 @@ public class ColumnData implements Serializable {
     private boolean newColumn;
     private boolean primaryKey;
     private boolean foreignKey;
+    private boolean uniqueKey;
     private boolean markedDeleted;
     private boolean remarkAsSingleComment;
 
@@ -139,6 +140,7 @@ public class ColumnData implements Serializable {
         setNewColumn(false);
         setPrimaryKey(false);
         setForeignKey(false);
+        setUniqueKey(false);
         setRemarkAsSingleComment(false);
     }
 
@@ -159,6 +161,7 @@ public class ColumnData implements Serializable {
         tableName = cd.getTableName();
         primaryKey = cd.isPrimaryKey();
         foreignKey = cd.isForeignKey();
+        uniqueKey = cd.isUniqueKey();
         dimensions = cd.getDimensions();
         columnName = cd.getColumnName();
         computedBy = cd.getComputedBy();
@@ -181,6 +184,7 @@ public class ColumnData implements Serializable {
         setTypeName(cd.getTypeName());
         setPrimaryKey(cd.isPrimaryKey());
         setForeignKey(cd.isForeignKey());
+        setUniqueKey(cd.isUnique());
         setDimensions(cd.getDimensions());
         setTableName(cd.getParentsName());
         setColumnPosition(cd.getPosition());
@@ -518,6 +522,14 @@ public class ColumnData implements Serializable {
 
     public void setForeignKey(boolean foreignKey) {
         this.foreignKey = foreignKey;
+    }
+
+    public boolean isUniqueKey() {
+        return uniqueKey;
+    }
+
+    public void setUniqueKey(boolean uniqueKey) {
+        this.uniqueKey = uniqueKey;
     }
 
     public boolean isNotNull() {
@@ -880,7 +892,7 @@ public class ColumnData implements Serializable {
     // ---
 
     public boolean isKey() {
-        return isPrimaryKey() || isForeignKey();
+        return isPrimaryKey() || isForeignKey() || isUniqueKey();
     }
 
     public boolean isBit() {

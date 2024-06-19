@@ -85,7 +85,7 @@ public class SVGImage extends BufferedImage {
         render();
     }
 
-    public static SVGImage fromSvg(URL resource, int width, int height) throws IOException {
+    public synchronized static SVGImage fromSvg(URL resource, int width, int height) throws IOException {
         try (InputStream inputStream = resource.openStream()) {
             SVGDocument svg = factory.createSVGDocument(resource.toString(), inputStream);
 

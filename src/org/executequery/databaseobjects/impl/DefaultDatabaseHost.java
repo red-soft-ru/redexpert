@@ -1556,6 +1556,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         }
     }
 
+    public AbstractTableObject getTableFromName(String name) {
+        NamedObject namedObject = getDatabaseObjectFromTypeAndName(TABLE, name);
+        if (namedObject == null)
+            namedObject = getDatabaseObjectFromTypeAndName(GLOBAL_TEMPORARY, name);
+        if (namedObject == null)
+            namedObject = getDatabaseObjectFromTypeAndName(VIEW, name);
+        return (AbstractTableObject) namedObject;
+    }
+
     public List<String> getDatabaseObjectNamesForMetaTag(String metadatakey) {
         List<String> list = new ArrayList<>();
         List<NamedObject> databaseObjects = getDatabaseObjectsForMetaTag(metadatakey);

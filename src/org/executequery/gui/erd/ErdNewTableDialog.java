@@ -85,6 +85,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         this.erdTable = erdTable;
 
         createPanel.setTableName(erdTable.getTableName());
+        createPanel.getSimpleCommentPanel().setComment(erdTable.getDescriptionTable());
 
         ColumnData[] cda = erdTable.getTableColumns();
         createPanel.setTableColumnData(cda);
@@ -178,6 +179,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             table.setCreateTableScript(sqlText.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
+            table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
             if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
@@ -188,6 +190,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             erdTable.setCreateTableScript(sqlText.getSQLText());
             erdTable.setNewTable(true);
             erdTable.setEditable(true);
+            erdTable.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
             erdTable.tableColumnsChanged();
         }
 

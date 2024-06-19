@@ -34,6 +34,8 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.databaseobjects.AbstractSQLSecurityObjectPanel;
 import org.executequery.gui.databaseobjects.CreateGlobalTemporaryTable;
+import org.executequery.gui.erd.ErdNewTableDialog;
+import org.executequery.gui.erd.ErdPopupMenu;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -119,6 +121,9 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     protected JPanel mainPanel;
     private JComboBox typeTemporaryBox;
 
+    protected JCheckBox showCommentOnTableBox;
+    protected JCheckBox showCommentOnFieldsBox;
+
     /**
      * <p> Constructs a new instance.
      */
@@ -185,6 +190,9 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         isExternalTable = new JCheckBox(bundledString("IsExternalTableText"));
         isExternalTable.addActionListener(e -> externalTablePropsChanged());
 
+        showCommentOnTableBox = new JCheckBox(Bundles.get(ErdPopupMenu.class, "DisplayCommentOnTable"));
+        showCommentOnFieldsBox = new JCheckBox(Bundles.get(ErdPopupMenu.class, "DisplayCommentsOnFields"));
+
         externalTableFilePathField = WidgetFactory.createTextField("externalTableFilePathField");
         externalTableFilePathField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -226,6 +234,12 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
                 topPanel.add(isAdapterNeeded, topGbh.nextCol().get());
             }
+        }
+        if (this instanceof ErdNewTableDialog.CreateTableERDPanel) {
+            if (connection == null)
+                topGbh.nextRowFirstCol().previousCol();
+            topPanel.add(showCommentOnTableBox, topGbh.nextCol().setLabelDefault().get());
+            topPanel.add(showCommentOnFieldsBox, topGbh.nextCol().setLabelDefault().get());
         }
 
         // ----- external panel -----

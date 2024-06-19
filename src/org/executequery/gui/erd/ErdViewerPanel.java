@@ -194,7 +194,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     private List tableNames;
 
-    private List columnData;
+    private List<ErdTableInfo> tableInfos;
 
     private int next_x = 20;
     private int next_y = 20;
@@ -228,15 +228,16 @@ public class ErdViewerPanel extends DefaultTabView
 
     public static final int DELETE = 0;
     public static final int NEW_OBJECT = DELETE + 1;
+
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, null, true, showTools, editable);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector columnData, boolean isNew) {
-        this(tableNames, columnData, isNew, true, true);
+    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos, boolean isNew) {
+        this(tableNames, tableInfos, isNew, true, true);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector columnData,
+    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos,
                           boolean isNew, boolean showTools, boolean editable) {
 
         super(new GridBagLayout());
@@ -254,12 +255,12 @@ public class ErdViewerPanel extends DefaultTabView
 
         // build all the tables to display
         if (!isNew) {
-            setTables(tableNames, columnData);
+            setTables(tableNames, tableInfos);
         } else {
             tables = new Vector();
         }
 
-        if (tableNames != null && columnData != null) {
+        if (tableNames != null && tableInfos != null) {
             dependsPanel.setTableDependencies(buildTableRelationships());
             resizeCanvas();
             layeredPane.validate();
@@ -291,9 +292,9 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List tableNames, List columnData) {
+    public void resetTableValues(List tableNames, List<ErdTableInfo> tableInfos) {
         removeAllTables();
-        setTables(tableNames, columnData);
+        setTables(tableNames, tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
@@ -305,10 +306,10 @@ public class ErdViewerPanel extends DefaultTabView
      * @param a   <code>Vector</code> of table names
      * @param the column meta data for the tables
      */
-    public void setTables(List tableNames, List columnData) {
+    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
 
         this.tableNames = tableNames;
-        this.columnData = columnData;
+        this.tableInfos = tableInfos;
 
         // next position of component added
 
@@ -328,10 +329,10 @@ public class ErdViewerPanel extends DefaultTabView
         for (int i = 0; i < size; i++) {
 
             // create the ERD display component
-            table = new ErdTable((String) tableNames.get(i),
-                    (ColumnData[]) columnData.get(i), this);
+            table = new ErdTable((String) tableNames.get(i), tableInfos.get(i).getColumns(), this);
 
             table.setEditable(editable);
+            table.setDescriptionTable(tableInfos.get(i).getComment());
             height = table.getHeight();
             width = table.getWidth();
 
@@ -662,6 +663,25 @@ public class ErdViewerPanel extends DefaultTabView
         }
         layeredPane.repaint();
     }
+
+    public void setDisplayCommentOnFields(boolean displayCommentOnFields) {
+        ErdTable[] allTables = getAllTablesArray();
+        for (int i = 0; i < allTables.length; i++) {
+            allTables[i].setShowCommentOnFields(displayCommentOnFields);
+            allTables[i].tableColumnsChanged();
+        }
+        layeredPane.repaint();
+    }
+
+    public void setDisplayCommentOnTable(boolean displayCommentOnTable) {
+        ErdTable[] allTables = getAllTablesArray();
+        for (int i = 0; i < allTables.length; i++) {
+            allTables[i].setShowCommentOnTable(displayCommentOnTable);
+            allTables[i].tableColumnsChanged();
+        }
+        layeredPane.repaint();
+    }
+
     public static final int CHANGE_LOCATION = CHANGE_BG_COLOR + 1;
 
     protected ErdDependanciesPanel getDependenciesPanel() {
@@ -807,7 +827,7 @@ public class ErdViewerPanel extends DefaultTabView
         scroll.resizeCanvas();
     }
 
-    public Vector getAllTablesVector() {
+    public Vector<ErdTable> getAllTablesVector() {
         return tables;
     }
 
@@ -994,10 +1014,14 @@ public class ErdViewerPanel extends DefaultTabView
                 table.setBounds(fileData[i].getTableBounds());
                 table.setEditable(true);
                 table.setTableBackground(fileData[i].getTableBackground());
+                table.setDescriptionTable(fileData[i].getTableDescription());
+                table.setShowCommentOnTable(fileData[i].isShowCommentOnTable());
+                table.setShowCommentOnFields(fileData[i].isShowCommentsOnfields());
 
                 layeredPane.add(table);
                 addTableToList(table);
                 table.toFront();
+                table.tableColumnsChanged();
             }
         }
 
@@ -1107,6 +1131,9 @@ public class ErdViewerPanel extends DefaultTabView
             fileData[i].setAddConstraintScript(tables[i].getAddConstraintsScript());
             fileData[i].setDropConstraintScript(tables[i].getDropConstraintsScript());
             fileData[i].setTableBackground(tables[i].getTableBackground());
+            fileData[i].setTableDescription(tables[i].getDescriptionTable());
+            fileData[i].setShowCommentOnTable(tables[i].isShowCommentOnTable());
+            fileData[i].setShowCommentsOnfields(tables[i].isShowCommentOnFields());
         }
         ErdTextPanel[] erdTextPanels = getTextPanelsArray();
         ErdTextPanelData[] textFileData = new ErdTextPanelData[erdTextPanels.length];
@@ -1222,7 +1249,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void reset() {
-        resetTableValues(tableNames, columnData);
+        resetTableValues(tableNames, tableInfos);
         setScaledView(defaultScaledView);
     }
 
@@ -1483,6 +1510,7 @@ public class ErdViewerPanel extends DefaultTabView
         for (ErdTable table : tables) {
             if (table.getTableName().contentEquals(newTable.getTableName())) {
                 table.setTableColumns(newTable.getTableColumns());
+                table.setDescriptionTable(newTable.getDescriptionTable());
                 table.tableColumnsChanged();
                 return false;
             }

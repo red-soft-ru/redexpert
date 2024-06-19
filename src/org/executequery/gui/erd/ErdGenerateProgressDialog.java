@@ -22,6 +22,7 @@ package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -189,7 +190,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         int v_size = selectedTables.size();
 
-        Vector columnData = new Vector(v_size);
+        Vector<ErdTableInfo> erdTableInfos = new Vector(v_size);
 
         try {
 
@@ -203,9 +204,15 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 }
 
                 try {
-                   columnData.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName((String) selectedTables.get(i)));
+                    ErdTableInfo etf = new ErdTableInfo();
+                    etf.setName((String) selectedTables.get(i));
+                    etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName(etf.getName()));
+                    AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTableFromName(etf.getName());
+                    if (tableObject != null)
+                        etf.setComment(tableObject.getRemarks());
+                    erdTableInfos.add(etf);
                 } catch (DataSourceException e) {
-                    columnData.add(new ColumnData[0]);
+                    erdTableInfos.add(new ErdTableInfo());
                 }
 
                 progressBar.setValue(count++);
@@ -218,14 +225,14 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             cancelButton.setEnabled(false);
         }
 
-        return columnData;
+        return (erdTableInfos);
     }
 
-    private void processComplete(Vector columnData) {
+    private void processComplete(Vector<ErdTableInfo> tableInfoList) {
 
         if (parent == null) { // mapping a new erd
 
-            if (columnData.size() != selectedTables.size()) {
+            if (tableInfoList.size() != selectedTables.size()) {
                 //GUIUtilities.setFrameIconified(GenerateErdPanel.TITLE, false);
                 dispose();
                 return;
@@ -234,7 +241,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             GUIUtilities.showWaitCursor();
 
             ErdViewerPanel viewerPanel =
-                    new ErdViewerPanel(selectedTables, columnData, false);
+                    new ErdViewerPanel(selectedTables, tableInfoList, false);
             viewerPanel.setDatabaseConnection(databaseConnection);
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
@@ -251,7 +258,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         } else {
 
-            if (columnData.size() != selectedTables.size()) {
+            if (tableInfoList.size() != selectedTables.size()) {
                 dispose();
                 return;
             }
@@ -260,8 +267,8 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
             ErdTable table = null;
             for (int i = 0, n = selectedTables.size(); i < n; i++) {
-                ColumnData[] cds = (ColumnData[]) columnData.elementAt(i);
-                if (cds.length == 0) {
+                ColumnData[] cds = tableInfoList.elementAt(i).getColumns();
+                if (cds == null || cds.length == 0) {
                     for (ErdTable t : parent.getAllTablesArray())
                         if (t.getTableName().contentEquals((String) selectedTables.elementAt(i))) {
                             parent.removeTable(t);
@@ -271,8 +278,9 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                     // create the ERD display component
                     table = new ErdTable(
                             (String) selectedTables.elementAt(i),
-                            (ColumnData[]) columnData.elementAt(i), parent);
+                            tableInfoList.elementAt(i).getColumns(), parent);
                     table.setEditable(parent.isEditable());
+                    table.setDescriptionTable(tableInfoList.elementAt(i).getComment());
                     parent.addNewTable(table, false);
                 }
             }

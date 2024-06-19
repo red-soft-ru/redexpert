@@ -381,6 +381,14 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         }
     }
 
+    public SimpleCommentPanel getSimpleCommentPanel() {
+        return simpleCommentPanel;
+    }
+
+    public void setSimpleCommentPanel(SimpleCommentPanel simpleCommentPanel) {
+        this.simpleCommentPanel = simpleCommentPanel;
+    }
+
     public boolean isCommit() {
         return commit;
     }

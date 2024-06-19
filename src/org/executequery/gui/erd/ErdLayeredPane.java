@@ -209,7 +209,7 @@ public class ErdLayeredPane extends JLayeredPane
 
     public void mousePressed(MouseEvent e) {
         ErdMoveableComponent clickedComponent = getClickedComponent(e);
-        if (clickedComponent != null && !clickedComponent.isSelected()) {
+        if (clickedComponent == null || !clickedComponent.isSelected()) {
             determineSelectedTable(e);
             if (selectedComponent != null) {
                 selectedComponent.selected(e);

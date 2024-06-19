@@ -839,10 +839,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(
-                                constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(tableName));
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -852,10 +849,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(referencedTable);
                         tableNamesAdded.add(referencedTable);
-                        columns.add(controller.getColumnData(
-                                constraint.getReferencedSchema(),
-                                referencedTable, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(referencedTable));
                     }
 
                     //noinspection SuspiciousMethodCalls
@@ -863,10 +857,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(
-                                constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(tableName));
                     }
                 }
             }
@@ -879,10 +870,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                     tableNames.add(parentsName);
                     tableNamesAdded.add(parentsName);
-                    columns.add(controller.getColumnData(
-                            column.getSchemaName(),
-                            parentsName, table.getHost().getDatabaseConnection())
-                    );
+                    columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(parentsName));
                 }
             }
 

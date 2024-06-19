@@ -22,8 +22,6 @@ package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -205,10 +203,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 }
 
                 try {
-                    DefaultDatabaseTable table = (DefaultDatabaseTable) ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectFromTypeAndName(NamedObject.TABLE, (String) selectedTables.get(i));
-                    if (table != null)
-                        columnData.add(table.getColumnDataList().toArray(new ColumnData[0]));
-                    else columnData.add(new ColumnData[0]);
+                   columnData.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName((String) selectedTables.get(i)));
                 } catch (DataSourceException e) {
                     columnData.add(new ColumnData[0]);
                 }

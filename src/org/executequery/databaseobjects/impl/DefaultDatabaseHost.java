@@ -33,6 +33,8 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledDatabaseMetaData;
 import org.executequery.datasource.PooledStatement;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -898,6 +900,23 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             setMarkedForReload(false);
         }
 
+    }
+
+    public List<ColumnData> getColumnDataListFromTableName(String tableName) {
+
+        DefaultDatabaseTable table = (DefaultDatabaseTable) getDatabaseObjectFromTypeAndName(NamedObject.TABLE, tableName);
+        if (table == null)
+            table = (DefaultDatabaseTable) ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectFromTypeAndName(NamedObject.GLOBAL_TEMPORARY, tableName);
+        if (table != null)
+            return table.getColumnDataList();
+        else return null;
+    }
+
+    public ColumnData[] getColumnDataArrayFromTableName(String tableName) {
+        List<ColumnData> list = getColumnDataListFromTableName(tableName);
+        if (list != null)
+            return list.toArray(new ColumnData[0]);
+        else return new ColumnData[0];
     }
 
     private void createDefaultMetaObjects(DatabaseCatalog catalog,

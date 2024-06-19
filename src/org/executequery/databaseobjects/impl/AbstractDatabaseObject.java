@@ -1072,21 +1072,21 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 case "PRIMARY KEY":
                     previousColumn.setPrimaryKey(true);
                     TableColumnConstraint constraint = new TableColumnConstraint(null, ColumnConstraint.PRIMARY_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "UNIQUE":
                     previousColumn.setUnique(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.UNIQUE_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "FOREIGN KEY":
                     previousColumn.setForeignKey(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.FOREIGN_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
-                    constraint.setReferencedTable(rs.getString(REF_TABLE));
-                    constraint.setReferencedColumn(rs.getString(REF_COLUMN));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
+                    constraint.setReferencedTable(MiscUtils.trimEnd(rs.getString(REF_TABLE)));
+                    constraint.setReferencedColumn(MiscUtils.trimEnd(rs.getString(REF_COLUMN)));
                     String rule = rs.getString(UPDATE_RULE);
                     if (rule != null)
                         constraint.setUpdateRule(rule.trim());

@@ -346,7 +346,7 @@ public class ErdLayeredPane extends JLayeredPane
         int units = Math.abs(e.getUnitsToScroll()) * 3;
         Rectangle viewRect = parent.getScroll().getViewport().getViewRect();
         int max = parent.getScroll().getVerticalScrollBar().getVisibleAmount();
-        if (e.isAltDown() || max == parent.getScroll().getVerticalScrollBar().getMaximum()) {
+        if (e.isShiftDown() || max == parent.getScroll().getVerticalScrollBar().getMaximum()) {
             if (e.getWheelRotation() < 0) {
                 viewRect.x -= units;
                 if (viewRect.x <= parent.getScroll().getHorizontalScrollBar().getMinimum()) {

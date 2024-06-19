@@ -227,7 +227,7 @@ public class ErdViewerPanel extends DefaultTabView
     };
 
     public static final int DELETE = 0;
-
+    public static final int NEW_OBJECT = DELETE + 1;
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, null, true, showTools, editable);
     }
@@ -275,7 +275,7 @@ public class ErdViewerPanel extends DefaultTabView
         fileName = savedErd.getFileName();
 
     }
-    public static final int NEW_OBJECT = DELETE + 1;
+
 
     public void addTitlePanel(ErdTitlePanel erdTitlePanel) {
         layeredPane.add(erdTitlePanel);
@@ -1442,6 +1442,12 @@ public class ErdViewerPanel extends DefaultTabView
                         UndoRedoAction undoRedoAction = redoActions.pop();
                         undoRedoAction.undoExecute();
                     }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_A && e.isControlDown()) {
+                    for (ErdMoveableComponent emc : getAllComponentsArray()) {
+                        emc.setSelected(true);
+                    }
+                    layeredPane.repaint();
                 }
             }
         });

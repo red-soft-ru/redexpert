@@ -1523,12 +1523,14 @@ public class QueryEditor extends DefaultTabView
 
     @Override
     public void addCheck(ListEvent listEvent) {
-        connectionChanged();
+        if (useMultipleConnections)
+            connectionChanged();
     }
 
     @Override
     public void removeCheck(ListEvent listEvent) {
-        connectionChanged();
+        if (useMultipleConnections)
+            connectionChanged();
     }
 
     private void connectionChanged() {

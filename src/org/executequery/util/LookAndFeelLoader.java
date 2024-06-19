@@ -26,6 +26,8 @@ import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.plaf.*;
 import org.underworldlabs.swing.plaf.base.CustomTextAreaUI;
 import org.underworldlabs.swing.plaf.base.CustomTextPaneUI;
+import org.underworldlabs.swing.plaf.defaultLaf.DefaultDarkLookAndFeel;
+import org.underworldlabs.swing.plaf.defaultLaf.DefaultLightLookAndFeel;
 
 import javax.swing.*;
 import javax.swing.text.DefaultEditorKit;

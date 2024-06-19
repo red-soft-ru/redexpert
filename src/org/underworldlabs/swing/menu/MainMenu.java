@@ -37,11 +37,6 @@ public class MainMenu extends JMenu {
     }
 
     @Override
-    public Insets getInsets() {
-        return new Insets(0, 0, 0, 10);
-    }
-
-    @Override
     public Dimension getPreferredSize() {
 
         if (GUIUtilities.getLookAndFeel().isClassicTheme()) {

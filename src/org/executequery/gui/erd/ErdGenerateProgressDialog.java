@@ -22,9 +22,10 @@ package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.AbstractBaseDialog;
@@ -57,10 +58,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
      */
     private Vector selectedTables;
 
-    /**
-     * Utility to retrieve column data
-     */
-    private MetaDataValues metaData;
 
     /**
      * Worker thread for process
@@ -73,58 +70,45 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     private JButton cancelButton;
 
     /**
-     * The schema name
-     */
-    private String schema;
-
-    /**
      * the connection props object
      */
     private final DatabaseConnection databaseConnection;
     private ErdViewerPanel erdViewerPanel;
 
-    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables, String schema, ErdViewerPanel erdViewerPanel) {
-        this(databaseConnection, selectedTables, schema);
+    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables, ErdViewerPanel erdViewerPanel) {
+        this(databaseConnection, selectedTables);
         this.erdViewerPanel = erdViewerPanel;
     }
 
-    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection,
-                                     Vector selectedTables, String schema) {
-
+    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables) {
         super(GUIUtilities.getParentFrame(), "Progress", false);
 
         this.databaseConnection = databaseConnection;
-        this.schema = schema;
         this.selectedTables = selectedTables;
 
-        //GUIUtilities.setFrameIconified(GenerateErdPanel.TITLE, true);
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        jbInit();
         display();
-
     }
 
-    public ErdGenerateProgressDialog(Vector selectedTables,
-                                     ErdViewerPanel parent, String schema) {
-
+    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent) {
         super(GUIUtilities.getParentFrame(), "Adding Tables", false);
-        this.schema = schema;
 
-        databaseConnection = parent.getDatabaseConnection();
+        this.databaseConnection = parent.getDatabaseConnection();
         this.selectedTables = selectedTables;
         this.parent = parent;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        jbInit();
+        display();
+    }
 
+    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent, DatabaseConnection connection) {
+        super(GUIUtilities.getParentFrame(), "Adding Tables", false);
+
+        this.databaseConnection = connection;
+        this.selectedTables = selectedTables;
+        this.parent = parent;
+
+        jbInit();
         display();
     }
 
@@ -138,11 +122,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         JPanel base = new JPanel(new GridBagLayout());
 
         cancelButton = new JButton(Bundles.get("common.cancel.button"));
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                worker.interrupt();
-            }
-        });
+        cancelButton.addActionListener(e -> worker.interrupt());
 
         progressBar = new JProgressBar(0, selectedTables.size() * 2);
         progressBar.setPreferredSize(new Dimension(250, 20));
@@ -171,8 +151,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         setResizable(false);
 
-        metaData = new MetaDataValues(databaseConnection, true);
-
         worker = new SwingWorker(ErdGenerateProgressDialog.class.getSimpleName()) {
             public Object construct() {
                 return doWork();
@@ -191,7 +169,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         int v_size = selectedTables.size();
 
-        Vector columnData = new Vector(v_size);
+        Vector<ErdTableInfo> erdTableInfos = new Vector(v_size);
 
         try {
 
@@ -205,10 +183,15 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 }
 
                 try {
-                    columnData.add(metaData.getColumnMetaData(
-                            (String) selectedTables.elementAt(i), schema));
+                    ErdTableInfo etf = new ErdTableInfo();
+                    etf.setName((String) selectedTables.get(i));
+                    etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName(etf.getName()));
+                    AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTableFromName(etf.getName());
+                    if (tableObject != null)
+                        etf.setComment(tableObject.getRemarks());
+                    erdTableInfos.add(etf);
                 } catch (DataSourceException e) {
-                    columnData.add(new ColumnData[0]);
+                    erdTableInfos.add(new ErdTableInfo());
                 }
 
                 progressBar.setValue(count++);
@@ -219,26 +202,23 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         } finally {
             progressBar.setValue(selectedTables.size() * 2);
             cancelButton.setEnabled(false);
-            metaData.closeConnection();
         }
 
-        return columnData;
+        return (erdTableInfos);
     }
 
-    private void processComplete(Vector columnData) {
+    private void processComplete(Vector<ErdTableInfo> tableInfoList) {
 
         if (parent == null) { // mapping a new erd
 
-            if (columnData.size() != selectedTables.size()) {
-                //GUIUtilities.setFrameIconified(GenerateErdPanel.TITLE, false);
+            if (tableInfoList.size() != selectedTables.size()) {
                 dispose();
                 return;
             }
 
             GUIUtilities.showWaitCursor();
-            metaData = null;
 
-            new ErdViewerPanel(selectedTables, columnData, false);
+            new ErdViewerPanel(selectedTables, tableInfoList, false);
 
             erdViewerPanel.setDatabaseConnection(databaseConnection);
             erdViewerPanel.cleanup();
@@ -252,38 +232,44 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         } else {
 
-            if (columnData.size() != selectedTables.size()) {
+            if (tableInfoList.size() != selectedTables.size()) {
                 dispose();
                 return;
             }
 
             GUIUtilities.showWaitCursor();
-            metaData = null;
 
-            ErdTable table = null;
             for (int i = 0, n = selectedTables.size(); i < n; i++) {
 
-                // create the ERD display component
-                table = new ErdTable(
-                        (String) selectedTables.elementAt(i),
-                        (ColumnData[]) columnData.elementAt(i), parent);
-                table.setEditable(parent.isEditable());
-                parent.addNewTable(table);
+                ColumnData[] cds = tableInfoList.elementAt(i).getColumns();
+                if (cds == null || cds.length == 0) {
+
+                    for (ErdTable t : parent.getAllTablesArray()) {
+                        if (t.getTableName().contentEquals((String) selectedTables.elementAt(i))) {
+                            parent.removeTable(t);
+                            break;
+                        }
+                    }
+
+                } else {
+
+                    ErdTable table = new ErdTable(
+                            (String) selectedTables.elementAt(i),
+                            tableInfoList.elementAt(i).getColumns(),
+                            parent
+                    );
+                    table.setEditable(parent.isEditable());
+                    table.setDescriptionTable(tableInfoList.elementAt(i).getComment());
+
+                    parent.addNewTable(table, false);
+                }
             }
 
             parent.updateTableRelationships();
             GUIUtilities.showNormalCursor();
             selectedTables = null;
             dispose();
-
         }
-
     }
 
 }
-
-
-
-
-
-

@@ -26,8 +26,14 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
@@ -63,6 +69,8 @@ public class ErdToolBarPalette extends JPanel {
     private RolloverButton erdTitleButton;
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
+    private RolloverButton erdTextBlockButton;
+    private RolloverButton updateFromDatabase;
 
     private JComboBox<?> connectionsCombo;
 
@@ -187,6 +195,20 @@ public class ErdToolBarPalette extends JPanel {
                 e -> parent.zoom(false)
         );
 
+        erdTextBlockButton = WidgetFactory.createRolloverButton(
+                "erdTextBlockButton",
+                "AddComment16",
+                bundleString("erdText"),
+                e -> new ErdTextBlockDialog(parent)
+        );
+
+        updateFromDatabase = WidgetFactory.createRolloverButton(
+                "updateFromDatabase",
+                "RecycleConnection16",
+                bundleString("updateFromDatabase"),
+                e -> updateFromDatabase()
+        );
+
         connections.stream()
                 .filter(DatabaseConnection::isConnected)
                 .findFirst().ifPresent(dc -> connectionsCombo.setSelectedItem(dc));
@@ -289,7 +311,7 @@ public class ErdToolBarPalette extends JPanel {
     private void setBackgroundColours(boolean forCanvas) {
 
         boolean tablesSelected = false;
-        ErdTable[] selectedTables = parent.getSelectedTablesArray();
+        ErdMoveableComponent[] selectedTables = parent.getSelectedComponentsArray();
         Color currentColour = forCanvas ? parent.getCanvasBackground() : parent.getTableBackground();
 
         if (selectedTables != null) {
@@ -305,6 +327,7 @@ public class ErdToolBarPalette extends JPanel {
             parent.setCanvasBackground(newColour);
 
         } else if (tablesSelected) {
+            parent.fireChangedBgColor();
             Arrays.stream(selectedTables).forEach(table -> table.setTableBackground(newColour));
             parent.repaintLayeredPane();
 
@@ -327,6 +350,22 @@ public class ErdToolBarPalette extends JPanel {
                 break;
             }
         }
+    }
+
+    private void updateFromDatabase() {
+        try {
+            GUIUtilities.showWaitCursor();
+
+            BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
+            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(dialog, parent, getSelectedConnection()));
+            dialog.setResizable(false);
+            dialog.display();
+
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+
+        parent.repaintLayeredPane();
     }
 
     private void updateScale() {

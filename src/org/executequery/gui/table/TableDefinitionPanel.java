@@ -29,11 +29,11 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.table.EachRowEditor;
 import org.underworldlabs.swing.table.NumberCellEditor;
-import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
@@ -401,10 +401,6 @@ public abstract class TableDefinitionPanel extends JPanel
         _model.setColumnDataArray(cda);
     }
 
-    public void setColumnDataArray(ColumnData[] cda, String[] dataTypes) {
-        _model.setColumnDataArray(cda);
-        this.dataTypes = dataTypes;
-    }
 
     public void setDomains(String[] domains) {
 
@@ -417,33 +413,34 @@ public abstract class TableDefinitionPanel extends JPanel
     }
 
     public void updateCollation(String charset, int row) {
+        if (dc != null) {
+            DefaultStatementExecutor sender = new DefaultStatementExecutor();
+            sender.setDatabaseConnection(dc);
 
-        DefaultStatementExecutor sender = new DefaultStatementExecutor();
-        sender.setDatabaseConnection(dc);
+            String query = "SELECT RDB$COLLATION_NAME\n" +
+                    "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +
+                    "WHERE CS.RDB$CHARACTER_SET_NAME='" + charset + "'";
 
-        String query = "SELECT RDB$COLLATION_NAME\n" +
-                "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +
-                "WHERE CS.RDB$CHARACTER_SET_NAME='" + charset + "'";
+            ComboBoxCellEditor comboBoxEditor = new ComboBoxCellEditor();
 
-        ComboBoxCellEditor comboBoxEditor = new ComboBoxCellEditor();
+            try {
+                ResultSet rs = sender.getResultSet(query).getResultSet();
 
-        try {
-            ResultSet rs = sender.getResultSet(query).getResultSet();
+                comboBoxEditor.addItem("");
+                comboBoxEditor.addItem(CreateTableSQLSyntax.NONE);
 
-            comboBoxEditor.addItem("");
-            comboBoxEditor.addItem(CreateTableSQLSyntax.NONE);
+                while (rs.next())
+                    comboBoxEditor.addItem(rs.getString(1).trim());
 
-            while (rs.next())
-                comboBoxEditor.addItem(rs.getString(1).trim());
+            } catch (Exception e) {
+                e.printStackTrace();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } finally {
+                sender.releaseResources();
+            }
 
-        } finally {
-            sender.releaseResources();
+            collateEachRowEditor.setEditorAt(row, comboBoxEditor);
         }
-
-        collateEachRowEditor.setEditorAt(row, comboBoxEditor);
     }
 
     public void setGenerators(String[] generators) {
@@ -1122,21 +1119,23 @@ public abstract class TableDefinitionPanel extends JPanel
                     break;
 
                 case DOMAIN_COLUMN:
-                    if (value.getClass() == String.class) {
-                        cd.setConnection(dc);
-                        cd.setDomain((String) value);
-                        if (!MiscUtils.isNull((String) value)) {
+                    if (value != null) {
+                        if (value.getClass() == String.class) {
+                            cd.setConnection(dc);
+                            cd.setDomain((String) value);
+                            if (!MiscUtils.isNull((String) value)) {
+                                cd.setTypeName(getStringType(cd.getSQLType()));
+                                _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
+                            }
+
+                        } else {
+                            cd.setConnection(dc);
+                            cd.setDomain(domains[(int) value]);
                             cd.setTypeName(getStringType(cd.getSQLType()));
                             _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
                         }
-
-                    } else {
-                        cd.setConnection(dc);
-                        cd.setDomain(domains[(int) value]);
-                        cd.setTypeName(getStringType(cd.getSQLType()));
-                        _model.setValueAt(cd.getTypeName(), row, TYPE_COLUMN);
+                        updateCollation(getValueAt(row, ENCODING_COLUMN).toString(), row);
                     }
-                    updateCollation(getValueAt(row, ENCODING_COLUMN).toString(), row);
                     break;
 
                 case SIZE_COLUMN:

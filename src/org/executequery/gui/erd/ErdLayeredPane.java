@@ -20,13 +20,12 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.util.Vector;
 
@@ -36,22 +35,25 @@ import java.util.Vector;
 @SuppressWarnings({"rawtypes"})
 public class ErdLayeredPane extends JLayeredPane
         implements MouseListener,
-        MouseMotionListener {
+        MouseMotionListener,
+        MouseWheelListener {
 
     /**
      * The controller for the ERD viewer
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The popup menu
      */
-    private ErdPopupMenu popup;
+    private final ErdPopupMenu popup;
 
     /**
      * The currently selected component
      */
     private static ErdMoveableComponent selectedComponent;
+    private static ErdMoveableComponent changedSizeComponent;
+    private static int changedSizeCursor;
 
     /** The title panel */
     //  private ErdTitle titlePanel;
@@ -66,6 +68,7 @@ public class ErdLayeredPane extends JLayeredPane
         popup = new ErdPopupMenu(parent);
         addMouseListener(this);
         addMouseMotionListener(this);
+        addMouseWheelListener(this);
     }
 
     public void setScale(double scale) {
@@ -125,7 +128,7 @@ public class ErdLayeredPane extends JLayeredPane
         ErdMoveableComponent component = null;
 
         for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdTable) tables.elementAt(i);
+            component = (ErdMoveableComponent) tables.elementAt(i);
 
             if (component.isSelected()) {
                 component.setSelected(false);
@@ -160,14 +163,97 @@ public class ErdLayeredPane extends JLayeredPane
         return UIUtils.getColour("executequery.Erd.background", Color.WHITE);
     }
 
+    boolean dragged = false;
+
+    private ErdMoveableComponent getClickedComponent(MouseEvent e) {
+        Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
+        ErdMoveableComponent component = null;
+        ErdMoveableComponent selectedTable = null;
+
+        boolean intersects = false;
+
+        int index = -1;
+        int lastIndex = Integer.MAX_VALUE;
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
+
+            intersects = component.getBounds().contains(mouseX, mouseY);
+
+            index = getIndexOf(component);
+
+            if (intersects && index < lastIndex) {
+                lastIndex = index;
+                selectedTable = component;
+            }
+
+        }
+        return selectedTable;
+    }
+
     public void mouseDragged(MouseEvent e) {
-        if (selectedComponent != null) {
+        /*if (selectedComponent != null) {
             selectedComponent.dragging(e);
+        }*/
+        if (changedSizeComponent != null) {
+            changedSizeComponent.changeSize(e, changedSizeCursor);
+            dragged = true;
+        } else if (!e.isControlDown()) {
+            ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
+            for (ErdMoveableComponent selectComponent : selectComponents) {
+                selectComponent.dragging(e);
+            }
+            dragged = true;
         }
     }
 
+    // -------------------------------------------
+    // ------ MouseListener implementations ------
+    // -------------------------------------------
+
+    public void mousePressed(MouseEvent e) {
+        ErdMoveableComponent clickedComponent = getClickedComponent(e);
+        if (changedSizeComponent == null) {
+            if (clickedComponent == null || !clickedComponent.isSelected() || e.isControlDown()) {
+                determineSelectedTable(e);
+                if (selectedComponent != null) {
+                    selectedComponent.selected(e);
+                }
+            }
+        }
+        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        for (ErdMoveableComponent comp : comps)
+            comp.calculateDragging(e);
+    }
+
+    private void determineChangeSizeCursor(MouseEvent e) {
+        Vector<ErdMoveableComponent> vector = (Vector<ErdMoveableComponent>) parent.getSelectedComponents();
+        ErdMoveableComponent component = null;
+        changedSizeComponent = null;
+
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
+
+            int cursor = component.checkChangeSizeCoords(mouseX, mouseY);
+            if (cursor < 0)
+                continue;
+            GUIUtilities.showChangeSizeCursor(cursor);
+            changedSizeComponent = component;
+            changedSizeCursor = cursor;
+
+        }
+        if (changedSizeComponent == null)
+            GUIUtilities.showNormalCursor();
+
+    }
+
     private void determineSelectedTable(MouseEvent e) {
-        Vector tables = parent.getAllComponentsVector();
+        Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
         ErdMoveableComponent component = null;
         ErdMoveableComponent selectedTable = null;
 
@@ -179,8 +265,8 @@ public class ErdLayeredPane extends JLayeredPane
         int mouseX = (int) (e.getX() / scale);
         int mouseY = (int) (e.getY() / scale);
 
-        for (int i = 0, k = tables.size(); i < k; i++) {
-            component = (ErdMoveableComponent) tables.elementAt(i);
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
 
             intersects = component.getBounds().contains(mouseX, mouseY);
 
@@ -215,25 +301,18 @@ public class ErdLayeredPane extends JLayeredPane
             }
 
         }
+        parent.requestFocusInWindow();
 
-    }
-
-    // -------------------------------------------
-    // ------ MouseListener implementations ------
-    // -------------------------------------------
-
-    public void mousePressed(MouseEvent e) {
-        determineSelectedTable(e);
-        if (selectedComponent != null) {
-            selectedComponent.selected(e);
-        }
-        maybeShowPopup(e);
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (selectedComponent != null) {
-            selectedComponent.deselected(e);
+        ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
+        if (dragged) {
+            parent.fireDragging();
         }
+        for (ErdMoveableComponent comp : comps)
+            comp.finishedDragging();
+        dragged = false;
         maybeShowPopup(e);
     }
 
@@ -269,6 +348,7 @@ public class ErdLayeredPane extends JLayeredPane
     }
 
     public void mouseMoved(MouseEvent e) {
+        determineChangeSizeCursor(e);
     }
     // --------------------------------------------
 
@@ -288,157 +368,45 @@ public class ErdLayeredPane extends JLayeredPane
         popup.displayViewItemsOnly();
     }
 
-    /**
-     * ERD panel popup menu.
-     */
-    /*
-    class PopMenu extends JPopupMenu 
-                  implements ActionListener {
-        
-        private JCheckBoxMenuItem[] scaleChecks;
-        private JCheckBoxMenuItem gridCheck;
-        
-        public PopMenu() {
-            
-            MenuBuilder builder = new MenuBuilder();
-            
-            JMenu newMenu = MenuItemFactory.createMenu("New");
-            JMenuItem newTable = builder.createMenuItem(newMenu, "Database Table",
-                    MenuBuilder.ITEM_PLAIN, "Create a new database table");
-            JMenuItem newRelation = builder.createMenuItem(newMenu, "Relationship",
-                    MenuBuilder.ITEM_PLAIN, "Create a new table relationship");
-            
-            JMenuItem fontProperties = MenuItemFactory.createMenuItem("Font Style");
-            JMenuItem lineProperties = MenuItemFactory.createMenuItem("Line Style");
-            
-            JMenu viewMenu = MenuItemFactory.createMenu("View");
-            
-            JMenuItem zoomIn = builder.createMenuItem(viewMenu, "Zoom In",
-                    MenuBuilder.ITEM_PLAIN, null);
-            JMenuItem zoomOut = builder.createMenuItem(viewMenu, "Zoom Out",
-                    MenuBuilder.ITEM_PLAIN, null);
-            viewMenu.addSeparator();
-            
-            ButtonGroup bg = new ButtonGroup();
-            String[] scaleValues = ErdViewerPanel.scaleValues;
-            scaleChecks = new JCheckBoxMenuItem[scaleValues.length];
-            
-            String defaultZoom = "75%";
-            
-            for (int i = 0; i < scaleValues.length; i++) {
-                scaleChecks[i] = MenuItemFactory.createCheckBoxMenuItem(scaleValues[i]);
-                viewMenu.add(scaleChecks[i]);
-                if (scaleValues[i].equals(defaultZoom)) {
-                    scaleChecks[i].setSelected(true);
-                }                
-                scaleChecks[i].addActionListener(this);
-                bg.add(scaleChecks[i]);
-            }
-
-            gridCheck = new JCheckBoxMenuItem("Display grid", parent.shouldDisplayGrid());
-            
-            JCheckBoxMenuItem marginCheck = MenuItemFactory.createCheckBoxMenuItem(
-                                                        "Display page margin",
-                                                        parent.shouldDisplayMargin());
-            JCheckBoxMenuItem displayColumnsCheck = MenuItemFactory.createCheckBoxMenuItem(
-                                                        "Display referenced keys only", true);
-            
-            viewMenu.addSeparator();
-            viewMenu.add(displayColumnsCheck);
-            viewMenu.add(gridCheck);
-            viewMenu.add(marginCheck);
-            
-            displayColumnsCheck.addActionListener(this);
-            marginCheck.addActionListener(this);
-            gridCheck.addActionListener(this);
-            zoomIn.addActionListener(this);
-            zoomOut.addActionListener(this);
-            newTable.addActionListener(this);
-            newRelation.addActionListener(this);
-            fontProperties.addActionListener(this);
-            lineProperties.addActionListener(this);
-            
-            JMenuItem help = MenuItemFactory.createMenuItem(ActionBuilder.get("help-command"));
-            help.setIcon(null);
-            help.setActionCommand("erd");
-            help.setText("Help");
-            
-            add(newMenu);
-            addSeparator();
-            add(fontProperties);
-            add(lineProperties);
-            addSeparator();
-            add(viewMenu);
-            addSeparator();
-            add(help);
-            
-        }
-        
-        public void setGridDisplayed(boolean display) {
-            gridCheck.setSelected(display);
-        }
-        
-        public void setMenuScaleSelection(int index) {
-            scaleChecks[index].setSelected(true);
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
-            
-            //Log.debug(command);
-            
-            if (command.equals("Font Style")) {
-                parent.showFontStyleDialog();
-            }
-            else if (command.equals("Line Style")) {
-                parent.showLineStyleDialog();
-            }
-            else if (command.equals("Database Table")) {
-                new ErdNewTableDialog(parent);
-            }
-            else if (command.equals("Relationship")) {
-                
-                if (parent.getAllComponentsVector().size() <= 1) {
-                    GUIUtilities.displayErrorMessage(
-                         "You need at least 2 tables to create a relationship");
-                    return;
-                }
-
-                new ErdNewRelationshipDialog(parent);
-                
-            }            
-            else if (command.endsWith("%")) {
-                String scaleString = command.substring(0,command.indexOf("%"));
-                double scale = Double.parseDouble(scaleString) / 100;
-                parent.setScaledView(scale);
-                parent.setScaleComboValue(command);
-            }
-            else if (command.equals("Zoom In")) {
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        if (e.isControlDown()) {
+            if (e.getWheelRotation() < 0)
                 parent.zoom(true);
-            }
-            else if (command.equals("Zoom Out")) {
+            else if (e.getWheelRotation() > 0)
                 parent.zoom(false);
-            }
-            else if (command.equals("Display grid")) {
-                parent.swapCanvasBackground();
-            }
-            else if (command.equals("Display page margin")) {
-                parent.swapPageMargin();
-            }
-            else if (command.equals("Display referenced keys only")) {
-                JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-                parent.setDisplayKeysOnly(item.isSelected());
-            }
-
         }
-        
-        public void removeAll() {
-            scaleChecks = null;
-            super.removeAll();
+        int units = Math.abs(e.getUnitsToScroll()) * 3;
+        Rectangle viewRect = parent.getScroll().getViewport().getViewRect();
+        int max = parent.getScroll().getVerticalScrollBar().getVisibleAmount();
+        if (e.isShiftDown() || max == parent.getScroll().getVerticalScrollBar().getMaximum()) {
+            if (e.getWheelRotation() < 0) {
+                viewRect.x -= units;
+                if (viewRect.x <= parent.getScroll().getHorizontalScrollBar().getMinimum()) {
+                    viewRect.x = parent.getScroll().getHorizontalScrollBar().getMinimum();
+                }
+            } else { // (direction > 0
+                viewRect.x += units;
+                if (viewRect.x >= parent.getScroll().getHorizontalScrollBar().getMaximum()) {
+                    viewRect.x = parent.getScroll().getHorizontalScrollBar().getMaximum();
+                }
+            }
+            parent.getScroll().getHorizontalScrollBar().setValue(viewRect.x);
+        } else {
+            if (e.getWheelRotation() < 0) {
+                viewRect.y -= units;
+                if (viewRect.y <= parent.getScroll().getVerticalScrollBar().getMinimum()) {
+                    viewRect.y = parent.getScroll().getVerticalScrollBar().getMinimum();
+                }
+            } else { // (direction > 0
+                viewRect.y += units;
+                if (viewRect.y >= parent.getScroll().getVerticalScrollBar().getMaximum()) {
+                    viewRect.y = parent.getScroll().getVerticalScrollBar().getMaximum();
+                }
+            }
+            parent.getScroll().getVerticalScrollBar().setValue(viewRect.y);
         }
-        
-    } // class PopMenu
-    */
+    }
 
 }
 

@@ -37,13 +37,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.print.Printable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.Vector;
 
 import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
@@ -57,6 +60,39 @@ public class ErdViewerPanel extends DefaultTabView
         SaveFunction,
         ActiveComponent {
 
+    private static final int VERT_DIFF = 50;
+    private static final int HORIZ_DIFF = 50;
+
+    public static final int DELETE = 0;
+    public static final int NEW_OBJECT = DELETE + 1;
+    public static final int CHANGE_BG_COLOR = NEW_OBJECT + 1;
+
+    public final static Color[] TITLE_COLORS = new Color[]{
+            new Color(255, 173, 173),
+            new Color(255, 214, 165),
+            new Color(253, 255, 182),
+            new Color(202, 255, 191),
+            new Color(155, 246, 255),
+            new Color(0, 150, 255),
+            new Color(189, 178, 255),
+            new Color(255, 198, 255),
+            new Color(192, 192, 192),
+            new Color(248, 211, 201)
+    };
+
+    public final static Color[] LINE_COLORS = new Color[]{
+            new Color(255, 0, 0),
+            new Color(255, 128, 0),
+            new Color(255, 255, 0),
+            new Color(0, 255, 0),
+            new Color(0, 255, 255),
+            new Color(0, 0, 255),
+            new Color(128, 128, 255),
+            new Color(255, 0, 255),
+            new Color(85, 85, 85),
+            new Color(237, 146, 119)
+    };
+
     /**
      * The panel's title
      */
@@ -68,7 +104,7 @@ public class ErdViewerPanel extends DefaultTabView
     public static final String FRAME_ICON = "ErdPanel16";
 
     /**
-     * Whether this instance has a tool bar palatte
+     * Whether this instance has a toolbar palette
      */
     private final boolean showTools;
 
@@ -125,6 +161,8 @@ public class ErdViewerPanel extends DefaultTabView
      */
     private Vector<ErdTable> tables;
 
+    private Vector<ErdTextPanel> textPanels;
+
     /**
      * The font name displayed
      */
@@ -144,6 +182,7 @@ public class ErdViewerPanel extends DefaultTabView
      * The font style displayed for a column name
      */
     private int columnNameFontStyle;
+    private int textBlockFontStyle;
 
     /**
      * The default file name
@@ -158,6 +197,8 @@ public class ErdViewerPanel extends DefaultTabView
      * The font for the table name
      */
     private Font tableNameFont;
+
+    private Font textBlockFont;
 
     /**
      * the connection props object
@@ -183,17 +224,21 @@ public class ErdViewerPanel extends DefaultTabView
 
     private List tableNames;
 
-    private List columnData;
+    private List<ErdTableInfo> tableInfos;
+
+    private int next_x = 20;
+    private int next_y = 20;
+    private int lastWidth = 0;
 
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, null, true, showTools, editable);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector columnData, boolean isNew) {
-        this(tableNames, columnData, isNew, true, true);
+    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos, boolean isNew) {
+        this(tableNames, tableInfos, isNew, true, true);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector columnData,
+    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos,
                           boolean isNew, boolean showTools, boolean editable) {
 
         super(new GridBagLayout());
@@ -211,12 +256,12 @@ public class ErdViewerPanel extends DefaultTabView
 
         // build all the tables to display
         if (!isNew) {
-            setTables(tableNames, columnData);
+            setTables(tableNames, tableInfos);
         } else {
             tables = new Vector();
         }
 
-        if (tableNames != null && columnData != null) {
+        if (tableNames != null && tableInfos != null) {
             dependsPanel.setTableDependencies(buildTableRelationships());
             resizeCanvas();
             layeredPane.validate();
@@ -233,91 +278,6 @@ public class ErdViewerPanel extends DefaultTabView
 
     }
 
-    private void jbInit() throws Exception {
-        // set the background panel
-        bgPanel = new ErdBackgroundPanel(true);
-        // set the layered pane
-        layeredPane = new ErdLayeredPane(this);
-
-        // add the dependencies line panel
-        dependsPanel = new ErdDependanciesPanel(this);
-        layeredPane.add(dependsPanel, Integer.MIN_VALUE + 1);
-
-        // initialise the fonts
-        tableFontName = "Dialog";
-        tableFontSize = 10;
-        tableNameFontStyle = Font.PLAIN;
-        columnNameFontStyle = Font.PLAIN;
-
-        tableNameFont = new Font(tableFontName, tableNameFontStyle, tableFontSize + 1);
-        columnNameFont = new Font(tableFontName, columnNameFontStyle, tableFontSize);
-
-        // add the background component
-        layeredPane.add(bgPanel, Integer.MIN_VALUE);
-
-        addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                resizeCanvas();
-            }
-        });
-
-        // setup the base panel and add the layered pane
-        base = new JPanel(new BorderLayout());
-        base.add(layeredPane, BorderLayout.CENTER);
-
-        // set the view's scroller
-        scroll = new ErdScrollPane(this);
-        scroll.setViewportView(base);
-
-        scroll.setBorder(BorderFactory.createMatteBorder(
-                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
-        JPanel scrollPanel = new JPanel(new BorderLayout());
-        scrollPanel.add(scroll, BorderLayout.CENTER);
-        scrollPanel.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
-
-        // add all components to a main panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
-
-        // add the tool bar
-        if (showTools) {
-            tools = new ErdToolBarPalette(this);
-            mainPanel.add(tools, BorderLayout.NORTH);
-        }
-        mainPanel.add(scrollPanel, BorderLayout.CENTER);
-
-        add(mainPanel, new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                Constants.EMPTY_INSETS, 0, 0));
-
-        if (!editable && !showTools) {
-
-            layeredPane.displayPopupMenuViewItemsOnly();
-        }
-        
-        /*
-        ActionMap actionMap = getActionMap();
-        actionMap.put("zoom-in", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                zoom(true);
-            }
-        });
-        
-        actionMap.put("zoom-out", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                zoom(false);
-            }
-        });
-        
-        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        inputMap.put(KeyStroke.getKeyStroke("control EQUALS"), "zoom-in");
-        inputMap.put(KeyStroke.getKeyStroke("control MINUS"), "zoom-out");
-        */
-    }
-
     public void addTitlePanel(ErdTitlePanel erdTitlePanel) {
         layeredPane.add(erdTitlePanel);
         erdTitlePanel.setBounds(50, 50,
@@ -331,9 +291,9 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List tableNames, List columnData) {
+    public void resetTableValues(List tableNames, List<ErdTableInfo> tableInfos) {
         removeAllTables();
-        setTables(tableNames, columnData);
+        setTables(tableNames, tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
@@ -345,25 +305,14 @@ public class ErdViewerPanel extends DefaultTabView
      * @param a   <code>Vector</code> of table names
      * @param the column meta data for the tables
      */
-    public void setTables(List tableNames, List columnData) {
+    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
 
         this.tableNames = tableNames;
-        this.columnData = columnData;
-
-        // next position of component added
-        int next_x = 20;
-        int next_y = 20;
+        this.tableInfos = tableInfos;
 
         // height and width of current table
         int height = -1;
         int width = -1;
-
-        // width of last table
-        int lastWidth = 0;
-
-        // vertical and horizontal differences
-        int vertDiff = 50;
-        int horizDiff = 50;
 
         int size = tableNames.size();
         tables = new Vector(size);
@@ -372,10 +321,10 @@ public class ErdViewerPanel extends DefaultTabView
         for (int i = 0; i < size; i++) {
 
             // create the ERD display component
-            table = new ErdTable((String) tableNames.get(i),
-                    (ColumnData[]) columnData.get(i), this);
+            table = new ErdTable((String) tableNames.get(i), tableInfos.get(i).getColumns(), this);
 
             table.setEditable(editable);
+            table.setDescriptionTable(tableInfos.get(i).getComment());
             height = table.getHeight();
             width = table.getWidth();
 
@@ -386,7 +335,7 @@ public class ErdViewerPanel extends DefaultTabView
                 next_y = 20;
 
                 if (i > 0)
-                    next_x += lastWidth + horizDiff;
+                    next_x += lastWidth + HORIZ_DIFF;
 
                 lastWidth = 0;
 
@@ -398,16 +347,14 @@ public class ErdViewerPanel extends DefaultTabView
 
             table.toFront();
 
-            next_y += height + vertDiff;
+            next_y += height + VERT_DIFF;
 
             if (lastWidth < width)
                 lastWidth = width;
 
             // add to the vector
-            tables.add(table);
-
+            addTableToList(table);
         }
-
     }
 
     /**
@@ -422,13 +369,12 @@ public class ErdViewerPanel extends DefaultTabView
         ColumnData[] cda = null;
         ColumnConstraint[] cca = null;
 
-        ErdTable[] tables_array = getAllComponentsArray();
+        ErdTable[] tables_array = getAllTablesArray();
 
         Vector tableDependencies = new Vector();
         ErdTableDependency dependency = null;
 
         ErdTable table = null;
-        HashMap tempHash = new HashMap();
 
         for (int k = 0, m = tables.size(); k < m; k++) {
 
@@ -459,36 +405,24 @@ public class ErdViewerPanel extends DefaultTabView
 
                             table = tables.elementAt(j);
 
-                            // check to see that the combination
-                            // does not already exist
-                            if ((tempHash.containsKey(tables_array[k]) &&
-                                    tempHash.get(tables_array[k]) == table) ||
-                                    (tempHash.containsKey(table) &&
-                                            tempHash.get(table) == tables_array[k])) {
-                                break;
+                            ColumnData refCol = null;
+                            for (ColumnData col : table.getTableColumns()) {
+                                if (col.getColumnName().contentEquals(cca[n].getRefColumn())) {
+                                    refCol = col;
+                                    break;
+                                }
                             }
 
-                            dependency = new ErdTableDependency(tables_array[k], table);
-
-                            // place the tables in the temp HashMap so
-                            // the combination is not added a second time
-                            tempHash.put(tables_array[k], table);
-                            tempHash.put(table, tables_array[k]);
-
+                            dependency = new ErdTableDependency(tables_array[k], table, cda[i], refCol);
                             tableDependencies.add(dependency);
                             break;
                         }
-
                     }
-
                 }
-
             }
-
         }
 
         return tableDependencies;
-
     }
 
     /**
@@ -608,14 +542,12 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     protected void setTableBackground(Color c) {
-        ErdTable[] tablesArray = getAllComponentsArray();
+        ErdMoveableComponent[] tablesArray = getAllComponentsArray();
 
-        for (int i = 0; i < tablesArray.length; i++) {
-            tablesArray[i].setTableBackground(c);
-        }
+        for (ErdMoveableComponent erdMoveableComponent : tablesArray)
+            erdMoveableComponent.setTableBackground(c);
 
         layeredPane.repaint();
-
     }
 
     public void setDisplayGrid(boolean displayGrid) {
@@ -662,35 +594,36 @@ public class ErdViewerPanel extends DefaultTabView
         tables.removeElement(table);
     }
 
-    public void setTableDisplayFont(String fontName, int tableNameStyle,
-                                    int columnNameStyle, int size) {
+    public void setTableDisplayFont(String fontName, int tableNameStyle, int columnNameStyle, int textBlockStyle, int size) {
 
         tableFontSize = size;
         tableFontName = fontName;
         tableNameFontStyle = tableNameStyle;
         columnNameFontStyle = columnNameStyle;
+        textBlockFontStyle = textBlockStyle;
 
         tableNameFont = new Font(fontName, tableNameStyle, size + 1);
         columnNameFont = new Font(fontName, columnNameStyle, size);
+        textBlockFont = new Font(fontName, textBlockStyle, size);
 
-        ErdTable[] tablesArray = getAllComponentsArray();
-
-        for (int i = 0; i < tablesArray.length; i++) {
-            tablesArray[i].tableColumnsChanged();
-        }
+        ErdTable[] tablesArray = getAllTablesArray();
+        for (ErdTable erdTable : tablesArray)
+            erdTable.tableColumnsChanged(true);
 
         layeredPane.repaint();
     }
 
+    @Override
     public boolean canPrint() {
-
         return true;
     }
 
+    @Override
     public String getPrintJobName() {
         return "Red Expert - ERD";
     }
 
+    @Override
     public Printable getPrintable() {
         return new ErdPrintable(this);
     }
@@ -701,37 +634,39 @@ public class ErdViewerPanel extends DefaultTabView
 
     public void setDisplayKeysOnly(boolean displayKeysOnly) {
         this.displayKeysOnly = displayKeysOnly;
-        ErdTable[] allTables = getAllComponentsArray();
-        for (int i = 0; i < allTables.length; i++) {
-            allTables[i].setDisplayReferencedKeysOnly(displayKeysOnly);
-            allTables[i].tableColumnsChanged();
+
+        ErdTable[] allTables = getAllTablesArray();
+        for (ErdTable allTable : allTables) {
+            allTable.setDisplayReferencedKeysOnly(displayKeysOnly);
+            allTable.tableColumnsChanged(true);
         }
+
         layeredPane.repaint();
     }
 
-    /**
-     * <p>Adds a new table to the canvas.
-     */
-    protected boolean addNewTable(ErdTable newTable) {
+    public void setDisplayCommentOnFields(boolean displayCommentOnFields) {
 
-        if (tables == null) {
-            tables = new Vector();
+        ErdTable[] allTables = getAllTablesArray();
+        for (ErdTable allTable : allTables) {
+            allTable.setShowCommentOnFields(displayCommentOnFields);
+            allTable.tableColumnsChanged(true);
         }
-        for (ErdTable table : tables) {
-            if (table.getTableName().contentEquals(newTable.getTableName()))
-                return false;
-        }
-        tables.add(newTable);
 
-        // place the new table in the center of the canvas
-        newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
-                (layeredPane.getHeight() - newTable.getHeight()) / 2,
-                newTable.getWidth(), newTable.getHeight());
-
-        layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
-        newTable.toFront();
-        return true;
+        layeredPane.repaint();
     }
+
+    public void setDisplayCommentOnTable(boolean displayCommentOnTable) {
+
+        ErdTable[] allTables = getAllTablesArray();
+        for (ErdTable allTable : allTables) {
+            allTable.setShowCommentOnTable(displayCommentOnTable);
+            allTable.tableColumnsChanged(true);
+        }
+
+        layeredPane.repaint();
+    }
+
+    public static final int CHANGE_LOCATION = CHANGE_BG_COLOR + 1;
 
     protected ErdDependanciesPanel getDependenciesPanel() {
         return dependsPanel;
@@ -765,21 +700,46 @@ public class ErdViewerPanel extends DefaultTabView
         return selectedTables;
     }
 
-    protected void removeSelectedTables() {
-        boolean tablesRemoved = false;
-        ErdTable[] allTables = getAllComponentsArray();
+    protected ErdMoveableComponent[] getSelectedComponentsArray() {
 
-        for (int i = 0; i < allTables.length; i++) {
+        Vector selected = new Vector();
+        Vector vector = getAllComponentsVector();
+        int size = vector.size();
 
-            if (allTables[i].isSelected()) {
-                allTables[i].clean();
-                layeredPane.remove(allTables[i]);
-                tables.remove(allTables[i]);
-                allTables[i] = null;
-                tablesRemoved = true;
+        ErdMoveableComponent erdTable = null;
+
+        for (int i = 0; i < size; i++) {
+            erdTable = (ErdMoveableComponent) vector.elementAt(i);
+            if (erdTable.isSelected()) {
+                selected.add(erdTable);
             }
-
         }
+
+        size = selected.size();
+        ErdMoveableComponent[] selectedTables = new ErdMoveableComponent[size];
+
+        for (int i = 0; i < size; i++) {
+            selectedTables[i] = (ErdMoveableComponent) selected.elementAt(i);
+        }
+
+        return selectedTables;
+    }
+
+    Stack<UndoRedoAction> undoActions;
+    Stack<UndoRedoAction> redoActions;
+
+    static List<ErdMoveableComponent> listFromSingleComponent(ErdMoveableComponent component) {
+        List<ErdMoveableComponent> list = new ArrayList<>();
+        list.add(component);
+        return list;
+    }
+
+    public void removeTable(ErdTable table) {
+        boolean tablesRemoved = false;
+        table.clean();
+        layeredPane.remove(table);
+        tables.remove(table);
+        tablesRemoved = true;
 
         if (tablesRemoved)
             dependsPanel.setTableDependencies(buildTableRelationships());
@@ -810,6 +770,14 @@ public class ErdViewerPanel extends DefaultTabView
 
     public Font getTableNameFont() {
         return tableNameFont;
+    }
+
+    public Font getTextBlockFont() {
+        return textBlockFont;
+    }
+
+    public void setTextBlockFont(Font textBlockFont) {
+        this.textBlockFont = textBlockFont;
     }
 
     public int getColumnNameFontStyle() {
@@ -844,8 +812,17 @@ public class ErdViewerPanel extends DefaultTabView
         scroll.resizeCanvas();
     }
 
-    public Vector<ErdTable> getAllComponentsVector() {
+    public Vector<ErdTable> getAllTablesVector() {
         return tables;
+    }
+
+    public Vector getAllComponentsVector() {
+        Vector<ErdMoveableComponent> vector = new Vector<>();
+        if (tables != null)
+            vector.addAll(tables);
+        if (textPanels != null)
+            vector.addAll(textPanels);
+        return vector;
     }
 
     public Vector getTableColumnsVector(String tableName) {
@@ -879,7 +856,7 @@ public class ErdViewerPanel extends DefaultTabView
         return columns;
     }
 
-    public ErdTable[] getAllComponentsArray() {
+    public ErdTable[] getAllTablesArray() {
 
         if (tables == null)
             tables = new Vector();
@@ -894,13 +871,46 @@ public class ErdViewerPanel extends DefaultTabView
         return tablesArray;
     }
 
+    public ErdTextPanel[] getTextPanelsArray() {
+
+        if (textPanels == null)
+            textPanels = new Vector();
+
+        int v_size = textPanels.size();
+        ErdTextPanel[] tablesArray = new ErdTextPanel[v_size];
+
+        for (int i = 0; i < v_size; i++) {
+            tablesArray[i] = textPanels.elementAt(i);
+        }
+
+        return tablesArray;
+    }
+
+    public ErdMoveableComponent[] getAllComponentsArray() {
+
+        Vector vector = getAllComponentsVector();
+
+        int v_size = vector.size();
+        ErdMoveableComponent[] tablesArray = new ErdMoveableComponent[v_size];
+
+        for (int i = 0; i < v_size; i++) {
+            tablesArray[i] = (ErdMoveableComponent) vector.elementAt(i);
+        }
+
+        return tablesArray;
+    }
+
+    public Vector<ErdTextPanel> getTextPanels() {
+        return textPanels;
+    }
+
     protected Dimension getMaxImageExtents() {
         int width = 0;
         int height = 0;
         int tableExtentX = 0;
         int tableExtentY = 0;
 
-        ErdTable[] tablesArray = getAllComponentsArray();
+        ErdTable[] tablesArray = getAllTablesArray();
 
         for (int i = 0; i < tablesArray.length; i++) {
             tableExtentX = tablesArray[i].getX() + tablesArray[i].getWidth();
@@ -931,7 +941,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void removeAllTables() {
-        ErdTable[] allTables = getAllComponentsArray();
+        ErdTable[] allTables = getAllTablesArray();
 
         for (int i = 0; i < allTables.length; i++) {
             allTables[i].clean();
@@ -968,28 +978,36 @@ public class ErdViewerPanel extends DefaultTabView
         }
 
         tables = new Vector();
+        textPanels = new Vector<>();
 
         Font columnNameFont = _savedErd.getColumnNameFont();
         Font tableNameFont = _savedErd.getTableNameFont();
+        Font textBlockFont = _savedErd.getTextBlockFont();
 
         ErdTableFileData[] fileData = _savedErd.getTables();
         ErdTable table = null;
 
-        for (int i = 0; i < fileData.length; i++) {
-            table = new ErdTable(fileData[i].getTableName(),
-                    fileData[i].getColumnData(), this);
+        if (fileData != null) {
+            for (int i = 0; i < fileData.length; i++) {
+                table = new ErdTable(fileData[i].getTableName(),
+                        fileData[i].getColumnData(), this);
 
-            table.setCreateTableScript(fileData[i].getCreateTableScript());
-            table.setAlterTableHash(fileData[i].getAlterTableHash());
-            table.setAlterTableScript(fileData[i].getAlterTableScript());
-            table.setAddConstraintsScript(fileData[i].getAddConstraintScript());
-            table.setBounds(fileData[i].getTableBounds());
-            table.setEditable(true);
-            table.setTableBackground(fileData[i].getTableBackground());
+                table.setCreateTableScript(fileData[i].getCreateTableScript());
+                table.setAlterTableHash(fileData[i].getAlterTableHash());
+                table.setAlterTableScript(fileData[i].getAlterTableScript());
+                table.setAddConstraintsScript(fileData[i].getAddConstraintScript());
+                table.setBounds(fileData[i].getTableBounds());
+                table.setEditable(true);
+                table.setTableBackground(fileData[i].getTableBackground());
+                table.setDescriptionTable(fileData[i].getTableDescription());
+                table.setShowCommentOnTable(fileData[i].isShowCommentOnTable());
+                table.setShowCommentOnFields(fileData[i].isShowCommentsOnfields());
 
-            layeredPane.add(table);
-            tables.add(table);
-            table.toFront();
+                layeredPane.add(table);
+                addTableToList(table);
+                table.toFront();
+                table.tableColumnsChanged(false);
+            }
         }
 
         ErdTitlePanelData titlePanelData = _savedErd.getTitlePanel();
@@ -1009,6 +1027,21 @@ public class ErdViewerPanel extends DefaultTabView
             this.erdTitlePanel = _erdTitlePanel;
         }
 
+        ErdTextPanelData[] textFileData = _savedErd.getTextBlocks();
+        ErdTextPanel textPanel = null;
+        if (textFileData != null) {
+            for (int i = 0; i < textFileData.length; i++) {
+                textPanel = new ErdTextPanel(this,
+                        textFileData[i].getErdDescription());
+
+                textPanel.setBounds(textFileData[i].getTableBounds());
+                textPanel.setTableBackground(textFileData[i].getTableBackground());
+                textPanels.add(textPanel);
+                layeredPane.add(textPanel);
+                textPanel.toFront();
+            }
+        }
+
         this.savedErd = _savedErd;
         savedErd.setAbsolutePath(absolutePath);
 
@@ -1016,6 +1049,7 @@ public class ErdViewerPanel extends DefaultTabView
         tableFontSize = columnNameFont.getSize();
         tableNameFontStyle = tableNameFont.getStyle();
         columnNameFontStyle = columnNameFont.getStyle();
+        textBlockFontStyle = textBlockFont.getStyle();
 
         if (savedErd.hasCanvasBackground())
             setCanvasBackground(savedErd.getCanvasBackground());
@@ -1028,16 +1062,23 @@ public class ErdViewerPanel extends DefaultTabView
         layeredPane.validate();
     }
 
+    void addTableToList(ErdTable table) {
+        if (table == null)
+            tables = new Vector<>();
+        tables.add(table);
+        table.setTitleBarBgColor((tables.size() - 1) % TITLE_COLORS.length);
+    }
+
     public boolean hasOpenFile() {
         return savedErd != null;
     }
 
+    @Override
     public boolean contentCanBeSaved() {
-
         return tables.size() > 0;
-
     }
 
+    @Override
     public int save(boolean saveAs) {
 
         ErdSaveDialog saveDialog = null;
@@ -1062,7 +1103,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     protected int saveApplicationFileFormat(File file) {
 
-        ErdTable[] tables = getAllComponentsArray();
+        ErdTable[] tables = getAllTablesArray();
         ErdTableFileData[] fileData = new ErdTableFileData[tables.length];
 
         for (int i = 0; i < tables.length; i++) {
@@ -1076,11 +1117,26 @@ public class ErdViewerPanel extends DefaultTabView
             fileData[i].setAddConstraintScript(tables[i].getAddConstraintsScript());
             fileData[i].setDropConstraintScript(tables[i].getDropConstraintsScript());
             fileData[i].setTableBackground(tables[i].getTableBackground());
+            fileData[i].setTableDescription(tables[i].getDescriptionTable());
+            fileData[i].setShowCommentOnTable(tables[i].isShowCommentOnTable());
+            fileData[i].setShowCommentsOnfields(tables[i].isShowCommentOnFields());
+        }
+        ErdTextPanel[] erdTextPanels = getTextPanelsArray();
+        ErdTextPanelData[] textFileData = new ErdTextPanelData[erdTextPanels.length];
+
+        for (int i = 0; i < erdTextPanels.length; i++) {
+            textFileData[i] = new ErdTextPanelData();
+            textFileData[i].setTableBounds(erdTextPanels[i].getBounds());
+            textFileData[i].setErdDescription(erdTextPanels[i].getErdDescription());
+            textFileData[i].setTableBackground(erdTextPanels[i].getTableBackground());
         }
 
         ErdSaveFileFormat eqFormat = new ErdSaveFileFormat(fileData, file.getName());
+        if (textFileData != null)
+            eqFormat.setTextBlocks(textFileData);
         eqFormat.setColumnNameFont(columnNameFont);
         eqFormat.setTableNameFont(tableNameFont);
+        eqFormat.setTextBlockFont(textBlockFont);
         if (tables != null && tables.length > 0)
             eqFormat.setTableBackground(tables[0].getTableBackground());
         eqFormat.setAbsolutePath(file.getAbsolutePath());
@@ -1136,7 +1192,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         layeredPane.clean();
 
-        ErdTable[] tablesArray = getAllComponentsArray();
+        ErdTable[] tablesArray = getAllTablesArray();
 
         for (int i = 0; i < tablesArray.length; i++) {
             tablesArray[i].clean();
@@ -1179,7 +1235,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void reset() {
-        resetTableValues(tableNames, columnData);
+        resetTableValues(tableNames, tableInfos);
         setScaledView(defaultScaledView);
     }
 
@@ -1241,19 +1297,23 @@ public class ErdViewerPanel extends DefaultTabView
         setScaledView(scale);
     }
 
+    public int getTextBlockFontStyle() {
+        return textBlockFontStyle;
+    }
+
+    public void setTextBlockFontStyle(int textBlockFontStyle) {
+        this.textBlockFontStyle = textBlockFontStyle;
+    }
+
     public String getAllSQLText() {
+
         char newLine = '\n';
-        StringBuffer sb = new StringBuffer();
-        ErdTable[] allTables = getAllComponentsArray();
+        ErdTable[] allTables = getAllTablesArray();
 
-        for (int i = 0; i < allTables.length; i++) {
-
-            if (allTables[i].hasSQLScripts()) {
-                sb.append(allTables[i].getAllSQLScripts()).
-                        append(newLine);
-            }
-
-        }
+        StringBuilder sb = new StringBuilder();
+        for (ErdTable allTable : allTables)
+            if (allTable.hasSQLScripts())
+                sb.append(allTable.getAllSQLScripts()).append(newLine);
 
         return sb.toString();
     }
@@ -1262,10 +1322,12 @@ public class ErdViewerPanel extends DefaultTabView
         return fileName;
     }
 
+    @Override
     public String getDisplayName() {
         return toString();
     }
 
+    @Override
     public String toString() {
         return TITLE + " - " + fileName;
     }
@@ -1314,4 +1376,322 @@ public class ErdViewerPanel extends DefaultTabView
         resizeCanvas();
         layeredPane.validate();
     }
+
+    private void jbInit() throws Exception {
+        // set the background panel
+        bgPanel = new ErdBackgroundPanel(true);
+        // set the layered pane
+        layeredPane = new ErdLayeredPane(this);
+
+        // add the dependencies line panel
+        dependsPanel = new ErdDependanciesPanel(this);
+        layeredPane.add(dependsPanel, Integer.MIN_VALUE + 1);
+
+        // initialise the fonts
+        tableFontName = "Dialog";
+        tableFontSize = 14;
+        tableNameFontStyle = Font.PLAIN;
+        columnNameFontStyle = Font.PLAIN;
+        textBlockFontStyle = Font.PLAIN;
+
+        tableNameFont = new Font(tableFontName, tableNameFontStyle, tableFontSize + 1);
+        columnNameFont = new Font(tableFontName, columnNameFontStyle, tableFontSize);
+        textBlockFont = new Font(tableFontName, textBlockFontStyle, tableFontSize);
+
+        // add the background component
+        layeredPane.add(bgPanel, Integer.MIN_VALUE);
+
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                resizeCanvas();
+            }
+        });
+
+        // setup the base panel and add the layered pane
+        base = new JPanel(new BorderLayout());
+        base.add(layeredPane, BorderLayout.CENTER);
+
+        // set the view's scroller
+        scroll = new ErdScrollPane(this);
+        scroll.setViewportView(base);
+
+        scroll.setBorder(BorderFactory.createMatteBorder(
+                1, 1, 1, 1, GUIUtilities.getDefaultBorderColour()));
+        JPanel scrollPanel = new JPanel(new BorderLayout());
+        scrollPanel.add(scroll, BorderLayout.CENTER);
+        scrollPanel.setBorder(BorderFactory.createEmptyBorder(0, 3, 3, 3));
+
+        // add all components to a main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        // add the tool bar
+        if (showTools) {
+            tools = new ErdToolBarPalette(this);
+            mainPanel.add(tools, BorderLayout.NORTH);
+        }
+        mainPanel.add(scrollPanel, BorderLayout.CENTER);
+
+        add(mainPanel, new GridBagConstraints(
+                1, 1, 1, 1, 1.0, 1.0,
+                GridBagConstraints.SOUTHEAST,
+                GridBagConstraints.BOTH,
+                Constants.EMPTY_INSETS, 0, 0));
+
+        if (!editable && !showTools) {
+
+            layeredPane.displayPopupMenuViewItemsOnly();
+        }
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    removeSelectedTables();
+                }
+                if (e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown()) {
+                    if (!undoActions.isEmpty()) {
+                        UndoRedoAction undoRedoAction = undoActions.pop();
+                        undoRedoAction.undoExecute();
+                    }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
+                    if (!redoActions.isEmpty()) {
+                        UndoRedoAction undoRedoAction = redoActions.pop();
+                        undoRedoAction.undoExecute();
+                    }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_A && e.isControlDown()) {
+                    for (ErdMoveableComponent emc : getAllComponentsArray()) {
+                        emc.setSelected(true);
+                    }
+                    layeredPane.repaint();
+                }
+            }
+        });
+        undoActions = new Stack<>();
+        redoActions = new Stack<>();
+
+    }
+
+    public void addTextPanel(ErdTextPanel erdTextPanel) {
+        if (textPanels == null)
+            textPanels = new Vector<>();
+        layeredPane.add(erdTextPanel);
+        erdTextPanel.setBounds(50, 50,
+                erdTextPanel.getWidth(), erdTextPanel.getHeight());
+        layeredPane.moveToFront(erdTextPanel);
+        textPanels.add(erdTextPanel);
+        layeredPane.repaint();
+        fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, erdTextPanel));
+    }
+
+    public ErdScrollPane getScroll() {
+        return scroll;
+    }
+
+    /**
+     * <p>Adds a new table to the canvas.
+     */
+    protected boolean addNewTable(ErdTable newTable, boolean setCentered) {
+
+        if (tables == null) {
+            tables = new Vector();
+        }
+        for (ErdTable table : tables) {
+            if (table.getTableName().contentEquals(newTable.getTableName())) {
+                table.setTableColumns(newTable.getTableColumns());
+                table.setDescriptionTable(newTable.getDescriptionTable());
+                table.tableColumnsChanged(true);
+                return false;
+            }
+        }
+        addTableToList(newTable);
+
+        int width = newTable.getWidth();
+        int height = newTable.getHeight();
+
+        if (setCentered) {
+            newTable.setBounds((layeredPane.getWidth() - newTable.getWidth()) / 2,
+                    (layeredPane.getHeight() - newTable.getHeight()) / 2,
+                    width, height);
+            fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, newTable));
+        } else {
+
+            if (next_y + height + 20 > INITIAl_VIEW_HEIGHT) {
+                next_y = 20;
+                next_x += width + HORIZ_DIFF;
+                lastWidth = 0;
+            }
+
+            newTable.setBounds(next_x, next_y, width, height);
+
+            next_y += height + VERT_DIFF;
+        }
+
+        layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
+        newTable.toFront();
+        return true;
+    }
+
+    protected List<ErdMoveableComponent> getSelectedComponents() {
+        Vector selected = new Vector();
+        Vector vector = getAllComponentsVector();
+        int size = vector.size();
+
+        ErdMoveableComponent erdTable = null;
+
+        for (int i = 0; i < size; i++) {
+            erdTable = (ErdMoveableComponent) vector.elementAt(i);
+            if (erdTable.isSelected()) {
+                selected.add(erdTable);
+            }
+        }
+        return selected;
+    }
+
+    protected void removeSelectedTables() {
+        boolean tablesRemoved = false;
+        ErdTable[] allTables = getAllTablesArray();
+        List<ErdMoveableComponent> removedComponents = new ArrayList<>();
+        for (int i = 0; i < allTables.length; i++) {
+
+            if (allTables[i].isSelected()) {
+                removedComponents.add(allTables[i]);
+                //allTables[i].clean();
+                layeredPane.remove(allTables[i]);
+                tables.remove(allTables[i]);
+                allTables[i] = null;
+                tablesRemoved = true;
+            }
+
+        }
+
+        ErdTextPanel[] allTexts = getTextPanelsArray();
+
+        for (int i = 0; i < allTexts.length; i++) {
+
+            if (allTexts[i].isSelected()) {
+                removedComponents.add(allTexts[i]);
+                //allTexts[i].clean();
+                layeredPane.remove(allTexts[i]);
+                textPanels.remove(allTexts[i]);
+                allTexts[i] = null;
+            }
+
+        }
+        fireSaveUndoAction(new UndoRedoAction(DELETE, removedComponents));
+        if (tablesRemoved)
+            dependsPanel.setTableDependencies(buildTableRelationships());
+
+        if (erdTitlePanel != null) {
+
+            if (erdTitlePanel.isSelected()) {
+                layeredPane.remove(erdTitlePanel);
+                erdTitlePanel = null;
+            }
+
+        }
+
+        layeredPane.repaint();
+    }
+
+    public void fireDragging() {
+        fireSaveUndoAction(new UndoRedoAction(ErdViewerPanel.CHANGE_LOCATION, getSelectedComponents()));
+    }
+
+    public void fireChangedBgColor() {
+        fireSaveUndoAction(new UndoRedoAction(ErdViewerPanel.CHANGE_BG_COLOR, getSelectedComponents()));
+    }
+
+    void fireSaveUndoAction(UndoRedoAction undoRedoAction) {
+        undoActions.push(undoRedoAction);
+        redoActions.clear();
+    }
+
+    class UndoRedoAction {
+        int typeAction;
+        List<ErdMoveableComponent> listComponents;
+        List<Color> bgColors;
+        List<Rectangle> boundsComponents;
+        boolean undoAction;
+
+        public UndoRedoAction(int typeAction, ErdMoveableComponent component) {
+            this(typeAction, listFromSingleComponent(component));
+        }
+
+        public UndoRedoAction(int typeAction, List<ErdMoveableComponent> listComponents) {
+            this(typeAction, listComponents, true);
+        }
+
+        public UndoRedoAction(int typeAction, List<ErdMoveableComponent> listComponents, boolean undoAction) {
+            this.undoAction = undoAction;
+            this.typeAction = typeAction;
+            this.listComponents = listComponents;
+            bgColors = new ArrayList<>();
+            boundsComponents = new ArrayList<>();
+            for (ErdMoveableComponent emc : listComponents) {
+                bgColors.add(emc.getTableBackground());
+                boundsComponents.add(emc.getBounds());
+            }
+        }
+
+        void undoExecute() {
+            switch (typeAction) {
+                case DELETE: {
+                    for (ErdMoveableComponent emc : listComponents) {
+                        if (emc instanceof ErdTable) {
+                            tables.add((ErdTable) emc);
+                            layeredPane.add(emc);
+                            layeredPane.moveToFront(emc);
+                            dependsPanel.setTableDependencies(buildTableRelationships());
+                        } else if (emc instanceof ErdTextPanel) {
+                            textPanels.add((ErdTextPanel) emc);
+                            layeredPane.add(emc);
+                            layeredPane.moveToFront(emc);
+                        }
+                    }
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, true));
+                }
+                break;
+                case NEW_OBJECT: {
+                    for (ErdMoveableComponent emc : listComponents) {
+                        if (emc instanceof ErdTable) {
+                            tables.remove((ErdTable) emc);
+                            layeredPane.remove(emc);
+                            dependsPanel.setTableDependencies(buildTableRelationships());
+                        } else if (emc instanceof ErdTextPanel) {
+                            textPanels.remove((ErdTextPanel) emc);
+                            layeredPane.remove(emc);
+                        }
+                    }
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(DELETE, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(DELETE, listComponents, true));
+                }
+                break;
+                case CHANGE_BG_COLOR: {
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
+                    for (int i = 0; i < listComponents.size(); i++) {
+                        listComponents.get(i).setTableBackground(bgColors.get(i));
+                    }
+                }
+                break;
+                case CHANGE_LOCATION: {
+                    if (undoAction)
+                        redoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
+                    else undoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
+                    for (int i = 0; i < listComponents.size(); i++) {
+                        listComponents.get(i).setBounds(boundsComponents.get(i));
+                    }
+                    dependsPanel.setTableDependencies(buildTableRelationships());
+                }
+                break;
+            }
+            layeredPane.repaint();
+        }
+    }
+
 }

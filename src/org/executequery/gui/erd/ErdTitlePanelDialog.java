@@ -25,6 +25,7 @@ import org.executequery.components.TextFieldPanel;
 import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.underworldlabs.swing.AbstractBaseDialog;
 
 import javax.swing.*;
@@ -41,7 +42,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     /**
      * The name text field
      */
@@ -69,11 +70,11 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
     /**
      * The description text area
      */
-    private JTextArea descTextArea;
+    private RSyntaxTextArea descTextArea;
     /**
      * Whether this is a new title panel
      */
-    private boolean isNew;
+    private final boolean isNew;
 
     public ErdTitlePanelDialog(ErdViewerPanel parent) {
         super(GUIUtilities.getParentFrame(), bundleString("title"), true);
@@ -130,7 +131,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         JButton createButton = new DefaultPanelButton(Bundles.get("common.add.button"));
         createButton.setActionCommand("Add");
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-        createButton.setActionCommand("Cancel");
+        cancelButton.setActionCommand("Cancel");
 
         ActionListener btnListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -147,7 +148,7 @@ public class ErdTitlePanelDialog extends AbstractBaseDialog {
         databaseTextField = WidgetFactory.createTextField("databaseTextField");
         authorTextField = WidgetFactory.createTextField("authorTextField");
         fileTextField = WidgetFactory.createTextField("fileTextField");
-        descTextArea = new JTextArea();
+        descTextArea = new RSyntaxTextArea();
 
         descTextArea.setLineWrap(true);
         descTextArea.setWrapStyleWord(true);

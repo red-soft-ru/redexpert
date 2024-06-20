@@ -76,6 +76,7 @@ public abstract class ErdMoveableComponent extends JComponent {
      * The table's focus border stroke
      */
     protected static BasicStroke focusBorderStroke;
+    protected Color tableBackground;
 
     public ErdMoveableComponent(ErdViewerPanel parent) {
         this.parent = parent;
@@ -129,13 +130,17 @@ public abstract class ErdMoveableComponent extends JComponent {
     public void deselected(MouseEvent e) {
         dragging = false;
 
+        finishedDragging();
+
+    }
+
+    public void finishedDragging() {
         if (outlinePanel != null) {
             setBounds(outlinePanel.getBounds());
             parent.removeOutlinePanel(outlinePanel);
             parent.resizeCanvas();
             outlinePanel = null;
         }
-
     }
 
     /**
@@ -156,6 +161,56 @@ public abstract class ErdMoveableComponent extends JComponent {
 
     }
 
+    public void changeSize(MouseEvent e, int location) {
+        if (dragging) {
+            int x = (int) (e.getX() / scale);
+            int y = (int) (e.getY() / scale);
+            int xDiff = (int) (xDifference - x);
+            int yDiff = (int) (yDifference - y);
+            int width = getBounds().width;
+            int height = getBounds().height;
+            switch (location) {
+                case GridBagConstraints.NORTHWEST:
+                    width = xDiff + width;
+                    height = yDiff + height;
+                    outlinePanel.setBounds(getBounds().x - xDiff, getBounds().y - yDiff, width, height);
+                    break;
+                case GridBagConstraints.NORTHEAST:
+                    width = width - xDiff;
+                    height = yDiff + height;
+                    outlinePanel.setBounds(getBounds().x, getBounds().y - yDiff, width, height);
+                    break;
+                case GridBagConstraints.SOUTHEAST:
+                    width = width - xDiff;
+                    height = height - yDiff;
+                    outlinePanel.setBounds(getBounds().x, getBounds().y, width, height);
+                    break;
+                case GridBagConstraints.SOUTHWEST:
+                    width = xDiff + width;
+                    height = height - yDiff;
+                    outlinePanel.setBounds(getBounds().x - xDiff, getBounds().y, width, height);
+                    break;
+                case GridBagConstraints.NORTH:
+                    height = yDiff + height;
+                    outlinePanel.setBounds(getBounds().x, getBounds().y - yDiff, width, height);
+                    break;
+                case GridBagConstraints.EAST:
+                    width = width - xDiff;
+                    outlinePanel.setBounds(getBounds().x, getBounds().y, width, height);
+                    break;
+                case GridBagConstraints.SOUTH:
+                    height = height - yDiff;
+                    outlinePanel.setBounds(getBounds().x, getBounds().y, width, height);
+                    break;
+                case GridBagConstraints.WEST:
+                    width = xDiff + width;
+                    outlinePanel.setBounds(getBounds().x - xDiff, getBounds().y, width, height);
+                    break;
+            }
+            parent.repaintLayeredPane();
+        }
+    }
+
     /**
      * <p>Indicates that this component has been selected.
      *
@@ -163,12 +218,15 @@ public abstract class ErdMoveableComponent extends JComponent {
      */
     public void selected(MouseEvent e) {
 
+        //calculateDragging(e);
+    }
+
+    public void calculateDragging(MouseEvent e) {
         if (!e.isControlDown()) {
             toFront();
             outlinePanel = new OutlineDragPanel(getBounds(), focusBorder);
             parent.addOutlinePanel(outlinePanel);
         }
-
         xDifference = e.getX() / scale;
         yDifference = e.getY() / scale;
         dragging = true;
@@ -180,6 +238,42 @@ public abstract class ErdMoveableComponent extends JComponent {
      * @param the event causing the double-click
      */
     public abstract void doubleClicked(MouseEvent e);
+
+    public Color getTableBackground() {
+        return tableBackground;
+    }
+
+    public void setTableBackground(Color tableBackground) {
+        this.tableBackground = tableBackground;
+    }
+
+    public int checkChangeSizeCoords(int x, int y) {
+        if (boundsFromPoint(getBounds().x, getBounds().y).contains(x, y)) {
+            return GridBagConstraints.NORTHWEST;
+        } else if (boundsFromPoint(getBounds().x + getBounds().width, getBounds().y).contains(x, y)) {
+            return GridBagConstraints.NORTHEAST;
+        } else if (boundsFromPoint(getBounds().x + getBounds().width, getBounds().y + getBounds().height).contains(x, y)) {
+            return GridBagConstraints.SOUTHEAST;
+        } else if (boundsFromPoint(getBounds().x, getBounds().y + getBounds().height).contains(x, y)) {
+            return GridBagConstraints.SOUTHWEST;
+        } else if (boundsFromLine(getBounds().x, getBounds().y, getBounds().x + getBounds().width, getBounds().y).contains(x, y)) {
+            return GridBagConstraints.NORTH;
+        } else if (boundsFromLine(getBounds().x + getBounds().width, getBounds().y, getBounds().x + getBounds().width, getBounds().y + getBounds().height).contains(x, y)) {
+            return GridBagConstraints.EAST;
+        } else if (boundsFromLine(getBounds().x, getBounds().y + getBounds().height, getBounds().x + getBounds().width, getBounds().y + getBounds().height).contains(x, y)) {
+            return GridBagConstraints.SOUTH;
+        } else if (boundsFromLine(getBounds().x, getBounds().y, getBounds().x, getBounds().y + getBounds().height).contains(x, y)) {
+            return GridBagConstraints.WEST;
+        } else return -1;
+    }
+
+    protected Rectangle boundsFromPoint(int x, int y) {
+        return new Rectangle(x - 10, y - 10, 20, 20);
+    }
+
+    protected Rectangle boundsFromLine(int x, int y, int x2, int y2) {
+        return new Rectangle(x - 10, y - 10, x2 - x + 20, y2 - y + 20);
+    }
 
 }
 

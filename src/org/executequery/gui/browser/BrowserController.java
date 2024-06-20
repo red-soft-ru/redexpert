@@ -573,17 +573,6 @@ public class BrowserController {
         }
     }
 
-    protected ColumnData[] getColumnData(String schema, String name, DatabaseConnection connection) {
-        try {
-            metaData.setDatabaseConnection(connection);
-            return metaData.getColumnMetaData(null, schema, name);
-
-        } catch (DataSourceException e) {
-            handleException(e);
-            return new ColumnData[0];
-        }
-    }
-
     /**
      * Retrieves the selected database connection properties object.
      */

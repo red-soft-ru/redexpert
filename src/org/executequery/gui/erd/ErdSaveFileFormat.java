@@ -47,6 +47,7 @@ public class ErdSaveFileFormat implements Serializable {
      * The font for the table name
      */
     private Font tableNameFont;
+    private Font textBlockFont;
 
     /**
      * The title panel
@@ -57,6 +58,8 @@ public class ErdSaveFileFormat implements Serializable {
      * The erd table data
      */
     private ErdTableFileData[] tables;
+
+    private ErdTextPanelData[] textBlocks;
 
     /**
      * The absolute path of this file
@@ -148,6 +151,21 @@ public class ErdSaveFileFormat implements Serializable {
         return fileName;
     }
 
+    public ErdTextPanelData[] getTextBlocks() {
+        return textBlocks;
+    }
+
+    public void setTextBlocks(ErdTextPanelData[] textBlocks) {
+        this.textBlocks = textBlocks;
+    }
+
+    public Font getTextBlockFont() {
+        return textBlockFont;
+    }
+
+    public void setTextBlockFont(Font textBlockFont) {
+        this.textBlockFont = textBlockFont;
+    }
 }
 
 

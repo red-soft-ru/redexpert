@@ -45,7 +45,7 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
     /**
      * The controller for the ERD viewer
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     /**
      * The table listing constraints
      */
@@ -155,8 +155,8 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
     }
 
     private void jbInit() throws Exception {
-        JButton deleteButton = new DefaultPanelButton(Bundles.get("common.delete.button"));
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
+        JButton deleteButton = new DefaultPanelButton(Bundles.get("common.delete.button"), "Delete");
+        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"), "Cancel");
 
         cancelButton.addActionListener(this);
         deleteButton.addActionListener(this);
@@ -358,9 +358,9 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
     class ColumnConstraintDrop {
 
         private boolean dropped;
-        private ErdTable erdTable;
+        private final ErdTable erdTable;
         private ColumnConstraint columnConstraint;
-        private ColumnData columnData;
+        private final ColumnData columnData;
 
         public ColumnConstraintDrop(ColumnData columnData,
                                     ErdTable erdTable, int constraintIndex) {

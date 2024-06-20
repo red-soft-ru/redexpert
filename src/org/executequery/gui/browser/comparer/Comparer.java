@@ -77,6 +77,170 @@ public class Comparer {
 
     }
 
+    public void createErds(List<DefaultDatabaseTable> tables) {
+        List<NamedObject> erds = new ArrayList<>();
+        erds.addAll(tables);
+
+        List<NamedObject> createObjects = null;
+        if (panel.isExtractMetadata()) {
+            createObjects = erds;
+            for (NamedObject databaseObject : erds) {
+                if (!Arrays.equals(TABLE_CONSTRAINTS_NEED, new boolean[]{false, false, false, false}))
+                    createListConstraints(databaseObject);
+                if (COMPUTED_FIELDS_NEED)
+                    createListComputedFields(databaseObject);
+            }
+        } else createObjects =
+                createListObjects(
+                        getObjects(masterConnection, TABLE), erds, TABLE);
+
+        if (createObjects == null || createObjects.isEmpty())
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Creating {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[TABLE]));
+        script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        panel.recreateProgressBar(
+                "GenerateCreateScript", NamedObject.META_TYPES[TABLE],
+                createObjects.size()
+        );
+
+        for (NamedObject obj : createObjects) {
+
+            if (panel.isCanceled())
+                break;
+
+            AbstractDatabaseObject databaseObject = (AbstractDatabaseObject) obj;
+
+            String sqlScript = databaseObject.getCompareCreateSQL();
+            if (!sqlScript.contains("Will be created with constraint defining")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.CREATE, TABLE, obj);
+                panel.addComparedObject(new ComparedObject(TABLE, databaseObject, sqlScript, null));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[0]++;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+    }
+
+    public void dropErds(List<DefaultDatabaseTable> tables) {
+        List<NamedObject> erds = new ArrayList<>();
+        erds.addAll(tables);
+        List<NamedObject> dropObjects = sortObjectsByDependency(
+                dropListObjects(getObjects(masterConnection, TABLE), erds, TABLE));
+
+        if (dropObjects == null || dropObjects.isEmpty())
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Dropping {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[TABLE]));
+        script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        panel.recreateProgressBar(
+                "GenerateDropScript", NamedObject.META_TYPES[TABLE],
+                dropObjects.size()
+        );
+
+        for (NamedObject obj : dropObjects) {
+
+            if (panel.isCanceled())
+                break;
+
+            String sqlScript =
+                    ((AbstractDatabaseObject) obj).getDropSQL();
+
+            if (!sqlScript.contains("Remove with table constraint")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.DROP, TABLE, obj);
+                panel.addComparedObject(new ComparedObject(TABLE, obj, null, ((AbstractDatabaseObject) obj).getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[1]++;
+            }
+
+            panel.incrementProgressBarValue();
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+    }
+
+    public void alterErds(List<DefaultDatabaseTable> tables) {
+        List<NamedObject> erds = new ArrayList<>();
+        erds.addAll(tables);
+        Map<NamedObject, NamedObject> alterObjects = alterListObjects(
+                getObjects(masterConnection, TABLE), erds, TABLE);
+
+        if (alterObjects.isEmpty())
+            return;
+
+        String header = MessageFormat.format(
+                "\n/* ----- Altering {0} ----- */\n",
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[TABLE]));
+        script.add(header);
+
+        int headerIndex = script.size() - 1;
+        boolean isHeaderNeeded = false;
+
+        LoadingObjectsHelper loadingObjectsHelperMaster = new LoadingObjectsHelper(alterObjects.size());
+
+        panel.recreateProgressBar(
+                "GenerateAlterScript", NamedObject.META_TYPES[TABLE],
+                alterObjects.keySet().size()
+        );
+
+        for (NamedObject obj : alterObjects.keySet()) {
+
+            if (panel.isCanceled())
+                break;
+
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) obj;
+            loadingObjectsHelperMaster.preparingLoadForObjectAndCols(masterObject);
+
+            AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
+
+            String sqlScript = masterObject.getCompareAlterSQL(compareObject);
+            if (!sqlScript.contains("there are no changes")) {
+                script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, TABLE, obj);
+                panel.addComparedObject(new ComparedObject(TABLE, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[2]++;
+            }
+
+            loadingObjectsHelperMaster.postProcessingLoadForObjectAndCols(masterObject);
+
+            panel.incrementProgressBarValue();
+        }
+        loadingObjectsHelperMaster.releaseResources();
+
+        if (!alterObjects.isEmpty()) {
+            AbstractDatabaseObject masterObject = (AbstractDatabaseObject) alterObjects.keySet().toArray()[0];
+            masterObject.getHost().setPauseLoadingTreeForSearch(false);
+            ((AbstractDatabaseObject) alterObjects.get(masterObject)).getHost().setPauseLoadingTreeForSearch(false);
+        }
+
+        if (!isHeaderNeeded)
+            script.remove(headerIndex);
+    }
+
+
     public void createObjects(int type) {
 
         List<NamedObject> createObjects = sortObjectsByDependency(
@@ -873,10 +1037,12 @@ public class Comparer {
 
         List<ColumnData> listCD = new ArrayList<>();
         DefaultDatabaseTable tempTable = (DefaultDatabaseTable) databaseObject;
-
-        for (int i = 0; i < tempTable.getColumnCount(); i++)
-            listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i), false));
-
+        if (panel.isErd()) {
+            listCD = tempTable.getListCD();
+        } else {
+            for (int i = 0; i < tempTable.getColumnCount(); i++)
+                listCD.add(new ColumnData(tempTable.getHost().getDatabaseConnection(), tempTable.getColumns().get(i), false));
+        }
         for (ColumnData cd : listCD) {
             if (!MiscUtils.isNull(cd.getComputedBy())) {
                 computedFieldsList = computedFieldsList.concat("\t" + tempTable.getName() + "." + cd.getColumnName() + "\n");

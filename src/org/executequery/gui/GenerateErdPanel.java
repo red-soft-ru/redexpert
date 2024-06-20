@@ -25,6 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.erd.ErdGenerateProgressDialog;
 import org.executequery.gui.erd.ErdViewerPanel;
+import org.executequery.gui.erd.ErdSelectionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -39,18 +40,24 @@ public class GenerateErdPanel extends JPanel {
 
     public static final String TITLE = Bundles.get(GenerateErdPanel.class, "title");
 
+    private ErdSelectionPanel selectionPanel;
     private ListSelectionPanel listPanel;
     private JButton generateButton;
     private JButton cancelButton;
 
     private final DatabaseConnection connection;
-    private final ActionContainer parent;
     private final ErdViewerPanel erdPanel;
+    private final ActionContainer parent;
+
+    public GenerateErdPanel(ActionContainer parent) {
+        this(parent, null, null);
+    }
 
     public GenerateErdPanel(DatabaseConnection connection, ActionContainer parent, ErdViewerPanel erdPanel) {
         super(new BorderLayout());
-        this.erdPanel = erdPanel;
+
         this.connection = connection;
+        this.erdPanel = erdPanel;
         this.parent = parent;
 
         init();
@@ -61,6 +68,8 @@ public class GenerateErdPanel extends JPanel {
 
         MetaDataValues metaData = new MetaDataValues(true);
         metaData.setDatabaseConnection(connection);
+
+        selectionPanel = new ErdSelectionPanel(connection, erdPanel);
 
         listPanel = new ListSelectionPanel(
                 Bundles.get("ErdSelectionPanel.availableTables"),
@@ -120,6 +129,49 @@ public class GenerateErdPanel extends JPanel {
         listPanel.clear();
         parent.finished();
     }
+
+    public void setInProcess(boolean inProcess) {
+
+        if (inProcess) {
+            parent.block();
+            return;
+        }
+
+        new ErdGenerateProgressDialog(
+                selectionPanel.getSelectedValues(),
+                erdPanel,
+                connection,
+                selectionPanel.getSchema()
+        );
+
+        parent.unblock();
+    }
+
+    /*
+    public void actionPerformed(ActionEvent e) {
+
+        if (selectionPanel.hasSelections()) {
+
+            if (parentErdPanel == null) {
+                new ErdGenerateProgressDialog(selectionPanel.getDatabaseConnection(),
+                        selectionPanel.getSelectedValues());
+
+            } else {
+                new ErdGenerateProgressDialog(selectionPanel.getSelectedValues(),
+                        parentErdPanel, selectionPanel.getDatabaseConnection(), selectionPanel.getSchema());
+
+                cleanup();
+                SwingUtilities.getWindowAncestor(this).dispose();
+            }
+
+        } else
+            GUIUtilities.displayErrorMessage(bundleString("SelectMoreTablesError"));
+    }
+
+    public void cleanup() {
+        selectionPanel.cleanup();
+    }
+     */
 
     private String bundleString(String key) {
         return Bundles.get(GenerateErdPanel.class, key);

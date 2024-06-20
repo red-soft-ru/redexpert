@@ -20,16 +20,18 @@
 
 package org.executequery.gui.erd;
 
+import org.apache.batik.ext.awt.g2d.DefaultGraphics2D;
 import org.apache.commons.lang.ArrayUtils;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.List;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -42,10 +44,11 @@ public class ErdTable extends ErdMoveableComponent
      * The table name displayed
      */
     private String tableName;
+    private static final String UNIQUE = "(UQ) ";
     /**
-     * The table's columns
+     * The table comment
      */
-    private ColumnData[] columns;
+    private String descriptionTable;
     /**
      * The table's original columns
      */
@@ -78,11 +81,13 @@ public class ErdTable extends ErdMoveableComponent
     private boolean newTable;
 
     private boolean editable;
-
     /**
-     * The table's background colour
+     * The table's columns
      */
-    private Color tableBackground;
+    private ColumnData[] columns;
+    private boolean showCommentOnTable;
+    private String[] descriptionLines;
+
 
     /**
      * This components calculated width
@@ -99,21 +104,22 @@ public class ErdTable extends ErdMoveableComponent
 
     private boolean displayReferencedKeysOnly;
 
+
     private static final String PRIMARY = "(PK) ";
     private static final String FOREIGN = "(FK)";
+    private boolean showCommentOnFields;
 
-    private static final Color TITLE_BAR_BG_COLOR = new Color(255, 251, 203);
+    private int titleBarBgColor = 0;
 
-    private transient ErdTableConnectionPoint[] verticalLeftJoins;
-    private transient ErdTableConnectionPoint[] verticalRightJoins;
-    private transient ErdTableConnectionPoint[] horizontalTopJoins;
-    private transient ErdTableConnectionPoint[] horizontalBottomJoins;
+
+    private Map<ColumnData, ColumnJoins> joins;
 
     protected static final int LEFT_JOIN = 0;
     protected static final int RIGHT_JOIN = 1;
-    protected static final int TOP_JOIN = 2;
-    protected static final int BOTTOM_JOIN = 3;
+    private int keyWidth;
 
+    private int dataTypeOffset;
+    private int keyLabelOffset;
     /**
      * <p>Constructs a new instance with the specified
      * table name and <code>ErdViewerPanel</code> as the
@@ -130,6 +136,8 @@ public class ErdTable extends ErdMoveableComponent
 
         newTable = false;
         editable = false;
+        showCommentOnTable = false;
+        showCommentOnFields = false;
         displayReferencedKeysOnly = parent.isDisplayKeysOnly();
         tableBackground = UIUtils.getColour("executequery.Erd.tableBackground", Color.WHITE);
 
@@ -141,28 +149,32 @@ public class ErdTable extends ErdMoveableComponent
 
     }
 
-    private int dataTypeOffset;
-    private int keyLabelOffset;
-
     /**
      * <p>Initialises the state of this instance.
      */
     private void jbInit() throws Exception {
+        dataTypeOffset = 0;
+        keyLabelOffset = 0;
         Font tableNameFont = parent.getTableNameFont();
         Font columnNameFont = parent.getColumnNameFont();
 
         FontMetrics fmColumns = getFontMetrics(columnNameFont);
         FontMetrics fmTitle = getFontMetrics(tableNameFont);
-
+        int commentWidth = 0;
         if (columns != null) {
             for (int i = 0; i < columns.length; i++) {
                 ColumnData column = columns[i];
-
-                int valueWidth = fmColumns.stringWidth(column.getColumnName());
+                int valueWidth = 10;
+                if (column.getColumnName() != null)
+                    valueWidth = fmColumns.stringWidth(column.getColumnName());
                 dataTypeOffset = Math.max(dataTypeOffset, valueWidth);
-
-                valueWidth = fmColumns.stringWidth(column.getFormattedDataType());
+                if (column.getFormattedColumnName() != null)
+                    valueWidth = fmColumns.stringWidth(column.getFormattedDataType());
                 keyLabelOffset = Math.max(keyLabelOffset, valueWidth);
+                if (showCommentOnFields && column.getRemarks() != null) {
+                    valueWidth = fmColumns.stringWidth("/*" + column.getRemarks() + "*/");
+                    commentWidth = Math.max(commentWidth, valueWidth);
+                }
             }
         }
 
@@ -170,18 +182,20 @@ public class ErdTable extends ErdMoveableComponent
         dataTypeOffset += 10;
         keyLabelOffset += 2;
 
-        int keyWidth = fmColumns.stringWidth(PRIMARY + FOREIGN);
-        int maxWordLength = dataTypeOffset + keyLabelOffset + keyWidth + 10;
+        keyWidth = fmColumns.stringWidth(PRIMARY + FOREIGN);
+        int maxWordLength = dataTypeOffset + keyLabelOffset + keyWidth + commentWidth + 10;
 
         // compare to the title length
         maxWordLength = Math.max(fmTitle.stringWidth(tableName), maxWordLength);
 
         // add 20px to the final width
-        FINAL_WIDTH = maxWordLength;// + 20;
+        if (FINAL_WIDTH < 0) {
+            FINAL_WIDTH = maxWordLength;// + 20;
 
-        if (ArrayUtils.isEmpty(columns)) {
+            if (ArrayUtils.isEmpty(columns)) {
 
-            FINAL_WIDTH += 80;
+                FINAL_WIDTH += 80;
+            }
         }
 
         // minimum width is 130px
@@ -196,97 +210,33 @@ public class ErdTable extends ErdMoveableComponent
                 keysCount++;
             }
         }
-
-        if (columns.length > 0) {
-            if (displayReferencedKeysOnly) {
-                if (keysCount > 0) {
-                    FINAL_HEIGHT = (fmColumns.getHeight() * keysCount) +
-                            TITLE_BAR_HEIGHT + 10;
+        int commentLines = 0;
+        if (FINAL_HEIGHT < 0) {
+            if (showCommentOnTable && !MiscUtils.isNull(getDescriptionTable())) {
+                partitionDescription(getGraphics(), FINAL_WIDTH - 10);
+                commentLines = descriptionLines.length + 2;
+            }
+            int commentHeight = fmColumns.getHeight() * commentLines;
+            if (columns.length > 0) {
+                if (displayReferencedKeysOnly) {
+                    if (keysCount > 0) {
+                        FINAL_HEIGHT = (fmColumns.getHeight() * keysCount) +
+                                TITLE_BAR_HEIGHT + 10;
+                    } else {
+                        FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 8;
+                    }
                 } else {
-                    FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 8;
+                    FINAL_HEIGHT = (fmColumns.getHeight() * columns.length) +
+                            TITLE_BAR_HEIGHT + 10;
                 }
             } else {
-                FINAL_HEIGHT = (fmColumns.getHeight() * columns.length) +
-                        TITLE_BAR_HEIGHT + 10;
+                // have one blank row (column) on the table
+                FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 10;
             }
-        } else {
-            // have one blank row (column) on the table
-            FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 10;
+            FINAL_HEIGHT += commentHeight;
         }
+        joins = new HashMap<>();
 
-        int joinSpacing = 10;
-        int vertSize = (FINAL_HEIGHT / joinSpacing) - 1;
-        int horizSize = (FINAL_WIDTH / joinSpacing) - 1;
-
-        verticalLeftJoins = new ErdTableConnectionPoint[vertSize];
-        verticalRightJoins = new ErdTableConnectionPoint[vertSize];
-        horizontalTopJoins = new ErdTableConnectionPoint[horizSize];
-        horizontalBottomJoins = new ErdTableConnectionPoint[horizSize];
-
-        int midPointVert = FINAL_HEIGHT / 2;
-        int midPointHoriz = FINAL_WIDTH / 2;
-
-        int aboveMidPoint = midPointHoriz;
-        int belowMidPoint = midPointHoriz;
-
-        for (int i = 0; i < horizontalTopJoins.length; i++) {
-            horizontalTopJoins[i] = new ErdTableConnectionPoint(TOP_JOIN);
-            horizontalBottomJoins[i] = new ErdTableConnectionPoint(BOTTOM_JOIN);
-
-            if (i == 0) {
-                horizontalTopJoins[i].setPosition(midPointHoriz);
-                horizontalBottomJoins[i].setPosition(midPointHoriz);
-            } else if (i % 2 == 0) {
-                belowMidPoint -= joinSpacing;
-
-                if (belowMidPoint > 10) {
-                    horizontalTopJoins[i].setPosition(belowMidPoint);
-                    horizontalBottomJoins[i].setPosition(belowMidPoint);
-                }
-
-            } else {
-                aboveMidPoint += joinSpacing;
-
-                if (aboveMidPoint < FINAL_WIDTH - 10) {
-                    horizontalTopJoins[i].setPosition(belowMidPoint);
-                    horizontalBottomJoins[i].setPosition(belowMidPoint);
-                }
-
-                horizontalTopJoins[i].setPosition(aboveMidPoint);
-                horizontalBottomJoins[i].setPosition(aboveMidPoint);
-            }
-
-        }
-
-        aboveMidPoint = midPointVert;
-        belowMidPoint = midPointVert;
-
-        for (int i = 0; i < verticalLeftJoins.length; i++) {
-            verticalLeftJoins[i] = new ErdTableConnectionPoint(LEFT_JOIN);
-            verticalRightJoins[i] = new ErdTableConnectionPoint(RIGHT_JOIN);
-
-            if (i == 0) {
-                verticalLeftJoins[i].setPosition(midPointVert);
-                verticalRightJoins[i].setPosition(midPointVert);
-            } else if (i % 2 == 0) {
-                belowMidPoint -= joinSpacing;
-
-                if (belowMidPoint < FINAL_HEIGHT - 10) {
-                    verticalLeftJoins[i].setPosition(belowMidPoint);
-                    verticalRightJoins[i].setPosition(belowMidPoint);
-                }
-
-            } else {
-                aboveMidPoint += joinSpacing;
-
-                if (aboveMidPoint > 10) {
-                    verticalLeftJoins[i].setPosition(aboveMidPoint);
-                    verticalRightJoins[i].setPosition(aboveMidPoint);
-                }
-
-            }
-
-        }
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -302,6 +252,90 @@ public class ErdTable extends ErdMoveableComponent
         });
 
     }
+
+    private void partitionDescription(Graphics g, int textWidth) {
+
+        FontMetrics fm = null;
+        if (g == null) {
+
+            fm = getFontMetrics(parent.getColumnNameFont());
+
+        } else {
+
+            fm = g.getFontMetrics(parent.getColumnNameFont());
+        }
+
+        List<String> description = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(getDescriptionTable(), " ", true);
+        StringBuilder sb = new StringBuilder();
+
+        int length = 0;
+        int currentLength = 0;
+
+        while (st.hasMoreTokens()) {
+
+            String _text = st.nextToken();
+            length = fm.stringWidth(_text);
+
+            if (currentLength + length <= textWidth) {
+
+                sb.append(_text);
+                currentLength += length;
+
+            } else {
+
+                description.add(sb.toString().trim());
+
+                sb.setLength(0);
+                if (length >= textWidth) {
+                    List<String> texts = partitionToken(g, _text, textWidth);
+                    description.addAll(texts);
+                    currentLength = 0;
+                } else {
+
+                    currentLength = length;
+                    sb.append(_text);
+                }
+            }
+
+            _text = null;
+
+        }
+
+        if (sb.length() > 0) {
+
+            description.add(sb.toString().trim());
+        }
+
+        descriptionLines = description.toArray(new String[description.size()]);
+
+    }
+
+    protected List<String> partitionToken(Graphics g, String text, int width) {
+        FontMetrics fm = null;
+        if (g == null) {
+
+            fm = getFontMetrics(parent.getColumnNameFont());
+
+        } else {
+
+            fm = g.getFontMetrics(parent.getColumnNameFont());
+        }
+        List<String> list = new ArrayList<>();
+        int ind = text.length() / 2;
+        String text1 = text.substring(0, ind);
+        String text2 = text.substring(ind);
+        int length = fm.stringWidth(text1);
+        if (length >= width)
+            list.addAll(partitionToken(g, text1, width));
+        else list.add(text1);
+        length = fm.stringWidth(text2);
+        if (length >= width)
+            list.addAll(partitionToken(g, text2, width));
+        else list.add(text2);
+        return list;
+    }
+
 
     public boolean isEditable() {
         return editable;
@@ -320,9 +354,11 @@ public class ErdTable extends ErdMoveableComponent
         displayReferencedKeysOnly = display;
     }
 
-    public void tableColumnsChanged() {
+    public void tableColumnsChanged(boolean resetBounds) {
         resetAllJoins();
-
+        if (resetBounds) {
+            resetBounds();
+        }
         try {
             jbInit();
         } catch (Exception e) {
@@ -331,6 +367,12 @@ public class ErdTable extends ErdMoveableComponent
 
         repaint();
         revalidate();
+    }
+
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        FINAL_HEIGHT = height;
+        FINAL_WIDTH = width;
     }
 
     /**
@@ -490,6 +532,11 @@ public class ErdTable extends ErdMoveableComponent
         newTable = false;
     }
 
+    public void resetBounds() {
+        FINAL_WIDTH = -1;
+        FINAL_HEIGHT = -1;
+    }
+
     /**
      * <p>Sets this table as a newly created table - ie.
      * this table does not exist as yet in the database
@@ -528,14 +575,6 @@ public class ErdTable extends ErdMoveableComponent
         drawTable(g2d, 0, 0);
     }
 
-    protected Color getTableBackground() {
-        return tableBackground;
-    }
-
-    protected void setTableBackground(Color tableBackground) {
-        this.tableBackground = tableBackground;
-    }
-
     protected void drawTable(Graphics2D g, int offsetX, int offsetY) {
 
         if (parent == null) {
@@ -547,7 +586,7 @@ public class ErdTable extends ErdMoveableComponent
         Font columnNameFont = parent.getColumnNameFont();
 
         // set the table value background
-        g.setColor(TITLE_BAR_BG_COLOR);
+        g.setColor(ErdViewerPanel.TITLE_COLORS[titleBarBgColor]);
         g.fillRect(offsetX, offsetY, FINAL_WIDTH - 1, TITLE_BAR_HEIGHT);
 
         // set the table value
@@ -561,7 +600,7 @@ public class ErdTable extends ErdMoveableComponent
 
         // draw the line separator
         lineHeight = TITLE_BAR_HEIGHT + offsetY - 1;
-        g.drawLine(offsetX, lineHeight, offsetX + FINAL_WIDTH - 1, lineHeight);
+        g.drawLine(offsetX + 1, lineHeight, offsetX + FINAL_WIDTH - 1, lineHeight);
 
         // fill the white background
         g.setColor(tableBackground);
@@ -582,7 +621,6 @@ public class ErdTable extends ErdMoveableComponent
         int drawCount = 0;
         String value = null;
         if (ArrayUtils.isNotEmpty(columns)) {
-
             for (int i = 0; i < columns.length; i++) {
                 ColumnData column = columns[i];
                 if (displayReferencedKeysOnly && !column.isKey()) {
@@ -591,15 +629,16 @@ public class ErdTable extends ErdMoveableComponent
 
                 int y = (((drawCount++) + 1) * lineHeight) + heightPlusSep;
                 int x = leftMargin;
-
                 // draw the column value string
                 value = column.getColumnName();
-                g.drawString(value, x, y);
+                if (value != null)
+                    g.drawString(value, x, y);
 
                 // draw the data type and size string
                 x = leftMargin + dataTypeOffset;
                 value = column.getFormattedDataType();
-                g.drawString(value, x, y);
+                if (value != null)
+                    g.drawString(value, x, y);
 
                 // draw the key label
                 if (column.isKey()) {
@@ -608,6 +647,10 @@ public class ErdTable extends ErdMoveableComponent
 
                         value = PRIMARY + FOREIGN;
 
+                    } else if (column.isUniqueKey() && column.isForeignKey()) {
+
+                        value = UNIQUE + FOREIGN;
+
                     } else if (column.isPrimaryKey()) {
 
                         value = PRIMARY;
@@ -615,14 +658,32 @@ public class ErdTable extends ErdMoveableComponent
                     } else if (column.isForeignKey()) {
 
                         value = FOREIGN;
+                    } else if (column.isUniqueKey()) {
+
+                        value = UNIQUE;
                     }
 
                     x = leftMargin + dataTypeOffset + keyLabelOffset;
                     g.drawString(value, x, y);
                 }
+                if (isShowCommentOnFields() && column.getRemarks() != null) {
+                    x = leftMargin + dataTypeOffset + keyLabelOffset + keyWidth;
+                    g.drawString("/*" + column.getRemarks() + "*/", x, y);
+                }
 
             }
 
+        }
+        if (showCommentOnTable && descriptionLines != null) {
+            int x = leftMargin;
+            int y = (((drawCount++) + 1) * lineHeight) + heightPlusSep;
+            g.drawString("/*", x, y);
+            for (int i = 0; i < descriptionLines.length; i++) {
+                y = (((drawCount++) + 1) * lineHeight) + heightPlusSep;
+                g.drawString(descriptionLines[i], x, y);
+            }
+            y = (((drawCount++) + 1) * lineHeight) + heightPlusSep;
+            g.drawString("*/", x, y);
         }
 
         // draw the rectangle border
@@ -635,7 +696,7 @@ public class ErdTable extends ErdMoveableComponent
             g.setColor(Color.BLACK);
         }
 
-        g.drawRect(offsetX, offsetY, FINAL_WIDTH - 1, FINAL_HEIGHT - 1);
+        g.drawRect(offsetX + 1, offsetY + 1, FINAL_WIDTH - 2, FINAL_HEIGHT - 2);
         //    g.setColor(Color.DARK_GRAY);
         //    g.draw3DRect(offsetX, offsetY, FINAL_WIDTH - 2, FINAL_HEIGHT - 2, true);
     }
@@ -645,24 +706,17 @@ public class ErdTable extends ErdMoveableComponent
      */
     public void resetAllJoins() {
 
-        if (ArrayUtils.isNotEmpty(verticalLeftJoins)) {
+        if (joins != null) {
 
-            for (int i = 0; i < verticalLeftJoins.length; i++) {
-                verticalLeftJoins[i].reset();
-                verticalRightJoins[i].reset();
+            for (ColumnJoins cj : joins.values()) {
+                if (ArrayUtils.isNotEmpty(cj.verticalLeftJoins))
+                    for (int i = 0; i < cj.verticalLeftJoins.length; i++) {
+                        cj.verticalLeftJoins[i].reset();
+                        cj.verticalRightJoins[i].reset();
+                    }
             }
 
         }
-
-        if (ArrayUtils.isNotEmpty(horizontalBottomJoins)) {
-
-            for (int i = 0; i < horizontalBottomJoins.length; i++) {
-                horizontalBottomJoins[i].reset();
-                horizontalTopJoins[i].reset();
-            }
-
-        }
-
     }
 
     /**
@@ -671,19 +725,18 @@ public class ErdTable extends ErdMoveableComponent
      *
      * @return the next join position
      */
-    public int getNextJoin(int axis) {
+    public int getNextJoin(int axis, ColumnData column) {
+        ColumnJoins cj = joins.get(column);
+        if (cj == null) {
+            cj = new ColumnJoins();
+            joins.put(column, cj);
+        }
         switch (axis) {
             case LEFT_JOIN:
-                return getNextJoin(verticalLeftJoins);
+                return getNextJoin(cj.verticalLeftJoins);
 
             case RIGHT_JOIN:
-                return getNextJoin(verticalRightJoins);
-
-            case TOP_JOIN:
-                return getNextJoin(horizontalTopJoins);
-
-            case BOTTOM_JOIN:
-                return getNextJoin(horizontalBottomJoins);
+                return getNextJoin(cj.verticalRightJoins);
         }
         return 0;
     }
@@ -734,9 +787,7 @@ public class ErdTable extends ErdMoveableComponent
     public Vector getTableColumnsVector() {
         Vector columnsVector = new Vector(columns.length);
 
-        for (int i = 0; i < columns.length; i++) {
-            columnsVector.add(columns[i]);
-        }
+        Collections.addAll(columnsVector, columns);
 
         return columnsVector;
     }
@@ -817,6 +868,42 @@ public class ErdTable extends ErdMoveableComponent
         return new Rectangle(getX(), getY(), FINAL_WIDTH, FINAL_HEIGHT);
     }
 
+    protected int getLineHeght() {
+        Graphics2D g = (Graphics2D) getGraphics();
+        if (g == null)
+            g = new DefaultGraphics2D(true);
+        Font columnNameFont = parent.getColumnNameFont();
+        FontMetrics fm = g.getFontMetrics(columnNameFont);
+        return fm.getHeight();
+    }
+
+    public Rectangle getColumnBounds(ColumnData columnData) {
+        int x = getX();
+        int offsetY = getY();
+        int heightPlusSep = 1 /*+ TITLE_BAR_HEIGHT*/ + offsetY;
+
+        int lineHeight = getLineHeght();
+
+        int drawCount = 0;
+        String value = null;
+        if (ArrayUtils.isNotEmpty(columns)) {
+            for (int i = 0; i < columns.length; i++) {
+                ColumnData column = columns[i];
+                if (displayReferencedKeysOnly && !column.isKey()) {
+                    continue;
+                }
+                drawCount++;
+                if (column == columnData) {
+                    int y = (((drawCount) + 1) * lineHeight) + heightPlusSep;
+                    if (y > offsetY + FINAL_HEIGHT)
+                        y = offsetY + FINAL_HEIGHT - lineHeight;
+                    return new Rectangle(x, y, FINAL_WIDTH, lineHeight);
+                }
+            }
+        }
+        return null;
+    }
+
     public void doubleClicked(MouseEvent e) {
         
 /*      if (!newTable)
@@ -833,15 +920,7 @@ public class ErdTable extends ErdMoveableComponent
     public void selected(MouseEvent e) {
         super.selected(e);
 
-        Rectangle bounds = getBounds();
-        Rectangle titleBar = new Rectangle((int) bounds.getX(), (int) bounds.getY(),
-                FINAL_WIDTH, TITLE_BAR_HEIGHT);
 
-        if (titleBar.contains(xDifference, yDifference)) {
-            dragging = true;
-        } else {
-            dragging = false;
-        }
 
         // need to repaint layered pane to show
         // selected border on tables
@@ -861,15 +940,44 @@ public class ErdTable extends ErdMoveableComponent
     public void clean() {
         parent = null;
         columns = null;
-        verticalLeftJoins = null;
-        verticalRightJoins = null;
-        horizontalTopJoins = null;
-        horizontalBottomJoins = null;
+        joins = null;
+    }
+
+    public int getTitleBarBgColor() {
+        return titleBarBgColor;
+    }
+
+    public void setTitleBarBgColor(int titleBarBgColor) {
+        this.titleBarBgColor = titleBarBgColor;
+    }
+
+    public String getDescriptionTable() {
+        return descriptionTable;
+    }
+
+    public void setDescriptionTable(String descriptionTable) {
+        this.descriptionTable = descriptionTable;
+    }
+
+    public boolean isShowCommentOnTable() {
+        return showCommentOnTable;
+    }
+
+    public void setShowCommentOnTable(boolean showCommentOnTable) {
+        this.showCommentOnTable = showCommentOnTable;
+    }
+
+    public boolean isShowCommentOnFields() {
+        return showCommentOnFields;
+    }
+
+    public void setShowCommentOnFields(boolean showCommentOnFields) {
+        this.showCommentOnFields = showCommentOnFields;
     }
 
     static class ErdTableConnectionPoint {
 
-        private int axisType;
+        private final int axisType;
 
         private int position;
 
@@ -914,6 +1022,58 @@ public class ErdTable extends ErdMoveableComponent
             return tablesConnected > 0;
         }
 
+    }
+
+    class ColumnJoins {
+        private final transient ErdTableConnectionPoint[] verticalLeftJoins;
+        private final transient ErdTableConnectionPoint[] verticalRightJoins;
+
+        public ColumnJoins() {
+            int joinSpacing = 6;
+            int vertSize = (getLineHeght() * 2 / joinSpacing) - 1;
+            verticalLeftJoins = new ErdTableConnectionPoint[vertSize];
+            verticalRightJoins = new ErdTableConnectionPoint[vertSize];
+            int midPointVert = vertSize / 2;
+            //int midPointHoriz = FINAL_WIDTH / 2;
+
+            int aboveMidPoint = midPointVert;
+            int belowMidPoint = midPointVert;
+
+            for (int i = 0; i < verticalLeftJoins.length; i++) {
+                verticalLeftJoins[i] = new ErdTableConnectionPoint(LEFT_JOIN);
+                verticalRightJoins[i] = new ErdTableConnectionPoint(RIGHT_JOIN);
+
+                if (i == 0) {
+                    verticalLeftJoins[i].setPosition(midPointVert);
+                    verticalRightJoins[i].setPosition(midPointVert);
+                } else if (i % 2 == 0) {
+                    belowMidPoint -= joinSpacing;
+
+                    if (belowMidPoint < vertSize) {
+                        verticalLeftJoins[i].setPosition(belowMidPoint);
+                        verticalRightJoins[i].setPosition(belowMidPoint);
+                    }
+
+                } else {
+                    aboveMidPoint += joinSpacing;
+
+                    if (aboveMidPoint > 0) {
+                        verticalLeftJoins[i].setPosition(aboveMidPoint);
+                        verticalRightJoins[i].setPosition(aboveMidPoint);
+                    }
+
+                }
+
+            }
+        }
+
+        public ErdTableConnectionPoint[] getVerticalLeftJoins() {
+            return verticalLeftJoins;
+        }
+
+        public ErdTableConnectionPoint[] getVerticalRightJoins() {
+            return verticalRightJoins;
+        }
     }
 
 }

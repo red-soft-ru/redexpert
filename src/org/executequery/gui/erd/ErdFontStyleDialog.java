@@ -54,7 +54,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
     /**
      * The ERD parent panel
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     /**
      * The table name style combo
@@ -65,6 +65,8 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
      * The column name style combo
      */
     private JComboBox columnNameCombo;
+
+    private JComboBox textBlockCombo;
 
     private JLabel normalSample;
     private JLabel italicSample;
@@ -90,6 +92,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
 
         int tableNameFontStyle = parent.getTableNameFontStyle();
         int columnNameFontStyle = parent.getColumnNameFontStyle();
+        int textBlockFontStyle = parent.getTextBlockFontStyle();
 
         if (tableNameFontStyle == Font.PLAIN)
             tableNameCombo.setSelectedIndex(0);
@@ -108,6 +111,15 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
             columnNameCombo.setSelectedIndex(2);
         else if (columnNameFontStyle == Font.ITALIC + Font.BOLD)
             columnNameCombo.setSelectedIndex(3);
+
+        if (textBlockFontStyle == Font.PLAIN)
+            textBlockCombo.setSelectedIndex(0);
+        else if (textBlockFontStyle == Font.ITALIC)
+            textBlockCombo.setSelectedIndex(1);
+        else if (textBlockFontStyle == Font.BOLD)
+            textBlockCombo.setSelectedIndex(2);
+        else if (textBlockFontStyle == Font.ITALIC + Font.BOLD)
+            textBlockCombo.setSelectedIndex(3);
 
         fontLists_actionPerformed();
 
@@ -136,7 +148,7 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         Vector<String> fontNames = GUIUtils.getSystemFonts();
         fontList = new JList(fontNames);
 
-        String[] fontSizes = {"7", "8", "9", "10", "11", "12", "14"};
+        String[] fontSizes = {"7", "8", "9", "10", "11", "12", "14", "16", "18", "22", "24", "32"};
         sizeList = new JList(fontSizes);
 
         JScrollPane fontScroll = new JScrollPane(fontList);
@@ -151,10 +163,12 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         };
         tableNameCombo = WidgetFactory.createComboBox("tableNameCombo", fontStyles);
         columnNameCombo = WidgetFactory.createComboBox("columnNameCombo", fontStyles);
+        textBlockCombo = WidgetFactory.createComboBox("textBlockCombo", fontStyles);
 
         Dimension comboDim = new Dimension(90, 20);
         tableNameCombo.setPreferredSize(comboDim);
         columnNameCombo.setPreferredSize(comboDim);
+        textBlockCombo.setPreferredSize(comboDim);
 
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
         JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"));
@@ -178,7 +192,14 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
         gbc.insets.right = 10;
         gbc.gridx = 0;
         gbc.weightx = 0;
-        stylesPanel.add(new JLabel("ColumnNameStyleLabel"), gbc);
+        stylesPanel.add(new JLabel(bundleString("ColumnNameStyleLabel")), gbc);
+        gbc.gridy = 2;
+        stylesPanel.add(new JLabel(bundleString("TextBlockStyleLabel")), gbc);
+        gbc.gridx = 1;
+        gbc.insets.right = 0;
+        gbc.weightx = 1.0;
+        stylesPanel.add(textBlockCombo, gbc);
+
 
         JPanel panel = new JPanel(new GridBagLayout());
         gbc.insets.top = 5;
@@ -313,8 +334,21 @@ public class ErdFontStyleDialog extends AbstractBaseDialog
             else if (index == 3)
                 columnNameStyle = Font.BOLD + Font.ITALIC;
 
+            index = textBlockCombo.getSelectedIndex();
+            int textBlockStyle = -1;
+
+            if (index == 0)
+                textBlockStyle = Font.PLAIN;
+            else if (index == 1)
+                textBlockStyle = Font.ITALIC;
+            else if (index == 2)
+                textBlockStyle = Font.BOLD;
+            else if (index == 3)
+                textBlockStyle = Font.BOLD + Font.ITALIC;
+
+
             parent.setTableDisplayFont((String) fontList.getSelectedValue(),
-                    tableNameStyle, columnNameStyle,
+                    tableNameStyle, columnNameStyle, textBlockStyle,
                     Integer.parseInt((String) sizeList.getSelectedValue()));
 
             dispose();

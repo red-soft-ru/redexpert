@@ -20,6 +20,8 @@
 
 package org.executequery.gui.browser;
 
+import org.underworldlabs.util.MiscUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,6 +168,10 @@ public class ColumnConstraint implements Serializable {
         return type == PRIMARY_KEY;
     }
 
+    public boolean isUniqueKey() {
+        return type == UNIQUE_KEY;
+    }
+
     public boolean isNewConstraint() {
         return newConstraint;
     }
@@ -186,6 +192,15 @@ public class ColumnConstraint implements Serializable {
         column = cc.getColumn();
         refColumn = cc.getRefColumn();
         type = cc.getType();
+    }
+
+    public void setValues(org.executequery.databaseobjects.impl.ColumnConstraint cc) {
+        name = MiscUtils.trimEnd(cc.getName());
+        table = MiscUtils.trimEnd(cc.getTable().getName());
+        refTable = MiscUtils.trimEnd(cc.getReferencedTable());
+        column = MiscUtils.trimEnd(cc.getColumnName());
+        refColumn = MiscUtils.trimEnd(cc.getReferencedColumn());
+        type = cc.getKeyType();
     }
 
     public String getTypeName() {

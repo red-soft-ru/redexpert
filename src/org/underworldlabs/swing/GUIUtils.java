@@ -241,6 +241,39 @@ public class GUIUtils {
         setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR), component);
     }
 
+    public static void showChangeSizeCursor(Component component, int location) {
+        int cursor;
+        switch (location) {
+            case GridBagConstraints.NORTH:
+                cursor = Cursor.N_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.NORTHEAST:
+                cursor = Cursor.NE_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.EAST:
+                cursor = Cursor.E_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTHEAST:
+                cursor = Cursor.SE_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTH:
+                cursor = Cursor.S_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTHWEST:
+                cursor = Cursor.SW_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.WEST:
+                cursor = Cursor.W_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.NORTHWEST:
+                cursor = Cursor.NW_RESIZE_CURSOR;
+                break;
+            default:
+                cursor = Cursor.DEFAULT_CURSOR;
+        }
+        setCursor(Cursor.getPredefinedCursor(cursor), component);
+    }
+
     /**
      * Executes the specified runnable using the
      * <code>SwingWorker</code>.

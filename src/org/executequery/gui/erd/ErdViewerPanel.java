@@ -179,51 +179,17 @@ public class ErdViewerPanel extends DefaultTabView
      * flag whether to display reference keys only
      */
     private boolean displayKeysOnly = false;
-
-    private static final int INITIAl_VIEW_HEIGHT = 450;
-
-    private double defaultScaledView;
-
-    /**
-     * The scale values
-     */
-    protected static final String[] scaleValues = {"25%", "50%", "75%", "100%",
-            "125%", "150%", "175%", "200%"};
-
-    private static int openCount = 1;
-
-    private List tableNames;
-
-    private List<ErdTableInfo> tableInfos;
-
-    private int next_x = 20;
-    private int next_y = 20;
-    private int lastWidth = 0;
-
-    public final static Color[] TITLE_COLORS = new Color[]{
-            new Color(255, 173, 173),
-            new Color(255, 214, 165),
-            new Color(253, 255, 182),
-            new Color(202, 255, 191),
-            new Color(155, 246, 255),
-            new Color(0, 150, 255),
-            new Color(189, 178, 255),
-            new Color(255, 198, 255),
-            new Color(192, 192, 192),
-            new Color(248, 211, 201)
-    };
-
     public final static Color[] LINE_COLORS = new Color[]{
             new Color(255, 0, 0),
             new Color(255, 128, 0),
-            new Color(255, 255, 0),
             new Color(0, 255, 0),
             new Color(0, 255, 255),
             new Color(0, 0, 255),
             new Color(128, 128, 255),
             new Color(255, 0, 255),
             new Color(85, 85, 85),
-            new Color(237, 146, 119)
+            new Color(237, 146, 119),
+            new Color(255, 255, 0),
     };
 
     public static final int DELETE = 0;

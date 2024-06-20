@@ -36,6 +36,7 @@ import org.executequery.event.KeywordListener;
 import org.executequery.gui.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -878,8 +879,18 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 tableNames.add(table.getName());
                 columns.add(new ColumnData[0]);
             }
+            Vector<ErdTableInfo> erdTableInfos = new Vector<>();
+            for (String tableName : tableNames) {
+                ErdTableInfo etf = new ErdTableInfo();
+                etf.setName(tableName);
+                etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(etf.getName()));
+                AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getTableFromName(etf.getName());
+                if (tableObject != null)
+                    etf.setComment(tableObject.getRemarks());
+                erdTableInfos.add(etf);
+            }
 
-            referencesPanel.setTables(tableNames, columns);
+            referencesPanel.setTables(tableNames, erdTableInfos);
 
         } catch (DataSourceException e) {
             controller.handleException(e);

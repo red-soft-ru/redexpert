@@ -20,6 +20,7 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.erd.ErdViewerPanel;
 
 import javax.swing.*;
@@ -32,7 +33,7 @@ import java.util.List;
  */
 public class ReferencesDiagramPanel extends JPanel {
 
-    private ErdViewerPanel viewerPanel;
+    private final ErdViewerPanel viewerPanel;
 
     public ReferencesDiagramPanel() {
         super(new BorderLayout());
@@ -52,9 +53,9 @@ public class ReferencesDiagramPanel extends JPanel {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public void setTables(List tableNames, List columnData) {
+    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
 
-        viewerPanel.resetTableValues(tableNames, columnData);
+        viewerPanel.resetTableValues(tableNames, tableInfos);
     }
 
 }

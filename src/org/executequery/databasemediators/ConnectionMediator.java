@@ -26,13 +26,13 @@ import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.DefaultConnectionEvent;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -45,27 +45,23 @@ public final class ConnectionMediator {
     }
 
     public static synchronized ConnectionMediator getInstance() {
-
         return connectionMediator;
     }
 
     public void disconnect(DatabaseConnection dc) throws DataSourceException {
-
         ConnectionManager.closeConnection(dc);
         fireConnectionClosed(dc);
     }
 
-    public void connect(List<DatabaseConnection> databaseConnections) {
-
-
+    public boolean connect(DatabaseConnection dc) throws DataSourceException {
+        return connect(dc, false);
     }
 
-    public boolean connect(DatabaseConnection dc) throws DataSourceException {
+    public boolean connect(DatabaseConnection dc, boolean quietly) {
 
-        if (!establish(dc)) {
-
+        if (!establish(dc))
             return false;
-        }
+
         try {
             Connection connection = ConnectionManager.getTemporaryConnection(dc);
             DatabaseMetaData dmd = connection.getMetaData();
@@ -73,12 +69,15 @@ public final class ConnectionMediator {
             dc.setMinorServerVersion(dmd.getDatabaseMinorVersion());
             dc.setServerName(dmd.getDatabaseProductName());
             connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        fireConnectionOpened(dc);
-        GUIUtils.scheduleGC();
 
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        if (!quietly)
+            fireConnectionOpened(dc);
+
+        GUIUtils.scheduleGC();
         return true;
     }
 
@@ -87,58 +86,38 @@ public final class ConnectionMediator {
         DefaultConnectionBuilder builder = new DefaultConnectionBuilder(dc);
         builder.connect();
 
-        if (builder.isCancelled()) {
-
+        if (builder.isCancelled())
             return false;
-        }
 
-        boolean connected = builder.isConnected();
-
-        if (!connected) {
-
+        if (!builder.isConnected()) {
             DataSourceException exception = builder.getException();
-            if (exception != null) {
-
-                throw exception;
-
-            } else {
-
-                throw new ApplicationException("Unknown error establishing connection.");
-            }
-
+            throw exception == null ?
+                    new ApplicationException("Unknown error establishing connection.") :
+                    exception;
         }
 
-        return connected;
+        return true;
     }
 
     public boolean test(DatabaseConnection dc) throws DataSourceException {
-        
-        if (!establish(dc)) {
-            
+
+        if (!establish(dc))
             return false;
-        }
+
         disconnect(dc);
         return true;
     }
-    
-    private void fireConnectionOpened(DatabaseConnection dc) {
 
+    private void fireConnectionOpened(DatabaseConnection dc) {
         fireConnectionEvent(new DefaultConnectionEvent(dc, DefaultConnectionEvent.CONNECTED));
     }
 
     private void fireConnectionClosed(DatabaseConnection dc) {
-
         fireConnectionEvent(new DefaultConnectionEvent(dc, DefaultConnectionEvent.DISCONNECTED));
     }
 
     private void fireConnectionEvent(ConnectionEvent event) {
-
         EventMediator.fireEvent(event);
     }
 
 }
-
-
-
-
-

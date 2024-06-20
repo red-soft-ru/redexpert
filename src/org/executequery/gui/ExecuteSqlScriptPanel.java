@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.SplitPaneFactory;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -393,7 +394,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 connection = getSelectedConnection();
                 if (connection != null && !connection.isConnected()) {
                     outputPanel.appendAction("Connecting to the DB...");
-                    ConnectionManager.createDataSource(connection, true);
+                    ConnectionMediator.getInstance().connect(connection, true);
                 }
             }
 

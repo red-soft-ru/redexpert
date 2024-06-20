@@ -11,6 +11,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.BrowserTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.databaseobjects.NamedObject;
@@ -322,7 +323,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (!getSelectedConnection().isConnected())
-            ConnectionManager.createDataSource(getSelectedConnection(), true);
+            ConnectionMediator.getInstance().connect(getSelectedConnection(), true);
 
         try {
             DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();

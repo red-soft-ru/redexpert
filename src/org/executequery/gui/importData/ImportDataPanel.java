@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -788,7 +789,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         targetHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
         if (!targetHost.isConnected())
-            ConnectionManager.createDataSource(targetHost.getDatabaseConnection(), true);
+            ConnectionMediator.getInstance().connect(targetHost.getDatabaseConnection(), true);
 
         targetTablesList.clear();
         targetTablesList.add(bundleString("SelectTable"));
@@ -816,7 +817,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         DefaultDatabaseHost host = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
         if (!host.isConnected())
-            ConnectionManager.createDataSource(host.getDatabaseConnection(), true);
+            ConnectionMediator.getInstance().connect(host.getDatabaseConnection(), true);
 
         sourceTablesList.clear();
         sourceTablesList.add(bundleString("SelectTable"));

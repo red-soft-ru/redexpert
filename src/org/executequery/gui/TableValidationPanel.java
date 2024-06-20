@@ -3,6 +3,7 @@ package org.executequery.gui;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.base.TabView;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
@@ -240,7 +241,7 @@ public class TableValidationPanel extends JPanel implements TabView {
         selectedConnection = databaseConnections.get(connectionsComboBox.getSelectedIndex());
         try {
             if (!selectedConnection.isConnected())
-                ConnectionManager.createDataSource(selectedConnection, true);
+                ConnectionMediator.getInstance().connect(selectedConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e);

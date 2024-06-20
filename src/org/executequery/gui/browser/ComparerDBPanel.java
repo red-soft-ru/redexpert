@@ -2,6 +2,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -452,9 +453,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         try {
 
             if (!isExtractMetadata && !masterConnection.isConnected())
-                ConnectionManager.createDataSource(masterConnection, true);
+                ConnectionMediator.getInstance().connect(masterConnection, true);
             if (!targetConnection.isConnected())
-                ConnectionManager.createDataSource(targetConnection, true);
+                ConnectionMediator.getInstance().connect(targetConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));

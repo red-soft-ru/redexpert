@@ -379,7 +379,7 @@ public class ErdToolBarPalette extends JPanel {
 
             DatabaseConnection connection = (DatabaseConnection) selectedItem;
             if (!connection.isConnected())
-                ConnectionMediator.getInstance().connect(connection);
+                ConnectionMediator.getInstance().connect(connection, true);
 
             return connection;
         }

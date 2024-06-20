@@ -179,6 +179,13 @@ public class ErdTextPanel extends ErdMoveableComponent {
         return new Rectangle(getX(), getY(), width, height);
     }
 
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        this.height = height;
+        this.width = width;
+    }
+
+
     public void clean() {
         parent = null;
     }

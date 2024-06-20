@@ -68,7 +68,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
         viewMenu.addSeparator();
 
         ButtonGroup bg = new ButtonGroup();
-        String[] scaleValues = ErdViewerPanel.scaleValues;
+        String[] scaleValues = ErdViewerPanel.SCALE_VALUES;
         scaleChecks = new JCheckBoxMenuItem[scaleValues.length];
 
         String defaultZoom = "75%";

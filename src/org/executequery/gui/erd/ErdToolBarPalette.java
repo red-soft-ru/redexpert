@@ -26,14 +26,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
-import org.executequery.actions.toolscommands.ComparerDBCommands;
-import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.gui.BaseDialog;
-import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
@@ -61,7 +55,8 @@ public class ErdToolBarPalette extends JPanel {
     private RolloverButton createRelationButton;
     private RolloverButton deleteRelationButton;
     private RolloverButton generateScriptButton;
-    private RolloverButton generateDiagramButton;
+    private RolloverButton erdTextBlockButton;
+    private RolloverButton updateFromDatabase;
     private RolloverButton fontStyleButton;
     private RolloverButton lineStyleButton;
     private RolloverButton canvasBgButton;
@@ -69,8 +64,6 @@ public class ErdToolBarPalette extends JPanel {
     private RolloverButton erdTitleButton;
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
-    private RolloverButton erdTextBlockButton;
-    private RolloverButton updateFromDatabase;
 
     private JComboBox<?> connectionsCombo;
 
@@ -79,7 +72,7 @@ public class ErdToolBarPalette extends JPanel {
 
         this.parent = parent;
         this.selectedScaleIndex = 3;
-        this.scaleValues = ErdViewerPanel.scaleValues;
+        this.scaleValues = ErdViewerPanel.SCALE_VALUES;
 
         init();
         arrange();
@@ -139,11 +132,18 @@ public class ErdToolBarPalette extends JPanel {
                 e -> generateScript()
         );
 
-        generateDiagramButton = WidgetFactory.createRolloverButton(
-                "generateDiagramButton",
-                bundleString("generateDiagram"),
-                "TableTrigger16",
-                e -> generateDiagram()
+        erdTextBlockButton = WidgetFactory.createRolloverButton(
+                "erdTextBlockButton",
+                bundleString("erdText"),
+                "AddComment16",
+                e -> new ErdTextBlockDialog(parent)
+        );
+
+        updateFromDatabase = WidgetFactory.createRolloverButton(
+                "updateFromDatabase",
+                bundleString("updateFromDatabase"),
+                "RecycleConnection16",
+                e -> updateFromDatabase()
         );
 
         erdTitleButton = WidgetFactory.createRolloverButton(
@@ -195,20 +195,6 @@ public class ErdToolBarPalette extends JPanel {
                 e -> parent.zoom(false)
         );
 
-        erdTextBlockButton = WidgetFactory.createRolloverButton(
-                "erdTextBlockButton",
-                "AddComment16",
-                bundleString("erdText"),
-                e -> new ErdTextBlockDialog(parent)
-        );
-
-        updateFromDatabase = WidgetFactory.createRolloverButton(
-                "updateFromDatabase",
-                "RecycleConnection16",
-                bundleString("updateFromDatabase"),
-                e -> updateFromDatabase()
-        );
-
         connections.stream()
                 .filter(DatabaseConnection::isConnected)
                 .findFirst().ifPresent(dc -> connectionsCombo.setSelectedItem(dc));
@@ -226,9 +212,10 @@ public class ErdToolBarPalette extends JPanel {
         add(createRelationButton, gbh.nextCol().get());
         add(deleteRelationButton, gbh.nextCol().get());
         add(generateScriptButton, gbh.nextCol().get());
-        add(generateDiagramButton, gbh.nextCol().get());
+        add(updateFromDatabase, gbh.nextCol().get());
 
         add(PanelToolBar.getSeparator(), gbh.nextCol().get());
+        add(erdTextBlockButton, gbh.nextCol().get());
         add(erdTitleButton, gbh.nextCol().get());
         add(fontStyleButton, gbh.nextCol().get());
         add(lineStyleButton, gbh.nextCol().get());
@@ -240,22 +227,6 @@ public class ErdToolBarPalette extends JPanel {
         add(zoomInButton, gbh.nextCol().get());
 
         add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
-    }
-
-    private void generateDiagram() {
-        try {
-            GUIUtilities.showWaitCursor();
-
-            BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
-            JPanel panel = new GenerateErdPanel(getSelectedConnection(), dialog, parent);
-
-            dialog.addDisplayComponentWithEmptyBorder(panel);
-            dialog.setResizable(false);
-            dialog.display();
-
-        } finally {
-            GUIUtilities.showNormalCursor();
-        }
     }
 
     private void createRelation() {
@@ -284,13 +255,13 @@ public class ErdToolBarPalette extends JPanel {
 
     private void generateScript() {
 
-        Vector<ErdTable> tables = parent.getAllComponentsVector();
+        Vector<ErdMoveableComponent> tables = parent.getAllComponentsVector();
         if (tables.isEmpty()) {
             GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
             return;
         }
 
-        Vector<ErdTable> clonedTables = new Vector<>(tables.size());
+        Vector<ErdMoveableComponent> clonedTables = new Vector<>(tables.size());
         for (int i = 0; i < tables.size(); i++)
             clonedTables.add(tables.elementAt(i));
 
@@ -357,7 +328,9 @@ public class ErdToolBarPalette extends JPanel {
             GUIUtilities.showWaitCursor();
 
             BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
-            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(dialog, parent, getSelectedConnection()));
+            JPanel panel = new GenerateErdPanel(getSelectedConnection(), dialog, parent);
+
+            dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.setResizable(false);
             dialog.display();
 

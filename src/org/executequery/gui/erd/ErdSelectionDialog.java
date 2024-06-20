@@ -21,119 +21,93 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
-import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author Takis Diakoumis
  */
 public class ErdSelectionDialog extends AbstractBaseDialog {
 
-    /**
-     * The ERD parent panel
-     */
-    private ErdViewerPanel parent;
-    /**
-     * The table selection panel
-     */
+    private final ErdViewerPanel parent;
+
+    private JButton addButton;
+    private JButton cancelButton;
     private ErdSelectionPanel selectionPanel;
 
     public ErdSelectionDialog(ErdViewerPanel parent) {
         super(GUIUtilities.getParentFrame(), "Add Table", true);
         this.parent = parent;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
+        arrange();
+    }
 
+    private void init() {
+        selectionPanel = new ErdSelectionPanel();
+
+        addButton = WidgetFactory.createButton(
+                "addButton",
+                Bundles.get("common.add.button"),
+                e -> add()
+        );
+        cancelButton = WidgetFactory.createButton(
+                "cancelButton",
+                Bundles.get("common.cancel.button"),
+                e -> dispose()
+        );
+
+    }
+
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().rightGap(5).anchorEast();
+        buttonPanel.add(addButton, gbh.get());
+        buttonPanel.add(cancelButton, gbh.nextCol().rightGap(0).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth();
+        mainPanel.add(selectionPanel, gbh.setMaxWeightY().spanX().get());
+        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().setMinWeightY().fillNone().get());
+
+        // --- base ---
+
+        add(mainPanel, BorderLayout.CENTER);
+
+        setResizable(false);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         pack();
         setLocation(GUIUtilities.getLocationForDialog(getSize()));
         setVisible(true);
     }
 
-    private void jbInit() {
-        Container c = this.getContentPane();
-        c.setLayout(new GridBagLayout());
+    private void add() {
 
-        selectionPanel = new ErdSelectionPanel();
-
-        JButton addButton = new DefaultPanelButton(Bundles.get("common.add.button"));
-        addButton.setActionCommand("Add");
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-        cancelButton.setActionCommand("Cancel");
-
-        ActionListener btnListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                buttons_actionPerformed(e);
-            }
-        };
-
-        addButton.addActionListener(btnListener);
-        cancelButton.addActionListener(btnListener);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.insets = new Insets(7, 7, 7, 7);
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        c.add(selectionPanel, gbc);
-        gbc.insets.top = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 1.0;
-        gbc.anchor = GridBagConstraints.SOUTHEAST;
-        c.add(addButton, gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 0;
-        gbc.insets.left = 0;
-        c.add(cancelButton, gbc);
-
-        setResizable(false);
-        this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-    }
-
-    /**
-     * <p>Performs the respective action upon selection
-     * of a button within this dialog.
-     *
-     * @param the <code>ActionEvent</code>
-     */
-    private void buttons_actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-
-        if (command.equals("Cancel")) {
-            dispose();
-        } else if (command.equals("Add")) {
-
-            if (!selectionPanel.hasSelections()) {
-                GUIUtilities.displayErrorMessage("You must select at least one table.");
-                return;
-            }
-
-            setVisible(false);
-
-            parent.setDatabaseConnection(selectionPanel.getDatabaseConnection());
-            new ErdGenerateProgressDialog(selectionPanel.getSelectedValues(),
-                    parent,
-                    selectionPanel.getSchema());
-            dispose();
+        if (!selectionPanel.hasSelections()) {
+            GUIUtilities.displayErrorMessage("You must select at least one table.");
+            return;
         }
 
+        new ErdGenerateProgressDialog(
+                selectionPanel.getSelectedValues(),
+                parent
+        );
+
+        setVisible(false);
+        dispose();
     }
 
 }
-
-
-
-
-

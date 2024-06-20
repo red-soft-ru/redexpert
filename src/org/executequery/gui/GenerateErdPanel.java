@@ -41,7 +41,6 @@ public class GenerateErdPanel extends JPanel {
     public static final String TITLE = Bundles.get(GenerateErdPanel.class, "title");
 
     private ErdSelectionPanel selectionPanel;
-    private ListSelectionPanel listPanel;
     private JButton generateButton;
     private JButton cancelButton;
 
@@ -50,7 +49,7 @@ public class GenerateErdPanel extends JPanel {
     private final ActionContainer parent;
 
     public GenerateErdPanel(ActionContainer parent) {
-        this(parent, null, null);
+        this(null, parent, null);
     }
 
     public GenerateErdPanel(DatabaseConnection connection, ActionContainer parent, ErdViewerPanel erdPanel) {
@@ -65,17 +64,7 @@ public class GenerateErdPanel extends JPanel {
     }
 
     private void init() {
-
-        MetaDataValues metaData = new MetaDataValues(true);
-        metaData.setDatabaseConnection(connection);
-
         selectionPanel = new ErdSelectionPanel(connection, erdPanel);
-
-        listPanel = new ListSelectionPanel(
-                Bundles.get("ErdSelectionPanel.availableTables"),
-                Bundles.get("ErdSelectionPanel.selectedTables")
-        );
-        listPanel.createAvailableList(metaData.getTables(null, null, "TABLE"));
 
         generateButton = WidgetFactory.createButton(
                 "generateButton",
@@ -87,8 +76,6 @@ public class GenerateErdPanel extends JPanel {
                 Bundles.get("common.cancel.button"),
                 e -> dispose()
         );
-
-        metaData.closeConnection();
     }
 
     private void arrange() {
@@ -107,7 +94,7 @@ public class GenerateErdPanel extends JPanel {
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
         gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth();
-        mainPanel.add(listPanel, gbh.setMaxWeightY().spanX().get());
+        mainPanel.add(selectionPanel, gbh.setMaxWeightY().spanX().get());
         mainPanel.add(buttonPanel, gbh.nextRowFirstCol().setMinWeightY().fillNone().get());
 
         // --- base ---
@@ -117,61 +104,32 @@ public class GenerateErdPanel extends JPanel {
 
     private void generate() {
 
-        if (!listPanel.hasSelections()) {
+        if (!selectionPanel.hasSelections()) {
             GUIUtilities.displayErrorMessage(bundleString("SelectMoreTablesError"));
             return;
         }
 
-        new ErdGenerateProgressDialog(connection, listPanel.getSelectedValues(), null, erdPanel);
+        if (erdPanel == null) {
+            new ErdGenerateProgressDialog(
+                    selectionPanel.getDatabaseConnection(),
+                    selectionPanel.getSelectedValues()
+            );
+
+        } else {
+            new ErdGenerateProgressDialog(
+                    selectionPanel.getSelectedValues(),
+                    erdPanel,
+                    selectionPanel.getDatabaseConnection()
+            );
+        }
+
+        dispose();
     }
 
     public void dispose() {
-        listPanel.clear();
+        selectionPanel.cleanup();
         parent.finished();
     }
-
-    public void setInProcess(boolean inProcess) {
-
-        if (inProcess) {
-            parent.block();
-            return;
-        }
-
-        new ErdGenerateProgressDialog(
-                selectionPanel.getSelectedValues(),
-                erdPanel,
-                connection,
-                selectionPanel.getSchema()
-        );
-
-        parent.unblock();
-    }
-
-    /*
-    public void actionPerformed(ActionEvent e) {
-
-        if (selectionPanel.hasSelections()) {
-
-            if (parentErdPanel == null) {
-                new ErdGenerateProgressDialog(selectionPanel.getDatabaseConnection(),
-                        selectionPanel.getSelectedValues());
-
-            } else {
-                new ErdGenerateProgressDialog(selectionPanel.getSelectedValues(),
-                        parentErdPanel, selectionPanel.getDatabaseConnection(), selectionPanel.getSchema());
-
-                cleanup();
-                SwingUtilities.getWindowAncestor(this).dispose();
-            }
-
-        } else
-            GUIUtilities.displayErrorMessage(bundleString("SelectMoreTablesError"));
-    }
-
-    public void cleanup() {
-        selectionPanel.cleanup();
-    }
-     */
 
     private String bundleString(String key) {
         return Bundles.get(GenerateErdPanel.class, key);

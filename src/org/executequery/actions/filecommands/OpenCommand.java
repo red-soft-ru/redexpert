@@ -120,7 +120,7 @@ public class OpenCommand implements BaseCommand {
                     return false;
                 }
 
-                openNewErdEditor(file, (ErdSaveFileFormat) object);
+                openNewErdEditor((ErdSaveFileFormat) object);
                 fireFileOpened(file);
                 return true;
             }
@@ -164,11 +164,11 @@ public class OpenCommand implements BaseCommand {
         }
     }
 
-    private void openNewErdEditor(File file, ErdSaveFileFormat erd) {
+    private void openNewErdEditor(ErdSaveFileFormat erd) {
         GUIUtilities.addCentralPane(
                 ErdViewerPanel.TITLE,
                 ErdViewerPanel.FRAME_ICON,
-                new ErdViewerPanel(erd, file.getAbsolutePath()),
+                new ErdViewerPanel(erd),
                 null,
                 true
         );

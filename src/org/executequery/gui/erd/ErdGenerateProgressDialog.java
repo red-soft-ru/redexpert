@@ -23,6 +23,7 @@ package org.executequery.gui.erd;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -33,8 +34,6 @@ import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Vector;
 
 /**
@@ -43,82 +42,48 @@ import java.util.Vector;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
-    /**
-     * The ERD parent panel
-     */
-    private ErdViewerPanel parent;
+    private final DatabaseConnection connection;
 
-    /**
-     * The generate progress bar
-     */
+    private JButton cancelButton;
+    private ErdViewerPanel parent;
     private JProgressBar progressBar;
 
-    /**
-     * The selected table names
-     */
+    private SwingWorker worker;
     private Vector selectedTables;
 
-
-    /**
-     * Worker thread for process
-     */
-    private SwingWorker worker;
-
-    /**
-     * The process cancel button
-     */
-    private JButton cancelButton;
-
-    /**
-     * the connection props object
-     */
-    private final DatabaseConnection databaseConnection;
-    private ErdViewerPanel erdViewerPanel;
-
-    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables, ErdViewerPanel erdViewerPanel) {
-        this(databaseConnection, selectedTables);
-        this.erdViewerPanel = erdViewerPanel;
-    }
-
-    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables) {
+    public ErdGenerateProgressDialog(DatabaseConnection connection, Vector selectedTables) {
         super(GUIUtilities.getParentFrame(), "Progress", false);
 
-        this.databaseConnection = databaseConnection;
+        this.connection = connection;
         this.selectedTables = selectedTables;
 
-        jbInit();
+        init();
         display();
     }
 
     public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent) {
         super(GUIUtilities.getParentFrame(), "Adding Tables", false);
 
-        this.databaseConnection = parent.getDatabaseConnection();
+        this.connection = parent.getDatabaseConnection();
         this.selectedTables = selectedTables;
         this.parent = parent;
 
-        jbInit();
+        init();
         display();
     }
 
     public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent, DatabaseConnection connection) {
         super(GUIUtilities.getParentFrame(), "Adding Tables", false);
 
-        this.databaseConnection = connection;
         this.selectedTables = selectedTables;
+        this.connection = connection;
         this.parent = parent;
 
-        jbInit();
+        init();
         display();
     }
 
-    private void display() {
-        pack();
-        setLocation(GUIUtilities.getLocationForDialog(getSize()));
-        setVisible(true);
-    }
-
-    private void jbInit() {
+    private void init() {
         JPanel base = new JPanel(new GridBagLayout());
 
         cancelButton = new JButton(Bundles.get("common.cancel.button"));
@@ -152,44 +117,55 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         setResizable(false);
 
         worker = new SwingWorker(ErdGenerateProgressDialog.class.getSimpleName()) {
+
+            @Override
             public Object construct() {
                 return doWork();
             }
 
+            @Override
             public void finished() {
                 processComplete((Vector) get());
                 GUIUtilities.scheduleGC();
             }
         };
-        worker.start();
 
+        worker.start();
+    }
+
+    private void display() {
+        pack();
+        setLocation(GUIUtilities.getLocationForDialog(getSize()));
+        setVisible(true);
     }
 
     private Object doWork() {
 
-        int v_size = selectedTables.size();
-
-        Vector<ErdTableInfo> erdTableInfos = new Vector(v_size);
+        int count = 0;
+        Vector<ErdTableInfo> erdTableInfos = new Vector(selectedTables.size());
 
         try {
 
-            int count = 0;
-
-            for (int i = 0; i < v_size; i++) {
+            for (Object selectedTable : selectedTables) {
                 progressBar.setValue(count++);
 
-                if (Thread.interrupted()) {
+                if (Thread.interrupted())
                     throw new InterruptedException();
-                }
 
                 try {
-                    ErdTableInfo etf = new ErdTableInfo();
-                    etf.setName((String) selectedTables.get(i));
-                    etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName(etf.getName()));
-                    AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTableFromName(etf.getName());
+                    DefaultDatabaseHost host = ConnectionsTreePanel.getPanelFromBrowser()
+                            .getDefaultDatabaseHostFromConnection(connection);
+
+                    ErdTableInfo tableInfo = new ErdTableInfo();
+                    tableInfo.setName((String) selectedTable);
+                    tableInfo.setColumns(host.getColumnDataArrayFromTableName(tableInfo.getName()));
+
+                    AbstractTableObject tableObject = host.getTableFromName(tableInfo.getName());
                     if (tableObject != null)
-                        etf.setComment(tableObject.getRemarks());
-                    erdTableInfos.add(etf);
+                        tableInfo.setComment(tableObject.getRemarks());
+
+                    erdTableInfos.add(tableInfo);
+
                 } catch (DataSourceException e) {
                     erdTableInfos.add(new ErdTableInfo());
                 }
@@ -199,6 +175,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         } catch (InterruptedException intExc) {
             GUIUtilities.displayWarningMessage("Process cancelled");
+
         } finally {
             progressBar.setValue(selectedTables.size() * 2);
             cancelButton.setEnabled(false);
@@ -209,7 +186,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
     private void processComplete(Vector<ErdTableInfo> tableInfoList) {
 
-        if (parent == null) { // mapping a new erd
+        if (parent == null) {
 
             if (tableInfoList.size() != selectedTables.size()) {
                 dispose();
@@ -217,13 +194,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             }
 
             GUIUtilities.showWaitCursor();
-
             new ErdViewerPanel(selectedTables, tableInfoList, false);
-
-            erdViewerPanel.setDatabaseConnection(databaseConnection);
-            erdViewerPanel.cleanup();
-            erdViewerPanel.setTables(selectedTables, columnData);
-            erdViewerPanel.setTableDependencies(erdViewerPanel.buildTableRelationships());
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();
@@ -239,10 +210,10 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
             GUIUtilities.showWaitCursor();
 
-            for (int i = 0, n = selectedTables.size(); i < n; i++) {
+            for (int i = 0, size = selectedTables.size(); i < size; i++) {
 
-                ColumnData[] cds = tableInfoList.elementAt(i).getColumns();
-                if (cds == null || cds.length == 0) {
+                ColumnData[] columnData = tableInfoList.elementAt(i).getColumns();
+                if (columnData == null || columnData.length == 0) {
 
                     for (ErdTable t : parent.getAllTablesArray()) {
                         if (t.getTableName().contentEquals((String) selectedTables.elementAt(i))) {

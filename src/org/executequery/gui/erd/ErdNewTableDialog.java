@@ -180,6 +180,9 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             table.setNewTable(true);
             table.setEditable(true);
             table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            erdTable.tableColumnsChanged(true);
             if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
@@ -191,7 +194,9 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             erdTable.setNewTable(true);
             erdTable.setEditable(true);
             erdTable.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
-            erdTable.tableColumnsChanged();
+            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            erdTable.tableColumnsChanged(true);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -300,6 +305,14 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
         public List<ErdTable> getErdTables() {
             return erdViewerPanel.getAllTablesVector();
+        }
+
+        public boolean isShowCommentOnTable() {
+            return showCommentOnTableBox.isSelected();
+        }
+
+        public boolean isShowCommentOnFields() {
+            return showCommentOnFieldsBox.isSelected();
         }
 
         public List<String> getColumns(String table) {

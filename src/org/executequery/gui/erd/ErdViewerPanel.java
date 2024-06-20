@@ -631,7 +631,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable[] tablesArray = getAllTablesArray();
 
         for (int i = 0; i < tablesArray.length; i++) {
-            tablesArray[i].tableColumnsChanged();
+            tablesArray[i].tableColumnsChanged(true);
         }
 
         layeredPane.repaint();
@@ -659,7 +659,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable[] allTables = getAllTablesArray();
         for (int i = 0; i < allTables.length; i++) {
             allTables[i].setDisplayReferencedKeysOnly(displayKeysOnly);
-            allTables[i].tableColumnsChanged();
+            allTables[i].tableColumnsChanged(true);
         }
         layeredPane.repaint();
     }
@@ -668,7 +668,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable[] allTables = getAllTablesArray();
         for (int i = 0; i < allTables.length; i++) {
             allTables[i].setShowCommentOnFields(displayCommentOnFields);
-            allTables[i].tableColumnsChanged();
+            allTables[i].tableColumnsChanged(true);
         }
         layeredPane.repaint();
     }
@@ -677,7 +677,7 @@ public class ErdViewerPanel extends DefaultTabView
         ErdTable[] allTables = getAllTablesArray();
         for (int i = 0; i < allTables.length; i++) {
             allTables[i].setShowCommentOnTable(displayCommentOnTable);
-            allTables[i].tableColumnsChanged();
+            allTables[i].tableColumnsChanged(true);
         }
         layeredPane.repaint();
     }
@@ -1021,7 +1021,7 @@ public class ErdViewerPanel extends DefaultTabView
                 layeredPane.add(table);
                 addTableToList(table);
                 table.toFront();
-                table.tableColumnsChanged();
+                table.tableColumnsChanged(true);
             }
         }
 
@@ -1511,7 +1511,7 @@ public class ErdViewerPanel extends DefaultTabView
             if (table.getTableName().contentEquals(newTable.getTableName())) {
                 table.setTableColumns(newTable.getTableColumns());
                 table.setDescriptionTable(newTable.getDescriptionTable());
-                table.tableColumnsChanged();
+                table.tableColumnsChanged(true);
                 return false;
             }
         }

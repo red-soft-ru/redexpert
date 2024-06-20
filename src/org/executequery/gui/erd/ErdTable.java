@@ -189,11 +189,13 @@ public class ErdTable extends ErdMoveableComponent
         maxWordLength = Math.max(fmTitle.stringWidth(tableName), maxWordLength);
 
         // add 20px to the final width
-        FINAL_WIDTH = maxWordLength;// + 20;
+        if (FINAL_WIDTH < 0) {
+            FINAL_WIDTH = maxWordLength;// + 20;
 
-        if (ArrayUtils.isEmpty(columns)) {
+            if (ArrayUtils.isEmpty(columns)) {
 
-            FINAL_WIDTH += 80;
+                FINAL_WIDTH += 80;
+            }
         }
 
         // minimum width is 130px
@@ -209,28 +211,30 @@ public class ErdTable extends ErdMoveableComponent
             }
         }
         int commentLines = 0;
-        if (showCommentOnTable && !MiscUtils.isNull(getDescriptionTable())) {
-            partitionDescription(getGraphics(), FINAL_WIDTH - 10);
-            commentLines = descriptionLines.length + 2;
-        }
-        int commentHeight = fmColumns.getHeight() * commentLines;
-        if (columns.length > 0) {
-            if (displayReferencedKeysOnly) {
-                if (keysCount > 0) {
-                    FINAL_HEIGHT = (fmColumns.getHeight() * keysCount) +
-                            TITLE_BAR_HEIGHT + 10;
+        if (FINAL_HEIGHT < 0) {
+            if (showCommentOnTable && !MiscUtils.isNull(getDescriptionTable())) {
+                partitionDescription(getGraphics(), FINAL_WIDTH - 10);
+                commentLines = descriptionLines.length + 2;
+            }
+            int commentHeight = fmColumns.getHeight() * commentLines;
+            if (columns.length > 0) {
+                if (displayReferencedKeysOnly) {
+                    if (keysCount > 0) {
+                        FINAL_HEIGHT = (fmColumns.getHeight() * keysCount) +
+                                TITLE_BAR_HEIGHT + 10;
+                    } else {
+                        FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 8;
+                    }
                 } else {
-                    FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 8;
+                    FINAL_HEIGHT = (fmColumns.getHeight() * columns.length) +
+                            TITLE_BAR_HEIGHT + 10;
                 }
             } else {
-                FINAL_HEIGHT = (fmColumns.getHeight() * columns.length) +
-                        TITLE_BAR_HEIGHT + 10;
+                // have one blank row (column) on the table
+                FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 10;
             }
-        } else {
-            // have one blank row (column) on the table
-            FINAL_HEIGHT = fmColumns.getHeight() + TITLE_BAR_HEIGHT + 10;
+            FINAL_HEIGHT += commentHeight;
         }
-        FINAL_HEIGHT += commentHeight;
         joins = new HashMap<>();
 
 
@@ -350,9 +354,11 @@ public class ErdTable extends ErdMoveableComponent
         displayReferencedKeysOnly = display;
     }
 
-    public void tableColumnsChanged() {
+    public void tableColumnsChanged(boolean resetBounds) {
         resetAllJoins();
-
+        if (resetBounds) {
+            resetBounds();
+        }
         try {
             jbInit();
         } catch (Exception e) {
@@ -518,6 +524,11 @@ public class ErdTable extends ErdMoveableComponent
         dropConstraintScript = null;
         addConstraintScript = null;
         newTable = false;
+    }
+
+    public void resetBounds() {
+        FINAL_WIDTH = -1;
+        FINAL_HEIGHT = -1;
     }
 
     /**

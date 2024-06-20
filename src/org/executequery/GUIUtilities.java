@@ -857,6 +857,10 @@ public final class GUIUtilities {
         ThreadUtils.invokeAndWait(() -> GUIUtils.showTextCursor(frame));
     }
 
+    public static void showChangeSizeCursor(int location) {
+        ThreadUtils.invokeAndWait(() -> GUIUtils.showChangeSizeCursor(frame, location));
+    }
+
     /**
      * Sets the application cursor to the system wait cursor
      * on the specified component.

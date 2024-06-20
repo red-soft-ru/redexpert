@@ -369,6 +369,12 @@ public class ErdTable extends ErdMoveableComponent
         revalidate();
     }
 
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        FINAL_HEIGHT = height;
+        FINAL_WIDTH = width;
+    }
+
     /**
      * <p>Returns the <code>Hashtable</code> containing
      * ALTER TABLE SQL script changes for this table.
@@ -889,6 +895,8 @@ public class ErdTable extends ErdMoveableComponent
                 drawCount++;
                 if (column == columnData) {
                     int y = (((drawCount) + 1) * lineHeight) + heightPlusSep;
+                    if (y > offsetY + FINAL_HEIGHT)
+                        y = offsetY + FINAL_HEIGHT - lineHeight;
                     return new Rectangle(x, y, FINAL_WIDTH, lineHeight);
                 }
             }

@@ -20,6 +20,7 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -51,6 +52,8 @@ public class ErdLayeredPane extends JLayeredPane
      * The currently selected component
      */
     private static ErdMoveableComponent selectedComponent;
+    private static ErdMoveableComponent changedSizeComponent;
+    private static int changedSizeCursor;
 
     /** The title panel */
     //  private ErdTitle titlePanel;
@@ -194,7 +197,10 @@ public class ErdLayeredPane extends JLayeredPane
         /*if (selectedComponent != null) {
             selectedComponent.dragging(e);
         }*/
-        if (!e.isControlDown()) {
+        if (changedSizeComponent != null) {
+            changedSizeComponent.changeSize(e, changedSizeCursor);
+            dragged = true;
+        } else if (!e.isControlDown()) {
             ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
             for (ErdMoveableComponent selectComponent : selectComponents) {
                 selectComponent.dragging(e);
@@ -209,15 +215,41 @@ public class ErdLayeredPane extends JLayeredPane
 
     public void mousePressed(MouseEvent e) {
         ErdMoveableComponent clickedComponent = getClickedComponent(e);
-        if (clickedComponent == null || !clickedComponent.isSelected() || e.isControlDown()) {
-            determineSelectedTable(e);
-            if (selectedComponent != null) {
-                selectedComponent.selected(e);
+        if (changedSizeComponent == null) {
+            if (clickedComponent == null || !clickedComponent.isSelected() || e.isControlDown()) {
+                determineSelectedTable(e);
+                if (selectedComponent != null) {
+                    selectedComponent.selected(e);
+                }
             }
         }
         ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
         for (ErdMoveableComponent comp : comps)
             comp.calculateDragging(e);
+    }
+
+    private void determineChangeSizeCursor(MouseEvent e) {
+        Vector<ErdMoveableComponent> vector = (Vector<ErdMoveableComponent>) parent.getSelectedComponents();
+        ErdMoveableComponent component = null;
+        changedSizeComponent = null;
+
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+
+        for (int i = 0, k = vector.size(); i < k; i++) {
+            component = vector.elementAt(i);
+
+            int cursor = component.checkChangeSizeCoords(mouseX, mouseY);
+            if (cursor < 0)
+                continue;
+            GUIUtilities.showChangeSizeCursor(cursor);
+            changedSizeComponent = component;
+            changedSizeCursor = cursor;
+
+        }
+        if (changedSizeComponent == null)
+            GUIUtilities.showNormalCursor();
+
     }
 
     private void determineSelectedTable(MouseEvent e) {
@@ -316,6 +348,7 @@ public class ErdLayeredPane extends JLayeredPane
     }
 
     public void mouseMoved(MouseEvent e) {
+        determineChangeSizeCursor(e);
     }
     // --------------------------------------------
 

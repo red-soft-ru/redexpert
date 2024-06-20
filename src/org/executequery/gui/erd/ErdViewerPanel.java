@@ -1021,7 +1021,7 @@ public class ErdViewerPanel extends DefaultTabView
                 layeredPane.add(table);
                 addTableToList(table);
                 table.toFront();
-                table.tableColumnsChanged(true);
+                table.tableColumnsChanged(false);
             }
         }
 

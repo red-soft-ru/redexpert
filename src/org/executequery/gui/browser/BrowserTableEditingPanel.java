@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
@@ -31,6 +32,7 @@ import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.*;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
@@ -64,6 +66,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Timer;
@@ -805,7 +808,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(tableName));
+                        columns.add(((DefaultDatabaseHost) table.getHost()).getColumnDataArrayFromTableName(tableName));
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -815,7 +818,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(referencedTable);
                         tableNamesAdded.add(referencedTable);
-                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(referencedTable));
+                        columns.add(((DefaultDatabaseHost) table.getHost()).getColumnDataArrayFromTableName(referencedTable));
                     }
 
                     //noinspection SuspiciousMethodCalls
@@ -828,7 +831,28 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
             }
 
-            List<DatabaseColumn> exportedKeys = table.getExportedKeys();
+            DefaultStatementExecutor querySender = new DefaultStatementExecutor();
+            querySender.setDatabaseConnection(table.getHost().getDatabaseConnection());
+            String query = "SELECT DISTINCT RC.RDB$RELATION_NAME FROM\n" +
+                    "RDB$RELATION_CONSTRAINTS RC \n" +
+                    "LEFT JOIN RDB$INDICES I ON RC.RDB$INDEX_NAME=I.RDB$INDEX_NAME \n" +
+                    "LEFT JOIN RDB$INDICES I2 ON I.RDB$FOREIGN_KEY=I2.RDB$INDEX_NAME\n" +
+                    "WHERE RC.RDB$CONSTRAINT_TYPE='FOREIGN KEY' AND I2.RDB$RELATION_NAME = '" + table.getName() + "'";
+            try {
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
+                while (rs.next()) {
+                    String tableName = rs.getString(1);
+                    tableName = MiscUtils.trimEnd(tableName);
+                    if (!tableNames.contains(tableName))
+                        tableNames.add(tableName);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                querySender.releaseResources();
+            }
+
+           /* List<DatabaseColumn> exportedKeys = table.getExportedKeys();
             for (DatabaseColumn column : exportedKeys) {
 
                 String parentsName = column.getParentsName();
@@ -838,14 +862,24 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     tableNamesAdded.add(parentsName);
                     columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(parentsName));
                 }
-            }
+            }*/
 
             if (tableNames.isEmpty()) {
                 tableNames.add(table.getName());
                 columns.add(new ColumnData[0]);
             }
+            Vector<ErdTableInfo> erdTableInfos = new Vector<>();
+            for (String tableName : tableNames) {
+                ErdTableInfo etf = new ErdTableInfo();
+                etf.setName(tableName);
+                etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(etf.getName()));
+                AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getTableFromName(etf.getName());
+                if (tableObject != null)
+                    etf.setComment(tableObject.getRemarks());
+                erdTableInfos.add(etf);
+            }
 
-            referencesPanel.setTables(tableNames, columns);
+            referencesPanel.setTables(tableNames, erdTableInfos);
 
         } catch (DataSourceException e) {
             controller.handleException(e);

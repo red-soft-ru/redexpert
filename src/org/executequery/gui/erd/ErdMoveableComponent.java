@@ -275,6 +275,60 @@ public abstract class ErdMoveableComponent extends JComponent {
         return new Rectangle(x - 10, y - 10, x2 - x + 20, y2 - y + 20);
     }
 
+    private int northInset;
+    private int eastInset;
+    private int southInset;
+    private int westInset;
+
+    int defaultInset = 10;
+
+    public void resetInsets() {
+        northInset = defaultInset;
+        eastInset = defaultInset;
+        southInset = defaultInset;
+        westInset = defaultInset;
+    }
+
+    public int getInsetFromLocation(int location) {
+        int inset = 0;
+        switch (location) {
+            case GridBagConstraints.NORTH:
+                inset = northInset;
+                northInset += defaultInset;
+                break;
+            case GridBagConstraints.EAST:
+                inset = eastInset;
+                eastInset += defaultInset;
+                break;
+            case GridBagConstraints.SOUTH:
+                inset = southInset;
+                southInset += defaultInset;
+                break;
+            case GridBagConstraints.WEST:
+                inset = westInset;
+                westInset += defaultInset;
+                break;
+        }
+        return inset;
+    }
+
+    public void revertInsetFromLocation(int location) {
+        switch (location) {
+            case GridBagConstraints.NORTH:
+                northInset -= defaultInset;
+                break;
+            case GridBagConstraints.EAST:
+                eastInset -= defaultInset;
+                break;
+            case GridBagConstraints.SOUTH:
+                southInset -= defaultInset;
+                break;
+            case GridBagConstraints.WEST:
+                westInset -= defaultInset;
+                break;
+        }
+    }
+
 }
 
 

@@ -13,7 +13,6 @@
     <action id="open-command"
             name="Open..."
             mnemonic="O"
-            small-icon="New16"
             accel-key="control O"
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
@@ -21,7 +20,6 @@
     <action id="save-command"
             name="Save"
             mnemonic="S"
-            small-icon="Save16"
             accel-key="control S"
             accel-editable="true"
             description="Save an open document"
@@ -39,7 +37,6 @@
             mnemonic="A"
             accel-editable="true"
             accel-key="control shift S"
-            small-icon="SaveAs16"
             execute-class="org.executequery.actions.filecommands.SaveAsCommand"/>
 
     <action id="print-command"
@@ -79,7 +76,6 @@
     <action id="cut-command"
             name="Cut"
             mnemonic="T"
-            small-icon="Cut16"
             accel-key="control X"
             accel-editable="false"
             execute-class="org.executequery.actions.editcommands.CutCommand"/>
@@ -103,7 +99,6 @@
     <action id="redo-command"
             name="Redo"
             mnemonic="R"
-            small-icon="Redo16"
             accel-key="control Y"
             accel-editable="false"
             description="Redo the last action"
@@ -112,7 +107,6 @@
     <action id="undo-command"
             name="Undo"
             mnemonic="U"
-            small-icon="Undo16"
             accel-key="control Z"
             accel-editable="false"
             description="Undo the last action"
@@ -143,7 +137,6 @@
     <action id="replace-command"
             name="Replace..."
             mnemonic="E"
-            small-icon="Replace16"
             accel-key="control R"
             accel-editable="true"
             execute-class="org.executequery.actions.searchcommands.ReplaceCommand"/>
@@ -262,13 +255,6 @@
             accel-key="control alt DOWN"
             accel-editable="true"
             execute-class="org.executequery.actions.queryeditor.DuplicateTextDownCommand"/>
-
-    <action id="clear-editor-output-command"
-            name="Clear Output Log"
-            accel-editable="true"
-            accel-key="control shift BACK_SPACE"
-            small-icon="ClearOutput16"
-            execute-class="org.executequery.actions.queryeditor.ClearEditorCommand"/>
 
     <action id="editor-next-command"
             name="Next Statement"
@@ -396,7 +382,6 @@
             name="Heap Memory Status"
             mnemonic="M"
             accel-editable="true"
-            small-icon="ResourceHeap16"
             description="Virtual machine heap size"
             execute-class="org.executequery.actions.toolscommands.HeapStatusCommand"/>
 
@@ -570,7 +555,7 @@
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="editor-stop-on-error-command"
-            small-icon="StopOnError16"
+            small-icon="Warning16"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="editor-execute-to-file-command"

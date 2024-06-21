@@ -20,10 +20,9 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,46 +90,47 @@ public class ListSelectionPanel extends ActionPanel
 
     public ListSelectionPanel(String availLabel, String selectLabel, Vector v) {
         super(new GridBagLayout());
-        try {
-            listeners = new ArrayList<>();
-            init();
-            selections = new Vector();
-            createAvailableList(v);
-            setLabelText(availLabel, selectLabel);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        listeners = new ArrayList<>();
+        init();
+        selections = new Vector();
+        createAvailableList(v);
+        setLabelText(availLabel, selectLabel);
     }
 
-    private void init() throws Exception {
+    private void init() {
         // create the labels
         availableLabel = new JLabel();
         selectedLabel = new JLabel();
 
         // initialise the buttons
-        JButton selectOneButton = ActionUtilities.createButton(
-                this,
-                "selectOneAction",
-                IconUtilities.loadDefaultIconResource("Forward16.png", true),
-                bundleString("selectOneAction"));
+        JButton selectOneButton = WidgetFactory.createRolloverButton(
+                "selectOneButton",
+                bundleString("selectOneAction"),
+                "Forward16",
+                e -> selectOneAction()
+        );
 
-        JButton selectAllButton = ActionUtilities.createButton(
-                this,
-                "selectAllAction",
-                IconUtilities.loadDefaultIconResource("SelectAll16.png", true),
-                bundleString("selectAllAction"));
+        JButton selectAllButton = WidgetFactory.createRolloverButton(
+                "selectAllButton",
+                bundleString("selectAllAction"),
+                "SelectAll16",
+                e -> selectAllAction()
+        );
 
-        JButton removeOneButton = ActionUtilities.createButton(
-                this,
-                "removeOneAction",
-                IconUtilities.loadDefaultIconResource("Previous16.png", true),
-                bundleString("removeOneAction"));
+        JButton removeOneButton = WidgetFactory.createRolloverButton(
+                "removeOneButton",
+                bundleString("removeOneAction"),
+                "Previous16",
+                e -> removeOneAction()
+        );
 
-        JButton removeAllButton = ActionUtilities.createButton(
-                this,
-                "removeAllAction",
-                IconUtilities.loadDefaultIconResource("RemoveAll16.png", true),
-                bundleString("removeAllAction"));
+        JButton removeAllButton = WidgetFactory.createRolloverButton(
+                "removeAllButton",
+                bundleString("removeAllAction"),
+                "RemoveAll16",
+                e -> removeAllAction()
+        );
 
         // reset the button insets
         Insets buttonInsets = UIManager.getInsets("Button.margin");
@@ -141,30 +141,33 @@ public class ListSelectionPanel extends ActionPanel
             removeAllButton.setMargin(buttonInsets);
         }
 
-        JButton moveUpButton = ActionUtilities.createButton(
-                this,
-                "Up16.png",
+        JButton moveUpButton = WidgetFactory.createRolloverButton(
+                "moveUpButton",
                 bundleString("moveSelectionUp"),
-                "moveSelectionUp");
+                "Up16",
+                e -> moveSelectionUp()
+        );
 
-        JButton movePageUpButton = ActionUtilities.createButton(
-                this,
-                "UpUp16.png",
+        JButton movePageUpButton = WidgetFactory.createRolloverButton(
+                "movePageUpButton",
                 bundleString("moveSelectionPageUp"),
-                "moveSelectionPageUp");
+                "UpUp16",
+                e -> moveSelectionPageUp()
+        );
 
-        JButton moveDownButton = ActionUtilities.createButton(
-                this,
-                "Down16.png",
+        JButton moveDownButton = WidgetFactory.createRolloverButton(
+                "moveDownButton",
                 bundleString("moveSelectionDown"),
-                "moveSelectionDown");
+                "Down16",
+                e -> moveSelectionDown()
+        );
 
-
-        JButton movePageDownButton = ActionUtilities.createButton(
-                this,
-                "DownDown16.png",
+        JButton movePageDownButton = WidgetFactory.createRolloverButton(
+                "movePageDownButton",
                 bundleString("moveSelectionPageDown"),
-                "moveSelectionPageDown");
+                "DownDown16",
+                e -> moveSelectionPageDown()
+        );
 
         // initialise the lists
         availableList = new JList();

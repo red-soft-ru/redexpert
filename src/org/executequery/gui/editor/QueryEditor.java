@@ -908,12 +908,6 @@ public class QueryEditor extends DefaultTabView
         delegate.interrupt();
     }
 
-    public void clearOutputPane() {
-
-        if (!delegate.isExecuting())
-            resultsPanel.clearOutputPane();
-    }
-
     @Override
     public void selectAll() {
         editorPanel.selectAll();

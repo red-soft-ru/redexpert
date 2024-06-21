@@ -474,13 +474,13 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         JButton addButton = ActionUtilities.createToolbarButton(
                 this,
                 "addBookmark",
-                GUIUtilities.loadIcon("AddBookmark16"),
+                GUIUtilities.loadIcon("add_16"),
                 "Add bookmark");
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
                 this,
                 "deleteBookmark",
-                GUIUtilities.loadIcon("DeleteBookmark16"),
+                GUIUtilities.loadIcon("delete_16"),
                 "Delete bookmark");
 
         GridBagConstraints gbc = new GridBagConstraints();

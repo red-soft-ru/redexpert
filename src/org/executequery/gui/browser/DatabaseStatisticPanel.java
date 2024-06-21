@@ -731,7 +731,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             });
             //lbl.setToolTipText(tooltip);
-            JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable"));
+            JLabel icon = new JLabel(GUIUtilities.loadIcon("Close16"));
 
             icon.addMouseListener(new MouseAdapter() {
                 @Override

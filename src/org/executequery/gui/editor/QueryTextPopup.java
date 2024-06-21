@@ -112,7 +112,7 @@ class QueryTextPopup extends JPanel {
         goToQueryButton = WidgetFactory.createRolloverButton(
                 "goToQueryButton",
                 bundleString("GoTo"),
-                "GoToResultSetQuery16",
+                "GoTo16",
                 e -> goToQuery());
         goToQueryButton.addMouseListener(mouseListener);
 

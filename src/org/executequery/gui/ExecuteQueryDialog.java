@@ -657,7 +657,7 @@ public class ExecuteQueryDialog extends BaseDialog {
 
                 case COPY:
                     return action.copyScript ?
-                            GUIUtilities.loadIcon("CloseDockable") :
+                            GUIUtilities.loadIcon("Close16") :
                             Constants.EMPTY;
 
                 default:

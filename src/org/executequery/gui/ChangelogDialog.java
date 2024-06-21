@@ -79,7 +79,7 @@ public final class ChangelogDialog extends InformationDialog {
         JButton hideSearchButton = WidgetFactory.createRolloverButton(
                 "hideSearchButton",
                 Constants.EMPTY,
-                "CloseDockable",
+                "Close16",
                 e -> setSearchPanelVisible(false)
         );
 

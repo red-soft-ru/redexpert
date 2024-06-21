@@ -47,19 +47,19 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final ImageIcon databaseTableView;
 
     static {
-        sql92Keyword = GUIUtilities.loadIcon("Sql92", true);
-        animatedSpinner = GUIUtilities.loadIcon("AnimatedSpinner16", "gif", true);
-        databaseSpecificKeyword = GUIUtilities.loadIcon("DatabaseKeyword16", true);
-        nothingFound = GUIUtilities.loadIcon("Warning16", true);
-        databaseTable = GUIUtilities.loadIcon("PlainTable16", true);
-        databaseTableColumn = GUIUtilities.loadIcon("TableColumn16", true);
-        databaseTableView = GUIUtilities.loadIcon("TableView16", true);
-        systemFunction = GUIUtilities.loadIcon("SystemFunction16", true);
-        databaseFunction = GUIUtilities.loadIcon("Function16", true);
-        databaseProcedure = GUIUtilities.loadIcon("Procedure16", true);
-        databasePackage = GUIUtilities.loadIcon("package16", true);
-        variable = GUIUtilities.loadIcon("Variable16", true);
-        parameter = GUIUtilities.loadIcon("Argument16", true);
+        sql92Keyword = GUIUtilities.loadIcon("icon_sql92", true);
+        animatedSpinner = GUIUtilities.loadIcon("icon_loading", "gif", true);
+        databaseSpecificKeyword = GUIUtilities.loadIcon("icon_db_keyword", true);
+        nothingFound = GUIUtilities.loadIcon("icon_warning", true);
+        databaseTable = GUIUtilities.loadIcon("icon_db_table", true);
+        databaseTableColumn = GUIUtilities.loadIcon("icon_db_table_column", true);
+        databaseTableView = GUIUtilities.loadIcon("icon_db_view", true);
+        systemFunction = GUIUtilities.loadIcon("icon_db_function_system", true);
+        databaseFunction = GUIUtilities.loadIcon("icon_db_function", true);
+        databaseProcedure = GUIUtilities.loadIcon("icon_db_procedure", true);
+        databasePackage = GUIUtilities.loadIcon("icon_db_package", true);
+        variable = GUIUtilities.loadIcon("icon_variable", true);
+        parameter = GUIUtilities.loadIcon("icon_function", true);
     }
 
 

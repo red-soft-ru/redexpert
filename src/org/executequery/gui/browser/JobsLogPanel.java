@@ -58,7 +58,7 @@ public class JobsLogPanel extends JPanel implements TabView {
         startDatePicker = new TimestampPicker();
         endDatePicker = new TimestampPicker();
         refreshButton = new JButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16"));
+        refreshButton.setIcon(GUIUtilities.loadIcon("icon_refresh"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

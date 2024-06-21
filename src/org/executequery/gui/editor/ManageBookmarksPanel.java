@@ -54,7 +54,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         implements ListSelectionListener {
 
     public static final String TITLE = "Manage Query Bookmark";
-    public static final String FRAME_ICON = "Bookmarks16";
+    public static final String FRAME_ICON = "icon_bookmarks";
 
     private static final String SAVE_COMMAND_NAME = "save";
     private static final String CANCEL_COMMAND_NAME = "cancel";
@@ -462,25 +462,25 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         JButton upButton = ActionUtilities.createToolbarButton(
                 this,
                 "moveUp",
-                GUIUtilities.loadIcon("Up16"),
+                GUIUtilities.loadIcon("icon_move_up"),
                 "Move selection up");
 
         JButton downButton = ActionUtilities.createToolbarButton(
                 this,
                 "moveDown",
-                GUIUtilities.loadIcon("Down16"),
+                GUIUtilities.loadIcon("icon_move_down"),
                 "Move selection down");
 
         JButton addButton = ActionUtilities.createToolbarButton(
                 this,
                 "addBookmark",
-                GUIUtilities.loadIcon("add_16"),
+                GUIUtilities.loadIcon("icon_add"),
                 "Add bookmark");
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
                 this,
                 "deleteBookmark",
-                GUIUtilities.loadIcon("delete_16"),
+                GUIUtilities.loadIcon("icon_delete"),
                 "Delete bookmark");
 
         GridBagConstraints gbc = new GridBagConstraints();

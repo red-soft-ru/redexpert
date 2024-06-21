@@ -52,7 +52,7 @@ public class AboutPanel extends BaseDialog {
     }
 
     private void init() {
-        icon = GUIUtilities.loadVectorIcon("ApplicationIcon.svg", 70);
+        icon = GUIUtilities.loadVectorIcon("icon_red_expert.svg", 70);
 
         versionLabel = WidgetFactory.createLabel(
                 "RedExpert " + System.getProperty("executequery.minor.version"),
@@ -73,7 +73,7 @@ public class AboutPanel extends BaseDialog {
                 "https://t.me/reddatabase",
                 16
         );
-        reddatabaseNewsLabel.setIcon(GUIUtilities.loadIcon("WebComponent16"));
+        reddatabaseNewsLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
 
         discussionChatLabel = WidgetFactory.createLinkLabel(
                 "discussionChatLabel",
@@ -81,7 +81,7 @@ public class AboutPanel extends BaseDialog {
                 bundledString("discussionChatLink"),
                 16
         );
-        discussionChatLabel.setIcon(GUIUtilities.loadIcon("WebComponent16"));
+        discussionChatLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
 
         viewLicenseButton = WidgetFactory.createButton(
                 "viewLicenseButton",

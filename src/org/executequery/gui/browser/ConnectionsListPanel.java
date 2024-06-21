@@ -576,8 +576,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         private ImageIcon notConnectedImage;
 
         public ConnectCellRenderer() {
-            connectedImage = GUIUtilities.loadIcon("Connected", true);
-            notConnectedImage = GUIUtilities.loadIcon("Disconnected", true);
+            connectedImage = GUIUtilities.loadIcon("icon_connect", true);
+            notConnectedImage = GUIUtilities.loadIcon("icon_disconnect", true);
         }
 
         public Component getTableCellRendererComponent(JTable table,

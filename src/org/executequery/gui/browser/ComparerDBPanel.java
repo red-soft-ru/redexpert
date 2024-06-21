@@ -8,7 +8,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.ComparedObject;
@@ -54,8 +53,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("title");
     public static final String TITLE_EXPORT = bundleString("title-export");
-    public static final String COMPARE_ICON = "ComparerDB_16";
-    public static final String EXTRACT_ICON = "CreateScripts16";
+    public static final String COMPARE_ICON = "icon_compare_db";
+    public static final String EXTRACT_ICON = "icon_create_script";
 
     private static final int CHECK_CREATE = 0;
     private static final int CHECK_ALTER = 1;
@@ -1143,79 +1142,79 @@ public class ComparerDBPanel extends JPanel implements TabView {
             switch (treeNode.type) {
 
                 case NamedObject.DOMAIN:
-                    setIcon(GUIUtilities.loadIcon("domain16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_domain"));
                     break;
 
                 case NamedObject.TABLE:
-                    setIcon(GUIUtilities.loadIcon("PlainTable16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_table"));
                     break;
 
                 case NamedObject.GLOBAL_TEMPORARY:
-                    setIcon(GUIUtilities.loadIcon("GlobalTable16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_table_global"));
                     break;
 
                 case NamedObject.VIEW:
-                    setIcon(GUIUtilities.loadIcon("TableView16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_view"));
                     break;
 
                 case NamedObject.PROCEDURE:
-                    setIcon(GUIUtilities.loadIcon("Procedure16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_procedure"));
                     break;
 
                 case NamedObject.FUNCTION:
-                    setIcon(GUIUtilities.loadIcon("Function16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_function"));
                     break;
 
                 case NamedObject.PACKAGE:
-                    setIcon(GUIUtilities.loadIcon("package16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_package"));
                     break;
 
                 case NamedObject.TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("Trigger"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_table"));
                     break;
 
                 case NamedObject.DDL_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDDL"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_ddl"));
                     break;
 
                 case NamedObject.DATABASE_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDB"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_db"));
                     break;
 
                 case NamedObject.SEQUENCE:
-                    setIcon(GUIUtilities.loadIcon("Sequence16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_generator"));
                     break;
 
                 case NamedObject.EXCEPTION:
-                    setIcon(GUIUtilities.loadIcon("exception16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_exception"));
                     break;
 
                 case NamedObject.UDF:
-                    setIcon(GUIUtilities.loadIcon("udf16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_udf"));
                     break;
 
                 case NamedObject.USER:
-                    setIcon(GUIUtilities.loadIcon("User16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_user"));
                     break;
 
                 case NamedObject.ROLE:
-                    setIcon(GUIUtilities.loadIcon("user_manager_16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_role"));
                     break;
 
                 case NamedObject.INDEX:
-                    setIcon(GUIUtilities.loadIcon("TableIndex16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_index"));
                     break;
 
                 case NamedObject.TABLESPACE:
-                    setIcon(GUIUtilities.loadIcon("tablespace16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_tablespace"));
                     break;
 
                 case NamedObject.JOB:
-                    setIcon(GUIUtilities.loadIcon("job16"));
+                    setIcon(GUIUtilities.loadIcon("icon_db_job"));
                     break;
 
                 case NamedObject.COLLATION:
-                    setIcon(GUIUtilities.loadIcon("XmlFile16"));
+                    setIcon(GUIUtilities.loadIcon("icon_file_xml"));
                     break;
 
                 default:

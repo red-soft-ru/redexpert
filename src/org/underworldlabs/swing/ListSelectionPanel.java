@@ -107,28 +107,28 @@ public class ListSelectionPanel extends ActionPanel
         JButton selectOneButton = WidgetFactory.createRolloverButton(
                 "selectOneButton",
                 bundleString("selectOneAction"),
-                "Forward16",
+                "icon_move_next",
                 e -> selectOneAction()
         );
 
         JButton selectAllButton = WidgetFactory.createRolloverButton(
                 "selectAllButton",
                 bundleString("selectAllAction"),
-                "SelectAll16",
+                "icon_move_next_all",
                 e -> selectAllAction()
         );
 
         JButton removeOneButton = WidgetFactory.createRolloverButton(
                 "removeOneButton",
                 bundleString("removeOneAction"),
-                "Previous16",
+                "icon_move_previous",
                 e -> removeOneAction()
         );
 
         JButton removeAllButton = WidgetFactory.createRolloverButton(
                 "removeAllButton",
                 bundleString("removeAllAction"),
-                "RemoveAll16",
+                "icon_move_previous_all",
                 e -> removeAllAction()
         );
 
@@ -144,28 +144,28 @@ public class ListSelectionPanel extends ActionPanel
         JButton moveUpButton = WidgetFactory.createRolloverButton(
                 "moveUpButton",
                 bundleString("moveSelectionUp"),
-                "Up16",
+                "icon_move_up",
                 e -> moveSelectionUp()
         );
 
         JButton movePageUpButton = WidgetFactory.createRolloverButton(
                 "movePageUpButton",
                 bundleString("moveSelectionPageUp"),
-                "UpUp16",
+                "icon_move_up_all",
                 e -> moveSelectionPageUp()
         );
 
         JButton moveDownButton = WidgetFactory.createRolloverButton(
                 "moveDownButton",
                 bundleString("moveSelectionDown"),
-                "Down16",
+                "icon_move_down",
                 e -> moveSelectionDown()
         );
 
         JButton movePageDownButton = WidgetFactory.createRolloverButton(
                 "movePageDownButton",
                 bundleString("moveSelectionPageDown"),
-                "DownDown16",
+                "icon_move_down_all",
                 e -> moveSelectionPageDown()
         );
 

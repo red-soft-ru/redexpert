@@ -45,7 +45,7 @@ import java.util.List;
 public class ImportConnectionsPanel extends WizardProcessPanel implements ActiveComponent, ImportProcessMonitor {
 
     public static final String TITLE = Bundles.get("ImportConnectionPanel.ImportConnections");
-    public static final String FRAME_ICON = "ImportConnections16";
+    public static final String FRAME_ICON = "icon_import_connection";
 
     private static final String[] STEPS = {
             Bundles.get("ImportConnectionPanel.StepsOne"),

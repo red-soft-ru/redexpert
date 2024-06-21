@@ -55,7 +55,7 @@ public class DriversPanel extends JPanel
         implements DatabaseDriverListener {
 
     public static final String TITLE = Bundles.getCommon("drivers");
-    public static final String FRAME_ICON = "DatabaseDrivers16";
+    public static final String FRAME_ICON = "icon_db_driver";
 
     private JButton addDriverButton;
     private JButton removeDriverButton;

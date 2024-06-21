@@ -180,20 +180,20 @@ class DefaultFileView extends FileView {
 
     public DefaultFileView() {
 
-        SQL_ICON = GUIUtilities.loadIcon("DBImage16", true);
-        JAR_ICON = GUIUtilities.loadIcon("Jar16", true);
-        LOG_ICON = GUIUtilities.loadIcon("LogFile16", true);
-        RE_ICON = GUIUtilities.loadIcon("ApplicationIcon", true);
+        SQL_ICON = GUIUtilities.loadIcon("icon_db_image", true);
+        JAR_ICON = GUIUtilities.loadIcon("icon_file_jar", true);
+        LOG_ICON = GUIUtilities.loadIcon("icon_file_log", true);
+        RE_ICON = GUIUtilities.loadIcon("icon_red_expert", true);
 
         if (isClassicLookAndFeel()) {
-            ZIP_ICON = GUIUtilities.loadIcon("ZipFile16", true);
-            TEXT_ICON = GUIUtilities.loadIcon("TextFile16", true);
-            JPEG_ICON = GUIUtilities.loadIcon("JpegFile16", true);
-            GIF_ICON = GUIUtilities.loadIcon("GifFile16", true);
-            XML_ICON = GUIUtilities.loadIcon("XmlFile16", true);
-            EXE_ICON = GUIUtilities.loadIcon("ExeFile16", true);
-            SH_ICON = GUIUtilities.loadIcon("ShFile16", true);
-            DEFAULT_ICON = GUIUtilities.loadIcon("DefaultFile16", true);
+            ZIP_ICON = GUIUtilities.loadIcon("icon_file_zip", true);
+            TEXT_ICON = GUIUtilities.loadIcon("icon_file_txt", true);
+            JPEG_ICON = GUIUtilities.loadIcon("icon_file_jpeg", true);
+            GIF_ICON = GUIUtilities.loadIcon("icon_file_gif", true);
+            XML_ICON = GUIUtilities.loadIcon("icon_file_xml", true);
+            EXE_ICON = GUIUtilities.loadIcon("icon_file_exe", true);
+            SH_ICON = GUIUtilities.loadIcon("icon_file_sh", true);
+            DEFAULT_ICON = GUIUtilities.loadIcon("icon_file_default", true);
         }
     }
 

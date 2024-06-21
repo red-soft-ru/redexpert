@@ -50,7 +50,7 @@ public class BaseScriptGeneratorPanel extends JPanel
         ItemListener {
 
     public static final String TITLE = "Generate SQL Scripts";
-    public static final String FRAME_ICON = "CreateScripts16";
+    public static final String FRAME_ICON = "icon_create_script";
 
     /**
      * The schema combo box

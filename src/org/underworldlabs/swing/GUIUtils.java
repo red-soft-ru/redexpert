@@ -446,7 +446,7 @@ public class GUIUtils {
             if (parent == null) {
                 frame = new JFrame("My dialog asks....");
                 frame.setUndecorated(true);
-                frame.setIconImage(GUIUtilities.loadVectorIcon("ApplicationIcon.svg", true).getImage());
+                frame.setIconImage(GUIUtilities.loadVectorIcon("icon_red_expert.svg", true).getImage());
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
                 dialog = pane.createDialog(frame, title);

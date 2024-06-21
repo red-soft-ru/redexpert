@@ -79,7 +79,7 @@ public final class ChangelogDialog extends InformationDialog {
         JButton hideSearchButton = WidgetFactory.createRolloverButton(
                 "hideSearchButton",
                 Constants.EMPTY,
-                "Close16",
+                "icon_close",
                 e -> setSearchPanelVisible(false)
         );
 
@@ -199,7 +199,7 @@ public final class ChangelogDialog extends InformationDialog {
                 setForeground(selected ? selectionForeground : textForeground);
 
                 setText(treeNode.nodeText);
-                setIcon(GUIUtilities.loadIcon("Information16"));
+                setIcon(GUIUtilities.loadIcon("icon_information"));
             }
 
             return this;

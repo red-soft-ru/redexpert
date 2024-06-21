@@ -46,7 +46,7 @@ import java.util.List;
 public class ExportConnectionsPanel extends WizardProcessPanel implements ActiveComponent {
 
     public static final String TITLE = Bundles.get("ExportConnectionsPanel.Title");
-    public static final String FRAME_ICON = "ExportConnections16";
+    public static final String FRAME_ICON = "icon_export_connections";
 
     private static final String[] STEPS = {
             Bundles.get("ExportConnectionsPanel.Step-1"),

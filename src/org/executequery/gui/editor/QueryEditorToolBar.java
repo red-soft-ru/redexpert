@@ -105,7 +105,7 @@ class QueryEditorToolBar extends PanelToolBar {
     private JButton createQueryBookmarkButton() {
 
         PopupMenuButton button = new PopupMenuButton(
-                GUIUtilities.loadIcon("Bookmarks16"),
+                GUIUtilities.loadIcon("icon_bookmarks"),
                 bundleString("query-bookmarks")
         );
         button.setKeyStroke(KeyStroke.getKeyStroke("control B"));

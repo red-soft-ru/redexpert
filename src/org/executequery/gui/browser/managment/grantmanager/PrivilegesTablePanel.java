@@ -63,8 +63,8 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     Map<DatabaseColumn, Vector<Object>> tableForColumnsMap;
     DatabaseConnection databaseConnection;
     int act;
-    String[] iconNamesForFields = {"no_grant_vertical", "no_grant_gorisont", "grant_vertical", "grant_gorisont", "admin_option_vertical", "admin_option_gorisont"};
-    String[] iconNames = {"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"};
+    String[] iconNamesForFields = {"icon_revoke_column", "icon_revoke_row", "icon_grant_column", "icon_grant_row", "icon_grant_column_admin", "icon_grant_row_admin"};
+    String[] iconNames = {"icon_revoke_column", "icon_revoke_row", "icon_revoke_all", "icon_grant_column", "icon_grant_row", "icon_grant_all", "icon_grant_column_admin", "icon_grant_row_admin", "icon_grant_all_admin"};
     String[] toolTips = bundleStrings(new String[]{"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"});
     int firstGrantColumn = 1;
     int col_execute = 6;
@@ -300,13 +300,13 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         refreshButton = new RolloverButton();
         refreshButton.setToolTipText(bundleString("Refresh"));
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16"));
+        refreshButton.setIcon(GUIUtilities.loadIcon("icon_refresh"));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
         cancelButton.setToolTipText(bundleString("CancelFill"));
-        cancelButton.setIcon(GUIUtilities.loadIcon("Stop16"));
+        cancelButton.setIcon(GUIUtilities.loadIcon("icon_execute_stop"));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);
 

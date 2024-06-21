@@ -73,7 +73,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * This objects icon as an internal frame
      */
-    public static final String FRAME_ICON = "create_database16";
+    public static final String FRAME_ICON = "icon_create_db";
 
     private static final String CREATE_ACTION_COMMAND = "create";
 
@@ -1619,8 +1619,8 @@ public class CreateDatabasePanel extends ActionPanel
             setFocusPainted(false);
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
-            setIcon(GUIUtilities.loadIcon("GcDelete16"));
-            setPressedIcon(GUIUtilities.loadIcon("GcDeletePressed16"));
+            setIcon(GUIUtilities.loadIcon("icon_trash"));
+            setPressedIcon(GUIUtilities.loadIcon("icon_trash_open"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());

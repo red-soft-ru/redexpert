@@ -37,7 +37,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
     // --- constants ---
 
-    public static final String FRAME_ICON = "grant_manager_16";
+    public static final String FRAME_ICON = "icon_manager_grant";
     public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
 
     public static final int NO_GRANT_TO_ALL_OBJECTS = 0;

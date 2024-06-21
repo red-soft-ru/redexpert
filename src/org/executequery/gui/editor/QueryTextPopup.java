@@ -91,35 +91,35 @@ class QueryTextPopup extends JPanel {
         previousQueryButton = WidgetFactory.createRolloverButton(
                 "previousQueryButton",
                 bundleString("PreviousExecutedResultSet"),
-                "Previous16",
+                "icon_move_previous",
                 e -> previousQuery());
         previousQueryButton.addMouseListener(mouseListener);
 
         nextQueryButton = WidgetFactory.createRolloverButton(
                 "nextQueryButton",
                 bundleString("NextExecutedResultSet"),
-                "Forward16",
+                "icon_move_next",
                 e -> nextQuery());
         nextQueryButton.addMouseListener(mouseListener);
 
         copyQueryButton = WidgetFactory.createRolloverButton(
                 "copyQueryButton",
                 bundleString("Copy"),
-                "Copy16",
+                "icon_copy",
                 e -> copyQuery());
         copyQueryButton.addMouseListener(mouseListener);
 
         goToQueryButton = WidgetFactory.createRolloverButton(
                 "goToQueryButton",
                 bundleString("GoTo"),
-                "GoTo16",
+                "icon_goto",
                 e -> goToQuery());
         goToQueryButton.addMouseListener(mouseListener);
 
         hidePopupButton = WidgetFactory.createRolloverButton(
                 "hidePopupButton",
                 bundleString("hidePopup"),
-                "Close16",
+                "icon_close",
                 e -> hidePopup());
         hidePopupButton.addMouseListener(mouseListener);
 

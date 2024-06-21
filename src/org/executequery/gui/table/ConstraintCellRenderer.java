@@ -37,8 +37,8 @@ public class ConstraintCellRenderer extends JLabel
     private static ImageIcon newImage;
 
     static {
-        deleteImage = GUIUtilities.loadIcon("MarkDeleted16", true);
-        newImage = GUIUtilities.loadIcon("MarkNew16", true);
+        deleteImage = GUIUtilities.loadIcon("icon_mark_delete", true);
+        newImage = GUIUtilities.loadIcon("icon_mark_new", true);
     }
 
     /**

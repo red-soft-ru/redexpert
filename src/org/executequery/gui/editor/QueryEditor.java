@@ -76,7 +76,7 @@ public class QueryEditor extends DefaultTabView
         FocusablePanel {
 
     public static final String TITLE = Bundles.get(QueryEditor.class, "title");
-    public static final String FRAME_ICON = "Edit16";
+    public static final String FRAME_ICON = "icon_query_editor";
 
     private static final String DEFAULT_SCRIPT_PREFIX = Bundles.get(QueryEditor.class, "script");
     private static final String DEFAULT_SCRIPT_SUFFIX = ".sql";

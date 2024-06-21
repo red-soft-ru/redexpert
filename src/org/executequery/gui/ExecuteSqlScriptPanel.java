@@ -67,7 +67,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         ExecutionController {
 
     public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
-    public static final String FRAME_ICON = "ExecuteSqlScript16";
+    public static final String FRAME_ICON = "icon_execute_script";
 
     public static final int MAX_LENGTH_TEXT_PANE = 1000000;
     private static final int STATUS_BAR_HEIGHT = 26;

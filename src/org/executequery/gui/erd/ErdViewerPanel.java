@@ -62,7 +62,7 @@ public class ErdViewerPanel extends DefaultTabView
         ActiveComponent {
 
     public static final String TITLE = bundleString("title");
-    public static final String FRAME_ICON = "ErdPanel16";
+    public static final String FRAME_ICON = "icon_erd_panel";
 
     private static final int VERTICAL_DIFF = 50;
     private static final int HORIZONTAL_DIFF = 80;

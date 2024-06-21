@@ -93,105 +93,105 @@ public class ErdToolBarPalette extends JPanel {
         createTableButton = WidgetFactory.createRolloverButton(
                 "createTableButton",
                 bundleString("createTable"),
-                "NewTable16",
+                "icon_table_new",
                 e -> new ErdNewTableDialog(parent)
         );
 
         addTableButton = WidgetFactory.createRolloverButton(
                 "addTableButton",
                 bundleString("addTable"),
-                "AddTable16",
+                "icon_table_add",
                 e -> new ErdSelectionDialog(parent)
         );
 
         dropTableButton = WidgetFactory.createRolloverButton(
                 "dropTableButton",
                 bundleString("dropTable"),
-                "DropTable16",
+                "icon_table_drop",
                 e -> parent.removeSelectedTables()
         );
 
         createRelationButton = WidgetFactory.createRolloverButton(
                 "createRelationButton",
                 bundleString("relation"),
-                "TableRelationship16",
+                "icon_erd_relation_add",
                 e -> createRelation()
         );
 
         deleteRelationButton = WidgetFactory.createRolloverButton(
                 "deleteRelationButton",
                 bundleString("deleteRelation"),
-                "TableRelationshipDelete16",
+                "icon_erd_relation_delete",
                 e -> deleteRelation()
         );
 
         generateScriptButton = WidgetFactory.createRolloverButton(
                 "generateScriptsButton",
                 bundleString("genScripts"),
-                "CreateScripts16",
+                "icon_create_script",
                 e -> generateScript()
         );
 
         erdTextBlockButton = WidgetFactory.createRolloverButton(
                 "erdTextBlockButton",
                 bundleString("erdText"),
-                "AddComment16",
+                "icon_comment",
                 e -> new ErdTextBlockDialog(parent)
         );
 
         updateFromDatabase = WidgetFactory.createRolloverButton(
                 "updateFromDatabase",
                 bundleString("updateFromDatabase"),
-                "RecycleConnection16",
+                "icon_refresh_connection",
                 e -> updateFromDatabase()
         );
 
         erdTitleButton = WidgetFactory.createRolloverButton(
                 "erdTitleButton",
                 bundleString("erdTitle"),
-                "ErdTitle16",
+                "icon_title",
                 e -> createTitle()
         );
 
         fontStyleButton = WidgetFactory.createRolloverButton(
                 "fontStyleButton",
                 bundleString("fontStyle"),
-                "FontStyle16",
+                "icon_style_font",
                 e -> parent.showFontStyleDialog()
         );
 
         lineStyleButton = WidgetFactory.createRolloverButton(
                 "lineStyleButton",
                 bundleString("lineStyle"),
-                "LineStyle16",
+                "icon_style_line",
                 e -> parent.showLineStyleDialog()
         );
 
         canvasBgButton = WidgetFactory.createRolloverButton(
                 "canvasBgButton",
                 bundleString("canvasBg"),
-                "ErdBackground16",
+                "icon_background",
                 e -> setBackgroundColours(true)
         );
 
         canvasFgButton = WidgetFactory.createRolloverButton(
                 "canvasFgButton",
                 bundleString("canvasFg"),
-                "ErdForeground16",
+                "icon_foreground",
                 e -> setBackgroundColours(false)
         );
 
         zoomInButton = WidgetFactory.createRolloverButton(
                 "zoomInButton",
                 bundleString("zoomIn"),
-                "ZoomIn16",
+                "icon_zoom_in",
                 e -> parent.zoom(true)
         );
 
         zoomOutButton = WidgetFactory.createRolloverButton(
                 "zoomOutButton",
                 bundleString("zoomOut"),
-                "ZoomOut16",
+                "icon_zoom_out",
                 e -> parent.zoom(false)
         );
 

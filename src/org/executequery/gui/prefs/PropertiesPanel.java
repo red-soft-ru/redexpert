@@ -51,7 +51,7 @@ public class PropertiesPanel extends JPanel
         TreeSelectionListener {
 
     public static final String TITLE = Bundles.get("preferences.Preferences");
-    public static final String FRAME_ICON = "Preferences16";
+    public static final String FRAME_ICON = "icon_preferences";
 
     private static final List<String> PROPERTIES_KEYS_NEED_RESTART = Arrays.asList(
             // -- PropertiesGeneral --

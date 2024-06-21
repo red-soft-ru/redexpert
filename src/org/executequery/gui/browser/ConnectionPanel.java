@@ -1783,8 +1783,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             setFocusPainted(false);
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
-            setIcon(GUIUtilities.loadIcon("GcDelete16"));
-            setPressedIcon(GUIUtilities.loadIcon("GcDeletePressed16"));
+            setIcon(GUIUtilities.loadIcon("icon_trash"));
+            setPressedIcon(GUIUtilities.loadIcon("icon_trash_open"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());

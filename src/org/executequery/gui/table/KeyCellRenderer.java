@@ -44,11 +44,11 @@ public class KeyCellRenderer extends JLabel
 //    private static final String PRIMARY_AND_FOREIGN = "PKFK";
 
     static {
-        deleteImage = GUIUtilities.loadIcon("MarkDeleted16", true);
-        newImage = GUIUtilities.loadIcon("MarkNew16", true);
-        fkImage = GUIUtilities.loadIcon("ForeignKeyImage", true);
-        pkImage = GUIUtilities.loadIcon("PrimaryKeyImage", true);
-        pkfkImage = GUIUtilities.loadIcon("PrimaryForeignKeyImage", true);
+        deleteImage = GUIUtilities.loadIcon("icon_mark_delete", true);
+        newImage = GUIUtilities.loadIcon("icon_mark_new", true);
+        fkImage = GUIUtilities.loadIcon("icon_key_foreign", true);
+        pkImage = GUIUtilities.loadIcon("icon_key_primary", true);
+        pkfkImage = GUIUtilities.loadIcon("icon_key_mixed", true);
     }
 
     public KeyCellRenderer() {

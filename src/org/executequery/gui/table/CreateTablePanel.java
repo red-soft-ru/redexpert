@@ -75,7 +75,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     public static final String TITLE = Bundles.get(CreateTablePanel.class, "title");
 
-    public static final String FRAME_ICON = "NewTable16";
+    public static final String FRAME_ICON = "icon_table_new";
 
     protected JComboBox tablespacesCombo;
 

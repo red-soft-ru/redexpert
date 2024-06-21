@@ -9,6 +9,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
@@ -143,49 +144,16 @@ public class SelectTypePanel extends JPanel {
         subtypeField.addKeyListener(keyListener);
 
         this.setLayout(new GridBagLayout());
-        this.add(typeLabel, new GridBagConstraints(0, 0, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(sizeLabel, new GridBagConstraints(0, 1, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(scaleLabel, new GridBagConstraints(0, 2, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(subtypeLabel, new GridBagConstraints(0, 3, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(encodingLabel, new GridBagConstraints(0, 4, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(collateLabel, new GridBagConstraints(0, 5, 1, 1,
-                0, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.NONE, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(typeBox, new GridBagConstraints(1, 0, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(sizeField, new GridBagConstraints(1, 1, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(scaleField, new GridBagConstraints(1, 2, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(subtypeField, new GridBagConstraints(1, 3, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(encodingBox, new GridBagConstraints(1, 4, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(collateBox, new GridBagConstraints(1, 5, 1, 1,
-                1, 0, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 0, 0));
-        this.add(typeOfPanel, new GridBagConstraints(0, 4, 2, 1,
-                1, 1, GridBagConstraints.NORTH,
-                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 0, 0));
-        // empty panel for stretch
-        this.add(new JPanel(), new GridBagConstraints(0, 6, 2, 1,
-                1, 1, GridBagConstraints.NORTH,
-                GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        GridBagHelper gbh = new GridBagHelper();
+        gbh.setDefaultsStatic().defaults();
+        gbh.addLabelFieldPair(this, typeLabel, typeBox, null);
+        gbh.addLabelFieldPair(this, sizeLabel, sizeField, null);
+        gbh.addLabelFieldPair(this, scaleLabel, scaleField, null);
+        gbh.addLabelFieldPair(this, subtypeLabel, subtypeField, null);
+        gbh.addLabelFieldPair(this, encodingLabel, encodingBox, null);
+        gbh.addLabelFieldPair(this, collateLabel, collateBox, null);
+        this.add(typeOfPanel, gbh.nextRowFirstCol().fillBoth().spanX().get());
+        this.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
     }
 
     private void refreshType() {

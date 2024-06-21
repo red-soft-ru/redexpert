@@ -293,23 +293,37 @@ public class ErdViewerPanel extends DefaultTabView
         }
 
         tables = new Vector();
+        textPanels = new Vector<>();
+
         Font columnNameFont = savedErd.getColumnNameFont();
         Font tableNameFont = savedErd.getTableNameFont();
+        Font textBlockFont = savedErd.getTextBlockFont();
 
-        for (ErdTableFileData fileRowData : savedErd.getTables()) {
+        ErdTableFileData[] fileData = savedErd.getTables();
+        if (fileData != null) {
+            for (ErdTableFileData fileDatum : fileData) {
 
-            ErdTable table = new ErdTable(fileRowData.getTableName(), fileRowData.getColumnData(), this);
-            table.setCreateTableScript(fileRowData.getCreateTableScript());
-            table.setAlterTableHash(fileRowData.getAlterTableHash());
-            table.setAlterTableScript(fileRowData.getAlterTableScript());
-            table.setAddConstraintsScript(fileRowData.getAddConstraintScript());
-            table.setBounds(fileRowData.getTableBounds());
-            table.setEditable(true);
-            table.setTableBackground(fileRowData.getTableBackground());
+                ErdTable table = new ErdTable(
+                        fileDatum.getTableName(),
+                        fileDatum.getColumnData(),
+                        this
+                );
+                table.setCreateTableScript(fileDatum.getCreateTableScript());
+                table.setAlterTableHash(fileDatum.getAlterTableHash());
+                table.setAlterTableScript(fileDatum.getAlterTableScript());
+                table.setAddConstraintsScript(fileDatum.getAddConstraintScript());
+                table.setBounds(fileDatum.getTableBounds());
+                table.setEditable(true);
+                table.setTableBackground(fileDatum.getTableBackground());
+                table.setDescriptionTable(fileDatum.getTableDescription());
+                table.setShowCommentOnTable(fileDatum.isShowCommentOnTable());
+                table.setShowCommentOnFields(fileDatum.isShowCommentsOnfields());
 
-            layeredPane.add(table);
-            tables.add(table);
-            table.toFront();
+                layeredPane.add(table);
+                addTableToList(table);
+                table.toFront();
+                table.tableColumnsChanged(false);
+            }
         }
 
         ErdTitlePanelData titlePanelData = savedErd.getTitlePanel();
@@ -325,11 +339,25 @@ public class ErdViewerPanel extends DefaultTabView
                     titlePanelData.getErdRevision(),
                     titlePanelData.getErdFileName()
             );
-
             erdTitlePanel.setBounds(titlePanelData.getTitleBounds());
+
             layeredPane.add(erdTitlePanel);
             erdTitlePanel.toFront();
             this.erdTitlePanel = erdTitlePanel;
+        }
+
+        ErdTextPanelData[] textFileData = savedErd.getTextBlocks();
+        if (textFileData != null) {
+            for (ErdTextPanelData textFileDatum : textFileData) {
+
+                ErdTextPanel textPanel = new ErdTextPanel(this, textFileDatum.getErdDescription());
+                textPanel.setBounds(textFileDatum.getTableBounds());
+                textPanel.setTableBackground(textFileDatum.getTableBackground());
+
+                textPanels.add(textPanel);
+                layeredPane.add(textPanel);
+                textPanel.toFront();
+            }
         }
 
         this.savedErd = savedErd;
@@ -339,6 +367,7 @@ public class ErdViewerPanel extends DefaultTabView
         tableFontSize = columnNameFont.getSize();
         tableNameFontStyle = tableNameFont.getStyle();
         columnNameFontStyle = columnNameFont.getStyle();
+        textBlockFontStyle = textBlockFont.getStyle();
 
         if (this.savedErd.hasCanvasBackground())
             setCanvasBackground(this.savedErd.getCanvasBackground());

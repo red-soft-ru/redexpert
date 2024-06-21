@@ -175,8 +175,9 @@ public class ErdViewerPanel extends DefaultTabView
         setScaledView(0.75);
     }
 
-    public ErdViewerPanel(ErdSaveFileFormat savedErd) {
+    public ErdViewerPanel(ErdSaveFileFormat savedErd, String absolutePath) {
         this(null, null, true, true, true);
+        setSavedErd(savedErd, absolutePath);
         fileName = savedErd.getFileName();
     }
 
@@ -274,6 +275,77 @@ public class ErdViewerPanel extends DefaultTabView
         undoActions = new Stack<>();
         redoActions = new Stack<>();
 
+    }
+
+    public void setSavedErd(ErdSaveFileFormat savedErd, String absolutePath) {
+
+        if (tables != null && !tables.isEmpty()) {
+
+            int confirm = GUIUtilities.displayConfirmDialog(bundleString("setSavedErd"));
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (this.savedErd != null)
+                    saveApplicationFileFormat(new File(this.savedErd.getAbsolutePath()));
+                else
+                    new ErdSaveDialog(this);
+            }
+
+            removeAllTables();
+        }
+
+        tables = new Vector();
+        Font columnNameFont = savedErd.getColumnNameFont();
+        Font tableNameFont = savedErd.getTableNameFont();
+
+        for (ErdTableFileData fileRowData : savedErd.getTables()) {
+
+            ErdTable table = new ErdTable(fileRowData.getTableName(), fileRowData.getColumnData(), this);
+            table.setCreateTableScript(fileRowData.getCreateTableScript());
+            table.setAlterTableHash(fileRowData.getAlterTableHash());
+            table.setAlterTableScript(fileRowData.getAlterTableScript());
+            table.setAddConstraintsScript(fileRowData.getAddConstraintScript());
+            table.setBounds(fileRowData.getTableBounds());
+            table.setEditable(true);
+            table.setTableBackground(fileRowData.getTableBackground());
+
+            layeredPane.add(table);
+            tables.add(table);
+            table.toFront();
+        }
+
+        ErdTitlePanelData titlePanelData = savedErd.getTitlePanel();
+        if (titlePanelData != null) {
+
+            ErdTitlePanel erdTitlePanel = new ErdTitlePanel(
+                    this,
+                    titlePanelData.getErdName(),
+                    titlePanelData.getErdDate(),
+                    titlePanelData.getErdDescription(),
+                    titlePanelData.getErdDatabase(),
+                    titlePanelData.getErdAuthor(),
+                    titlePanelData.getErdRevision(),
+                    titlePanelData.getErdFileName()
+            );
+
+            erdTitlePanel.setBounds(titlePanelData.getTitleBounds());
+            layeredPane.add(erdTitlePanel);
+            erdTitlePanel.toFront();
+            this.erdTitlePanel = erdTitlePanel;
+        }
+
+        this.savedErd = savedErd;
+        this.savedErd.setAbsolutePath(absolutePath);
+
+        tableFontName = tableNameFont.getName();
+        tableFontSize = columnNameFont.getSize();
+        tableNameFontStyle = tableNameFont.getStyle();
+        columnNameFontStyle = columnNameFont.getStyle();
+
+        if (this.savedErd.hasCanvasBackground())
+            setCanvasBackground(this.savedErd.getCanvasBackground());
+
+        dependsPanel.setTableDependencies(buildTableRelationships());
+        resizeCanvas();
+        layeredPane.validate();
     }
 
     public void addTextPanel(ErdTextPanel erdTextPanel) {

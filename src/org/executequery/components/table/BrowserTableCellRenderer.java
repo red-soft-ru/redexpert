@@ -1,9 +1,5 @@
 package org.executequery.components.table;
 
-//import sun.swing.DefaultLookup;
-
-//import sun.swing.DefaultLookup;
-
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.IconManager;
@@ -14,54 +10,59 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
- * Created by mikhan808 on 22.04.2017.
+ * Created by Mikhail Kalyashin on 22.04.2017.
  */
 public class BrowserTableCellRenderer extends JLabel
-        implements TableCellRenderer, Serializable {
+        implements TableCellRenderer,
+        Serializable {
 
-    /**
-     * An empty <code>Border</code>. This field might not be used. To change the
-     * <code>Border</code> used by this renderer override the
-     * <code>getTableCellRendererComponent</code> method and set the border
-     * of the returned component directly.
-     */
-    private static final Border SAFE_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
-    private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
-    protected static Border noFocusBorder = DEFAULT_NO_FOCUS_BORDER;
-
-    // We need a place to store the color the JLabel should be returned
-    // to after its foreground and background colors have been set
-    // to the selection background color.
-    // These ivars will be made protected when their names are finalized.
+    private final UIDefaults uiDefaults;
     private Color unselectedForeground;
     private Color unselectedBackground;
-    private UIDefaults uiDefaults=new UIDefaults();
 
-    /**
-     * Creates a default table cell renderer.
-     */
     public BrowserTableCellRenderer() {
         super();
+        uiDefaults = new UIDefaults();
+
         setOpaque(true);
         setBorder(getNoFocusBorder());
         setName("Table.cellRenderer");
-
     }
 
-
     private Border getNoFocusBorder() {
-        Border border = uiDefaults.getBorder( "Table.cellNoFocusBorder");
-        if (System.getSecurityManager() != null) {
-            if (border != null) return border;
-            return SAFE_NO_FOCUS_BORDER;
-        } else if (border != null) {
-            if (noFocusBorder == null || noFocusBorder == DEFAULT_NO_FOCUS_BORDER) {
-                return border;
-            }
+
+        Border border = uiDefaults.getBorder("Table.cellNoFocusBorder");
+        if (border != null)
+            return border;
+
+        return new EmptyBorder(1, 1, 1, 1);
+    }
+
+    private void setValue(Object value) {
+
+        if (value instanceof Icon) {
+            setText("");
+            setIcon((Icon) value);
+            setHorizontalAlignment(JLabel.CENTER);
+
+        } else if (value instanceof DatabaseColumn) {
+            setIcon(IconManager.getInstance().getTableColumnIcon(((DatabaseColumn) value)));
+            setText(((NamedObject) value).getName());
+            setHorizontalAlignment(JLabel.LEFT);
+
+        } else if (value instanceof NamedObject) {
+            setIcon(IconManager.getInstance().getIconFromType(((NamedObject) value).getType()));
+            setText(((NamedObject) value).getName());
+            setHorizontalAlignment(JLabel.LEFT);
+
+        } else {
+            setIcon(null);
+            setText((String) value);
+            setHorizontalAlignment(JLabel.LEFT);
         }
-        return noFocusBorder;
     }
 
     /**
@@ -70,11 +71,11 @@ public class BrowserTableCellRenderer extends JLabel
      *
      * @param c set the foreground color to this value
      */
+    @Override
     public void setForeground(Color c) {
         super.setForeground(c);
         unselectedForeground = c;
     }
-
 
     /**
      * Overrides <code>JComponent.setBackground</code> to assign
@@ -82,6 +83,7 @@ public class BrowserTableCellRenderer extends JLabel
      *
      * @param c set the background color to this value
      */
+    @Override
     public void setBackground(Color c) {
         super.setBackground(c);
         unselectedBackground = c;
@@ -95,13 +97,12 @@ public class BrowserTableCellRenderer extends JLabel
      *
      * @see JComponent#updateUI
      */
+    @Override
     public void updateUI() {
         super.updateUI();
         setForeground(null);
         setBackground(null);
     }
-
-    // implements javax.swing.table.TableCellRenderer
 
     /**
      * Returns the default table cell renderer.
@@ -110,7 +111,7 @@ public class BrowserTableCellRenderer extends JLabel
      * <code>isSelected</code> and <code>hasFocus</code> values of
      * <code>false</code> to prevent selection and focus from appearing
      * in the printed output. To do other customization based on whether
-     * or not the table is being printed, check the return value from
+     * the table is being printed, check the return value from
      * {@link javax.swing.JComponent#isPaintingForPrint()}.
      *
      * @param table      the <code>JTable</code>
@@ -123,198 +124,85 @@ public class BrowserTableCellRenderer extends JLabel
      * @return the default table cell renderer
      * @see javax.swing.JComponent#isPaintingForPrint()
      */
-    public Component getTableCellRendererComponent(JTable table, Object value,
-                                                   boolean isSelected, boolean hasFocus, int row, int column) {
-        if (table == null) {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+        if (table == null)
             return this;
-        }
 
-        if (value == null) {
+        if (value == null)
             value = table.getModel().getValueAt(row, column);
-        }
 
-        Color fg = null;
-        Color bg = null;
+        Color foregroundColor = null;
         if (value.getClass().equals(Object[].class)) {
-            fg = (Color) ((Object[]) value)[1];
+            foregroundColor = (Color) ((Object[]) value)[1];
             value = ((Object[]) value)[0];
         }
 
-        //JTable.DropLocation dropLocation = table.getDropLocation();
-        /*if (dropLocation != null
-                && !dropLocation.isInsertRow()
-                && !dropLocation.isInsertColumn()
-                && dropLocation.getRow() == row
-                && dropLocation.getColumn() == column) {
-
-            fg = DefaultLookup.getColor(this, ui, "Table.dropCellForeground");
-            bg = DefaultLookup.getColor(this, ui, "Table.dropCellBackground");
-
-            isSelected = true;
-        }*/
-
-        /*if (isSelected) {
-            super.setForeground(fg == null ? table.getSelectionForeground()
-                    : fg);
-            super.setBackground(bg == null ? table.getSelectionBackground()
-                    : bg);
-        } else {
-            Color background = unselectedBackground != null
-                    ? unselectedBackground
-                    : table.getBackground();
-            if (background == null || background instanceof javax.swing.plaf.UIResource) {
-                Color alternateColor = DefaultLookup.getColor(this, ui, "Table.alternateRowColor");
-                if (alternateColor != null && row % 2 != 0) {
-                    background = alternateColor;
-                }
-            }
-            super.setForeground(unselectedForeground != null
-                    ? unselectedForeground
-                    : table.getForeground());
-            super.setBackground(background);
-        }
-
-        setFont(table.getFont());*/
-
         if (hasFocus) {
             Border border = null;
+
             if (isSelected) {
-                border = uiDefaults.getBorder( "Table.focusSelectedCellHighlightBorder");
-                super.setForeground(fg == null ? table.getSelectionForeground()
-                        : fg);
-                super.setBackground(bg == null ? table.getSelectionBackground()
-                        : bg);
+                border = uiDefaults.getBorder("Table.focusSelectedCellHighlightBorder");
+
+                super.setBackground(table.getSelectionBackground());
+                super.setForeground(foregroundColor == null ?
+                        table.getSelectionForeground()
+                        : foregroundColor
+                );
             }
-            if (border == null) {
-                border = uiDefaults.getBorder( "Table.focusCellHighlightBorder");
-            }
+
+            if (border == null)
+                border = uiDefaults.getBorder("Table.focusCellHighlightBorder");
             setBorder(border);
 
             if (!isSelected && table.isCellEditable(row, column)) {
-                Color col;
-                col = uiDefaults.getColor( "Table.focusCellForeground");
-                if (col != null) {
-                    super.setForeground(col);
-                }
-                col = uiDefaults.getColor( "Table.focusCellBackground");
-                if (col != null) {
-                    super.setBackground(col);
-                }
+
+                Color color = uiDefaults.getColor("Table.focusCellForeground");
+                if (color != null)
+                    super.setForeground(color);
+
+                color = uiDefaults.getColor("Table.focusCellBackground");
+                if (color != null)
+                    super.setBackground(color);
             }
+
         } else {
-            Color background = unselectedBackground != null
-                    ? unselectedBackground
-                    : table.getBackground();
+            Color background = unselectedBackground != null ? unselectedBackground : table.getBackground();
+
             if (background == null || background instanceof javax.swing.plaf.UIResource) {
-                Color alternateColor = uiDefaults.getColor( "Table.alternateRowColor");
-                if (alternateColor != null && row % 2 != 0) {
+                Color alternateColor = uiDefaults.getColor("Table.alternateRowColor");
+                if (alternateColor != null && row % 2 != 0)
                     background = alternateColor;
-                }
             }
-            if (fg == null)
-                super.setForeground(unselectedForeground != null
-                        ? unselectedForeground
-                        : table.getForeground());
-            else super.setForeground(fg);
+
+            if (foregroundColor == null)
+                foregroundColor = unselectedForeground != null ? unselectedForeground : table.getForeground();
+
+            super.setForeground(foregroundColor);
             super.setBackground(background);
             setBorder(getNoFocusBorder());
         }
+
         setFont(table.getFont());
         setValue(value);
 
         return this;
     }
 
-    /*
-     * The following methods are overridden as a performance measure to
-     * to prune code-paths are often called in the case of renders
-     * but which we know are unnecessary.  Great care should be taken
-     * when writing your own renderer to weigh the benefits and
-     * drawbacks of overriding methods like these.
-     */
-
     /**
      * Overridden for performance reasons.
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public boolean isOpaque() {
-        Color back = getBackground();
-        Component p = getParent();
-        if (p != null) {
-            p = p.getParent();
-        }
-
-        // p should now be the JTable.
-        boolean colorMatch = (back != null) && (p != null) &&
-                back.equals(p.getBackground()) &&
-                p.isOpaque();
-        return !colorMatch && super.isOpaque();
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     *
-     * @since 1.5
-     */
-    public void invalidate() {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     */
-    public void validate() {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     */
-    public void revalidate() {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     */
-    public void repaint(long tm, int x, int y, int width, int height) {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     */
-    public void repaint(Rectangle r) {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     *
-     * @since 1.5
-     */
-    public void repaint() {
-    }
-
-    /**
-     * Overridden for performance reasons.
-     * See the <a href="#override">Implementation Note</a>
-     * for more information.
-     */
+    @Override
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        // Strings get interned...
-        if (propertyName == "text"
-                || propertyName == "labelFor"
-                || propertyName == "displayedMnemonic"
-                || ((propertyName == "font" || propertyName == "foreground")
+
+        if (Objects.equals(propertyName, "text")
+                || Objects.equals(propertyName, "labelFor")
+                || Objects.equals(propertyName, "displayedMnemonic")
+                || ((Objects.equals(propertyName, "font")
+                || Objects.equals(propertyName, "foreground"))
                 && oldValue != newValue
                 && getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey) != null)) {
 
@@ -327,38 +215,87 @@ public class BrowserTableCellRenderer extends JLabel
      * See the <a href="#override">Implementation Note</a>
      * for more information.
      */
-    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+    @Override
+    public boolean isOpaque() {
+
+        Component parent = getParent();
+        if (parent != null)
+            parent = parent.getParent();
+
+        Color background = getBackground();
+        boolean colorMatch = background != null
+                && parent != null
+                && background.equals(parent.getBackground())
+                && parent.isOpaque();
+
+        return !colorMatch && super.isOpaque();
     }
 
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     *
+     * @since 1.5
+     */
+    @Override
+    public void invalidate() {
+    }
 
     /**
-     * Sets the <code>String</code> object for the cell being rendered to
-     * <code>value</code>.
-     *
-     * @param value the string value for this cell; if value is
-     *              <code>null</code> it sets the text value to an empty string
-     * @see JLabel#setText
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
      */
-    protected void setValue(Object value) {
+    @Override
+    public void validate() {
+    }
 
-        if (value instanceof Icon) {
-            setText("");
-            setIcon((Icon) value);
-            setHorizontalAlignment(JLabel.CENTER);
-        } else if (value instanceof DatabaseColumn) {
-            setIcon(IconManager.getInstance().getTableColumnIcon(((DatabaseColumn) value)));
-            setText(((NamedObject) value).getName());
-            setHorizontalAlignment(JLabel.LEFT);
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     */
+    @Override
+    public void revalidate() {
+    }
 
-        } else if (value instanceof NamedObject) {
-            setIcon(IconManager.getInstance().getIconFromType(((NamedObject) value).getType()));
-            setText(((NamedObject) value).getName());
-            setHorizontalAlignment(JLabel.LEFT);
-        } else {
-            setIcon(null);
-            setText((String) value);
-            setHorizontalAlignment(JLabel.LEFT);
-        }
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     */
+    @Override
+    public void repaint(long tm, int x, int y, int width, int height) {
+    }
+
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     */
+    @Override
+    public void repaint(Rectangle r) {
+    }
+
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     *
+     * @since 1.5
+     */
+    @Override
+    public void repaint() {
+    }
+
+    /**
+     * Overridden for performance reasons.
+     * See the <a href="#override">Implementation Note</a>
+     * for more information.
+     */
+    @Override
+    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
     }
 
 }

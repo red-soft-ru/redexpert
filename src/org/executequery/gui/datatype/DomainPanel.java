@@ -104,27 +104,6 @@ public class DomainPanel extends JPanel {
         return domainBox.getSelectedItem();
     }
 
-    /*private String[] getEditingDomains() {
-        DefaultStatementExecutor executor = new DefaultStatementExecutor(columnData.getDatabaseConnection(), true);
-        List<String> domains = new ArrayList<>();
-        domains.add(currentDomain);
-        try {
-            String query = "select " +
-                    "RDB$FIELD_NAME FROM RDB$FIELDS " +
-                    "where RDB$FIELD_NAME not like 'RDB$%'\n" +
-                    "and RDB$FIELD_NAME not like 'MON$%'\n" +
-                    "order by RDB$FIELD_NAME";
-            ResultSet rs = executor.execute(QueryTypes.SELECT, query).getResultSet();
-            while (rs.next()) {
-                domains.add(rs.getString(1).trim());
-            }
-            executor.releaseResources();
-            return domains.toArray(new String[domains.size()]);
-        } catch (Exception e) {
-            Log.error("Error loading domains:" + e.getMessage());
-            return null;
-        }
-    }*/
 
     List<NamedObject> getDomains() {
         return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(columnData.getConnection()).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);

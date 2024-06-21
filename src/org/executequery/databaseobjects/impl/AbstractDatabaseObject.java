@@ -1043,7 +1043,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 collate = collate.trim();
             column.setCharset(charset);
             column.setCollate(collate);
-            String domain = rs.getString(FIELD_SOURCE);
+            String domain = MiscUtils.trimEnd(rs.getString(FIELD_SOURCE));
             if (domain != null && !domain.isEmpty()) {
                 column.setDomain(domain);
             }

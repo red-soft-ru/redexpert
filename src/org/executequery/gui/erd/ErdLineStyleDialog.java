@@ -56,6 +56,8 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
      * The colour selection button
      */
     private JComboBox colourCombo;
+
+    private JComboBox bendLineCombo;
     //private ColourChooserButton colourButton;
 
     /**
@@ -96,7 +98,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         styleCombo.setSelectedIndex(dependsPanel.getLineStyleIndex());
         arrowCombo.setSelectedIndex(dependsPanel.getArrowStyleIndex());
         colourCombo.setSelectedIndex(dependsPanel.getLineColour());
-
+        bendLineCombo.setSelectedIndex(dependsPanel.getLineBend());
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
         setVisible(true);
@@ -150,6 +152,10 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         colourCombo = WidgetFactory.createComboBox("colorLine", colorStyleIcons);
         colourCombo.setRenderer(renderer);
 
+        LineBendIcon[] lineBendIcons = {new LineBendIcon(0), new LineBendIcon(1)};
+        bendLineCombo = WidgetFactory.createComboBox("bendLine", lineBendIcons);
+        bendLineCombo.setRenderer(renderer);
+
         JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"), "Cancel");
         JButton okButton = new DefaultPanelButton(Bundles.get("common.ok.button"), "OK");
 
@@ -189,6 +195,8 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         panel.add(new JLabel(bundleString("ArrowStyleLabel")), gbc);
         gbc.gridy = 3;
         panel.add(new JLabel(bundleString("LineColourLabel")), gbc);
+        gbc.gridy = 4;
+        panel.add(new JLabel(bundleString("BendLineLabel")), gbc);
         gbc.gridwidth = 2;
         gbc.insets.top = 0;
         gbc.gridx = 1;
@@ -198,6 +206,8 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         panel.add(arrowCombo, gbc);
         gbc.gridy = 3;
         panel.add(colourCombo, gbc);
+        gbc.gridy = 4;
+        panel.add(bendLineCombo, gbc);
         gbc.insets.left = 10;
         gbc.insets.top = 5;
         gbc.fill = GridBagConstraints.NONE;
@@ -228,7 +238,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
         panel.add(cancelButton, gbc);
 
         panel.setBorder(BorderFactory.createEtchedBorder());
-        panel.setPreferredSize(new Dimension(450, 200));
+        panel.setPreferredSize(new Dimension(450, 250));
 
         Container c = this.getContentPane();
         c.setLayout(new GridBagLayout());
@@ -276,6 +286,7 @@ public class ErdLineStyleDialog extends AbstractBaseDialog {
             dependsPanel.setArrowStyle(arrowCombo.getSelectedIndex() == 0);
             dependsPanel.setLineColour(colourCombo.getSelectedIndex());
             dependsPanel.setLineStyle(styleCombo.getSelectedIndex());
+            dependsPanel.setLineBend(bendLineCombo.getSelectedIndex());
             dependsPanel.repaint();
             dispose();
         }
@@ -384,7 +395,53 @@ class ColorStyleIcon extends ImageIcon {
 
     }
 
-} // ArrowSt
+}
+
+class LineBendIcon extends ImageIcon {
+
+    private final int type;
+
+    public LineBendIcon(int type) {
+        super();
+        this.type = type;
+    }
+
+    public int getIconWidth() {
+        return 250;
+    }
+
+    public int getIconHeight() {
+        return 20;
+    }
+
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+
+        // fill the background
+        g.setColor(UIUtils.getColour("executequery.Erd.background", Color.WHITE));
+        g.fillRect(0, 0, 290, 20);
+        g.setColor(Color.BLACK);
+        // draw the line
+        switch (type) {
+            case 0:
+                g.drawLine(5, 5, 100, 5);
+                g.drawLine(100, 5, 100, 15);
+                g.drawLine(100, 15, 250, 15);
+                break;
+            case 1:
+                g.drawLine(5, 5, 25, 5);
+                g.drawLine(25, 5, 230, 15);
+                g.drawLine(230, 15, 250, 15);
+                break;
+        }
+        //g.drawLine(5, 10, 250, 10);
+
+        int[] polyXs = {240, 250, 240};
+        int[] polyYs = {20, 15, 10};
+        g.fillPolygon(polyXs, polyYs, 3);
+
+    }
+
+}
 
 class LineStyleRenderer extends JLabel
         implements ListCellRenderer {

@@ -30,7 +30,6 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.*;
-import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -44,8 +43,8 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
-import org.executequery.toolbars.AbstractTableToolBar;
 import org.executequery.toolbars.AbstractTableIndexesToolBar;
+import org.executequery.toolbars.AbstractTableToolBar;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -879,7 +878,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 erdTableInfos.add(etf);
             }
 
-            referencesPanel.setTables(tableNames, erdTableInfos);
+            referencesPanel.setTables(erdTableInfos);
 
         } catch (DataSourceException e) {
             controller.handleException(e);

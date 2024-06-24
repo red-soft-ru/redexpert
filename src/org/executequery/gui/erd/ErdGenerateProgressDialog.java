@@ -221,7 +221,8 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             }
 
             GUIUtilities.showWaitCursor();
-            new ErdViewerPanel(selectedTables, tableInfoList, false);
+
+            ErdViewerPanel viewerPanel = new ErdViewerPanel(tableInfoList, false);
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();

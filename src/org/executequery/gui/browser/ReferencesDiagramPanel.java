@@ -53,9 +53,9 @@ public class ReferencesDiagramPanel extends JPanel {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
+    public void setTables(List<ErdTableInfo> tableInfos) {
 
-        viewerPanel.resetTableValues(tableNames, tableInfos);
+        viewerPanel.resetTableValues(tableInfos);
     }
 
 }

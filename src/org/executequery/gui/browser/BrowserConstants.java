@@ -30,6 +30,8 @@ package org.executequery.gui.browser;
  */
 public class BrowserConstants {
 
+    public static final String LIGHT_SUFFIX = "_light";
+
     public static final String DATABASE_OBJECT_IMAGE = "icon_db_object";
     public static final String CONNECTIONS_IMAGE = "icon_db_connection";
     public static final String CONNECTIONS_FOLDER_IMAGE = "icon_folder";
@@ -60,6 +62,32 @@ public class BrowserConstants {
     public static final String USER_IMAGE = "icon_db_user";
     public static final String TABLESPACE_IMAGE = "icon_db_tablespace";
     public static final String JOB_IMAGE = "icon_db_job";
+
+    public static final String CONNECTIONS_FOLDER_IMAGE_LIGHT = CONNECTIONS_FOLDER_IMAGE + LIGHT_SUFFIX;
+    public static final String CATALOG_IMAGE_LIGHT = CATALOG_IMAGE + LIGHT_SUFFIX;
+    public static final String HOST_NOT_CONNECTED_IMAGE_LIGHT = HOST_NOT_CONNECTED_IMAGE + LIGHT_SUFFIX;
+    public static final String HOST_CONNECTED_IMAGE_LIGHT = HOST_CONNECTED_IMAGE + LIGHT_SUFFIX;
+    public static final String FUNCTIONS_IMAGE_LIGHT = FUNCTIONS_IMAGE + LIGHT_SUFFIX;
+    public static final String INDEXES_IMAGE_LIGHT = INDEXES_IMAGE + LIGHT_SUFFIX;
+    public static final String PROCEDURES_IMAGE_LIGHT = PROCEDURES_IMAGE + LIGHT_SUFFIX;
+    public static final String SEQUENCES_IMAGE_LIGHT = SEQUENCES_IMAGE + LIGHT_SUFFIX;
+    public static final String TABLES_IMAGE_LIGHT = TABLES_IMAGE + LIGHT_SUFFIX;
+    public static final String GLOBAL_TABLES_IMAGE_LIGHT = GLOBAL_TABLES_IMAGE + LIGHT_SUFFIX;
+    //    public static final String COLUMNS_IMAGE_LIGHT = COLUMNS_IMAGE + LIGHT_SUFFIX;
+//    public static final String PRIMARY_COLUMNS_IMAGE_LIGHT = PRIMARY_COLUMNS_IMAGE + LIGHT_SUFFIX;
+//    public static final String FOREIGN_COLUMNS_IMAGE_LIGHT = FOREIGN_COLUMNS_IMAGE + LIGHT_SUFFIX;
+    public static final String VIEWS_IMAGE_LIGHT = VIEWS_IMAGE + LIGHT_SUFFIX;
+    public static final String TABLE_TRIGGER_IMAGE_LIGHT = TABLE_TRIGGER_IMAGE + LIGHT_SUFFIX;
+    public static final String DB_TRIGGER_IMAGE_LIGHT = DB_TRIGGER_IMAGE + LIGHT_SUFFIX;
+    public static final String DDL_TRIGGER_IMAGE_LIGHT = DDL_TRIGGER_IMAGE + LIGHT_SUFFIX;
+    public static final String DOMAIN_IMAGE_LIGHT = DOMAIN_IMAGE + LIGHT_SUFFIX;
+    public static final String EXCEPTION_IMAGE_LIGHT = EXCEPTION_IMAGE + LIGHT_SUFFIX;
+    public static final String UDF_IMAGE_LIGHT = UDF_IMAGE + LIGHT_SUFFIX;
+    public static final String PACKAGE_IMAGE_LIGHT = PACKAGE_IMAGE + LIGHT_SUFFIX;
+    public static final String ROLE_IMAGE_LIGHT = ROLE_IMAGE + LIGHT_SUFFIX;
+    public static final String USER_IMAGE_LIGHT = USER_IMAGE + LIGHT_SUFFIX;
+    public static final String TABLESPACE_IMAGE_LIGHT = TABLESPACE_IMAGE + LIGHT_SUFFIX;
+    public static final String JOB_IMAGE_LIGHT = JOB_IMAGE + LIGHT_SUFFIX;
 
     public static final String FOLDER_FOREIGN_KEYS_IMAGE = "icon_folder_foreign";
     public static final String FOLDER_PRIMARY_KEYS_IMAGE = "icon_folder_primary";
@@ -122,7 +150,32 @@ public class BrowserConstants {
             DB_TRIGGER_IMAGE,
             DDL_TRIGGER_IMAGE,
             SYSTEM_PACKAGE_IMAGE,
-            SYSTEM_SEQUENCES_IMAGE
+            SYSTEM_SEQUENCES_IMAGE,
+            CONNECTIONS_FOLDER_IMAGE_LIGHT,
+            CATALOG_IMAGE_LIGHT,
+            HOST_NOT_CONNECTED_IMAGE_LIGHT,
+            HOST_CONNECTED_IMAGE_LIGHT,
+            FUNCTIONS_IMAGE_LIGHT,
+            INDEXES_IMAGE_LIGHT,
+            PROCEDURES_IMAGE_LIGHT,
+            SEQUENCES_IMAGE_LIGHT,
+            TABLES_IMAGE_LIGHT,
+            GLOBAL_TABLES_IMAGE_LIGHT,
+//            COLUMNS_IMAGE_LIGHT,
+//            PRIMARY_COLUMNS_IMAGE_LIGHT,
+//            FOREIGN_COLUMNS_IMAGE_LIGHT,
+            VIEWS_IMAGE_LIGHT,
+            TABLE_TRIGGER_IMAGE_LIGHT,
+            DB_TRIGGER_IMAGE_LIGHT,
+            DDL_TRIGGER_IMAGE_LIGHT,
+            DOMAIN_IMAGE_LIGHT,
+            EXCEPTION_IMAGE_LIGHT,
+            UDF_IMAGE_LIGHT,
+            PACKAGE_IMAGE_LIGHT,
+            ROLE_IMAGE_LIGHT,
+            USER_IMAGE_LIGHT,
+            TABLESPACE_IMAGE_LIGHT,
+            JOB_IMAGE_LIGHT
     };
 
 }

@@ -1,10 +1,10 @@
 package org.underworldlabs.swing.plaf.defaultLaf;
 
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 
-public class DefaultLightLookAndFeel extends FlatIntelliJLaf {
+public class DefaultLightLookAndFeel extends FlatLightLaf {
 
     @Override
     public UIDefaults getDefaults() {

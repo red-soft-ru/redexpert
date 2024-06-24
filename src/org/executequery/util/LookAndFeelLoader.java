@@ -20,6 +20,7 @@
 
 package org.executequery.util;
 
+import com.formdev.flatlaf.FlatLaf;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.ApplicationException;
 import org.executequery.plaf.LookAndFeelType;
@@ -47,6 +48,8 @@ public final class LookAndFeelLoader {
     }
 
     public LookAndFeelType loadLookAndFeel(LookAndFeelType lookAndFeelType) {
+        FlatLaf.registerCustomDefaultsSource("org.executequery.plaf.defaultLaf");
+
         try {
 
             switch (lookAndFeelType) {

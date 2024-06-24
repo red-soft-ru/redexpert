@@ -1,10 +1,10 @@
 package org.underworldlabs.swing.plaf.defaultLaf;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
 
-public class DefaultDarkLookAndFeel extends FlatDarculaLaf {
+public class DefaultDarkLookAndFeel extends FlatDarkLaf {
 
     @Override
     public UIDefaults getDefaults() {

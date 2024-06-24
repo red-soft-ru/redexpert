@@ -41,7 +41,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private SimplePreferencesPanel preferencesPanel;
     private CustomLafSelectionPanel lafSelectionPanel;
-    private boolean lafChangeWarningShown = false;
 
     public PropertiesAppearance(PropertiesPanel parent) {
         super(parent);
@@ -144,11 +143,6 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     }
 
     public void itemStateChanged() {
-
-        if (!lafChangeWarningShown) {
-            GUIUtilities.displayInformationMessage(bundledString("ChangingTheme.Information"));
-            lafChangeWarningShown = true;
-        }
 
         LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
         AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);

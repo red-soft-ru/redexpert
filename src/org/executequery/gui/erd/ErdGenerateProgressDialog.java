@@ -25,6 +25,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.GenerateErdPanel;
+import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
@@ -34,7 +35,10 @@ import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Vector;
+import java.util.List;
+import java.util.*;
+
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -184,8 +188,31 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         return (erdTableInfos);
     }
 
+    Vector<ErdTableInfo> sort(Vector<ErdTableInfo> tableInfoList) {
+        Map<ErdTableInfo, List<ErdTableInfo>> links = buildTableRelationships(tableInfoList);
+        Vector<ErdTableInfo> result = new Vector<>();
+        if (tableInfoList != null) {
+            while (tableInfoList.size() > 0) {
+                result = addTableToSortVector(tableInfoList.elementAt(0), result, tableInfoList, links);
+            }
+        }
+        return result;
+    }
+
+    Vector<ErdTableInfo> addTableToSortVector(ErdTableInfo etf, Vector<ErdTableInfo> result, Vector<ErdTableInfo> source, Map<ErdTableInfo, List<ErdTableInfo>> links) {
+        result.add(etf);
+        source.remove(etf);
+        for (ErdTableInfo table : links.get(etf)) {
+            if (result.contains(table))
+                continue;
+            addTableToSortVector(table, result, source, links);
+        }
+        return result;
+    }
+
     private void processComplete(Vector<ErdTableInfo> tableInfoList) {
 
+        tableInfoList = sort(tableInfoList);
         if (parent == null) {
 
             if (tableInfoList.size() != selectedTables.size()) {
@@ -210,13 +237,13 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
             GUIUtilities.showWaitCursor();
 
-            for (int i = 0, size = selectedTables.size(); i < size; i++) {
+            for (ErdTableInfo tableInfo : tableInfoList) {
 
-                ColumnData[] columnData = tableInfoList.elementAt(i).getColumns();
+                ColumnData[] columnData = tableInfo.getColumns();
                 if (columnData == null || columnData.length == 0) {
 
                     for (ErdTable t : parent.getAllTablesArray()) {
-                        if (t.getTableName().contentEquals((String) selectedTables.elementAt(i))) {
+                        if (t.getTableName().contentEquals(tableInfo.getName())) {
                             parent.removeTable(t);
                             break;
                         }
@@ -225,12 +252,12 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 } else {
 
                     ErdTable table = new ErdTable(
-                            (String) selectedTables.elementAt(i),
-                            tableInfoList.elementAt(i).getColumns(),
+                            tableInfo.getName(),
+                            tableInfo.getColumns(),
                             parent
                     );
                     table.setEditable(parent.isEditable());
-                    table.setDescriptionTable(tableInfoList.elementAt(i).getComment());
+                    table.setDescriptionTable(tableInfo.getComment());
 
                     parent.addNewTable(table, false);
                 }
@@ -241,6 +268,61 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             selectedTables = null;
             dispose();
         }
+    }
+
+    public Map<ErdTableInfo, List<ErdTableInfo>> buildTableRelationships(Vector<ErdTableInfo> tables) {
+
+        String referencedTable = null;
+        ColumnData[] cda = null;
+        ColumnConstraint[] cca = null;
+        Map<ErdTableInfo, List<ErdTableInfo>> resMap = new HashMap<>();
+        for (ErdTableInfo etf : tables) {
+            resMap.put(etf, new ArrayList<>());
+        }
+
+        ErdTableInfo[] tables_array = tables.toArray(new ErdTableInfo[0]);
+
+        ErdTableInfo table = null;
+
+        for (int k = 0, m = tables.size(); k < m; k++) {
+
+            cda = tables_array[k].getColumns();
+
+            if (cda == null) {
+                continue;
+            }
+
+            for (ColumnData columnData : cda) {
+
+                if (!columnData.isForeignKey())
+                    continue;
+
+                cca = columnData.getColumnConstraintsArray();
+
+                for (ColumnConstraint columnConstraint : cca) {
+
+                    if (columnConstraint.getType() == PRIMARY_KEY)
+                        continue;
+
+                    referencedTable = columnConstraint.getRefTable();
+
+                    for (int j = 0; j < m; j++) {
+
+                        if (referencedTable.equalsIgnoreCase(
+                                tables.elementAt(j).getName())) {
+                            table = tables.elementAt(j);
+                            if (!resMap.get(tables_array[k]).contains(table))
+                                resMap.get(tables_array[k]).add(table);
+                            if (!resMap.get(table).contains(tables_array[k]))
+                                resMap.get(table).add(tables_array[k]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return resMap;
     }
 
 }

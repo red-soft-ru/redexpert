@@ -913,7 +913,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 erdTableInfos.add(etf);
             }
 
-            referencesPanel.setTables(tableNames, erdTableInfos);
+            referencesPanel.setTables(erdTableInfos);
 
         } catch (DataSourceException e) {
             controller.handleException(e);

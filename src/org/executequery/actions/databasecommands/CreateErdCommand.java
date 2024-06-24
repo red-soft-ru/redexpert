@@ -48,7 +48,7 @@ public class CreateErdCommand extends OpenFrameCommand
         if (execute_w) {*/
         GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
                 ErdViewerPanel.FRAME_ICON,
-                new ErdViewerPanel(null, null, true),
+                new ErdViewerPanel(null, true),
                 null,
                 true);
        /* } else

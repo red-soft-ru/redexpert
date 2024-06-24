@@ -232,14 +232,14 @@ public class ErdViewerPanel extends DefaultTabView
     public static final int CHANGE_LOCATION = CHANGE_BG_COLOR + 1;
 
     public ErdViewerPanel(boolean showTools, boolean editable) {
-        this(null, null, true, showTools, editable);
+        this(null, true, showTools, editable);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos, boolean isNew) {
-        this(tableNames, tableInfos, isNew, true, true);
+    public ErdViewerPanel(Vector<ErdTableInfo> tableInfos, boolean isNew) {
+        this(tableInfos, isNew, true, true);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos,
+    public ErdViewerPanel(Vector<ErdTableInfo> tableInfos,
                           boolean isNew, boolean showTools, boolean editable) {
 
         super(new GridBagLayout());
@@ -257,7 +257,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         // build all the tables to display
         if (!isNew) {
-            setTables(tableNames, tableInfos);
+            setTables(tableInfos);
         } else {
             tables = new Vector();
         }
@@ -273,7 +273,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public ErdViewerPanel(ErdSaveFileFormat savedErd, String absolutePath) {
-        this(null, null, true, true, true);
+        this(null, true, true, true);
         //setSavedErd(savedErd, absolutePath);
         fileName = savedErd.getFileName();
 
@@ -401,9 +401,9 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List tableNames, List<ErdTableInfo> tableInfos) {
+    public void resetTableValues(List<ErdTableInfo> tableInfos) {
         removeAllTables();
-        setTables(tableNames, tableInfos);
+        setTables(tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
@@ -415,9 +415,14 @@ public class ErdViewerPanel extends DefaultTabView
      * @param a   <code>Vector</code> of table names
      * @param the column meta data for the tables
      */
-    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
+    public void setTables(List<ErdTableInfo> tableInfos) {
 
-        this.tableNames = tableNames;
+        if (tableInfos != null) {
+            tableNames = new Vector();
+            for (ErdTableInfo etf : tableInfos) {
+                tableNames.add(etf.getName());
+            }
+        }
         this.tableInfos = tableInfos;
 
         // next position of component added
@@ -1361,7 +1366,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void reset() {
-        resetTableValues(tableNames, tableInfos);
+        resetTableValues(tableInfos);
         setScaledView(defaultScaledView);
     }
 

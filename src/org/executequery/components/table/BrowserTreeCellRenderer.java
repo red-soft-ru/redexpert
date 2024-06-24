@@ -107,6 +107,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         setBackgroundSelectionColor(selectedBackground);
         setIcon(IconManager.getInstance().getIconFromNode(node, isSelected));
+
         setText(label);
 
         int type = node.getType();
@@ -131,31 +132,21 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             if (databaseObject != null) {
 
-                if (node.isSystem()) {
-                    setForeground(Color.RED);
+                if (databaseObject instanceof DefaultDatabaseTrigger) {
+                    DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
+                    if (!trigger.isTriggerActive())
+                        setForeground(disabledTextForeground);
+                }
 
-                } else {
-                    if (databaseObject instanceof DefaultDatabaseTrigger) {
-                        DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
-                        if (!trigger.isTriggerActive())
-                            setForeground(disabledTextForeground);
-                    }
-
-                    if (databaseObject instanceof DefaultDatabaseIndex) {
-                        DefaultDatabaseIndex index = (DefaultDatabaseIndex) databaseObject;
-                        if (!index.isActive())
-                            setForeground(disabledTextForeground);
-                    }
+                if (databaseObject instanceof DefaultDatabaseIndex) {
+                    DefaultDatabaseIndex index = (DefaultDatabaseIndex) databaseObject;
+                    if (!index.isActive())
+                        setForeground(disabledTextForeground);
                 }
             }
 
-        } else {
-
-            if (databaseObject != null && node.isSystem())
-                setForeground(Color.RED);
-            else
-                setForeground(selectedTextForeground);
-        }
+        } else
+            setForeground(selectedTextForeground);
 
         if (type == NamedObject.META_TAG && !node.getDatabaseObject().getObjects().isEmpty())
             setFont(treeFont.deriveFont(Font.BOLD));

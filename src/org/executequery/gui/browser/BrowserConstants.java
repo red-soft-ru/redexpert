@@ -104,6 +104,16 @@ public class BrowserConstants {
     public static final String SYSTEM_PACKAGE_IMAGE = "icon_db_package_system";
     public static final String SYSTEM_ROLE_IMAGE = "icon_db_role_system";
 
+    public static final String SYSTEM_DOMAIN_IMAGE_LIGHT = SYSTEM_DOMAIN_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_TABLES_IMAGE_LIGHT = SYSTEM_TABLES_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_VIEWS_IMAGE_LIGHT = SYSTEM_VIEWS_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_INDEX_IMAGE_LIGHT = SYSTEM_INDEX_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_TRIGGER_IMAGE_LIGHT = SYSTEM_TRIGGER_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_FUNCTIONS_IMAGE_LIGHT = SYSTEM_FUNCTIONS_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_SEQUENCES_IMAGE_LIGHT = SYSTEM_SEQUENCES_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_PACKAGE_IMAGE_LIGHT = SYSTEM_PACKAGE_IMAGE + LIGHT_SUFFIX;
+    public static final String SYSTEM_ROLE_IMAGE_LIGHT = SYSTEM_ROLE_IMAGE + LIGHT_SUFFIX;
+
     public static final String GRANT_IMAGE = "icon_grant.svg";
     public static final String NO_GRANT_IMAGE = "icon_revoke.svg";
     public static final String ADMIN_OPTION_IMAGE = "icon_grant_admin.svg";

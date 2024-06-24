@@ -64,6 +64,8 @@ public class IconManager {
     public Icon getIconFromType(int type, boolean light) {
 
         String iconName;
+        boolean system = false;
+
         switch (type) {
 
             case NamedObject.ROOT:
@@ -87,6 +89,7 @@ public class IconManager {
             case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
             case NamedObject.SYSTEM_STRING_FUNCTIONS:
                 iconName = BrowserConstants.SYSTEM_FUNCTIONS_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.FUNCTION:
@@ -108,6 +111,7 @@ public class IconManager {
 
             case NamedObject.SYSTEM_SEQUENCE:
                 iconName = BrowserConstants.SYSTEM_SEQUENCES_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.SYNONYM:
@@ -120,10 +124,12 @@ public class IconManager {
 
             case NamedObject.SYSTEM_VIEW:
                 iconName = BrowserConstants.SYSTEM_VIEWS_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.SYSTEM_TABLE:
                 iconName = BrowserConstants.SYSTEM_TABLES_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.TRIGGER:
@@ -140,6 +146,7 @@ public class IconManager {
 
             case NamedObject.SYSTEM_PACKAGE:
                 iconName = BrowserConstants.SYSTEM_PACKAGE_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.DOMAIN:
@@ -152,6 +159,7 @@ public class IconManager {
 
             case NamedObject.SYSTEM_ROLE:
                 iconName = BrowserConstants.SYSTEM_ROLE_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.USER:
@@ -204,14 +212,17 @@ public class IconManager {
 
             case NamedObject.SYSTEM_TRIGGER:
                 iconName = BrowserConstants.SYSTEM_TRIGGER_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.SYSTEM_INDEX:
                 iconName = BrowserConstants.SYSTEM_INDEX_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.SYSTEM_DOMAIN:
                 iconName = BrowserConstants.SYSTEM_DOMAIN_IMAGE;
+                system = true;
                 break;
 
             case NamedObject.PRIMARY_KEY:
@@ -231,7 +242,7 @@ public class IconManager {
                 break;
         }
 
-        return getIcon(iconName, light);
+        return getIcon(iconName, light, system);
     }
 
     public Icon getIconFromNode(DatabaseObjectNode node, boolean light) {
@@ -259,7 +270,7 @@ public class IconManager {
         if (hostNode.isConnected())
             iconName = BrowserConstants.HOST_CONNECTED_IMAGE;
 
-        return getIcon(iconName, light);
+        return getIcon(iconName, light, false);
     }
 
     public Icon getTableColumnIcon(DatabaseColumn databaseColumn) {
@@ -278,12 +289,14 @@ public class IconManager {
         } else
             iconName = BrowserConstants.COLUMNS_IMAGE;
 
-        return getIcon(iconName, light);
+        return getIcon(iconName, light, false);
     }
 
     public Icon getIconFromMetaTag(String metadata, boolean light) {
 
         String iconName;
+        boolean system = false;
+
         if (metadata.compareToIgnoreCase("index") == 0) {
             iconName = BrowserConstants.INDEXES_IMAGE;
 
@@ -292,6 +305,7 @@ public class IconManager {
 
         } else if (metadata.compareToIgnoreCase("system table") == 0) {
             iconName = BrowserConstants.SYSTEM_TABLES_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("table") == 0) {
             iconName = BrowserConstants.TABLES_IMAGE;
@@ -310,12 +324,14 @@ public class IconManager {
 
         } else if (metadata.compareToIgnoreCase("system functions") == 0) {
             iconName = BrowserConstants.SYSTEM_FUNCTIONS_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("sequence") == 0) {
             iconName = BrowserConstants.SEQUENCES_IMAGE;
 
         } else if (metadata.compareToIgnoreCase("system sequence") == 0) {
             iconName = BrowserConstants.SYSTEM_SEQUENCES_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("domain") == 0) {
             iconName = BrowserConstants.DOMAIN_IMAGE;
@@ -325,6 +341,7 @@ public class IconManager {
 
         } else if (metadata.compareToIgnoreCase("system role") == 0) {
             iconName = BrowserConstants.SYSTEM_ROLE_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("user") == 0) {
             iconName = BrowserConstants.USER_IMAGE;
@@ -343,12 +360,15 @@ public class IconManager {
 
         } else if (metadata.compareToIgnoreCase("system domain") == 0) {
             iconName = BrowserConstants.SYSTEM_DOMAIN_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("system index") == 0) {
             iconName = BrowserConstants.SYSTEM_INDEX_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("system trigger") == 0) {
             iconName = BrowserConstants.SYSTEM_TRIGGER_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("database trigger") == 0) {
             iconName = BrowserConstants.DB_TRIGGER_IMAGE;
@@ -358,22 +378,24 @@ public class IconManager {
 
         } else if (metadata.compareToIgnoreCase("system package") == 0) {
             iconName = BrowserConstants.SYSTEM_PACKAGE_IMAGE;
+            system = true;
 
         } else if (metadata.compareToIgnoreCase("function") == 0) {
             iconName = BrowserConstants.FUNCTIONS_IMAGE;
 
         } else if (metadata.compareToIgnoreCase("system view") == 0) {
             iconName = BrowserConstants.SYSTEM_VIEWS_IMAGE;
+            system = true;
 
         } else
             iconName = BrowserConstants.DATABASE_OBJECT_IMAGE;
 
-        return getIcon(iconName, light);
+        return getIcon(iconName, light, system);
     }
 
-    private Icon getIcon(String iconName, boolean light) {
+    private Icon getIcon(String iconName, boolean isLight, boolean isSystem) {
 
-        if (light || GUIUtilities.getLookAndFeel().isDarkTheme())
+        if (isLight || (GUIUtilities.getLookAndFeel().isDarkTheme() && !isSystem))
             if (icons.containsKey(iconName + BrowserConstants.LIGHT_SUFFIX))
                 iconName += BrowserConstants.LIGHT_SUFFIX;
 

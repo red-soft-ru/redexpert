@@ -1273,7 +1273,6 @@ public class ErdViewerPanel extends DefaultTabView
                 return false;
             }
         }
-        addTableToList(newTable);
 
         int width = newTable.getWidth();
         int height = newTable.getHeight();
@@ -1287,15 +1286,18 @@ public class ErdViewerPanel extends DefaultTabView
 
             if (next_y + height + 20 > INITIAL_VIEW_HEIGHT) {
                 next_y = 20;
-                next_x += width + HORIZONTAL_DIFF;
+                if (tables.size() > 0)
+                    next_x += lastWidth + HORIZONTAL_DIFF;
                 lastWidth = 0;
             }
 
             newTable.setBounds(next_x, next_y, width, height);
 
             next_y += height + VERTICAL_DIFF;
+            if (lastWidth < width)
+                lastWidth = width;
         }
-
+        addTableToList(newTable);
         layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
         newTable.toFront();
         return true;

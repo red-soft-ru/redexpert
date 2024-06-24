@@ -66,7 +66,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     private static final int VERTICAL_DIFF = 50;
     private static final int HORIZONTAL_DIFF = 80;
-    private static final int INITIAL_VIEW_HEIGHT = 450;
+    private static final int INITIAL_VIEW_HEIGHT = 850;
 
     public static final int DELETE = 0;
     public static final int NEW_OBJECT = DELETE + 1;
@@ -141,14 +141,14 @@ public class ErdViewerPanel extends DefaultTabView
     private double defaultScaledView;
 
     public ErdViewerPanel(boolean showTools, boolean editable) {
-        this(null, null, true, showTools, editable);
+        this(null, true, showTools, editable);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos, boolean isNew) {
-        this(tableNames, tableInfos, isNew, true, true);
+    public ErdViewerPanel(Vector<ErdTableInfo> tableInfos, boolean isNew) {
+        this(tableInfos, isNew, true, true);
     }
 
-    public ErdViewerPanel(Vector tableNames, Vector<ErdTableInfo> tableInfos,
+    public ErdViewerPanel(Vector<ErdTableInfo> tableInfos,
                           boolean isNew, boolean showTools, boolean editable) {
 
         super(new GridBagLayout());
@@ -160,7 +160,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         // build all the tables to display
         if (!isNew) {
-            setTables(tableNames, tableInfos);
+            setTables(tableInfos);
         } else {
             tables = new Vector();
         }
@@ -176,7 +176,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public ErdViewerPanel(ErdSaveFileFormat savedErd, String absolutePath) {
-        this(null, null, true, true, true);
+        this(null, true, true, true);
         setSavedErd(savedErd, absolutePath);
         fileName = savedErd.getFileName();
     }
@@ -402,17 +402,22 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List tableNames, List<ErdTableInfo> tableInfos) {
+    public void resetTableValues(List<ErdTableInfo> tableInfos) {
         removeAllTables();
-        setTables(tableNames, tableInfos);
+        setTables(tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
     }
 
-    public void setTables(List tableNames, List<ErdTableInfo> tableInfos) {
+    public void setTables(List<ErdTableInfo> tableInfos) {
 
-        this.tableNames = tableNames;
+        if (tableInfos != null) {
+            tableNames = new Vector();
+            for (ErdTableInfo etf : tableInfos) {
+                tableNames.add(etf.getName());
+            }
+        }
         this.tableInfos = tableInfos;
 
         // height and width of current table
@@ -1127,7 +1132,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void reset() {
-        resetTableValues(tableNames, tableInfos);
+        resetTableValues(tableInfos);
         setScaledView(defaultScaledView);
     }
 

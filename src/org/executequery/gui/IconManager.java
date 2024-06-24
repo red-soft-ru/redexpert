@@ -8,8 +8,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class IconManager {
 
@@ -29,29 +28,18 @@ public class IconManager {
     private Map<String, Icon> loadIcons() {
 
         Map<String, Icon> icons = new HashMap<>();
-        icons.put(
-                BrowserConstants.DATABASE_OBJECT_IMAGE,
-                GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE, true)
-        );
+        for (String nodesIcon : BrowserConstants.getNodeIcons())
+            icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, true));
 
-        for (int i = 0; i < BrowserConstants.NODE_ICONS.length; i++) {
-            icons.put(
-                    BrowserConstants.NODE_ICONS[i],
-                    GUIUtilities.loadIcon(
-                            BrowserConstants.NODE_ICONS[i],
-                            true
-                    )
-            );
-        }
-
-        icons.put(BrowserConstants.SYSTEM_DOMAIN_IMAGE_LIGHT, icons.get(BrowserConstants.DOMAIN_IMAGE_LIGHT));
-        icons.put(BrowserConstants.SYSTEM_TABLES_IMAGE_LIGHT, icons.get(BrowserConstants.TABLES_IMAGE_LIGHT));
-        icons.put(BrowserConstants.SYSTEM_VIEWS_IMAGE_LIGHT, icons.get(BrowserConstants.VIEWS_IMAGE_LIGHT));
-        icons.put(BrowserConstants.SYSTEM_INDEX_IMAGE_LIGHT, icons.get(BrowserConstants.INDEXES_IMAGE_LIGHT));
+        icons.put(BrowserConstants.DATABASE_OBJECT_IMAGE, GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE, true));
         icons.put(BrowserConstants.SYSTEM_TRIGGER_IMAGE_LIGHT, icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE_LIGHT, icons.get(BrowserConstants.FUNCTIONS_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_SEQUENCES_IMAGE_LIGHT, icons.get(BrowserConstants.SEQUENCES_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_PACKAGE_IMAGE_LIGHT, icons.get(BrowserConstants.PACKAGE_IMAGE_LIGHT));
+        icons.put(BrowserConstants.SYSTEM_DOMAIN_IMAGE_LIGHT, icons.get(BrowserConstants.DOMAIN_IMAGE_LIGHT));
+        icons.put(BrowserConstants.SYSTEM_TABLES_IMAGE_LIGHT, icons.get(BrowserConstants.TABLES_IMAGE_LIGHT));
+        icons.put(BrowserConstants.SYSTEM_INDEX_IMAGE_LIGHT, icons.get(BrowserConstants.INDEXES_IMAGE_LIGHT));
+        icons.put(BrowserConstants.SYSTEM_VIEWS_IMAGE_LIGHT, icons.get(BrowserConstants.VIEWS_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_ROLE_IMAGE_LIGHT, icons.get(BrowserConstants.ROLE_IMAGE_LIGHT));
 
         return icons;

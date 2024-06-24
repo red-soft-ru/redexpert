@@ -20,6 +20,8 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.GUIUtilities;
+
 /**
  * Reusable constants for construction and reference
  * to the tree structure within the Database Browser Panel.<br>
@@ -119,7 +121,11 @@ public class BrowserConstants {
     public static final String ADMIN_OPTION_IMAGE = "icon_grant_admin.svg";
     public static final String FIELD_GRANT_IMAGE = "icon_grant_disable.svg";
 
-    public static final String[] NODE_ICONS = {
+    public static String[] getNodeIcons() {
+        return GUIUtilities.getLookAndFeel().isClassicTheme() ? NODE_ICONS_CLASSIC : NODE_ICONS_DEFAULT;
+    }
+
+    private static final String[] NODE_ICONS_DEFAULT = {
             CONNECTIONS_FOLDER_IMAGE,
             CATALOG_IMAGE,
             HOST_IMAGE,
@@ -186,6 +192,50 @@ public class BrowserConstants {
             USER_IMAGE_LIGHT,
             TABLESPACE_IMAGE_LIGHT,
             JOB_IMAGE_LIGHT
+    };
+
+    private static final String[] NODE_ICONS_CLASSIC = {
+            CONNECTIONS_FOLDER_IMAGE,
+            CATALOG_IMAGE,
+            HOST_IMAGE,
+            HOST_NOT_CONNECTED_IMAGE,
+            HOST_CONNECTED_IMAGE,
+            SCHEMA_IMAGE,
+            FUNCTIONS_IMAGE,
+            INDEXES_IMAGE,
+            PROCEDURES_IMAGE,
+            SEQUENCES_IMAGE,
+            SYNONYMS_IMAGE,
+            SYSTEM_TABLES_IMAGE,
+            TABLES_IMAGE,
+            VIEWS_IMAGE,
+            SYSTEM_FUNCTIONS_IMAGE,
+            COLUMNS_IMAGE,
+            PRIMARY_COLUMNS_IMAGE,
+            FOREIGN_COLUMNS_IMAGE,
+            SYSTEM_VIEWS_IMAGE,
+            TABLE_TRIGGER_IMAGE,
+            GLOBAL_TABLES_IMAGE,
+            FOLDER_COLUMNS_IMAGE,
+            FOLDER_FOREIGN_KEYS_IMAGE,
+            FOLDER_INDEXES_IMAGE,
+            FOLDER_PRIMARY_KEYS_IMAGE,
+            DOMAIN_IMAGE,
+            EXCEPTION_IMAGE,
+            UDF_IMAGE,
+            SYSTEM_DOMAIN_IMAGE,
+            SYSTEM_INDEX_IMAGE,
+            SYSTEM_TRIGGER_IMAGE,
+            PACKAGE_IMAGE,
+            ROLE_IMAGE,
+            SYSTEM_ROLE_IMAGE,
+            USER_IMAGE,
+            TABLESPACE_IMAGE,
+            JOB_IMAGE,
+            DB_TRIGGER_IMAGE,
+            DDL_TRIGGER_IMAGE,
+            SYSTEM_PACKAGE_IMAGE,
+            SYSTEM_SEQUENCES_IMAGE
     };
 
 }

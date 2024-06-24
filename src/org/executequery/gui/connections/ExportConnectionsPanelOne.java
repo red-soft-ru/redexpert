@@ -178,12 +178,9 @@ public class ExportConnectionsPanelOne extends ActionPanel {
                 setBorderSelectionColor(null);
             }
 
-            icons = new HashMap<String, Icon>();
-            for (int i = 0; i < BrowserConstants.NODE_ICONS.length; i++) {
-
-                icons.put(BrowserConstants.NODE_ICONS[i], GUIUtilities.loadIcon(BrowserConstants.NODE_ICONS[i], true));
-            }
-
+            icons = new HashMap<>();
+            for (String nodesIcon : BrowserConstants.getNodeIcons())
+                icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, true));
         }
 
         @Override

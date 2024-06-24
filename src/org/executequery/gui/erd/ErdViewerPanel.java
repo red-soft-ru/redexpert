@@ -66,7 +66,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     private static final int VERTICAL_DIFF = 50;
     private static final int HORIZONTAL_DIFF = 80;
-    private static final int INITIAL_VIEW_HEIGHT = 450;
+    private static final int INITIAL_VIEW_HEIGHT = 850;
 
     public static final int DELETE = 0;
     public static final int NEW_OBJECT = DELETE + 1;

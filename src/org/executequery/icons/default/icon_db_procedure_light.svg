@@ -4,8 +4,8 @@
 <rect width="0.884277" height="1.81374" transform="matrix(-1 0 0 1 12.2676 8.81978)" fill="#9C9A9A"/>
 <rect width="0.884277" height="3.11279" transform="matrix(0 1 1 0 9.1543 7.93551)" fill="#9C9A9A"/>
 <rect width="0.884277" height="1.93063" transform="matrix(1 0 0 -1 7.55762 7.2971)" fill="#9C9A9A"/>
-<circle cx="7.99976" cy="8.37765" r="1.02495" stroke="#E4E4E4" stroke-width="0.6"/>
-<rect x="6.15137" y="1.16921" width="3.69727" height="3.69727" rx="0.5" stroke="#E4E4E4"/>
-<rect x="2.32617" y="11.1335" width="3.69727" height="3.69727" rx="0.5" stroke="#E4E4E4"/>
-<rect x="9.97656" y="11.1335" width="3.69727" height="3.69727" rx="0.5" stroke="#E4E4E4"/>
+<circle cx="7.99976" cy="8.37765" r="1.02495" stroke="white" stroke-width="0.6"/>
+<rect x="6.15137" y="1.16921" width="3.69727" height="3.69727" rx="0.5" stroke="white"/>
+<rect x="2.32617" y="11.1335" width="3.69727" height="3.69727" rx="0.5" stroke="white"/>
+<rect x="9.97656" y="11.1335" width="3.69727" height="3.69727" rx="0.5" stroke="white"/>
 </svg>

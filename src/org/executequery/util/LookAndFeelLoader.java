@@ -68,6 +68,9 @@ public final class LookAndFeelLoader {
                 case PLUGIN:
                     loadCustomLookAndFeel();
                     break;
+                case LACKEY:
+                    loadLackeyLookAndFeel();
+                    break;
                 case CLASSIC_LIGHT:
                 default:
                     loadClassicLightLookAndFeel();
@@ -147,6 +150,16 @@ public final class LookAndFeelLoader {
     private void loadClassicDarkLookAndFeel() {
         try {
             UIManager.setLookAndFeel(new UnderworldLabsDarkFlatLookAndFeel());
+            setDecorating(false, false);
+
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new ApplicationException(e);
+        }
+    }
+
+    private void loadLackeyLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel(new LackeyLookAndFeel());
             setDecorating(false, false);
 
         } catch (UnsupportedLookAndFeelException e) {

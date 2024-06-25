@@ -159,25 +159,21 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private Object[] lookAndFeelValuePairs() {
 
-        LookAndFeelType[] lookAndFeelTypes = LookAndFeelType.values();
-        LabelValuePair[] values = new LabelValuePair[lookAndFeelTypes.length];
-        for (int i = 0; i < lookAndFeelTypes.length; i++) {
-            LookAndFeelType lookAndFeelType = lookAndFeelTypes[i];
-            values[i] = new LabelValuePair(lookAndFeelType, lookAndFeelType.getDescription());
-        }
+        List<LabelValuePair> values = new ArrayList<>();
+        for (LookAndFeelType lafType : LookAndFeelType.values())
+            if (lafType != LookAndFeelType.LACKEY)
+                values.add(new LabelValuePair(lafType, lafType.getDescription()));
 
-        return values;
+        return values.toArray();
     }
 
-    private LabelValuePair[] languageValuePairs() {
+    private Object[] languageValuePairs() {
 
-        InterfaceLanguage[] languages = InterfaceLanguage.values();
+        List<LabelValuePair> values = new ArrayList<>();
+        for (InterfaceLanguage lafType : InterfaceLanguage.values())
+            values.add(new LabelValuePair(lafType, lafType.getLabel()));
 
-        LabelValuePair[] values = new LabelValuePair[languages.length];
-        for (int i = 0; i < languages.length; i++)
-            values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
-
-        return values;
+        return values.toArray();
     }
 
     private LookAndFeelType getCurrentlySelectedLookAndFeel() {

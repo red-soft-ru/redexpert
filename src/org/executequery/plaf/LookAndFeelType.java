@@ -29,7 +29,8 @@ public enum LookAndFeelType {
     CLASSIC_LIGHT(bundleString("ClassicLight")),
     CLASSIC_DARK(bundleString("ClassicDark")),
     NATIVE(bundleString("System")),
-    PLUGIN(bundleString("UserDefined"));
+    PLUGIN(bundleString("UserDefined")),
+    LACKEY("Lackey theme");
 
     private final String description;
 
@@ -46,7 +47,7 @@ public enum LookAndFeelType {
     }
 
     public boolean isClassicTheme() {
-        return this == CLASSIC_LIGHT || this == CLASSIC_DARK;
+        return this == CLASSIC_LIGHT || this == CLASSIC_DARK || this == LACKEY;
     }
 
     private static String bundleString(String key) {

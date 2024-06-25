@@ -1,5 +1,6 @@
 package org.executequery.io;
 
+import org.executequery.log.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -14,6 +15,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -22,14 +24,14 @@ public class XMLFile {
     DocumentBuilder documentBuilder;
     Document document;
 
-    public XMLFile(String path) {
+    public XMLFile(File file) {
         try {
             documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            document = documentBuilder.parse(path);
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+            document = documentBuilder.parse(file);
 
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            Log.error(e.getMessage(), e);
+        }
     }
 
     public static void replaceChild(Node newChild, Node oldChild, Node parentNode) {

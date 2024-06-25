@@ -37,6 +37,7 @@ import org.w3c.dom.NodeList;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.util.*;
 
 /**
@@ -535,43 +536,52 @@ public class SystemResources {
     }
 
     private static void checkUserProperties(String resourceName, File oldHomeDirectory, String key) {
-        String fileSeparator = System.getProperty("file.separator");
-        String defaultfilename = oldHomeDirectory + fileSeparator + resourceName;
+
+        String fileSeparator = FileSystems.getDefault().getSeparator();
+        String defaultFilePath = oldHomeDirectory + fileSeparator + resourceName;
+        String userFilePath = oldHomeDirectory + fileSeparator + resourceName.replace("-default", "");
+
         try {
-            FileUtils.copyResource("org/executequery/" + resourceName, defaultfilename);
-            String filename = oldHomeDirectory + fileSeparator + resourceName.replace("-default", "");
-            XMLFile xmlDefaultFile = new XMLFile(defaultfilename);
-            XMLFile xmlFile = new XMLFile(filename);
-            if (xmlFile == null)
-                return;
+            FileUtils.copyResource("org/executequery/" + resourceName, defaultFilePath);
+
+            XMLFile xmlDefaultFile = new XMLFile(new File(defaultFilePath));
+            XMLFile xmlFile = new XMLFile(new File(userFilePath));
+
             Node rootDefault = xmlDefaultFile.getRootNode();
             Node root = xmlFile.getRootNode();
+
             if (XMLFile.equals(root, rootDefault))
                 return;
-            NodeList nodesdefault = rootDefault.getChildNodes();
-            for (int i = 0; i < nodesdefault.getLength(); i++) {
+
+            NodeList defaultNodeChildren = rootDefault.getChildNodes();
+            for (int i = 0; i < defaultNodeChildren.getLength(); i++) {
                 try {
-                    Node nodeDefault = nodesdefault.item(i);
+
+                    Node nodeDefault = defaultNodeChildren.item(i);
                     if (nodeDefault.getNodeType() != Node.TEXT_NODE) {
+
                         String value = XMLFile.getStringValue(key, nodeDefault);
                         Node node = XMLFile.getNodeFromNodes(key, value, root);
-                        if (node == null)
+
+                        if (node == null) {
                             XMLFile.appendChild(nodeDefault, root);
-                        else if (!XMLFile.equals(node, nodeDefault)) {
+
+                        } else if (!XMLFile.equals(node, nodeDefault))
                             XMLFile.replaceChild(nodeDefault, node, root);
-                        }
                     }
+
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.error(e.getMessage(), e);
                 }
             }
-            File file = new File(filename);
+
+            File file = new File(userFilePath);
             if (file.exists())
-                FileUtils.copyFile(filename, filename.replace(".xml", "-old.xml"));
-            xmlFile.save(filename);
+                FileUtils.copyFile(userFilePath, userFilePath.replace(".xml", "-old.xml"));
+            xmlFile.save(userFilePath);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
     }
 

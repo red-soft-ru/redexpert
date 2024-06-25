@@ -5,6 +5,7 @@ import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
@@ -12,6 +13,7 @@ import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.erd.ErdTable;
 import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -75,6 +77,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private boolean isComparing;
     private boolean isReverseOrder;
     private final boolean isExtractMetadata;
+    private final boolean isErd;
 
     // --- panel components ---
 
@@ -99,6 +102,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
+    private List<DefaultDatabaseTable> erdTables;
 
     private StringBuilder settingScriptProps;
 
@@ -107,12 +111,31 @@ public class ComparerDBPanel extends JPanel implements TabView {
     public ComparerDBPanel() {
 
         isExtractMetadata = false;
+        isErd = false;
         init();
+    }
+
+    public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
+        isErd = true;
+        isExtractMetadata = databaseConnection == null;
+        this.erdTables = new ArrayList<>();
+        for (ErdTable erd : tables) {
+            erdTables.add(new DefaultDatabaseTable(erd));
+        }
+        init();
+
+        if (databaseConnection != null) {
+            dbTargetComboBox.setSelectedItem(databaseConnection.getName());
+            dbMasterComboBox.setSelectedItem(databaseConnection.getName());
+        }
+        if (databaseConnection != null)
+            attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }
 
     public ComparerDBPanel(DatabaseConnection dc) {
 
         isExtractMetadata = true;
+        isErd = false;
         init();
 
         if (dc != null) {
@@ -359,9 +382,16 @@ public class ComparerDBPanel extends JPanel implements TabView {
         gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
 
         JPanel comparePanel = new JPanel(new GridBagLayout());
+        if (!isErd) {
 
-        comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
-        comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
+            comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
+
+            comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
+        } else {
+            comparePanel.add(compareButton, gridBagHelper.setLabelDefault().get());
+            gridBagHelper.nextRowFirstCol();
+            gridBagHelper.previousCol();
+        }
         comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
 
         // --- main panel ---
@@ -396,7 +426,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
     }
 
     private boolean prepareComparer() {
-
+        if (isErd && isExtractMetadata) {
+            comparer = new Comparer(this, null, new boolean[]{
+                    !isPropertySelected(IGNORE_PK),
+                    !isPropertySelected(IGNORE_FK),
+                    !isPropertySelected(IGNORE_UK),
+                    !isPropertySelected(IGNORE_CK)
+            },
+                    !isPropertySelected(IGNORE_COMMENTS),
+                    !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                    !isPropertySelected(IGNORE_FIELDS_POSITIONS));
+            return true;
+        }
         DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
         DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
 
@@ -525,7 +566,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 Collections.reverse(scriptGenerationOrder);
             }
 
-            for (Integer type : scriptGenerationOrder) {
+            if (isErd && isExtractMetadata) {
+                ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
+                        .add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.TABLE,
+                                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE]), ComparerTreeNode.TYPE_FOLDER));
+
+                loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
+                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE])));
+                comparer.createErds(erdTables);
+                if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
+                    loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                    if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                        loggingOutputPanel.append(comparer.getComputedFieldsList());
+                    comparer.createComputedFields();
+                }
+            } else for (Integer type : scriptGenerationOrder) {
 
                 if (isCanceled())
                     break;
@@ -585,7 +640,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.alterObjects(type);
+                    if (isErd)
+                        comparer.alterErds(erdTables);
+                    else comparer.alterObjects(type);
                 }
             }
         }
@@ -615,7 +672,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.dropObjects(type);
+                    if (isErd)
+                        comparer.dropErds(erdTables);
+                    else comparer.dropObjects(type);
                 }
             }
         }
@@ -657,21 +716,22 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 return;
             }
         }
+        if (!isErd) {
+            for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
 
-        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+                if (objectType == NamedObject.USER)
+                    continue;
 
-            if (objectType == NamedObject.USER)
-                continue;
+                if (attributesCheckBoxMap.get(objectType).isSelected())
+                    break;
 
-            if (attributesCheckBoxMap.get(objectType).isSelected())
-                break;
-
-            if (objectType == NamedObject.SYSTEM_DOMAIN - 1) {
-                GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
-                        "UnableExtractNoAttributes" :
-                        "UnableCompareNoAttributes")
-                );
-                return;
+                if (objectType == NamedObject.SYSTEM_DOMAIN - 1) {
+                    GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
+                            "UnableExtractNoAttributes" :
+                            "UnableCompareNoAttributes")
+                    );
+                    return;
+                }
             }
         }
 
@@ -803,7 +863,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
+        QueryEditor queryEditor = new QueryEditor(isErd() ? sqlTextPanel.getSQLText() : sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
         queryEditor.setSelectedConnection(comparer.getMasterConnection());
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE, QueryEditor.FRAME_ICON,
@@ -1177,4 +1237,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
+    public boolean isErd() {
+        return isErd;
+    }
 }

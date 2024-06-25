@@ -195,6 +195,14 @@ DatabaseTypeConverter {
         }
     }
 
+    public static int[] getSQLDataTypesFromNames(String[] databaseTypes) {
+        int[] types = new int[databaseTypes.length];
+        for (int i = 0; i < databaseTypes.length; i++) {
+            types[i] = getSQLDataTypeFromName(databaseTypes[i]);
+        }
+        return types;
+    }
+
     public static int getSQLDataTypeFromName(String databaseType) {
         switch (databaseType.trim().toUpperCase()) {
             case "BIGINT":

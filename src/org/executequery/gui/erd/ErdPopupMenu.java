@@ -33,12 +33,12 @@ import java.awt.event.ActionListener;
 
 public class ErdPopupMenu extends JPopupMenu implements ActionListener {
 
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
 
     private JCheckBoxMenuItem[] scaleChecks;
-    private JCheckBoxMenuItem gridCheck;
+    private final JCheckBoxMenuItem gridCheck;
 
-    private JMenu viewMenu;
+    private final JMenu viewMenu;
 
     public ErdPopupMenu(ErdViewerPanel parent) {
 
@@ -90,13 +90,21 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
                 parent.shouldDisplayMargin());
         JCheckBoxMenuItem displayColumnsCheck = MenuItemFactory.createCheckBoxMenuItem(
                 bundleString("DisplayReferencedKeysOnly"), false);
+        JCheckBoxMenuItem displayColumnComments = MenuItemFactory.createCheckBoxMenuItem(
+                bundleString("DisplayCommentsOnFields"), false);
+        JCheckBoxMenuItem displayTableComments = MenuItemFactory.createCheckBoxMenuItem(
+                bundleString("DisplayCommentOnTable"), false);
 
         viewMenu.addSeparator();
         viewMenu.add(displayColumnsCheck);
+        viewMenu.add(displayTableComments);
+        viewMenu.add(displayColumnComments);
         viewMenu.add(gridCheck);
         viewMenu.add(marginCheck);
 
         displayColumnsCheck.addActionListener(this);
+        displayTableComments.addActionListener(this);
+        displayColumnComments.addActionListener(this);
         marginCheck.addActionListener(this);
         gridCheck.addActionListener(this);
         zoomIn.addActionListener(this);
@@ -155,7 +163,7 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
             new ErdNewTableDialog(parent);
         } else if (command.equals(bundleString("Relationship"))) {
 
-            if (parent.getAllComponentsVector().size() <= 1) {
+            if (parent.getAllTablesVector().size() <= 1) {
                 GUIUtilities.displayErrorMessage(bundleString("needMoreTablesError"));
                 return;
             }
@@ -180,6 +188,12 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
         } else if (command.equals(bundleString("DisplayReferencedKeysOnly"))) {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             parent.setDisplayKeysOnly(item.isSelected());
+        } else if (command.equals(bundleString("DisplayCommentOnTable"))) {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            parent.setDisplayCommentOnTable(item.isSelected());
+        } else if (command.equals(bundleString("DisplayCommentsOnFields"))) {
+            JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+            parent.setDisplayCommentOnFields(item.isSelected());
         }
 
     }

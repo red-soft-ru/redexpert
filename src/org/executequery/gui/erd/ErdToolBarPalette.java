@@ -22,9 +22,14 @@ package org.executequery.gui.erd;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
+import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
+import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -42,7 +47,7 @@ import java.util.Vector;
 public class ErdToolBarPalette extends PanelToolBar
         implements ActionListener {
 
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     private RolloverButton createTableButton;
     private RolloverButton addTableButton;
     private RolloverButton relationButton;
@@ -55,7 +60,9 @@ public class ErdToolBarPalette extends PanelToolBar
     private RolloverButton canvasBgButton;
     private RolloverButton canvasFgButton;
     private RolloverButton erdTitleButton;
+    private RolloverButton erdTextBlockButton;
 
+    private RolloverButton updateFromDatabase;
     /**
      * The zoom in button
      */
@@ -68,6 +75,9 @@ public class ErdToolBarPalette extends PanelToolBar
      * The scale combo box
      */
     private JComboBox scaleCombo;
+    private DynamicComboBoxModel connectionModel;
+
+    private OpenConnectionsComboboxPanel connectionsComboBox;
 
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
@@ -86,6 +96,8 @@ public class ErdToolBarPalette extends PanelToolBar
 
 //        commitButton = new RolloverButton("/org/executequery/icons/Commit16.png",
 //                                         "Commit any schema changes");
+
+        connectionsComboBox = new OpenConnectionsComboboxPanel();
 
         relationButton = new RolloverButton("/org/executequery/icons/TableRelationship16.png",
                 bundleString("relation"));
@@ -118,6 +130,11 @@ public class ErdToolBarPalette extends PanelToolBar
         erdTitleButton = new RolloverButton("/org/executequery/icons/ErdTitle16.png",
                 bundleString("erdTitle"));
 
+        erdTextBlockButton = new RolloverButton("/org/executequery/icons/AddComment16.png",
+                bundleString("erdText"));
+
+        updateFromDatabase = new RolloverButton("/org/executequery/icons/RecycleConnection16.png",
+                bundleString("updateFromDatabase"));
         genScriptsButton.addActionListener(this);
         canvasFgButton.addActionListener(this);
         canvasBgButton.addActionListener(this);
@@ -130,7 +147,8 @@ public class ErdToolBarPalette extends PanelToolBar
         relationButton.addActionListener(this);
         deleteRelationButton.addActionListener(this);
         erdTitleButton.addActionListener(this);
-
+        erdTextBlockButton.addActionListener(this);
+        updateFromDatabase.addActionListener(this);
         addButton(createTableButton);
         //addButton(addTableButton);
         addButton(relationButton);
@@ -140,6 +158,7 @@ public class ErdToolBarPalette extends PanelToolBar
         //addButton(commitButton);
         addSeparator();
         addButton(erdTitleButton);
+        addButton(erdTextBlockButton);
         addButton(fontStyleButton);
         addButton(lineStyleButton);
         addButton(canvasFgButton);
@@ -165,7 +184,8 @@ public class ErdToolBarPalette extends PanelToolBar
         addButton(zoomOutButton);
         //addComboBox(scaleCombo);
         addButton(zoomInButton);
-
+        addSeparator();
+        addButton(updateFromDatabase);
     }
 
     private void setBackgroundColours(boolean forCanvas) {
@@ -178,7 +198,7 @@ public class ErdToolBarPalette extends PanelToolBar
         }
 
         boolean tablesSelected = false;
-        ErdTable[] selectedTables = parent.getSelectedTablesArray();
+        ErdMoveableComponent[] selectedTables = parent.getSelectedComponentsArray();
         if (selectedTables != null) {
             tablesSelected = true;
             if (selectedTables.length == 1) {
@@ -203,6 +223,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else {
 
             if (tablesSelected) {
+                parent.fireChangedBgColor();
                 for (int i = 0; i < selectedTables.length; i++) {
                     selectedTables[i].setTableBackground(newColour);
                 }
@@ -248,7 +269,7 @@ public class ErdToolBarPalette extends PanelToolBar
         } else if (btnObject == createTableButton) {
             new ErdNewTableDialog(parent);
         } else if (btnObject == genScriptsButton) {
-            Vector tables = parent.getAllComponentsVector();
+            Vector tables = parent.getAllTablesVector();
             int v_size = tables.size();
 
             if (v_size == 0) {
@@ -260,7 +281,7 @@ public class ErdToolBarPalette extends PanelToolBar
             for (int i = 0; i < v_size; i++) {
                 _tables.add(tables.elementAt(i));
             }
-            new ErdScriptGenerator(_tables, parent);
+            new ComparerDBCommands().erdScript(tables, null);
         } else if (btnObject == addTableButton) {
             new ErdSelectionDialog(parent);
         } else if (btnObject == commitButton) {
@@ -281,9 +302,13 @@ public class ErdToolBarPalette extends PanelToolBar
             else
                 new ErdTitlePanelDialog(parent);
 
+        } else if (btnObject == erdTextBlockButton) {
+
+            new ErdTextBlockDialog(parent);
+
         } else if (btnObject == relationButton) {
 
-            if (parent.getAllComponentsVector().size() <= 1) {
+            if (parent.getAllTablesVector().size() <= 1) {
                 GUIUtilities.displayErrorMessage(Bundles.get("ErdPopupMenu.needMoreTablesError"));
                 return;
             }
@@ -340,8 +365,31 @@ public class ErdToolBarPalette extends PanelToolBar
 
             parent.setPopupMenuScaleValue(index);
 
+        } else if (btnObject == updateFromDatabase) {
+            updateFromDatabase();
+
         }
 
+    }
+
+    private void updateFromDatabase() {
+
+        try {
+            GUIUtilities.showWaitCursor();
+            BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
+            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(dialog, parent, getSelectedConnection()));
+            dialog.setResizable(false);
+            dialog.display();
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+
+        parent.repaintLayeredPane();
+    }
+
+    private DatabaseConnection getSelectedConnection() {
+        DatabaseConnection selectedConnection = connectionsComboBox.getSelectedConnection();
+        return selectedConnection;
     }
 
     /**

@@ -35,6 +35,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -83,6 +85,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         this.erdTable = erdTable;
 
         createPanel.setTableName(erdTable.getTableName());
+        createPanel.getSimpleCommentPanel().setComment(erdTable.getDescriptionTable());
 
         ColumnData[] cda = erdTable.getTableColumns();
         createPanel.setTableColumnData(cda);
@@ -176,7 +179,11 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             table.setCreateTableScript(sqlText.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
-            if (!erdViewerPanel.addNewTable(table)) {
+            table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            erdTable.tableColumnsChanged(true);
+            if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
             }
@@ -186,7 +193,10 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
             erdTable.setCreateTableScript(sqlText.getSQLText());
             erdTable.setNewTable(true);
             erdTable.setEditable(true);
-            erdTable.tableColumnsChanged();
+            erdTable.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            erdTable.tableColumnsChanged(true);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -244,7 +254,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
     }
 
-    class CreateTableERDPanel extends CreateTablePanel {
+    public class CreateTableERDPanel extends CreateTablePanel {
 
 
         /**
@@ -291,6 +301,32 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
 
         public SimpleSqlTextPanel getSQLTextAreal() {
             return sqlText;
+        }
+
+        public List<ErdTable> getErdTables() {
+            return erdViewerPanel.getAllTablesVector();
+        }
+
+        public boolean isShowCommentOnTable() {
+            return showCommentOnTableBox.isSelected();
+        }
+
+        public boolean isShowCommentOnFields() {
+            return showCommentOnFieldsBox.isSelected();
+        }
+
+        public List<String> getColumns(String table) {
+            List<String> cols = new ArrayList<>();
+            List<ErdTable> list = getErdTables();
+            if (list != null)
+                for (ErdTable erd : list) {
+                    if (erd.getTableName() != null && erd.getTableName().contentEquals(table)) {
+                        for (ColumnData cd : erd.getTableColumns()) {
+                            cols.add(cd.getColumnName());
+                        }
+                    }
+                }
+            return cols;
         }
 
     }

@@ -75,9 +75,9 @@ public class BrowserConstants {
     public static final String SEQUENCES_IMAGE_LIGHT = SEQUENCES_IMAGE + LIGHT_SUFFIX;
     public static final String TABLES_IMAGE_LIGHT = TABLES_IMAGE + LIGHT_SUFFIX;
     public static final String GLOBAL_TABLES_IMAGE_LIGHT = GLOBAL_TABLES_IMAGE + LIGHT_SUFFIX;
-    //    public static final String COLUMNS_IMAGE_LIGHT = COLUMNS_IMAGE + LIGHT_SUFFIX;
-//    public static final String PRIMARY_COLUMNS_IMAGE_LIGHT = PRIMARY_COLUMNS_IMAGE + LIGHT_SUFFIX;
-//    public static final String FOREIGN_COLUMNS_IMAGE_LIGHT = FOREIGN_COLUMNS_IMAGE + LIGHT_SUFFIX;
+    public static final String COLUMNS_IMAGE_LIGHT = COLUMNS_IMAGE + LIGHT_SUFFIX;
+    public static final String PRIMARY_COLUMNS_IMAGE_LIGHT = PRIMARY_COLUMNS_IMAGE + LIGHT_SUFFIX;
+    public static final String FOREIGN_COLUMNS_IMAGE_LIGHT = FOREIGN_COLUMNS_IMAGE + LIGHT_SUFFIX;
     public static final String VIEWS_IMAGE_LIGHT = VIEWS_IMAGE + LIGHT_SUFFIX;
     public static final String TABLE_TRIGGER_IMAGE_LIGHT = TABLE_TRIGGER_IMAGE + LIGHT_SUFFIX;
     public static final String DB_TRIGGER_IMAGE_LIGHT = DB_TRIGGER_IMAGE + LIGHT_SUFFIX;
@@ -143,7 +143,6 @@ public class BrowserConstants {
             SYSTEM_FUNCTIONS_IMAGE,
             COLUMNS_IMAGE,
             PRIMARY_COLUMNS_IMAGE,
-            FOREIGN_COLUMNS_IMAGE,
             SYSTEM_VIEWS_IMAGE,
             TABLE_TRIGGER_IMAGE,
             GLOBAL_TABLES_IMAGE,
@@ -177,9 +176,8 @@ public class BrowserConstants {
             SEQUENCES_IMAGE_LIGHT,
             TABLES_IMAGE_LIGHT,
             GLOBAL_TABLES_IMAGE_LIGHT,
-//            COLUMNS_IMAGE_LIGHT,
-//            PRIMARY_COLUMNS_IMAGE_LIGHT,
-//            FOREIGN_COLUMNS_IMAGE_LIGHT,
+            COLUMNS_IMAGE_LIGHT,
+            PRIMARY_COLUMNS_IMAGE_LIGHT,
             VIEWS_IMAGE_LIGHT,
             TABLE_TRIGGER_IMAGE_LIGHT,
             DB_TRIGGER_IMAGE_LIGHT,
@@ -212,7 +210,6 @@ public class BrowserConstants {
             SYSTEM_FUNCTIONS_IMAGE,
             COLUMNS_IMAGE,
             PRIMARY_COLUMNS_IMAGE,
-            FOREIGN_COLUMNS_IMAGE,
             SYSTEM_VIEWS_IMAGE,
             TABLE_TRIGGER_IMAGE,
             GLOBAL_TABLES_IMAGE,

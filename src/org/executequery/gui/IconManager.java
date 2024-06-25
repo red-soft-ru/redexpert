@@ -35,10 +35,12 @@ public class IconManager {
         icons.put(BrowserConstants.SYSTEM_TRIGGER_IMAGE_LIGHT, icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_FUNCTIONS_IMAGE_LIGHT, icons.get(BrowserConstants.FUNCTIONS_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_SEQUENCES_IMAGE_LIGHT, icons.get(BrowserConstants.SEQUENCES_IMAGE_LIGHT));
+        icons.put(BrowserConstants.FOREIGN_COLUMNS_IMAGE_LIGHT, icons.get(BrowserConstants.COLUMNS_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_PACKAGE_IMAGE_LIGHT, icons.get(BrowserConstants.PACKAGE_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_DOMAIN_IMAGE_LIGHT, icons.get(BrowserConstants.DOMAIN_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_TABLES_IMAGE_LIGHT, icons.get(BrowserConstants.TABLES_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_INDEX_IMAGE_LIGHT, icons.get(BrowserConstants.INDEXES_IMAGE_LIGHT));
+        icons.put(BrowserConstants.FOREIGN_COLUMNS_IMAGE, icons.get(BrowserConstants.COLUMNS_IMAGE));
         icons.put(BrowserConstants.SYSTEM_VIEWS_IMAGE_LIGHT, icons.get(BrowserConstants.VIEWS_IMAGE_LIGHT));
         icons.put(BrowserConstants.SYSTEM_ROLE_IMAGE_LIGHT, icons.get(BrowserConstants.ROLE_IMAGE_LIGHT));
 

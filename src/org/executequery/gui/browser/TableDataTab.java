@@ -535,7 +535,6 @@ public class TableDataTab extends JPanel
                 SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
                     private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
-                    private final ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE);
 
                     @Override
                     public Component getTableCellRendererComponent(JTable table,
@@ -571,19 +570,9 @@ public class TableDataTab extends JPanel
 
                     private ImageIcon iconForValue(Object value) {
 
-                        if (value != null) {
-
-                            String name = value.toString();
-                            if (primaryKeyColumns.contains(name)) {
-
+                        if (value != null)
+                            if (primaryKeyColumns.contains(value.toString()))
                                 return primaryKeyIcon;
-
-                            } else if (foreignKeyColumns.contains(name)) {
-
-                                return foreignKeyIcon;
-                            }
-
-                        }
 
                         return null;
                     }

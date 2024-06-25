@@ -403,6 +403,9 @@ public class ErdViewerPanel extends DefaultTabView
 
     public void resetTableValues(List<ErdTableInfo> tableInfos) {
         removeAllTables();
+        next_x = 20;
+        next_y = 20;
+        lastWidth = 0;
         setTables(tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
@@ -438,7 +441,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         int size = tableNames.size();
         tables = new Vector(size);
-
+        List<ErdMoveableComponent> addList = new ArrayList<>();
         ErdTable table = null;
         for (int i = 0; i < size; i++) {
 
@@ -476,9 +479,11 @@ public class ErdViewerPanel extends DefaultTabView
 
             // add to the vector
             addTableToList(table);
+            addList.add(table);
 
 
         }
+        fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, addList));
 
     }
 
@@ -1074,14 +1079,15 @@ public class ErdViewerPanel extends DefaultTabView
 
     public void removeAllTables() {
         ErdTable[] allTables = getAllTablesArray();
-
+        List<ErdMoveableComponent> removeComponents = new ArrayList<>();
         for (int i = 0; i < allTables.length; i++) {
-            allTables[i].clean();
+            //allTables[i].clean();
             layeredPane.remove(allTables[i]);
             tables.remove(allTables[i]);
-            allTables[i] = null;
+            removeComponents.add(allTables[i]);
+            //allTables[i] = null;
         }
-
+        fireSaveUndoAction(new UndoRedoAction(DELETE, removeComponents));
         layeredPane.repaint();
 
     }

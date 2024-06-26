@@ -26,7 +26,7 @@ import org.executequery.gui.erd.ErdViewerPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.Printable;
-import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
@@ -53,7 +53,7 @@ public class ReferencesDiagramPanel extends JPanel {
     }
 
     @SuppressWarnings({"rawtypes"})
-    public void setTables(List<ErdTableInfo> tableInfos) {
+    public void setTables(Vector<ErdTableInfo> tableInfos) {
 
         viewerPanel.resetTableValues(tableInfos);
     }

@@ -194,7 +194,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     private List tableNames;
 
-    private List<ErdTableInfo> tableInfos;
+    private Vector<ErdTableInfo> tableInfos;
 
     private int next_x = 20;
     private int next_y = 20;
@@ -401,7 +401,7 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List<ErdTableInfo> tableInfos) {
+    public void resetTableValues(Vector<ErdTableInfo> tableInfos) {
         removeAllTables();
         next_x = 20;
         next_y = 20;
@@ -418,7 +418,7 @@ public class ErdViewerPanel extends DefaultTabView
      * @param a   <code>Vector</code> of table names
      * @param the column meta data for the tables
      */
-    public void setTables(List<ErdTableInfo> tableInfos) {
+    public void setTables(Vector<ErdTableInfo> tableInfos) {
 
         if (tableInfos != null) {
             tableNames = new Vector();
@@ -1512,9 +1512,12 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
 
-
     public ErdScrollPane getScroll() {
         return scroll;
+    }
+
+    public Vector<ErdTableInfo> getTableInfos() {
+        return tableInfos;
     }
 
     /**

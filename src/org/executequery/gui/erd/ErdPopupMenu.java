@@ -134,6 +134,10 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
     protected void displayViewItemsOnly() {
 
         removeAll();
+        JMenuItem openInErdEditor = MenuItemFactory.createMenuItem(bundleString("openInErdEditor"));
+        openInErdEditor.setActionCommand("openInErdEditor");
+        openInErdEditor.addActionListener(this);
+        add(openInErdEditor);
         Component[] components = viewMenu.getMenuComponents();
         for (Component component : components) {
 
@@ -194,6 +198,14 @@ public class ErdPopupMenu extends JPopupMenu implements ActionListener {
         } else if (command.equals(bundleString("DisplayCommentsOnFields"))) {
             JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
             parent.setDisplayCommentOnFields(item.isSelected());
+        } else if (command.equals("openInErdEditor")) {
+            ErdViewerPanel viewerPanel =
+                    new ErdViewerPanel(parent.getTableInfos(), false);
+            GUIUtilities.addCentralPane(ErdViewerPanel.TITLE,
+                    ErdViewerPanel.FRAME_ICON,
+                    viewerPanel,
+                    null,
+                    true);
         }
 
     }

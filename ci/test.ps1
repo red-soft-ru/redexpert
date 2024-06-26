@@ -22,7 +22,7 @@ if (-Not (Test-Path env:\DBMS)) { die("DBMS not defined") }
 $DBMS=$env:DBMS
 
 echo "Downloading tests"
-git clone -q http://git.red-soft.biz/red-database/re-tests.git
+git clone -q http://git.red-soft.biz/red-database/re-tests.git -b new_ui
 git clone -q http://git.red-soft.biz/red-database/python/lackey.git
 
 echo "Installing components"

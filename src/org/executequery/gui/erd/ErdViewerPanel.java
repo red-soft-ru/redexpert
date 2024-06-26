@@ -30,7 +30,6 @@ import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
 import org.executequery.print.PrintFunction;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -231,6 +230,8 @@ public class ErdViewerPanel extends DefaultTabView
     public static final int CHANGE_BG_COLOR = NEW_OBJECT + 1;
     public static final int CHANGE_LOCATION = CHANGE_BG_COLOR + 1;
 
+    int countUnsavedActions = 0;
+
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, true, showTools, editable);
     }
@@ -246,6 +247,8 @@ public class ErdViewerPanel extends DefaultTabView
 
         this.showTools = showTools;
         this.editable = editable;
+        if (tableInfos != null)
+            countUnsavedActions = 1;
 
         try {
             jbInit();
@@ -352,14 +355,12 @@ public class ErdViewerPanel extends DefaultTabView
                 }
                 if (e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown()) {
                     if (!undoActions.isEmpty()) {
-                        UndoRedoAction undoRedoAction = undoActions.pop();
-                        undoRedoAction.undoExecute();
+                        popUndoAction();
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
                     if (!redoActions.isEmpty()) {
-                        UndoRedoAction undoRedoAction = redoActions.pop();
-                        undoRedoAction.undoExecute();
+                        popRedoAction();
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_A && e.isControlDown()) {
@@ -1309,6 +1310,7 @@ public class ErdViewerPanel extends DefaultTabView
             fileOut.close();
 
             savedErd = eqFormat;
+            countUnsavedActions = 0;
             return SaveFunction.SAVE_COMPLETE;
 
         } catch (Exception e) {
@@ -1488,9 +1490,9 @@ public class ErdViewerPanel extends DefaultTabView
      */
     public boolean tabViewClosing() {
 
-        UserProperties properties = UserProperties.getInstance();
+        //UserProperties properties = UserProperties.getInstance();
 
-        if (properties.getBooleanProperty("general.save.prompt")) {
+        if (countUnsavedActions != 0) {
 
             if (!GUIUtilities.saveOpenChanges(this)) {
 
@@ -1637,8 +1639,28 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     void fireSaveUndoAction(UndoRedoAction undoRedoAction) {
-        undoActions.push(undoRedoAction);
+        pushUndoAction(undoRedoAction);
         redoActions.clear();
+    }
+
+    void popUndoAction() {
+        UndoRedoAction undoRedoAction = undoActions.pop();
+        undoRedoAction.undoExecute();
+        countUnsavedActions--;
+    }
+
+    void popRedoAction() {
+        UndoRedoAction undoRedoAction = redoActions.pop();
+        undoRedoAction.undoExecute();
+    }
+
+    void pushUndoAction(UndoRedoAction undoRedoAction) {
+        undoActions.push(undoRedoAction);
+        countUnsavedActions++;
+    }
+
+    void pushRedoAction(UndoRedoAction undoRedoAction) {
+        redoActions.push(undoRedoAction);
     }
 
     class UndoRedoAction {
@@ -1647,6 +1669,9 @@ public class ErdViewerPanel extends DefaultTabView
         List<Color> bgColors;
         List<Rectangle> boundsComponents;
         boolean undoAction;
+        private final int nextX;
+        private final int nextY;
+        private final int savedLastWidth;
 
         public UndoRedoAction(int typeAction, ErdMoveableComponent component) {
             this(typeAction, listFromSingleComponent(component));
@@ -1666,6 +1691,9 @@ public class ErdViewerPanel extends DefaultTabView
                 bgColors.add(emc.getTableBackground());
                 boundsComponents.add(emc.getBounds());
             }
+            nextX = next_x;
+            nextY = next_y;
+            savedLastWidth = lastWidth;
         }
 
         void undoExecute() {
@@ -1682,10 +1710,13 @@ public class ErdViewerPanel extends DefaultTabView
                             layeredPane.add(emc);
                             layeredPane.moveToFront(emc);
                         }
+                        next_x = nextX;
+                        next_y = nextY;
+                        lastWidth = savedLastWidth;
                     }
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(NEW_OBJECT, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(NEW_OBJECT, listComponents, true));
                 }
                 break;
                 case NEW_OBJECT: {
@@ -1698,16 +1729,19 @@ public class ErdViewerPanel extends DefaultTabView
                             textPanels.remove((ErdTextPanel) emc);
                             layeredPane.remove(emc);
                         }
+                        next_x = nextX;
+                        next_y = nextY;
+                        lastWidth = savedLastWidth;
                     }
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(DELETE, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(DELETE, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(DELETE, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(DELETE, listComponents, true));
                 }
                 break;
                 case CHANGE_BG_COLOR: {
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setTableBackground(bgColors.get(i));
                     }
@@ -1715,8 +1749,8 @@ public class ErdViewerPanel extends DefaultTabView
                 break;
                 case CHANGE_LOCATION: {
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setBounds(boundsComponents.get(i));
                     }

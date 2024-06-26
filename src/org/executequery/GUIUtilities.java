@@ -1461,7 +1461,7 @@ public final class GUIUtilities {
 
     public static boolean saveOpenChanges(SaveFunction saveFunction) {
 
-        int result = displayConfirmCancelDialog("Do you wish to save changes to " + saveFunction.getDisplayName() + "?");
+        int result = displayConfirmCancelDialog(Bundles.getCommon("save-changes.message", saveFunction.getDisplayName()));
         if (result == JOptionPane.YES_OPTION) {
 
             boolean saveAs = false;

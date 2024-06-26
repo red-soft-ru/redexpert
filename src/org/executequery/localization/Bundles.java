@@ -41,6 +41,11 @@ public final class Bundles {
         return bundle().getString("common." + key);
     }
 
+    public static String getCommon(String key, Object... args) {
+
+        return bundle().getString("common." + key, args);
+    }
+
     public static String[] getCommons(String[] keys) {
 
         String[] commonKeys = new String[keys.length];

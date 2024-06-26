@@ -44,6 +44,7 @@ public class AboutPanel extends BaseDialog {
     private JLabel designedByLabel;
     private JLabel discussionChatLabel;
     private JLabel reddatabaseNewsLabel;
+    private JLabel gitHubLabel;
 
     public AboutPanel() {
         super(TITLE, true);
@@ -83,6 +84,14 @@ public class AboutPanel extends BaseDialog {
         );
         discussionChatLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
 
+        gitHubLabel = WidgetFactory.createLinkLabel(
+                "gitHubLabel",
+                bundledString("gitHubLabel"),
+                "https://github.com/red-soft-ru/redexpert",
+                16
+        );
+        gitHubLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
+
         viewLicenseButton = WidgetFactory.createButton(
                 "viewLicenseButton",
                 bundledString("ViewLicense"),
@@ -113,8 +122,9 @@ public class AboutPanel extends BaseDialog {
         JPanel linksPanel = new JPanel(new GridBagLayout());
 
         gbh = new GridBagHelper().anchorNorthWest().bottomGap(5);
-        linksPanel.add(reddatabaseNewsLabel, gbh.get());
-        linksPanel.add(discussionChatLabel, gbh.nextRow().bottomGap(0).get());
+        linksPanel.add(gitHubLabel, gbh.get());
+        linksPanel.add(discussionChatLabel, gbh.nextRow().get());
+        linksPanel.add(reddatabaseNewsLabel, gbh.nextRow().bottomGap(0).get());
 
         // --- button panel  ---
 

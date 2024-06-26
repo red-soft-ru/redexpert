@@ -204,16 +204,7 @@ public class PropertiesPanel extends JPanel
         add(mainPanel, BorderLayout.CENTER);
         panelMap = new HashMap<>();
         tree.addTreeSelectionListener(this);
-
-        // set up the first panel
-        PropertiesRootPanel panel = new PropertiesRootPanel();
-
-        Integer id = PropertyTypes.SYSTEM;
-        panelMap.put(id, panel);
-
-        rightPanel.add(panel, String.valueOf(id));
-        cardLayout.show(rightPanel, String.valueOf(id));
-
+        cardLayout.show(rightPanel, String.valueOf(PropertyTypes.SYSTEM));
         tree.setSelectionRow(0);
     }
 
@@ -270,8 +261,6 @@ public class PropertiesPanel extends JPanel
     private JPanel getPropertyPanel(int nodeId) {
         switch (nodeId) {
 
-            case PropertyTypes.SYSTEM:
-                return new PropertiesRootPanel();
             case PropertyTypes.GENERAL:
                 return new PropertiesGeneral(this);
             case PropertyTypes.SHORTCUTS:

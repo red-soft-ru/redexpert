@@ -87,6 +87,7 @@ public class PropertiesPanel extends JPanel
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
     private static boolean updateEnvNeed;
+    private static Integer lastSelectedRow;
     private static List<Class<?>> classesNeedRestart;
 
     /**
@@ -204,7 +205,7 @@ public class PropertiesPanel extends JPanel
         panelMap = new HashMap<>();
         tree.addTreeSelectionListener(this);
         cardLayout.show(rightPanel, String.valueOf(PropertyTypes.SYSTEM));
-        tree.setSelectionRow(0);
+        tree.setSelectionRow(lastSelectedRow != null ? lastSelectedRow : 0);
     }
 
     @SuppressWarnings("rawtypes")
@@ -235,7 +236,9 @@ public class PropertiesPanel extends JPanel
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selection[selection.length - 1];
         PropertyNode propertyNode = (PropertyNode) treeNode.getUserObject();
 
-        Integer nodeId = propertyNode.getNodeId();
+        int nodeId = propertyNode.getNodeId();
+        lastSelectedRow = nodeId - 1;
+
         if (panelMap.containsKey(nodeId)) {
             currentlySelectedPanel = panelMap.get(nodeId);
             cardLayout.show(rightPanel, String.valueOf(nodeId));

@@ -63,19 +63,18 @@ public class PropertiesPanel extends JPanel
             "internet.proxy.port",
             "internet.proxy.user",
             "internet.proxy.password",
+            "system.log.enabled",
+            "editor.logging.path",
+            "editor.logging.backups",
+            "system.log.out",
+            "system.log.err",
             // -- PropertiesAppearance --
             "startup.display.lookandfeel",
             "startup.display.language",
             "display.aa.fonts",
             // -- PropertiesEditorGeneral --
             "editor.tabs.tospaces",
-            "editor.tab.spaces",
-            // -- PropertiesOutputConsole --
-            "system.log.enabled",
-            "editor.logging.path",
-            "editor.logging.backups",
-            "system.log.out",
-            "system.log.err"
+            "editor.tab.spaces"
     );
 
     private JTree tree;
@@ -87,8 +86,8 @@ public class PropertiesPanel extends JPanel
     private final ActionContainer parent;
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
-    private static boolean restartNeed;
     private static boolean updateEnvNeed;
+    private static List<Class<?>> classesNeedRestart;
 
     /**
      * Constructs a new instance.
@@ -102,8 +101,8 @@ public class PropertiesPanel extends JPanel
 
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
-        restartNeed = false;
-        updateEnvNeed = false;
+        restoreRestartNeed();
+        restoreUpdateEnvNeed();
 
         init();
         if (openRow != -1)
@@ -238,6 +237,7 @@ public class PropertiesPanel extends JPanel
 
         Integer nodeId = propertyNode.getNodeId();
         if (panelMap.containsKey(nodeId)) {
+            currentlySelectedPanel = panelMap.get(nodeId);
             cardLayout.show(rightPanel, String.valueOf(nodeId));
             return;
         }
@@ -250,7 +250,7 @@ public class PropertiesPanel extends JPanel
         currentlySelectedPanel.addPreferenceChangeListener(this);
         panelMap.put(nodeId, currentlySelectedPanel);
 
-        // apply all previously applied prefs that the new panel might be interested in
+        // apply all previously applied preferences that the new panel might be interested in
         for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet())
             currentlySelectedPanel.preferenceChange(event.getValue());
 
@@ -313,22 +313,30 @@ public class PropertiesPanel extends JPanel
             entry.getValue().preferenceChange(e);
 
         preferenceChangeEvents.put(e.getKey(), e);
-        checkAndSetRestartNeed(e.getKey());
+        setRestartNeed(e.getKey(), e.getSource().getClass());
     }
 
     public void save(boolean isApplyAction) {
 
         try {
             GUIUtilities.showWaitCursor();
+            boolean restartNeed = isRestartNeed();
 
-            if (isApplyAction)
+            if (isApplyAction) {
                 currentlySelectedPanel.save();
-            else
+                restartNeed &= isRestartNeed(currentlySelectedPanel.getClass());
+
+            } else
                 panelMap.values().forEach(UserPreferenceFunction::save);
+
             ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
-            if (isRestartNeed()) {
-                setRestartNeed(false);
+            if (restartNeed) {
+
+                restoreRestartNeed(currentlySelectedPanel.getClass());
+                if (!isApplyAction)
+                    restoreRestartNeed();
+
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
                     ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
 
@@ -347,20 +355,35 @@ public class PropertiesPanel extends JPanel
         return new DefaultUserPreferenceEvent(this, null, UserPreferenceEvent.ALL);
     }
 
-    public boolean isRestartNeed() {
-        return restartNeed;
+    private boolean isRestartNeed() {
+        return !classesNeedRestart.isEmpty();
     }
 
-    public static void checkAndSetRestartNeed(String key) {
-        PropertiesPanel.restartNeed = PROPERTIES_KEYS_NEED_RESTART.contains(key);
+    private boolean isRestartNeed(Class<?> className) {
+        return classesNeedRestart.contains(className);
     }
 
-    public static void setRestartNeed(boolean restartNeed) {
-        PropertiesPanel.restartNeed = restartNeed;
+    public static void setRestartNeed(String key, Class<?> className) {
+
+        boolean restartNeed = PROPERTIES_KEYS_NEED_RESTART.stream().anyMatch(propertyKey -> propertyKey.equals(key));
+        if (restartNeed && !classesNeedRestart.contains(className))
+            classesNeedRestart.add(className);
+    }
+
+    private static void restoreRestartNeed() {
+        PropertiesPanel.classesNeedRestart = new ArrayList<>();
+    }
+
+    private static void restoreRestartNeed(Class<?> className) {
+        PropertiesPanel.classesNeedRestart.remove(className);
     }
 
     public static void setUpdateEnvNeed(boolean updateEnvNeed) {
-        PropertiesPanel.updateEnvNeed = updateEnvNeed;
+        PropertiesPanel.updateEnvNeed = PropertiesPanel.updateEnvNeed || updateEnvNeed;
+    }
+
+    private static void restoreUpdateEnvNeed() {
+        PropertiesPanel.updateEnvNeed = false;
     }
 
     private String bundledString(String key) {

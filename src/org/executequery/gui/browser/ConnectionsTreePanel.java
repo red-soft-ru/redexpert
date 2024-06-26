@@ -314,7 +314,7 @@ public class ConnectionsTreePanel extends TreePanel
 
         if (isADatabaseHostNode(object))
             deleteConnection(asDatabaseHostNode(object));
-        else if (isAConnectionsFolderNode(object))
+        else if (isConnectionsFolderNode(object))
             deleteFolder(asConnectionsFolderNode(object));
     }
 
@@ -578,7 +578,7 @@ public class ConnectionsTreePanel extends TreePanel
         for (Enumeration<?> i = root.children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            if (isAConnectionsFolderNode(object)) {
+            if (isConnectionsFolderNode(object)) {
                 ConnectionsFolderNode node = asConnectionsFolderNode(object);
                 hosts.addAll(node.getDatabaseHostNodes());
 
@@ -601,7 +601,7 @@ public class ConnectionsTreePanel extends TreePanel
         for (Enumeration<?> i = parent.children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            if (isAConnectionsFolderNode(object)) {
+            if (isConnectionsFolderNode(object)) {
                 ConnectionsFolderNode node = asConnectionsFolderNode(object);
                 hosts.addAll(node.getDatabaseHosts());
 
@@ -629,7 +629,7 @@ public class ConnectionsTreePanel extends TreePanel
         for (Enumeration<?> i = root.children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            if (isAConnectionsFolderNode(object))
+            if (isConnectionsFolderNode(object))
                 lastFolder = asConnectionsFolderNode(object);
             else
                 break;
@@ -780,7 +780,7 @@ public class ConnectionsTreePanel extends TreePanel
 
         while (children.hasMoreElements()) {
             Object child = children.nextElement();
-            if (isAConnectionsFolderNode(child))
+            if (isConnectionsFolderNode(child))
                 folders.add((ConnectionsFolderNode) child);
         }
 
@@ -793,7 +793,7 @@ public class ConnectionsTreePanel extends TreePanel
             return null;
 
         Object object = tree.getLastPathComponent();
-        if (isAConnectionsFolderNode(object))
+        if (isConnectionsFolderNode(object))
             return asConnectionsFolderNode(object);
         else if (isADatabaseHostNode(object))
             return asDatabaseHostNode(object).getParentFolder();
@@ -836,7 +836,7 @@ public class ConnectionsTreePanel extends TreePanel
         for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            if (isAConnectionsFolderNode(object)) {
+            if (isConnectionsFolderNode(object)) {
 
                 ConnectionsFolderNode folderNode = (ConnectionsFolderNode) object;
                 if (folderNode.getConnectionsFolder() == folder)
@@ -856,7 +856,7 @@ public class ConnectionsTreePanel extends TreePanel
         for (Enumeration<?> i = tree.getConnectionsBranchNode().children(); i.hasMoreElements(); ) {
 
             Object object = i.nextElement();
-            if (isAConnectionsFolderNode(object)) {
+            if (isConnectionsFolderNode(object)) {
 
                 ConnectionsFolderNode node = asConnectionsFolderNode(object);
                 DatabaseObjectNode hostNode = node.getHostNode(dc);
@@ -1287,7 +1287,7 @@ public class ConnectionsTreePanel extends TreePanel
         return object instanceof DatabaseObjectNode;
     }
 
-    private boolean isAConnectionsFolderNode(Object object) {
+    private boolean isConnectionsFolderNode(Object object) {
         return object instanceof ConnectionsFolderNode;
     }
 
@@ -1719,7 +1719,7 @@ public class ConnectionsTreePanel extends TreePanel
             JPopupMenu popupMenu;
             Object object = treePathForLocation.getLastPathComponent();
 
-            if (isAConnectionsFolderNode(object)) {
+            if (isConnectionsFolderNode(object)) {
                 popupMenu = getBrowserTreeFolderPopupMenu();
 
             } else if (isRootNode(object)) {
@@ -1727,10 +1727,11 @@ public class ConnectionsTreePanel extends TreePanel
 
             } else {
                 popupMenu = getBrowserTreePopupMenu();
-
                 BrowserTreePopupMenu browserPopup = (BrowserTreePopupMenu) popupMenu;
-                if (checkShowActiveMenu(treePathForLocation) && !MiscUtils.isEmpty(tree.getSelectionPaths())) {
-                    browserPopup.setTreePaths(tree.getSelectionPaths());
+
+                TreePath[] treePaths = tree.getSelectionPaths();
+                if (checkShowActiveMenu(treePathForLocation) && treePaths != null && treePaths.length > 1) {
+                    browserPopup.setTreePaths(treePaths);
                     browserPopup.setSelectedSeveralPaths(true);
 
                 } else {

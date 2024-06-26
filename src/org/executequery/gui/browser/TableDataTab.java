@@ -531,17 +531,18 @@ public class TableDataTab extends JPanel
             }
 
             if (isDatabaseTable()) {
-
                 SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
-                    private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
+                    private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon("icon_key_primary");
+                    private final ImageIcon foreignKeyIcon = GUIUtilities.loadIcon("icon_key_foreign");
+                    private final ImageIcon mixedKeyIcon = GUIUtilities.loadIcon("icon_key_mixed");
 
                     @Override
-                    public Component getTableCellRendererComponent(JTable table,
-                                                                   Object value, boolean isSelected, boolean hasFocus,
-                                                                   int row, int column) {
+                    public Component getTableCellRendererComponent(
+                            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-                        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        Component originalRenderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) originalRenderer;
 
                         Icon keyIcon = iconForValue(value);
                         if (keyIcon != null) {
@@ -549,8 +550,11 @@ public class TableDataTab extends JPanel
                             Icon icon = renderer.getIcon();
                             if (icon != null) {
 
-                                BufferedImage image = new BufferedImage(icon.getIconWidth() + keyIcon.getIconWidth() + 2,
-                                        Math.max(keyIcon.getIconHeight(), icon.getIconHeight()), BufferedImage.TYPE_INT_ARGB);
+                                BufferedImage image = new BufferedImage(
+                                        icon.getIconWidth() + keyIcon.getIconWidth() + 2,
+                                        Math.max(keyIcon.getIconHeight(), icon.getIconHeight()),
+                                        BufferedImage.TYPE_INT_ARGB
+                                );
 
                                 Graphics graphics = image.getGraphics();
                                 keyIcon.paintIcon(null, graphics, 0, 0);
@@ -558,11 +562,8 @@ public class TableDataTab extends JPanel
 
                                 setIcon(new ImageIcon(image));
 
-                            } else {
-
+                            } else
                                 setIcon(keyIcon);
-                            }
-
                         }
 
                         return renderer;
@@ -570,15 +571,24 @@ public class TableDataTab extends JPanel
 
                     private ImageIcon iconForValue(Object value) {
 
-                        if (value != null)
-                            if (primaryKeyColumns.contains(value.toString()))
-                                return primaryKeyIcon;
+                        if (value == null)
+                            return null;
+
+                        boolean isPrimary = primaryKeyColumns.contains(value.toString());
+                        boolean isForeign = foreignKeyColumns.contains(value.toString());
+
+                        if (isPrimary && isForeign)
+                            return mixedKeyIcon;
+                        else if (isPrimary)
+                            return primaryKeyIcon;
+                        else if (isForeign)
+                            return foreignKeyIcon;
 
                         return null;
                     }
 
-
                 };
+
                 sorter.setTableHeaderRenderer(renderer);
             }
 

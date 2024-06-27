@@ -74,8 +74,10 @@ public class TreeFindAction extends FindAction<TreePath> {
                 .replace("$", "\\$");
 
         List<TreePath> matchedPaths = new ArrayList<>();
+        tree.setRootVisible(true);
         findOnTree(tree.getPathForRow(0), matchedPaths, Pattern.compile(prefix).matcher(""));
         foundValues(matchedPaths);
+        tree.setRootVisible(false);
 
         return !(matchedPaths.isEmpty());
     }

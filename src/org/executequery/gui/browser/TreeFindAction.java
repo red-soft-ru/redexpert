@@ -54,7 +54,7 @@ public class TreeFindAction extends FindAction<TreePath> {
 
         super();
 
-        putValue(Action.SHORT_DESCRIPTION, Bundles.get("BrowserTreeRootPopupMenu.searchNodes"));
+        putValue(Action.SHORT_DESCRIPTION, Bundles.get("BrowserTreeFolderPopupMenu.SearchNodes"));
         searchInCols = SystemProperties.getBooleanProperty("user", "browser.search.in.columns");
     }
 

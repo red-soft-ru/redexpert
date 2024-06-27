@@ -30,15 +30,19 @@ public class BrowserTreeFolderPopupMenu extends JPopupMenu {
 
     public BrowserTreeFolderPopupMenu(ConnectionsTreePanel treePanel) {
 
+        add(createMenuItem(bundleString("NewFolder"), "newFolder", treePanel));
         add(createMenuItem(bundleString("NewConnection"), "newConnection", treePanel));
-        add(createMenuItem(bundleString("DeleteFolder"), "deleteConnection", treePanel));
         addSeparator();
 
         add(createMenuItem(bundleString("ConnectAll"), "connectAll", treePanel));
         add(createMenuItem(bundleString("DisconnectAll"), "disconnectAll", treePanel));
 
         addSeparator();
+        add(createMenuItem(bundleString("SearchNodes"), "searchNodes", treePanel));
         add(createMenuItem(bundleString("SortConnections"), "sortConnections", treePanel));
+
+        addSeparator();
+        add(createMenuItem(bundleString("DeleteFolder"), "deleteConnection", treePanel));
     }
 
     private JMenuItem createMenuItem(String text,

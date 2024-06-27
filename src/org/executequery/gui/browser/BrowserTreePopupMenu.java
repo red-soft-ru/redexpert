@@ -42,6 +42,7 @@ import java.awt.event.ActionListener;
 public class BrowserTreePopupMenu extends JPopupMenu {
 
     private final JMenuItem addNewConnection;
+    private final JMenuItem addNewFolder;
     private final JMenuItem getMetadata;
     private final JMenuItem connect;
     private final JMenuItem disconnect;
@@ -66,7 +67,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
     private final JMenuItem dataBaseInformation;
 
-    private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
+    private final JSeparator newConnSeparator;
+    private final JSeparator newConnSeparator_2;
 
     private JMenu active;
     private JMenu sqlTable;
@@ -99,13 +101,14 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         addSeparator();
 
-        /*showDefaultCatalogsAndSchemas = createCheckBoxMenuItem(
-                bundleString("switchDefaultCatalogAndSchemaDisplay"),
-                "switchDefaultCatalogAndSchemaDisplay", listener);
-        add(showDefaultCatalogsAndSchemas);*/
-
+        addNewFolder = createMenuItem(bundleString("addNewFolder"), "newFolder", listener);
+        add(addNewFolder);
         addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
+
+        newConnSeparator = new JPopupMenu.Separator();
+        add(newConnSeparator);
+
         getMetadata = createMenuItem(bundleString("getMetadata"), "getMetadata", listener);
         add(getMetadata);
         duplicate = createMenuItem(bundleString("duplicate"), "duplicate", listener);
@@ -115,9 +118,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         delete = createMenuItem(bundleString("delete"), "delete", listener);
         add(delete);
 
+        newConnSeparator_2 = new JPopupMenu.Separator();
+        add(newConnSeparator_2);
+
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         add(copyName);
-
         selectAll = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
         add(selectAll);
 
@@ -209,6 +214,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     duplicate.setVisible(true);
                     onlineTableValidation.setVisible(false);
                     addNewConnection.setVisible(true);
+                    addNewFolder.setVisible(true);
+                    newConnSeparator.setVisible(true);
+                    newConnSeparator_2.setVisible(true);
                     dataBaseInformation.setVisible(true);
                 } else {
 
@@ -225,6 +233,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                     moveToFolder.setVisible(false);
                     duplicate.setVisible(false);
                     addNewConnection.setVisible(false);
+                    addNewFolder.setVisible(false);
+                    newConnSeparator.setVisible(false);
+                    newConnSeparator_2.setVisible(false);
                     int type = node.getType();
                     boolean deleteObjectEnabled = type >= 0 && type < NamedObject.META_TYPES.length;
                     if (deleteObjectEnabled)
@@ -333,6 +344,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         if (listener.getSelectedSeveralPaths()) {
 
             addNewConnection.setVisible(false);
+            addNewFolder.setVisible(false);
+            newConnSeparator.setVisible(false);
+            newConnSeparator_2.setVisible(false);
             connect.setVisible(false);
             disconnect.setVisible(false);
             getMetadata.setVisible(false);

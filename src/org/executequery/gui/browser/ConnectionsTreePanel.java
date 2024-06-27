@@ -104,7 +104,6 @@ public class ConnectionsTreePanel extends TreePanel
     private DatabasePropertiesPanel propertiesPanel;
 
     private BrowserTreePopupMenu popupMenu;
-    private BrowserTreeRootPopupMenu rootPopupMenu;
     private BrowserTreeFolderPopupMenu folderPopupMenu;
 
     // ---
@@ -1216,12 +1215,6 @@ public class ConnectionsTreePanel extends TreePanel
         return popupMenu;
     }
 
-    private BrowserTreeRootPopupMenu getBrowserRootTreePopupMenu() {
-        if (rootPopupMenu == null)
-            rootPopupMenu = new BrowserTreeRootPopupMenu(this);
-        return rootPopupMenu;
-    }
-
     private BrowserTreeFolderPopupMenu getBrowserTreeFolderPopupMenu() {
         if (folderPopupMenu == null)
             folderPopupMenu = new BrowserTreeFolderPopupMenu(this);
@@ -1273,10 +1266,6 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         return null;
-    }
-
-    private boolean isRootNode(Object object) {
-        return object instanceof RootDatabaseObjectNode;
     }
 
     private boolean isADatabaseHostNode(Object object) {
@@ -1721,9 +1710,6 @@ public class ConnectionsTreePanel extends TreePanel
 
             if (isConnectionsFolderNode(object)) {
                 popupMenu = getBrowserTreeFolderPopupMenu();
-
-            } else if (isRootNode(object)) {
-                popupMenu = getBrowserRootTreePopupMenu();
 
             } else {
                 popupMenu = getBrowserTreePopupMenu();

@@ -1065,4 +1065,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTable().getName());
     }
 
+    public void newFolder(ActionEvent e) {
+        treePanel.newFolder();
+    }
+
 }

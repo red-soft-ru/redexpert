@@ -527,13 +527,13 @@
     <action id="connect-to-all-databases-command"
             name="Connect All"
             accel-editable="false"
-            small-icon="icon_connect_all"
+            small-icon="icon_connection_all"
             execute-class="org.executequery.actions.databasecommands.MultipleConnectCommand"/>
 
     <action id="disconnect-from-all-database-command"
             name="Disconnect All"
             accel-editable="false"
-            small-icon="icon_disconnect_all"
+            small-icon="icon_connection_drop_all"
             execute-class="org.executequery.actions.databasecommands.MultipleDisconnectCommand"/>
 
     <!-- actions that must be configured dynamically from the code -->
@@ -543,7 +543,7 @@
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="connect-to-database-command"
-            small-icon="icon_disconnect"
+            small-icon="icon_connection"
             execute-class="org.executequery.actions.databasecommands.EmptyCommand"/>
 
     <action id="reload-connection-tree-selection-command"

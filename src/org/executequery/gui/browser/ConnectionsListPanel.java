@@ -571,13 +571,18 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
     private class ConnectCellRenderer extends JLabel
             implements TableCellRenderer {
 
-        // connection icons
-        private ImageIcon connectedImage;
-        private ImageIcon notConnectedImage;
+        private final ImageIcon connectedImage;
+        private final ImageIcon notConnectedImage;
 
         public ConnectCellRenderer() {
-            connectedImage = GUIUtilities.loadIcon("icon_connect", true);
-            notConnectedImage = GUIUtilities.loadIcon("icon_disconnect", true);
+            boolean isDefaultDarkTheme = !GUIUtilities.getLookAndFeel().isClassicTheme()
+                    && GUIUtilities.getLookAndFeel().isDarkTheme();
+
+            String iconName = isDefaultDarkTheme ? BrowserConstants.HOST_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_CONNECTED_IMAGE;
+            connectedImage = GUIUtilities.loadIcon(iconName, true);
+
+            iconName = isDefaultDarkTheme ? BrowserConstants.HOST_NOT_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_NOT_CONNECTED_IMAGE;
+            notConnectedImage = GUIUtilities.loadIcon(iconName, true);
         }
 
         public Component getTableCellRendererComponent(JTable table,

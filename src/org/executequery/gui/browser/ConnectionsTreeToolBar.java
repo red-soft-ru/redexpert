@@ -40,8 +40,8 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
     private JButton reloadButton;
     private JButton connectButton;
 
-    private ImageIcon connectedIcon;
-    private ImageIcon disconnectedIcon;
+    private ImageIcon connectIcon;
+    private ImageIcon disconnectIcon;
 
     public ConnectionsTreeToolBar(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
@@ -54,17 +54,17 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
         boolean isDefaultDarkTheme = !GUIUtilities.getLookAndFeel().isClassicTheme()
                 && GUIUtilities.getLookAndFeel().isDarkTheme();
 
-        String iconName = isDefaultDarkTheme ? "icon_connect" + BrowserConstants.LIGHT_SUFFIX : "icon_connect";
-        connectedIcon = GUIUtilities.loadIcon(iconName);
+        String iconName = isDefaultDarkTheme ? BrowserConstants.HOST_NOT_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_NOT_CONNECTED_IMAGE;
+        connectIcon = GUIUtilities.loadIcon(iconName);
 
-        iconName = isDefaultDarkTheme ? "icon_disconnect" + BrowserConstants.LIGHT_SUFFIX : "icon_disconnect";
-        disconnectedIcon = GUIUtilities.loadIcon(iconName);
+        iconName = isDefaultDarkTheme ? "icon_connection_drop" + BrowserConstants.LIGHT_SUFFIX : "icon_connection_drop";
+        disconnectIcon = GUIUtilities.loadIcon(iconName);
 
         connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
         if (connectButton != null) {
             connectButton.addActionListener(e -> treePanel.connectDisconnect());
             connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
-            connectButton.setIcon(disconnectedIcon);
+            connectButton.setIcon(connectIcon);
         }
 
         reloadButton = GUIUtilities.getToolBar().getButton("reload-connection-tree-selection-command");
@@ -91,10 +91,10 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
 
         if (connectButton != null && enableConnected) {
             if (databaseConnected) {
-                connectButton.setIcon(connectedIcon);
+                connectButton.setIcon(disconnectIcon);
                 connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
             } else {
-                connectButton.setIcon(disconnectedIcon);
+                connectButton.setIcon(connectIcon);
                 connectButton.setToolTipText(Bundles.getCommon("connect.button"));
             }
         }

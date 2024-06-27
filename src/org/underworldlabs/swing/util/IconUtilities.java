@@ -88,15 +88,11 @@ public class IconUtilities {
                     icon = new ImageIcon(url);
 
             }
-            // try the default resource path
-            else {
-                icon = loadDefaultIconResource(name, false);
-            }
 
-            if (store) {
+            if (store && icon != null)
                 icons.put(name, icon);
-            }
         }
+
         return icon;
     }
 

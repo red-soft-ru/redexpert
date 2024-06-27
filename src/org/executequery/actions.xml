@@ -393,7 +393,7 @@
 
     <action id="table-validation-command"
             name="Table Validation"
-            small-icon="icon_table_add"
+            small-icon="icon_table_validation"
             description="Allows online validation of DB tables"
             execute-class="org.executequery.actions.databasecommands.TableValidationCommand"/>
 
@@ -465,14 +465,14 @@
 
     <action id="application-logs-command"
             accel-editable="false"
-            small-icon="icon_frame"
+                small-icon="icon_application_log"
             execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
 
     <action id="user-manager-command"
             name="User Manager"
             mnemonic="U"
             accel-editable="true"
-            small-icon="icon_db_role"
+            small-icon="icon_manager_user"
             description="User Manager"
             execute-class="org.executequery.actions.toolscommands.UserManagerCommands"/>
 
@@ -504,7 +504,7 @@
             name="Trace Manager"
             mnemonic="TM"
             accel-editable="true"
-            small-icon="icon_folder_column"
+            small-icon="icon_manager_trace"
             description="Trace Manager"
             execute-class="org.executequery.actions.toolscommands.TraceManagerCommands"/>
 
@@ -512,7 +512,7 @@
             name="Database Statistic"
             mnemonic="DS"
             accel-editable="true"
-            small-icon="icon_file_exe"
+            small-icon="icon_db_statistic"
             description="Database Statistic"
             execute-class="org.executequery.actions.toolscommands.DatabaseStatisticCommands"/>
 

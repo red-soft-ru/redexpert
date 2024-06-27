@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 public class UserManagerPanel extends JPanel implements Runnable {
 
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "icon_db_role";
+    public static final String FRAME_ICON = "icon_manager_user";
 
     private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.GRANT_IMAGE, false);
     private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.NO_GRANT_IMAGE, false);

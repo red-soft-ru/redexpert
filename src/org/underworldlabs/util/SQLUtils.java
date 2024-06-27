@@ -1973,6 +1973,10 @@ public final class SQLUtils {
         return sb.append("^\nSET TERM ;^\n").toString();
     }
 
+    public static String generateAlterActive(String type, String name, boolean isActive) {
+        return "ALTER " + type + " " + name + (isActive ? " ACTIVE" : " INACTIVE");
+    }
+
     private static String format(String object, DatabaseConnection dc) {
         return MiscUtils.getFormattedObject(object, dc);
     }
@@ -1988,6 +1992,5 @@ public final class SQLUtils {
     private static String format(ColumnData.DefaultValue value, ColumnData cd) {
         return MiscUtils.formattedDefaultValue(value, cd.getSQLType(), cd.getConnection()).trim();
     }
-
 }
 

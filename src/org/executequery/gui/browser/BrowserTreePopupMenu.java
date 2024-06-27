@@ -56,40 +56,33 @@ public class BrowserTreePopupMenu extends JPopupMenu {
     private final JMenuItem refreshAllIndexStatistic;
 
     private final JMenu activeMenu;
-    private final JMenu sqlViewMenu;
     private final JMenu sqlTableMenu;
 
     BrowserTreePopupMenu(BrowserTreePopupMenuActionListener listener) {
         this.listener = listener;
 
-        reloadObject = createMenuItem(bundleString("reload"), "reload", listener);
         copyName = createMenuItem(bundleString("copyName"), "copyName", listener);
         editObject = createMenuItem(bundleString("edit"), "editObject", listener);
+        reloadObject = createMenuItem(bundleString("reload"), "reloadPath", listener);
         deleteObject = createMenuItem(bundleString("delete"), "deleteObject", listener);
         createObject = createMenuItem(bundleString("create"), "createObject", listener);
         recompileAll = createMenuItem(bundleString("recompileAll"), "recompileAll", listener);
-        selectNeighbors = createMenuItem(bundleString("selectAllTriggers"), "selectAll", listener);
-        recompileInvalid = createMenuItem(bundleString("recompileInvalid"), "recompileInvalid", listener);
-        selectChildren = createMenuItem(bundleString("selectAllChildren"), "selectAllChildren", listener);
         validateTable = createMenuItem(bundleString("validateTable"), "validateTable", listener);
+        selectChildren = createMenuItem(bundleString("selectAll"), "selectAllChildren", listener);
+        selectNeighbors = createMenuItem(bundleString("selectAll"), "selectAllNeighbors", listener);
+        recompileInvalid = createMenuItem(bundleString("recompileInvalid"), "recompileInvalid", listener);
         refreshIndexStatistic = createMenuItem(bundleString("refreshIndexStatistic"), "refreshIndexStatistic", listener);
         refreshAllIndexStatistic = createMenuItem(bundleString("refreshAllIndexStatistic"), "refreshAllIndexStatistic", listener);
 
         activeMenu = MenuItemFactory.createMenu(bundleString("switch"));
-        activeMenu.add(createMenuItem(bundleString("active"), "active", listener));
-        activeMenu.add(createMenuItem(bundleString("inactive"), "inactive", listener));
+        activeMenu.add(createMenuItem(bundleString("active"), "setActive", listener));
+        activeMenu.add(createMenuItem(bundleString("inactive"), "setInactive", listener));
 
         sqlTableMenu = MenuItemFactory.createMenu(bundleString("SQL"));
-        sqlTableMenu.add(createMenuItem(bundleString("selectStatement"), "tableSelectStatement", listener));
-        sqlTableMenu.add(createMenuItem(bundleString("insertStatement"), "tableInsertStatement", listener));
-        sqlTableMenu.add(createMenuItem(bundleString("updateStatement"), "tableUpdateStatement", listener));
-        sqlTableMenu.add(createMenuItem(bundleString("createTableStatement"), "createTableStatement", listener));
-
-        sqlViewMenu = MenuItemFactory.createMenu(bundleString("SQL"));
-        sqlViewMenu.add(createMenuItem(bundleString("selectStatement"), "viewSelectStatement", listener));
-        sqlViewMenu.add(createMenuItem(bundleString("insertStatement"), "viewInsertStatement", listener));
-        sqlViewMenu.add(createMenuItem(bundleString("updateStatement"), "viewUpdateStatement", listener));
-        sqlViewMenu.add(createMenuItem(bundleString("createViewStatement"), "createViewStatement", listener));
+        sqlTableMenu.add(createMenuItem(bundleString("selectStatement"), "generateSelectStatement", listener));
+        sqlTableMenu.add(createMenuItem(bundleString("insertStatement"), "generateInsertStatement", listener));
+        sqlTableMenu.add(createMenuItem(bundleString("updateStatement"), "generateUpdateStatement", listener));
+        sqlTableMenu.add(createMenuItem(bundleString("createStatement"), "generateCreateStatement", listener));
     }
 
     private JMenuItem createMenuItem(String label, String command, ActionListener listener) {
@@ -187,7 +180,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         boolean isView = nodeType == NamedObject.VIEW;
         boolean isTable = nodeType == NamedObject.TABLE;
         boolean isIndex = nodeType == NamedObject.INDEX;
-        boolean isSeveralSelected = listener.getSelectedSeveralPaths();
+        boolean isSeveralSelected = listener.isSelectedSeveralPaths();
 
         // ---
 
@@ -228,10 +221,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             add(selectNeighbors);
         }
 
-        if (isTable && !isSeveralSelected)
+        if ((isTable || isView) && !isSeveralSelected)
             add(sqlTableMenu);
-        if (isView && !isSeveralSelected)
-            add(sqlViewMenu);
         if (isTrigger || isIndex)
             add(activeMenu);
     }

@@ -24,22 +24,22 @@ class BrowserTreeHostPopupMenu extends JPopupMenu {
 
         add(createMenuItem(bundleString("Connect"), "connect", listener, disconnectItems));
         add(createMenuItem(bundleString("Disconnect"), "disconnect", listener, connectItems));
-        add(createMenuItem(bundleString("Reload"), "reload", listener, connectItems));
-        add(createMenuItem(bundleString("Reconnect"), "recycle", listener, connectItems));
+        add(createMenuItem(bundleString("Reload"), "reloadPath", listener, connectItems));
+        add(createMenuItem(bundleString("Reconnect"), "recycleConnection", listener, connectItems));
         addSeparator();
 
         add(createMenuItem(bundleString("NewFolder"), "newFolder", listener));
-        add(createMenuItem(bundleString("NewConnection"), "addNewConnection", listener));
+        add(createMenuItem(bundleString("NewConnection"), "newConnection", listener));
         addSeparator();
 
-        add(createMenuItem(bundleString("ExtractMetadata"), "getMetadata", listener, connectItems));
+        add(createMenuItem(bundleString("ExtractMetadata"), "extractMetadata", listener, connectItems));
         add(createMenuItem(bundleString("MoveToFolder"), "moveToFolder", listener));
-        add(createMenuItem(bundleString("Duplicate"), "duplicate", listener));
-        add(createMenuItem(bundleString("Delete"), "delete", listener, disconnectItems));
+        add(createMenuItem(bundleString("Duplicate"), "duplicateConnection", listener));
+        add(createMenuItem(bundleString("Delete"), "deleteConnection", listener, disconnectItems));
         addSeparator();
 
         add(createMenuItem(bundleString("CopyName"), "copyName", listener));
-        add(createMenuItem(bundleString("ShowInformation"), "dataBaseInformation", listener));
+        add(createMenuItem(bundleString("ShowInformation"), "showConnectionInfo", listener));
     }
 
     protected void setCurrentPath(TreePath treePath) {

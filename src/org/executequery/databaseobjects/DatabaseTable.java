@@ -164,12 +164,6 @@ public interface DatabaseTable extends DatabaseTableObject {
 
     String getDropSQLText(boolean cascadeConstraints);
 
-    String getInsertSQLText();
-
-    String getUpdateSQLText();
-
-    String getSelectSQLText();
-
     boolean hasReferenceTo(DatabaseTable anotherTable);
 
     String getParentNameForStatement();

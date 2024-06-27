@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects;
 
 import org.executequery.gui.resultset.RecordDataItem;
+import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.List;
 
@@ -22,6 +23,11 @@ public interface DatabaseTableObject extends DatabaseObject {
 
     int applyTableDataChanges();
 
+    String getSelectSQLText() throws DataSourceException;
+
+    String getInsertSQLText() throws DataSourceException;
+
+    String getUpdateSQLText() throws DataSourceException;
 
 }
 

@@ -45,20 +45,17 @@ public class BrowserTreeFolderPopupMenu extends JPopupMenu {
         add(createMenuItem(bundleString("DeleteFolder"), "deleteConnection", treePanel));
     }
 
-    private JMenuItem createMenuItem(String text,
-                                     String actionCommand,
-                                     ActionListener listener) {
+    private JMenuItem createMenuItem(String text, String command, ActionListener listener) {
 
         JMenuItem menuItem = MenuItemFactory.createMenuItem(text);
-        menuItem.setActionCommand(actionCommand);
         menuItem.addActionListener(listener);
+        menuItem.setActionCommand(command);
+
         return menuItem;
     }
 
     private String bundleString(String key) {
-
         return Bundles.get(getClass(), key);
     }
 
 }
-

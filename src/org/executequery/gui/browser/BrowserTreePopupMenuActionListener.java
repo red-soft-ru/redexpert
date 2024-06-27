@@ -722,24 +722,11 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             treePanel.newConnection(currentSelection.copy());
     }
 
-    public void duplicateWithSource(ActionEvent e) {
-
-        if (currentSelection != null) {
-
-            String selectedSource = currentPath.getLastPathComponent().toString();
-            String name = treePanel.buildConnectionName(selectedSource);
-            DatabaseConnection dc = currentSelection.copy().withSource(selectedSource).withName(name);
-            treePanel.newConnection(dc);
-        }
-
-    }
-
     public void moveToFolder(ActionEvent e) {
         treePanel.moveToFolder(currentSelection);
     }
 
     public void properties(ActionEvent e) {
-        //reloadView = true;
         treePanel.setSelectedConnection(currentSelection);
     }
 
@@ -1033,7 +1020,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
-    public void reselectivity(ActionEvent e) {
+    public void refreshIndexStatistic(ActionEvent e) {
         DatabaseConnection dc = currentSelection;
         DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
         if (databaseObjectNode.getDatabaseObject() instanceof DefaultDatabaseIndex) {
@@ -1044,7 +1031,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
-    public void reselectivityAll(ActionEvent e) {
+    public void refreshAllIndexStatistic(ActionEvent e) {
         DatabaseConnection dc = currentSelection;
         DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
         if (databaseObjectNode != null)
@@ -1061,7 +1048,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
-    public void onlineTableValidation(ActionEvent e) {
+    public void validateTable(ActionEvent e) {
         new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTable().getName());
     }
 

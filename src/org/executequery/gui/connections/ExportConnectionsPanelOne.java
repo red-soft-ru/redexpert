@@ -180,7 +180,7 @@ public class ExportConnectionsPanelOne extends ActionPanel {
 
             icons = new HashMap<>();
             for (String nodesIcon : BrowserConstants.getNodeIcons())
-                icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, true));
+                icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, false, true));
         }
 
         @Override

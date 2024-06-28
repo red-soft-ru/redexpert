@@ -30,6 +30,7 @@ import org.executequery.components.StatusBarPanel;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.*;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -865,11 +866,15 @@ public final class GUIUtilities {
      * @return the loaded icon image
      */
     public static ImageIcon loadIcon(String name, boolean store) {
-        return IconUtilities.loadIcon(getAbsoluteIconPath(name), store, 18, 18);
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name), store, 18);
+    }
+
+    public static ImageIcon loadIcon(String name, boolean checkTheme, boolean store) {
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name, checkTheme), store, 18);
     }
 
     public static ImageIcon loadIcon(String name, String type, boolean store) {
-        return IconUtilities.loadIcon(getAbsoluteIconPath(name, type), store);
+        return IconUtilities.loadIcon(getAbsoluteIconPath(name, type, false), store);
     }
 
     /**
@@ -895,16 +900,53 @@ public final class GUIUtilities {
      * @return the absolute package path of the icon
      */
     public static String getAbsoluteIconPath(String name) {
-        return GUIUtilities.getLookAndFeel().isClassicTheme() ?
-                CLASSIC_ICONS_PATH + name + ".png" :
-                DEFAULT_ICONS_PATH + name + ".svg";
+        return getAbsoluteIconPath(name, getLookAndFeel().isClassicTheme() ? "png" : "svg", true);
     }
 
+    /**
+     * Returns the absolute icon resource path by appending
+     * the package icon path to the specified icon file name.
+     *
+     * @param name the icon file name
+     * @param type the icon file extension
+     * @return the absolute package path of the icon
+     */
     public static String getAbsoluteIconPath(String name, String type) {
-        name += "." + type;
-        return GUIUtilities.getLookAndFeel().isClassicTheme() ?
+        return getAbsoluteIconPath(name, type, true);
+    }
+
+    /**
+     * Returns the absolute icon resource path by appending
+     * the package icon path to the specified icon file name.
+     *
+     * @param name       the icon file name
+     * @param checkTheme whether is need to check theme for adding <code>_light</code> suffix
+     * @return the absolute package path of the icon
+     */
+    public static String getAbsoluteIconPath(String name, boolean checkTheme) {
+        return getAbsoluteIconPath(name, getLookAndFeel().isClassicTheme() ? "png" : "svg", checkTheme);
+    }
+
+    /**
+     * Returns the absolute icon resource path by appending
+     * the package icon path to the specified icon file name
+     * with the specified extension.
+     *
+     * @param name       the icon file name
+     * @param type       the icon file extension
+     * @param checkTheme whether is need to check theme for adding <code>_light</code> suffix
+     * @return the absolute package path of the icon
+     */
+    public static String getAbsoluteIconPath(String name, String type, boolean checkTheme) {
+        name = getLookAndFeel().isClassicTheme() ?
                 CLASSIC_ICONS_PATH + name :
                 DEFAULT_ICONS_PATH + name;
+
+        if (checkTheme && !getLookAndFeel().isClassicTheme() && getLookAndFeel().isDarkTheme())
+            name += BrowserConstants.LIGHT_SUFFIX;
+
+        name += "." + type;
+        return name;
     }
 
     /**

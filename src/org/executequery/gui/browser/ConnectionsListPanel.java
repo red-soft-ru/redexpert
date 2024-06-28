@@ -575,14 +575,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         private final ImageIcon notConnectedImage;
 
         public ConnectCellRenderer() {
-            boolean isDefaultDarkTheme = !GUIUtilities.getLookAndFeel().isClassicTheme()
-                    && GUIUtilities.getLookAndFeel().isDarkTheme();
-
-            String iconName = isDefaultDarkTheme ? BrowserConstants.HOST_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_CONNECTED_IMAGE;
-            connectedImage = GUIUtilities.loadIcon(iconName, true);
-
-            iconName = isDefaultDarkTheme ? BrowserConstants.HOST_NOT_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_NOT_CONNECTED_IMAGE;
-            notConnectedImage = GUIUtilities.loadIcon(iconName, true);
+            connectedImage = GUIUtilities.loadIcon(BrowserConstants.HOST_CONNECTED_IMAGE, true);
+            notConnectedImage = GUIUtilities.loadIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE, true);
         }
 
         public Component getTableCellRendererComponent(JTable table,

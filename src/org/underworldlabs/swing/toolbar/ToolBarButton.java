@@ -22,7 +22,6 @@ package org.underworldlabs.swing.toolbar;
 
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ActionBuilder;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.io.Serializable;
@@ -77,12 +76,10 @@ public class ToolBarButton implements Serializable, Cloneable {
 
     public ImageIcon getIcon() {
 
-        if (icon != null)
-            return icon;
+        if (isSeparator())
+            return null;
 
-        if (id == SEPARATOR_ID)
-            icon = IconUtilities.loadDefaultIconResource("Blank16.png", true);
-        else if (action != null)
+        if (icon == null && action != null)
             icon = (ImageIcon) action.getValue(Action.SMALL_ICON);
 
         return icon;

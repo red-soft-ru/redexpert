@@ -51,14 +51,9 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
     }
 
     private void init() {
-        boolean isDefaultDarkTheme = !GUIUtilities.getLookAndFeel().isClassicTheme()
-                && GUIUtilities.getLookAndFeel().isDarkTheme();
 
-        String iconName = isDefaultDarkTheme ? BrowserConstants.HOST_NOT_CONNECTED_IMAGE_LIGHT : BrowserConstants.HOST_NOT_CONNECTED_IMAGE;
-        connectIcon = GUIUtilities.loadIcon(iconName);
-
-        iconName = isDefaultDarkTheme ? "icon_connection_drop" + BrowserConstants.LIGHT_SUFFIX : "icon_connection_drop";
-        disconnectIcon = GUIUtilities.loadIcon(iconName);
+        connectIcon = GUIUtilities.loadIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE);
+        disconnectIcon = GUIUtilities.loadIcon("icon_connection_drop");
 
         connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
         if (connectButton != null) {
@@ -75,9 +70,6 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
         if (searchButton != null) {
             searchButton.setAction(treePanel.getTreeFindAction());
             searchButton.setText(null);
-
-            iconName = isDefaultDarkTheme ? "icon_zoom" + BrowserConstants.LIGHT_SUFFIX : "icon_zoom";
-            searchButton.setIcon(GUIUtilities.loadIcon(iconName));
         }
     }
 

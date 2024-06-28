@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.util;
 
+import org.executequery.gui.browser.BrowserConstants;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.SVGImage;
 
 import javax.swing.*;
@@ -37,19 +39,11 @@ import java.util.Map;
  */
 public class IconUtilities {
 
-    /**
-     * default icon resource path in this package tree
-     */
-    private static final String ICON_PATH = "/org/underworldlabs/swing/icons/";
-
-    /**
-     * Icons repository
-     */
-    private static Map<String, ImageIcon> icons = new HashMap<String, ImageIcon>();
+    private static final Map<String, ImageIcon> icons = new HashMap<>();
 
     public static ImageIcon loadImage(String name) {
-
-        return new ImageIcon(IconUtilities.class.getResource(name));
+        URL url = IconUtilities.class.getResource(name);
+        return url != null ? new ImageIcon(url) : null;
     }
 
     public static ImageIcon loadIcon(String name) {
@@ -64,86 +58,45 @@ public class IconUtilities {
         return loadIcon(name, store, -1, -1);
     }
 
-    public static ImageIcon loadIcon(String name, boolean store, int width, int height) {
-        ImageIcon icon = null;
-
-        if (icons.containsKey(name)) {
-
-            icon = icons.get(name);
-
-        } else {
-
-            URL url = IconUtilities.class.getResource(name);
-            if (url != null) {
-                if (url.getPath().endsWith(".svg")) {
-                    try {
-                        BufferedImage image = SVGImage.fromSvg(url, width, height);
-                        icon = new ImageIcon(image);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-
-                } else
-                    icon = new ImageIcon(url);
-
-            }
-
-            if (store && icon != null)
-                icons.put(name, icon);
-        }
-
-        return icon;
+    public static ImageIcon loadIcon(String name, boolean store, int iconSize) {
+        return loadIcon(name, store, iconSize, iconSize);
     }
 
-    public static ImageIcon loadDefaultIconResource(String name, boolean store) {
+    public static ImageIcon loadIcon(String path, boolean store, int width, int height) {
+
+        if (icons.containsKey(path))
+            return icons.get(path);
+
+        URL url = IconUtilities.class.getResource(path);
+        if (url == null) {
+
+            String message = "icon with path [" + path + "] not found";
+            if (path.contains(BrowserConstants.LIGHT_SUFFIX)) {
+                Log.info(message + ", trying to load non light icon");
+                return loadIcon(path.replaceFirst(BrowserConstants.LIGHT_SUFFIX, ""), store, width, height);
+            }
+
+            Log.info(message);
+            return null;
+        }
 
         ImageIcon icon = null;
-        name = ICON_PATH + name;
-        if (icons.containsKey(name)) {
+        if (url.getPath().endsWith(".svg")) {
+            try {
+                BufferedImage image = SVGImage.fromSvg(url, width, height);
+                icon = new ImageIcon(image);
 
-            icon = icons.get(name);
-
-        } else {
-
-            URL url = IconUtilities.class.getResource(name);
-            if (url == null) {
-
-                throw new RuntimeException("Icon at resource path not found: " +
-                        name);
+            } catch (Exception e) {
+                Log.error(e.getMessage(), e);
             }
+
+        } else
             icon = new ImageIcon(url);
 
-            if (store) {
-                icons.put(name, icon);
-            }
-        }
+        if (store && icon != null)
+            icons.put(path, icon);
+
         return icon;
-    }
-
-    // http://codehustler.org/blog/java-to-create-grayscale-images-icons/
-    
-    /*
-    private Icon getGray(ImageIcon icon) {
-        
-        BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(),
-                BufferedImage.TYPE_INT_RGB);
-
-        Graphics g = bufferedImage.createGraphics();
-        g.drawImage(icon.getImage(), 0, 0, null);
-        g.dispose();
-        
-        BufferedImageOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null); 
-        BufferedImage image = op.filter(bufferedImage, null);
-        
-        return new ImageIcon(image);
-    }
-    */
-
-    private IconUtilities() {
     }
 
 }
-
-
-

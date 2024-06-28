@@ -29,7 +29,7 @@ public class IconManager {
 
         Map<String, Icon> icons = new HashMap<>();
         for (String nodesIcon : BrowserConstants.getNodeIcons())
-            icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, true));
+            icons.put(nodesIcon, GUIUtilities.loadIcon(nodesIcon, false, true));
 
         icons.put(BrowserConstants.DATABASE_OBJECT_IMAGE, GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE, true));
         icons.put(BrowserConstants.SYSTEM_TRIGGER_IMAGE_LIGHT, icons.get(BrowserConstants.TABLE_TRIGGER_IMAGE_LIGHT));

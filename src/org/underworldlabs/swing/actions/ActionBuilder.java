@@ -22,10 +22,8 @@ package org.underworldlabs.swing.actions;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.xml.sax.Attributes;
@@ -247,15 +245,7 @@ public final class ActionBuilder {
 
                 value = attrs.getValue(SMALL_ICON);
                 if (!MiscUtils.isNull(value)) {
-                    ImageIcon icon = null;
-
-                    LookAndFeelType selectedLaf = GUIUtilities.getLookAndFeel();
-                    if (!selectedLaf.isClassicTheme() && selectedLaf.isDarkTheme())
-                        icon = GUIUtilities.loadIcon(value + BrowserConstants.LIGHT_SUFFIX);
-
-                    if (icon == null)
-                        icon = GUIUtilities.loadIcon(value);
-
+                    ImageIcon icon = GUIUtilities.loadIcon(value);
                     if (icon != null)
                         actionCommand.putValue(Action.SMALL_ICON, icon);
                 }

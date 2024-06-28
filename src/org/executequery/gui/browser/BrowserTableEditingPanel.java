@@ -367,37 +367,37 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         PanelToolBar bar = new PanelToolBar();
 
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("icon_add"));
+        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText("Insert column");
         addRolloverButton.addActionListener(actionEvent -> insertAfter());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("icon_delete"));
+        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText("Delete column");
         deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
         bar.add(deleteRolloverButton);
 
         RolloverButton moveUpButton = new RolloverButton();
-        moveUpButton.setIcon(GUIUtilities.loadIcon("icon_move_up"));
+        moveUpButton.setIcon(IconManager.getIcon("icon_move_up"));
         moveUpButton.setToolTipText("Move up");
         moveUpButton.addActionListener(actionEvent -> moveColumnUp());
         bar.add(moveUpButton);
 
         RolloverButton moveDownButton = new RolloverButton();
-        moveDownButton.setIcon(GUIUtilities.loadIcon("icon_move_down"));
+        moveDownButton.setIcon(IconManager.getIcon("icon_move_down"));
         moveDownButton.setToolTipText("Move down");
         moveDownButton.addActionListener(actionEvent -> moveColumnDown());
         bar.add(moveDownButton);
 
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("icon_commit"));
+        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
         commitRolloverButton.setToolTipText("Commit");
         commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
         bar.add(commitRolloverButton);
 
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("icon_rollback"));
+        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
         rollbackRolloverButton.setToolTipText("Rollback");
         rollbackRolloverButton.addActionListener(actionEvent -> refresh());
         bar.add(rollbackRolloverButton);
@@ -417,25 +417,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("icon_add"));
+        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText("Insert constraint");
         addRolloverButton.addActionListener(actionEvent -> insertAfter());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("icon_delete"));
+        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText("Delete constraint");
         deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
         bar.add(deleteRolloverButton);
 
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("icon_commit"));
+        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
         commitRolloverButton.setToolTipText("Commit");
         commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
         bar.add(commitRolloverButton);
 
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("icon_rollback"));
+        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
         rollbackRolloverButton.setToolTipText("Rollback");
         rollbackRolloverButton.addActionListener(actionEvent -> refresh());
         bar.add(rollbackRolloverButton);

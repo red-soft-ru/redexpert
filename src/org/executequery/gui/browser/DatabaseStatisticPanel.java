@@ -12,6 +12,7 @@ import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.dbstatistic.CompareStatPanel;
@@ -731,7 +732,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             });
             //lbl.setToolTipText(tooltip);
-            JLabel icon = new JLabel(GUIUtilities.loadIcon("icon_close"));
+            JLabel icon = new JLabel(IconManager.getIcon("icon_close"));
 
             icon.addMouseListener(new MouseAdapter() {
                 @Override

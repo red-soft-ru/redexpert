@@ -49,12 +49,12 @@ public class BrowserTableCellRenderer extends JLabel
             setHorizontalAlignment(JLabel.CENTER);
 
         } else if (value instanceof DatabaseColumn) {
-            setIcon(IconManager.getInstance().getTableColumnIcon(((DatabaseColumn) value)));
+            setIcon(IconManager.getIconFromDatabaseColumn((DatabaseColumn) value));
             setText(((NamedObject) value).getName());
             setHorizontalAlignment(JLabel.LEFT);
 
         } else if (value instanceof NamedObject) {
-            setIcon(IconManager.getInstance().getIconFromType(((NamedObject) value).getType()));
+            setIcon(IconManager.getIconFromType(((NamedObject) value).getType()));
             setText(((NamedObject) value).getName());
             setHorizontalAlignment(JLabel.LEFT);
 

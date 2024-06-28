@@ -88,8 +88,8 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         textArea = simpleTextArea.getTextAreaComponent();
         textComponent = textArea;
 
-        reloadButton = new RolloverButton(GUIUtilities.loadIcon("icon_refresh"), bundleString("reload"));
-        trashButton = new RolloverButton(GUIUtilities.loadIcon("icon_trash"), bundleString("reset"));
+        reloadButton = new RolloverButton(IconManager.getIcon("icon_refresh"), bundleString("reload"));
+        trashButton = new RolloverButton(IconManager.getIcon("icon_trash"), bundleString("reset"));
 
         reloadButton.addActionListener(this);
         trashButton.addActionListener(this);

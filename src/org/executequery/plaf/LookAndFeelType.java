@@ -50,6 +50,10 @@ public enum LookAndFeelType {
         return this == CLASSIC_LIGHT || this == CLASSIC_DARK || this == LACKEY;
     }
 
+    public boolean isDefaultTheme() {
+        return this == DEFAULT_LIGHT || this == DEFAULT_DARK;
+    }
+
     private static String bundleString(String key) {
         return Bundles.get(LookAndFeelType.class, key);
     }

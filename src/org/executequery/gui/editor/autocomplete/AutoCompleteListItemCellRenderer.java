@@ -21,7 +21,7 @@
 package org.executequery.gui.editor.autocomplete;
 
 import org.executequery.ApplicationException;
-import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.log.Log;
 
 import javax.swing.*;
@@ -44,22 +44,22 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final Icon variable;
     private static final Icon parameter;
     private static final ImageIcon animatedSpinner;
-    private static final ImageIcon databaseTableView;
+    private static final Icon databaseTableView;
 
     static {
-        sql92Keyword = GUIUtilities.loadIcon("icon_sql92", true);
-        animatedSpinner = GUIUtilities.loadIcon("icon_loading", "gif", true);
-        databaseSpecificKeyword = GUIUtilities.loadIcon("icon_db_keyword", true);
-        nothingFound = GUIUtilities.loadIcon("icon_warning", true);
-        databaseTable = GUIUtilities.loadIcon("icon_db_table", true);
-        databaseTableColumn = GUIUtilities.loadIcon("icon_db_table_column", true);
-        databaseTableView = GUIUtilities.loadIcon("icon_db_view", true);
-        systemFunction = GUIUtilities.loadIcon("icon_db_function_system", true);
-        databaseFunction = GUIUtilities.loadIcon("icon_db_function", true);
-        databaseProcedure = GUIUtilities.loadIcon("icon_db_procedure", true);
-        databasePackage = GUIUtilities.loadIcon("icon_db_package", true);
-        variable = GUIUtilities.loadIcon("icon_variable", true);
-        parameter = GUIUtilities.loadIcon("icon_function", true);
+        sql92Keyword = IconManager.getIcon("icon_sql92");
+        animatedSpinner = (ImageIcon) IconManager.getIcon("icon_loading"/*, "gif"*/);
+        databaseSpecificKeyword = IconManager.getIcon("icon_db_keyword");
+        nothingFound = IconManager.getIcon("icon_warning");
+        databaseTable = IconManager.getIcon("icon_db_table");
+        databaseTableColumn = IconManager.getIcon("icon_db_table_column");
+        databaseTableView = IconManager.getIcon("icon_db_view");
+        systemFunction = IconManager.getIcon("icon_db_function_system");
+        databaseFunction = IconManager.getIcon("icon_db_function");
+        databaseProcedure = IconManager.getIcon("icon_db_procedure");
+        databasePackage = IconManager.getIcon("icon_db_package");
+        variable = IconManager.getIcon("icon_variable");
+        parameter = IconManager.getIcon("icon_function");
     }
 
 

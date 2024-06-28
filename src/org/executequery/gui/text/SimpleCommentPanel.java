@@ -7,6 +7,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
+import org.executequery.gui.IconManager;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.RolloverButton;
@@ -58,12 +59,12 @@ public class SimpleCommentPanel {
         updateButtonActionListener = e -> updateComment();
 
         updateCommentButton = new RolloverButton();
-        updateCommentButton.setIcon(GUIUtilities.loadIcon("icon_commit"));
+        updateCommentButton.setIcon(IconManager.getIcon("icon_commit"));
         updateCommentButton.addActionListener(updateButtonActionListener);
         updateCommentButton.setEnabled(currentDatabaseObject != null);
 
         rollbackCommentButton = new RolloverButton();
-        rollbackCommentButton.setIcon(GUIUtilities.loadIcon("icon_rollback"));
+        rollbackCommentButton.setIcon(IconManager.getIcon("icon_rollback"));
         rollbackCommentButton.addActionListener(e -> resetComment());
 
         GridBagHelper gridBagHelper = new GridBagHelper();

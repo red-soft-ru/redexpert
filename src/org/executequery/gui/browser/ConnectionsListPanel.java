@@ -24,6 +24,7 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.event.*;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.SortableColumnsTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -575,8 +576,8 @@ public class ConnectionsListPanel extends AbstractFormObjectViewPanel
         private final ImageIcon notConnectedImage;
 
         public ConnectCellRenderer() {
-            connectedImage = GUIUtilities.loadIcon(BrowserConstants.HOST_CONNECTED_IMAGE, true);
-            notConnectedImage = GUIUtilities.loadIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE, true);
+            connectedImage = IconManager.getIcon(BrowserConstants.HOST_CONNECTED_IMAGE);
+            notConnectedImage = IconManager.getIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE);
         }
 
         public Component getTableCellRendererComponent(JTable table,

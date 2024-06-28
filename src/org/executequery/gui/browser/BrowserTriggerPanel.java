@@ -1,7 +1,7 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -203,7 +203,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(trigger);
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("DatabaseTrigger"));
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.DB_TRIGGER_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.DB_TRIGGER_IMAGE));
 
         try {
             triggerNameField.setText(trigger.getName());
@@ -248,7 +248,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("Database Trigger"));
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.DB_TRIGGER_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.DB_TRIGGER_IMAGE));
 
         if (trigger != null) {
             triggerNameField.setText(trigger.getName());

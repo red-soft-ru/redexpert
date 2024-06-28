@@ -35,6 +35,7 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -533,9 +534,9 @@ public class TableDataTab extends JPanel
             if (isDatabaseTable()) {
                 SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
-                    private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon("icon_key_primary");
-                    private final ImageIcon foreignKeyIcon = GUIUtilities.loadIcon("icon_key_foreign");
-                    private final ImageIcon mixedKeyIcon = GUIUtilities.loadIcon("icon_key_mixed");
+                    private final ImageIcon primaryKeyIcon = IconManager.getIcon("icon_key_primary");
+                    private final ImageIcon foreignKeyIcon = IconManager.getIcon("icon_key_foreign");
+                    private final ImageIcon mixedKeyIcon = IconManager.getIcon("icon_key_mixed");
 
                     @Override
                     public Component getTableCellRendererComponent(
@@ -1072,7 +1073,7 @@ public class TableDataTab extends JPanel
         buttonsEditingPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("icon_add"));
+        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText(bundleString("InsertRecord"));
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1087,7 +1088,7 @@ public class TableDataTab extends JPanel
         bar.add(addRolloverButton);
         tableButtons.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("icon_delete"));
+        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1115,7 +1116,7 @@ public class TableDataTab extends JPanel
         bar.add(deleteRolloverButton);
         tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("icon_commit"));
+        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
         commitRolloverButton.setToolTipText(bundleString("Commit"));
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1136,7 +1137,7 @@ public class TableDataTab extends JPanel
         bar.add(commitRolloverButton);
         tableButtons.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("icon_rollback"));
+        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
         rollbackRolloverButton.setToolTipText(bundleString("Rollback"));
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1211,7 +1212,7 @@ public class TableDataTab extends JPanel
         });
         bar.add(fetchAllRolloverButton);
         RolloverButton refreshButton = new RolloverButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("icon_refresh"));
+        refreshButton.setIcon(IconManager.getIcon("icon_refresh"));
         refreshButton.setToolTipText(bundleString("ReloadData"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -1222,7 +1223,7 @@ public class TableDataTab extends JPanel
         bar.add(refreshButton);
 
         RolloverButton switchAutoresizeModeButton = new RolloverButton();
-        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("icon_zoom"));
+        switchAutoresizeModeButton.setIcon(IconManager.getIcon("icon_zoom"));
         switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
         switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
         switchAutoresizeModeButton.addActionListener(e -> popupMenuListener.autoWidthForCols(null));

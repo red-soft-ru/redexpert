@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
@@ -123,8 +124,10 @@ public class ApplicationLauncher {
 
             advanceSplash(splash);
 
-            GUIUtilities.startLogger();
+            IconManager.loadIcons();
+            advanceSplash(splash);
 
+            GUIUtilities.startLogger();
             advanceSplash(splash);
 
             // initialise the frame

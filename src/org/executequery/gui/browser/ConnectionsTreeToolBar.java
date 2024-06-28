@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
+import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -52,8 +53,8 @@ public class ConnectionsTreeToolBar implements UserPreferenceListener {
 
     private void init() {
 
-        connectIcon = GUIUtilities.loadIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE);
-        disconnectIcon = GUIUtilities.loadIcon("icon_connection_drop");
+        connectIcon = IconManager.getIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE);
+        disconnectIcon = IconManager.getIcon("icon_connection_drop");
 
         connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
         if (connectButton != null) {

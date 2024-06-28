@@ -20,8 +20,7 @@
 
 package org.executequery.gui.procedure;
 
-import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.actions.ActionUtilities;
+import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -84,23 +83,26 @@ public class CreateProcedureToolBar extends JPanel
      *  these with the relevant listener. */
     private void initialiseButtons() {
 
-        insertAfterButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_insert_after"),
-                "Insert a value after the current selection", 
-                null);
+        insertAfterButton = WidgetFactory.createRolloverButton(
+                "insertAfterButton",
+                "Insert a value after the current selection",
+                "icon_insert_after",
+                this
+        );
 
-        insertBeforeButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_insert_before"),
+        insertBeforeButton = WidgetFactory.createRolloverButton(
+                "insertBeforeButton",
                 "Insert a value before the current selection",
-                null);
+                "icon_insert_before",
+                this
+        );
 
-        deleteRowButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_delete"),
+        deleteRowButton = WidgetFactory.createRolloverButton(
+                "deleteRowButton",
                 "Delete the selected value",
-                null);
+                "icon_delete",
+                this
+        );
 
         GridBagHelper gbh = new GridBagHelper();
         gbh.setDefaults(GridBagHelper.DEFAULT_CONSTRAINTS);
@@ -112,17 +114,20 @@ public class CreateProcedureToolBar extends JPanel
         add(deleteRowButton, gbh.nextRow().get());
 
         if (canMove) {
-            moveUpButton = ActionUtilities.createToolbarButton(
-                    this,
-                    GUIUtilities.getAbsoluteIconPath("icon_move_up"),
+            moveUpButton = WidgetFactory.createRolloverButton(
+                    "moveUpButton",
                     "Move the selection up",
-                    null);
+                    "icon_move_up",
+                    this
+            );
 
-            moveDownButton = ActionUtilities.createToolbarButton(
-                    this,
-                    GUIUtilities.getAbsoluteIconPath("icon_move_down"),
+            moveDownButton = WidgetFactory.createRolloverButton(
+                    "moveDownButton",
                     "Move the selection down",
-                    null);
+                    "icon_move_down",
+                    this
+            );
+
             add(moveUpButton, gbh.nextRow().get());
             add(moveDownButton, gbh.nextRow().get());
             add(new JPanel(), gbh.nextRow().spanY().get());

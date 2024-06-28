@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.profiler;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
 import javax.swing.*;
@@ -20,25 +21,25 @@ public class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
 
         switch ((String) node.getProcessType()) {
             case ProfilerData.BLOCK:
-                setIcon(GUIUtilities.loadIcon("icon_create_script"));
+                setIcon(IconManager.getIcon("icon_create_script"));
                 break;
             case ProfilerData.FUNCTION:
-                setIcon(GUIUtilities.loadIcon("icon_db_function"));
+                setIcon(IconManager.getIcon("icon_db_function"));
                 break;
             case ProfilerData.PROCEDURE:
-                setIcon(GUIUtilities.loadIcon("icon_db_procedure"));
+                setIcon(IconManager.getIcon("icon_db_procedure"));
                 break;
             case ProfilerData.SELF_TIME:
-                setIcon(GUIUtilities.loadIcon("icon_information"));
+                setIcon(IconManager.getIcon("icon_information"));
                 break;
             case ProfilerData.PSQL:
-                setIcon(GUIUtilities.loadIcon("icon_sql_line"));
+                setIcon(IconManager.getIcon("icon_sql_line"));
                 break;
             case ProfilerData.ROOT:
-                setIcon(GUIUtilities.loadIcon("icon_utility"));
+                setIcon(IconManager.getIcon("icon_utility"));
                 break;
             default:
-                setIcon(GUIUtilities.loadIcon("icon_file_default"));
+                setIcon(IconManager.getIcon("icon_file_default"));
                 break;
         }
 

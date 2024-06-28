@@ -21,6 +21,7 @@
 package org.executequery.gui.editor;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.QueryBookmark;
@@ -105,7 +106,7 @@ class QueryEditorToolBar extends PanelToolBar {
     private JButton createQueryBookmarkButton() {
 
         PopupMenuButton button = new PopupMenuButton(
-                GUIUtilities.loadIcon("icon_bookmarks"),
+                IconManager.getIcon("icon_bookmarks"),
                 bundleString("query-bookmarks")
         );
         button.setKeyStroke(KeyStroke.getKeyStroke("control B"));

@@ -12,6 +12,7 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.GrantManagerPanel;
@@ -24,7 +25,6 @@ import org.japura.gui.event.ListEvent;
 import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -91,18 +91,16 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private JCheckBox systemCheck;
     private EQCheckCombox objectTypeBox;
     private DefaultStatementExecutor querySender;
-    //private EQCheckCombox userBox;
-    private final int buttonSize = 20;
     private GrantManagerPanel grantManagerPanel;
 
     public PrivilegesTablePanel(int typeTable, GrantManagerPanel grantManagerPanel) {
         this.grantManagerPanel = grantManagerPanel;
         this.typeTable = typeTable;
         icons = new Icon[4];
-        icons[GRANT] = GUIUtilities.loadVectorIcon(BrowserConstants.GRANT_IMAGE, false);
-        icons[REVOKE] = GUIUtilities.loadVectorIcon(BrowserConstants.NO_GRANT_IMAGE, false);
-        icons[GRANT_OPTION] = GUIUtilities.loadVectorIcon(BrowserConstants.ADMIN_OPTION_IMAGE, false);
-        icons[GRANT_FIELD] = GUIUtilities.loadVectorIcon(BrowserConstants.FIELD_GRANT_IMAGE, false);
+        icons[GRANT] = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
+        icons[REVOKE] = IconManager.getIcon(BrowserConstants.NO_GRANT_IMAGE);
+        icons[GRANT_OPTION] = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        icons[GRANT_FIELD] = IconManager.getIcon(BrowserConstants.FIELD_GRANT_IMAGE);
         objectVector = new Vector<>();
         tableMap = new HashMap<>();
         tableForColumnsMap = new HashMap<>();
@@ -197,7 +195,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
         for (int i = 0; i < grantFieldButtons.length; i++) {
             grantFieldButtons[i] = new RolloverButton();
-            grantFieldButtons[i].setIcon(GUIUtilities.loadVectorIcon(iconNamesForFields[i] + ".svg", buttonSize));
+            grantFieldButtons[i].setIcon(IconManager.getIcon(iconNamesForFields[i]));
             grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             grantFieldButtons[i].setActionCommand("field_" + i);
             grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
@@ -213,7 +211,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantButtons = new RolloverButton[iconNames.length];
         for (int i = 0; i < grantButtons.length; i++) {
             grantButtons[i] = new RolloverButton();
-            grantButtons[i].setIcon(GUIUtilities.loadVectorIcon(iconNames[i] + ".svg", buttonSize));
+            grantButtons[i].setIcon(IconManager.getIcon(iconNames[i]));
             grantButtons[i].setActionCommand(iconNames[i]);
             grantButtons[i].setMouseEnteredContentAreaFill(false);
             grantButtons[i].setToolTipText(toolTips[i]);
@@ -300,13 +298,13 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         refreshButton = new RolloverButton();
         refreshButton.setToolTipText(bundleString("Refresh"));
-        refreshButton.setIcon(GUIUtilities.loadIcon("icon_refresh"));
+        refreshButton.setIcon(IconManager.getIcon("icon_refresh"));
         refreshButton.setMouseEnteredContentAreaFill(false);
         refreshButton.addActionListener(this);
 
         cancelButton = new RolloverButton();
         cancelButton.setToolTipText(bundleString("CancelFill"));
-        cancelButton.setIcon(GUIUtilities.loadIcon("icon_execute_stop"));
+        cancelButton.setIcon(IconManager.getIcon("icon_execute_stop"));
         cancelButton.setMouseEnteredContentAreaFill(false);
         cancelButton.addActionListener(this);
 

@@ -21,6 +21,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.AbstractCreateUserPanel;
 import org.executequery.gui.databaseobjects.CreateDatabaseUserPanel;
@@ -53,9 +54,9 @@ public class UserManagerPanel extends JPanel implements Runnable {
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
     public static final String FRAME_ICON = "icon_manager_user";
 
-    private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.GRANT_IMAGE, false);
-    private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.NO_GRANT_IMAGE, false);
-    private static final Icon GRANT_ADMIN_ROLE_ICON = GUIUtilities.loadVectorIcon(BrowserConstants.ADMIN_OPTION_IMAGE, false);
+    private static final Icon GRANT_ROLE_ICON = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
+    private static final Icon REVOKE_ROLE_ICON = IconManager.getIcon(BrowserConstants.NO_GRANT_IMAGE);
+    private static final Icon GRANT_ADMIN_ROLE_ICON = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
 
     private enum Action {
         REFRESH,
@@ -973,8 +974,8 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private static class MembershipListCellRenderer extends RowHeaderRenderer {
 
-        private final ImageIcon roleIcon = GUIUtilities.loadIcon("icon_db_role");
-        private final ImageIcon userIcon = GUIUtilities.loadIcon("icon_db_user");
+        private final Icon roleIcon = IconManager.getIcon("icon_db_role");
+        private final Icon userIcon = IconManager.getIcon("icon_db_user");
 
         public MembershipListCellRenderer(JTable table) {
             super(table);

@@ -20,7 +20,6 @@
 
 package org.executequery.gui;
 
-import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -53,7 +52,7 @@ public class AboutPanel extends BaseDialog {
     }
 
     private void init() {
-        icon = GUIUtilities.loadVectorIcon("icon_red_expert.svg", 70);
+        icon = IconManager.getVectorIcon("icon_red_expert", 70);
 
         versionLabel = WidgetFactory.createLabel(
                 "RedExpert " + System.getProperty("executequery.minor.version"),
@@ -74,7 +73,7 @@ public class AboutPanel extends BaseDialog {
                 "https://t.me/reddatabase",
                 16
         );
-        reddatabaseNewsLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
+        reddatabaseNewsLabel.setIcon(IconManager.getIcon("icon_web"));
 
         discussionChatLabel = WidgetFactory.createLinkLabel(
                 "discussionChatLabel",
@@ -82,7 +81,7 @@ public class AboutPanel extends BaseDialog {
                 bundledString("discussionChatLink"),
                 16
         );
-        discussionChatLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
+        discussionChatLabel.setIcon(IconManager.getIcon("icon_web"));
 
         gitHubLabel = WidgetFactory.createLinkLabel(
                 "gitHubLabel",
@@ -90,7 +89,7 @@ public class AboutPanel extends BaseDialog {
                 "https://github.com/red-soft-ru/redexpert",
                 16
         );
-        gitHubLabel.setIcon(GUIUtilities.loadIcon("icon_web"));
+        gitHubLabel.setIcon(IconManager.getIcon("icon_web"));
 
         viewLicenseButton = WidgetFactory.createButton(
                 "viewLicenseButton",

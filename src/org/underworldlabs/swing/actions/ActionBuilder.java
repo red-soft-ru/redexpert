@@ -21,7 +21,7 @@
 package org.underworldlabs.swing.actions;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -245,7 +245,7 @@ public final class ActionBuilder {
 
                 value = attrs.getValue(SMALL_ICON);
                 if (!MiscUtils.isNull(value)) {
-                    ImageIcon icon = GUIUtilities.loadIcon(value);
+                    Icon icon = IconManager.getIcon(value);
                     if (icon != null)
                         actionCommand.putValue(Action.SMALL_ICON, icon);
                 }

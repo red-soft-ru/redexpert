@@ -21,6 +21,7 @@
 package org.executequery.gui.table;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ColumnConstraint;
 
 import javax.swing.*;
@@ -37,8 +38,8 @@ public class ConstraintCellRenderer extends JLabel
     private static ImageIcon newImage;
 
     static {
-        deleteImage = GUIUtilities.loadIcon("icon_mark_delete", true);
-        newImage = GUIUtilities.loadIcon("icon_mark_new", true);
+        deleteImage = IconManager.getIcon("icon_mark_delete");
+        newImage = IconManager.getIcon("icon_mark_new");
     }
 
     /**

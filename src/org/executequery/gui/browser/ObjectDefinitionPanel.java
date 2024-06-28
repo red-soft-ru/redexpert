@@ -29,6 +29,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
@@ -154,7 +155,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         // --- base ---
 
-        setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
+        setHeader("Database Object", IconManager.getIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
     }
 
@@ -226,7 +227,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         // ---
 
         tableNameField.setText(object.getName());
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.TABLES_IMAGE));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.TABLES_IMAGE));
         descBottomPanel.removeAll();
 
         try {

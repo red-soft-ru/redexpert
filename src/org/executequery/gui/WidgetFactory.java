@@ -581,7 +581,7 @@ public final class WidgetFactory {
     public static RolloverButton createRolloverButton(String name, String toolTip, String icon) {
 
         RolloverButton button = new RolloverButton();
-        button.setIcon(GUIUtilities.loadIcon(icon));
+        button.setIcon(IconManager.getIcon(icon));
         button.setToolTipText(toolTip);
         button.setName(name);
 

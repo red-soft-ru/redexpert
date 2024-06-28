@@ -1,8 +1,8 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
@@ -168,7 +168,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(sequence);
         objectNameLabel.setText(bundleString("SequenceName"));
         setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.SEQUENCES_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.SEQUENCES_IMAGE));
 
         try {
             sequenceNameField.setText(sequence.getName());
@@ -190,7 +190,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Sequence Name:");
         setHeaderText("Database Sequence");
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.SEQUENCES_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.SEQUENCES_IMAGE));
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());

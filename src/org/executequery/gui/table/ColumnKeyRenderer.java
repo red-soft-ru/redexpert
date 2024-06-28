@@ -20,9 +20,9 @@
 
 package org.executequery.gui.table;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
+import org.executequery.gui.IconManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -59,11 +59,11 @@ public class ColumnKeyRenderer extends DefaultTableCellRenderer {
     private ImageIcon newImage;
 
     public ColumnKeyRenderer() {
-        deleteImage = GUIUtilities.loadIcon("icon_mark_delete", true);
-        newImage = GUIUtilities.loadIcon("icon_mark_new", true);
-        fkImage = GUIUtilities.loadIcon("icon_key_foreign", true);
-        pkImage = GUIUtilities.loadIcon("icon_key_primary", true);
-        pkfkImage = GUIUtilities.loadIcon("icon_key_mixed", true);
+        deleteImage = IconManager.getIcon("icon_mark_delete");
+        newImage = IconManager.getIcon("icon_mark_new");
+        fkImage = IconManager.getIcon("icon_key_foreign");
+        pkImage = IconManager.getIcon("icon_key_primary");
+        pkfkImage = IconManager.getIcon("icon_key_mixed");
     }
 
     public Component getTableCellRendererComponent(JTable table,

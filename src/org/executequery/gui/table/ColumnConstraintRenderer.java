@@ -22,6 +22,7 @@ package org.executequery.gui.table;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.gui.IconManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -46,8 +47,8 @@ public class ColumnConstraintRenderer extends DefaultTableCellRenderer {
      * Creates a new instance of ColumnConstraintRenderer
      */
     public ColumnConstraintRenderer() {
-        deleteImage = GUIUtilities.loadIcon("icon_mark_delete", true);
-        newImage = GUIUtilities.loadIcon("icon_mark_new", true);
+        deleteImage = IconManager.getIcon("icon_mark_delete");
+        newImage = IconManager.getIcon("icon_mark_new");
     }
 
     public Component getTableCellRendererComponent(JTable table,

@@ -1,7 +1,7 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabasePackage;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -137,7 +137,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText("Database Package");
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.PACKAGE_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.PACKAGE_IMAGE));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -167,7 +167,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(databasePackage);
         objectNameLabel.setText("Package Name:");
         setHeaderText("Database Package");
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.PACKAGE_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.PACKAGE_IMAGE));
 
         try {
             packageNameField.setText(databasePackage.getName());
@@ -191,7 +191,7 @@ public class BrowserPackagePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Package Name:");
         setHeaderText("Database Package");
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.PACKAGE_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.PACKAGE_IMAGE));
 
         if (databasePackage != null) {
             packageNameField.setText(databasePackage.getName());

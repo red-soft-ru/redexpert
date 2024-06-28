@@ -45,7 +45,7 @@ public class ExecuteQueryFrame extends JFrame
 
     public static final String TITLE = "Red Expert";
 
-    private static final String APPLICATION_ICON = "icon_red_expert.svg";
+    private static final String APPLICATION_ICON = "icon_red_expert";
 
     private static final String WINDOW_POSITION_KEY = "window.position";
 
@@ -60,7 +60,7 @@ public class ExecuteQueryFrame extends JFrame
 
         super(TITLE);
 
-        ImageIcon frameIcon = GUIUtilities.loadVectorIcon(APPLICATION_ICON, false);
+        ImageIcon frameIcon = (ImageIcon) IconManager.getVectorIcon(APPLICATION_ICON);
         setIconImage(frameIcon.getImage());
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);

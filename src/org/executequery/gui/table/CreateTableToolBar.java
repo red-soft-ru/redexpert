@@ -20,9 +20,8 @@
 
 package org.executequery.gui.table;
 
-import org.executequery.GUIUtilities;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -95,25 +94,25 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
      */
     private void initialiseButtons() {
 
-        insertAfterButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_insert_after"),
+        insertAfterButton = WidgetFactory.createRolloverButton(
+                "insertAfterButton",
                 bundleString("InsertAfter"),
-                null
+                "icon_insert_after",
+                this
         );
 
-        insertBeforeButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_insert_before"),
+        insertBeforeButton = WidgetFactory.createRolloverButton(
+                "insertBeforeButton",
+                "icon_insert_before",
                 bundleString("InsertBefore"),
-                null
+                this
         );
 
-        deleteRowButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("icon_delete"),
+        deleteRowButton = WidgetFactory.createRolloverButton(
+                "deleteRowButton",
                 bundleString("DeleteSelection"),
-                null
+                "icon_delete",
+                this
         );
 
         GridBagHelper gbh = new GridBagHelper();
@@ -125,18 +124,18 @@ public class CreateTableToolBar extends JPanel implements ActionListener {
 
         if (canMove) {
 
-            moveUpButton = ActionUtilities.createToolbarButton(
-                    this,
-                    GUIUtilities.getAbsoluteIconPath("icon_move_up"),
+            moveUpButton = WidgetFactory.createRolloverButton(
+                    "moveUpButton",
                     bundleString("MoveUp"),
-                    null
+                    "icon_move_up",
+                    this
             );
 
-            moveDownButton = ActionUtilities.createToolbarButton(
-                    this,
-                    GUIUtilities.getAbsoluteIconPath("icon_move_down"),
+            moveDownButton = WidgetFactory.createRolloverButton(
+                    "moveDownButton",
                     bundleString("MoveDown"),
-                    null
+                    "icon_move_down",
+                    this
             );
 
             add(moveUpButton, gbh.nextRowFirstCol().get());

@@ -20,9 +20,8 @@
 
 package org.underworldlabs.swing.toolbar;
 
-import org.underworldlabs.swing.GUIUtils;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.RolloverButton;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,10 +45,8 @@ public class PanelToolBar extends AbstractToolBarPanel {
 
         JButton button = new RolloverButton();
 
-        if (icon != null) {
-
-            button.setIcon(IconUtilities.loadIcon(icon));
-        }
+        if (icon != null)
+            button.setIcon(IconManager.getIcon(icon));
 
         button.setText(null);
         button.setToolTipText(toolTip);

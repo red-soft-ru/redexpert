@@ -33,6 +33,7 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.CreateDriverDialog;
 import org.executequery.gui.editor.TransactionIsolationComboBox;
@@ -1783,8 +1784,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             setFocusPainted(false);
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
-            setIcon(GUIUtilities.loadIcon("icon_trash"));
-            setPressedIcon(GUIUtilities.loadIcon("icon_trash_open"));
+            setIcon(IconManager.getIcon("icon_trash"));
+            setPressedIcon(IconManager.getIcon("icon_trash_open"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());

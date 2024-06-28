@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.tree.SchemaTree;
 import org.executequery.localization.Bundles;
@@ -60,7 +61,7 @@ public abstract class FindAction<T> extends AbstractAction
         super("Incremental Search");
 
         putValue(Action.ACCELERATOR_KEY, INVOKE_KEY_STROKE);
-        putValue(Action.SMALL_ICON, GUIUtilities.loadIcon("icon_zoom"));
+        putValue(Action.SMALL_ICON, IconManager.getIcon("icon_zoom"));
 
         init();
     }

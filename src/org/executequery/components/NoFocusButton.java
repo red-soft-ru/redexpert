@@ -22,6 +22,7 @@ package org.executequery.components;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.GUIUtils;
 
 import javax.swing.*;
@@ -42,8 +43,8 @@ public class NoFocusButton extends JButton {
         setFocusPainted(false);
         setBorderPainted(false);
         setMargin(Constants.EMPTY_INSETS);
-        setIcon(GUIUtilities.loadIcon(icon));
-        setPressedIcon(GUIUtilities.loadIcon(pressedIcon));
+        setIcon(IconManager.getIcon(icon));
+        setPressedIcon(IconManager.getIcon(pressedIcon));
 
         try {
             setUI(new javax.swing.plaf.basic.BasicButtonUI());

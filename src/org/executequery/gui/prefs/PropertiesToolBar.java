@@ -21,6 +21,7 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -69,13 +70,13 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         moveUpButton = WidgetFactory.createButton(
                 "moveUpButton",
-                GUIUtilities.loadIcon("icon_move_up", true),
+                IconManager.getIcon("icon_move_up"),
                 e -> moveButtonUp()
         );
 
         moveDownButton = WidgetFactory.createButton(
                 "moveDownButton",
-                GUIUtilities.loadIcon("icon_move_down", true),
+                IconManager.getIcon("icon_move_down"),
                 e -> moveButtonDown()
         );
 

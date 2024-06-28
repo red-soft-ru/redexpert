@@ -27,6 +27,7 @@ import org.executequery.event.DefaultQueryBookmarkEvent;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarks;
@@ -462,25 +463,25 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         JButton upButton = ActionUtilities.createToolbarButton(
                 this,
                 "moveUp",
-                GUIUtilities.loadIcon("icon_move_up"),
+                IconManager.getIcon("icon_move_up"),
                 "Move selection up");
 
         JButton downButton = ActionUtilities.createToolbarButton(
                 this,
                 "moveDown",
-                GUIUtilities.loadIcon("icon_move_down"),
+                IconManager.getIcon("icon_move_down"),
                 "Move selection down");
 
         JButton addButton = ActionUtilities.createToolbarButton(
                 this,
                 "addBookmark",
-                GUIUtilities.loadIcon("icon_add"),
+                IconManager.getIcon("icon_add"),
                 "Add bookmark");
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
                 this,
                 "deleteBookmark",
-                GUIUtilities.loadIcon("icon_delete"),
+                IconManager.getIcon("icon_delete"),
                 "Delete bookmark");
 
         GridBagConstraints gbc = new GridBagConstraints();

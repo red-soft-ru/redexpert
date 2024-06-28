@@ -106,7 +106,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         String label = node.getDisplayName();
 
         setBackgroundSelectionColor(selectedBackground);
-        setIcon(IconManager.getInstance().getIconFromNode(node, isSelected));
+        setIcon(IconManager.getIconFromNode(node, isSelected));
 
         setText(label);
 

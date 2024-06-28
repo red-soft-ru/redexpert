@@ -20,8 +20,6 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
-
 /**
  * Reusable constants for construction and reference
  * to the tree structure within the Database Browser Panel.<br>
@@ -32,13 +30,10 @@ import org.executequery.GUIUtilities;
  */
 public class BrowserConstants {
 
-    public static final String LIGHT_SUFFIX = "_light";
-
     public static final String DATABASE_OBJECT_IMAGE = "icon_db_object";
     public static final String CONNECTIONS_IMAGE = "icon_db_connection";
     public static final String CONNECTIONS_FOLDER_IMAGE = "icon_folder";
     public static final String CATALOG_IMAGE = "icon_db_image";
-    public static final String HOST_IMAGE = "icon_db";
     public static final String HOST_NOT_CONNECTED_IMAGE = "icon_connection";
     public static final String HOST_CONNECTED_IMAGE = "icon_connection_active";
     public static final String SCHEMA_IMAGE = "icon_db_user";
@@ -51,7 +46,6 @@ public class BrowserConstants {
     public static final String GLOBAL_TABLES_IMAGE = "icon_db_table_global";
     public static final String COLUMNS_IMAGE = "icon_db_table_column";
     public static final String PRIMARY_COLUMNS_IMAGE = "icon_db_table_column_primary";
-    public static final String FOREIGN_COLUMNS_IMAGE = "icon_db_table_column_foreign";
     public static final String VIEWS_IMAGE = "icon_db_view";
     public static final String TABLE_TRIGGER_IMAGE = "icon_db_trigger_table";
     public static final String DB_TRIGGER_IMAGE = "icon_db_trigger_db";
@@ -64,32 +58,6 @@ public class BrowserConstants {
     public static final String USER_IMAGE = "icon_db_user";
     public static final String TABLESPACE_IMAGE = "icon_db_tablespace";
     public static final String JOB_IMAGE = "icon_db_job";
-
-    public static final String CONNECTIONS_FOLDER_IMAGE_LIGHT = CONNECTIONS_FOLDER_IMAGE + LIGHT_SUFFIX;
-    public static final String CATALOG_IMAGE_LIGHT = CATALOG_IMAGE + LIGHT_SUFFIX;
-    public static final String HOST_NOT_CONNECTED_IMAGE_LIGHT = HOST_NOT_CONNECTED_IMAGE + LIGHT_SUFFIX;
-    public static final String HOST_CONNECTED_IMAGE_LIGHT = HOST_CONNECTED_IMAGE + LIGHT_SUFFIX;
-    public static final String FUNCTIONS_IMAGE_LIGHT = FUNCTIONS_IMAGE + LIGHT_SUFFIX;
-    public static final String INDEXES_IMAGE_LIGHT = INDEXES_IMAGE + LIGHT_SUFFIX;
-    public static final String PROCEDURES_IMAGE_LIGHT = PROCEDURES_IMAGE + LIGHT_SUFFIX;
-    public static final String SEQUENCES_IMAGE_LIGHT = SEQUENCES_IMAGE + LIGHT_SUFFIX;
-    public static final String TABLES_IMAGE_LIGHT = TABLES_IMAGE + LIGHT_SUFFIX;
-    public static final String GLOBAL_TABLES_IMAGE_LIGHT = GLOBAL_TABLES_IMAGE + LIGHT_SUFFIX;
-    public static final String COLUMNS_IMAGE_LIGHT = COLUMNS_IMAGE + LIGHT_SUFFIX;
-    public static final String PRIMARY_COLUMNS_IMAGE_LIGHT = PRIMARY_COLUMNS_IMAGE + LIGHT_SUFFIX;
-    public static final String FOREIGN_COLUMNS_IMAGE_LIGHT = FOREIGN_COLUMNS_IMAGE + LIGHT_SUFFIX;
-    public static final String VIEWS_IMAGE_LIGHT = VIEWS_IMAGE + LIGHT_SUFFIX;
-    public static final String TABLE_TRIGGER_IMAGE_LIGHT = TABLE_TRIGGER_IMAGE + LIGHT_SUFFIX;
-    public static final String DB_TRIGGER_IMAGE_LIGHT = DB_TRIGGER_IMAGE + LIGHT_SUFFIX;
-    public static final String DDL_TRIGGER_IMAGE_LIGHT = DDL_TRIGGER_IMAGE + LIGHT_SUFFIX;
-    public static final String DOMAIN_IMAGE_LIGHT = DOMAIN_IMAGE + LIGHT_SUFFIX;
-    public static final String EXCEPTION_IMAGE_LIGHT = EXCEPTION_IMAGE + LIGHT_SUFFIX;
-    public static final String UDF_IMAGE_LIGHT = UDF_IMAGE + LIGHT_SUFFIX;
-    public static final String PACKAGE_IMAGE_LIGHT = PACKAGE_IMAGE + LIGHT_SUFFIX;
-    public static final String ROLE_IMAGE_LIGHT = ROLE_IMAGE + LIGHT_SUFFIX;
-    public static final String USER_IMAGE_LIGHT = USER_IMAGE + LIGHT_SUFFIX;
-    public static final String TABLESPACE_IMAGE_LIGHT = TABLESPACE_IMAGE + LIGHT_SUFFIX;
-    public static final String JOB_IMAGE_LIGHT = JOB_IMAGE + LIGHT_SUFFIX;
 
     public static final String FOLDER_FOREIGN_KEYS_IMAGE = "icon_folder_foreign";
     public static final String FOLDER_PRIMARY_KEYS_IMAGE = "icon_folder_primary";
@@ -106,133 +74,8 @@ public class BrowserConstants {
     public static final String SYSTEM_PACKAGE_IMAGE = "icon_db_package_system";
     public static final String SYSTEM_ROLE_IMAGE = "icon_db_role_system";
 
-    public static final String SYSTEM_DOMAIN_IMAGE_LIGHT = SYSTEM_DOMAIN_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_TABLES_IMAGE_LIGHT = SYSTEM_TABLES_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_VIEWS_IMAGE_LIGHT = SYSTEM_VIEWS_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_INDEX_IMAGE_LIGHT = SYSTEM_INDEX_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_TRIGGER_IMAGE_LIGHT = SYSTEM_TRIGGER_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_FUNCTIONS_IMAGE_LIGHT = SYSTEM_FUNCTIONS_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_SEQUENCES_IMAGE_LIGHT = SYSTEM_SEQUENCES_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_PACKAGE_IMAGE_LIGHT = SYSTEM_PACKAGE_IMAGE + LIGHT_SUFFIX;
-    public static final String SYSTEM_ROLE_IMAGE_LIGHT = SYSTEM_ROLE_IMAGE + LIGHT_SUFFIX;
-
-    public static final String GRANT_IMAGE = "icon_grant.svg";
-    public static final String NO_GRANT_IMAGE = "icon_revoke.svg";
-    public static final String ADMIN_OPTION_IMAGE = "icon_grant_admin.svg";
-    public static final String FIELD_GRANT_IMAGE = "icon_grant_disable.svg";
-
-    public static String[] getNodeIcons() {
-        return GUIUtilities.getLookAndFeel().isClassicTheme() ? NODE_ICONS_CLASSIC : NODE_ICONS_DEFAULT;
-    }
-
-    private static final String[] NODE_ICONS_DEFAULT = {
-            CONNECTIONS_FOLDER_IMAGE,
-            CATALOG_IMAGE,
-            HOST_IMAGE,
-            HOST_NOT_CONNECTED_IMAGE,
-            HOST_CONNECTED_IMAGE,
-            SCHEMA_IMAGE,
-            FUNCTIONS_IMAGE,
-            INDEXES_IMAGE,
-            PROCEDURES_IMAGE,
-            SEQUENCES_IMAGE,
-            SYNONYMS_IMAGE,
-            SYSTEM_TABLES_IMAGE,
-            TABLES_IMAGE,
-            VIEWS_IMAGE,
-            SYSTEM_FUNCTIONS_IMAGE,
-            COLUMNS_IMAGE,
-            PRIMARY_COLUMNS_IMAGE,
-            SYSTEM_VIEWS_IMAGE,
-            TABLE_TRIGGER_IMAGE,
-            GLOBAL_TABLES_IMAGE,
-            FOLDER_COLUMNS_IMAGE,
-            FOLDER_FOREIGN_KEYS_IMAGE,
-            FOLDER_INDEXES_IMAGE,
-            FOLDER_PRIMARY_KEYS_IMAGE,
-            DOMAIN_IMAGE,
-            EXCEPTION_IMAGE,
-            UDF_IMAGE,
-            SYSTEM_DOMAIN_IMAGE,
-            SYSTEM_INDEX_IMAGE,
-            SYSTEM_TRIGGER_IMAGE,
-            PACKAGE_IMAGE,
-            ROLE_IMAGE,
-            SYSTEM_ROLE_IMAGE,
-            USER_IMAGE,
-            TABLESPACE_IMAGE,
-            JOB_IMAGE,
-            DB_TRIGGER_IMAGE,
-            DDL_TRIGGER_IMAGE,
-            SYSTEM_PACKAGE_IMAGE,
-            SYSTEM_SEQUENCES_IMAGE,
-            CONNECTIONS_FOLDER_IMAGE_LIGHT,
-            CATALOG_IMAGE_LIGHT,
-            HOST_NOT_CONNECTED_IMAGE_LIGHT,
-            HOST_CONNECTED_IMAGE_LIGHT,
-            FUNCTIONS_IMAGE_LIGHT,
-            INDEXES_IMAGE_LIGHT,
-            PROCEDURES_IMAGE_LIGHT,
-            SEQUENCES_IMAGE_LIGHT,
-            TABLES_IMAGE_LIGHT,
-            GLOBAL_TABLES_IMAGE_LIGHT,
-            COLUMNS_IMAGE_LIGHT,
-            PRIMARY_COLUMNS_IMAGE_LIGHT,
-            VIEWS_IMAGE_LIGHT,
-            TABLE_TRIGGER_IMAGE_LIGHT,
-            DB_TRIGGER_IMAGE_LIGHT,
-            DDL_TRIGGER_IMAGE_LIGHT,
-            DOMAIN_IMAGE_LIGHT,
-            EXCEPTION_IMAGE_LIGHT,
-            UDF_IMAGE_LIGHT,
-            PACKAGE_IMAGE_LIGHT,
-            ROLE_IMAGE_LIGHT,
-            USER_IMAGE_LIGHT,
-            TABLESPACE_IMAGE_LIGHT,
-            JOB_IMAGE_LIGHT
-    };
-
-    private static final String[] NODE_ICONS_CLASSIC = {
-            CONNECTIONS_FOLDER_IMAGE,
-            CATALOG_IMAGE,
-            HOST_IMAGE,
-            HOST_NOT_CONNECTED_IMAGE,
-            HOST_CONNECTED_IMAGE,
-            SCHEMA_IMAGE,
-            FUNCTIONS_IMAGE,
-            INDEXES_IMAGE,
-            PROCEDURES_IMAGE,
-            SEQUENCES_IMAGE,
-            SYNONYMS_IMAGE,
-            SYSTEM_TABLES_IMAGE,
-            TABLES_IMAGE,
-            VIEWS_IMAGE,
-            SYSTEM_FUNCTIONS_IMAGE,
-            COLUMNS_IMAGE,
-            PRIMARY_COLUMNS_IMAGE,
-            SYSTEM_VIEWS_IMAGE,
-            TABLE_TRIGGER_IMAGE,
-            GLOBAL_TABLES_IMAGE,
-            FOLDER_COLUMNS_IMAGE,
-            FOLDER_FOREIGN_KEYS_IMAGE,
-            FOLDER_INDEXES_IMAGE,
-            FOLDER_PRIMARY_KEYS_IMAGE,
-            DOMAIN_IMAGE,
-            EXCEPTION_IMAGE,
-            UDF_IMAGE,
-            SYSTEM_DOMAIN_IMAGE,
-            SYSTEM_INDEX_IMAGE,
-            SYSTEM_TRIGGER_IMAGE,
-            PACKAGE_IMAGE,
-            ROLE_IMAGE,
-            SYSTEM_ROLE_IMAGE,
-            USER_IMAGE,
-            TABLESPACE_IMAGE,
-            JOB_IMAGE,
-            DB_TRIGGER_IMAGE,
-            DDL_TRIGGER_IMAGE,
-            SYSTEM_PACKAGE_IMAGE,
-            SYSTEM_SEQUENCES_IMAGE
-    };
-
+    public static final String GRANT_IMAGE = "icon_grant";
+    public static final String NO_GRANT_IMAGE = "icon_revoke";
+    public static final String ADMIN_OPTION_IMAGE = "icon_grant_admin";
+    public static final String FIELD_GRANT_IMAGE = "icon_grant_disable";
 }

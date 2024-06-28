@@ -5,6 +5,7 @@ import org.executequery.base.TabView;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
@@ -58,7 +59,7 @@ public class JobsLogPanel extends JPanel implements TabView {
         startDatePicker = new TimestampPicker();
         endDatePicker = new TimestampPicker();
         refreshButton = new JButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("icon_refresh"));
+        refreshButton.setIcon(IconManager.getIcon("icon_refresh"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

@@ -22,6 +22,7 @@ package org.underworldlabs.swing;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -446,7 +447,7 @@ public class GUIUtils {
             if (parent == null) {
                 frame = new JFrame("My dialog asks....");
                 frame.setUndecorated(true);
-                frame.setIconImage(GUIUtilities.loadVectorIcon("icon_red_expert.svg", true).getImage());
+                frame.setIconImage(((ImageIcon) IconManager.getIcon("icon_red_expert")).getImage());
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
                 dialog = pane.createDialog(frame, title);

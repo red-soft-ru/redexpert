@@ -22,6 +22,7 @@ package org.executequery;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.RemoteHttpClientException;
@@ -386,7 +387,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
-        label.setIcon(GUIUtilities.loadIcon("icon_notification", "gif", false));
+        label.setIcon(IconManager.getIcon("icon_notification"/*, "gif"*/));
         label.setToolTipText(newVersionAvailableText());
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));

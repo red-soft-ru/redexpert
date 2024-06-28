@@ -199,7 +199,7 @@ public final class ChangelogDialog extends InformationDialog {
                 setForeground(selected ? selectionForeground : textForeground);
 
                 setText(treeNode.nodeText);
-                setIcon(GUIUtilities.loadIcon("icon_information"));
+                setIcon(IconManager.getIcon("icon_information"));
             }
 
             return this;

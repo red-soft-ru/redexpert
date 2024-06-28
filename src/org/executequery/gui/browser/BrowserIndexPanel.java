@@ -5,6 +5,7 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -135,7 +136,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
 
         setHeaderText("Database UDF");
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.INDEXES_IMAGE));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -186,7 +187,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("IndexName"));
         setHeaderText(bundleString("DatabaseIndex"));
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.INDEXES_IMAGE));
 
         try {
             indexNameField.setText(index.getName());
@@ -206,7 +207,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("IndexName"));
         setHeaderText(bundleString("DatabaseIndex"));
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.INDEXES_IMAGE, true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.INDEXES_IMAGE));
 
         if (index != null) {
             indexNameField.setText(index.getName());

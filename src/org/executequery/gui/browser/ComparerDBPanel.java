@@ -9,6 +9,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.SimpleDataSource;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
@@ -1142,79 +1143,79 @@ public class ComparerDBPanel extends JPanel implements TabView {
             switch (treeNode.type) {
 
                 case NamedObject.DOMAIN:
-                    setIcon(GUIUtilities.loadIcon("icon_db_domain"));
+                    setIcon(IconManager.getIcon("icon_db_domain"));
                     break;
 
                 case NamedObject.TABLE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_table"));
+                    setIcon(IconManager.getIcon("icon_db_table"));
                     break;
 
                 case NamedObject.GLOBAL_TEMPORARY:
-                    setIcon(GUIUtilities.loadIcon("icon_db_table_global"));
+                    setIcon(IconManager.getIcon("icon_db_table_global"));
                     break;
 
                 case NamedObject.VIEW:
-                    setIcon(GUIUtilities.loadIcon("icon_db_view"));
+                    setIcon(IconManager.getIcon("icon_db_view"));
                     break;
 
                 case NamedObject.PROCEDURE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_procedure"));
+                    setIcon(IconManager.getIcon("icon_db_procedure"));
                     break;
 
                 case NamedObject.FUNCTION:
-                    setIcon(GUIUtilities.loadIcon("icon_db_function"));
+                    setIcon(IconManager.getIcon("icon_db_function"));
                     break;
 
                 case NamedObject.PACKAGE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_package"));
+                    setIcon(IconManager.getIcon("icon_db_package"));
                     break;
 
                 case NamedObject.TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_table"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_table"));
                     break;
 
                 case NamedObject.DDL_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_ddl"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_ddl"));
                     break;
 
                 case NamedObject.DATABASE_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("icon_db_trigger_db"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_db"));
                     break;
 
                 case NamedObject.SEQUENCE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_generator"));
+                    setIcon(IconManager.getIcon("icon_db_generator"));
                     break;
 
                 case NamedObject.EXCEPTION:
-                    setIcon(GUIUtilities.loadIcon("icon_db_exception"));
+                    setIcon(IconManager.getIcon("icon_db_exception"));
                     break;
 
                 case NamedObject.UDF:
-                    setIcon(GUIUtilities.loadIcon("icon_db_udf"));
+                    setIcon(IconManager.getIcon("icon_db_udf"));
                     break;
 
                 case NamedObject.USER:
-                    setIcon(GUIUtilities.loadIcon("icon_db_user"));
+                    setIcon(IconManager.getIcon("icon_db_user"));
                     break;
 
                 case NamedObject.ROLE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_role"));
+                    setIcon(IconManager.getIcon("icon_db_role"));
                     break;
 
                 case NamedObject.INDEX:
-                    setIcon(GUIUtilities.loadIcon("icon_db_index"));
+                    setIcon(IconManager.getIcon("icon_db_index"));
                     break;
 
                 case NamedObject.TABLESPACE:
-                    setIcon(GUIUtilities.loadIcon("icon_db_tablespace"));
+                    setIcon(IconManager.getIcon("icon_db_tablespace"));
                     break;
 
                 case NamedObject.JOB:
-                    setIcon(GUIUtilities.loadIcon("icon_db_job"));
+                    setIcon(IconManager.getIcon("icon_db_job"));
                     break;
 
                 case NamedObject.COLLATION:
-                    setIcon(GUIUtilities.loadIcon("icon_file_xml"));
+                    setIcon(IconManager.getIcon("icon_file_xml"));
                     break;
 
                 default:

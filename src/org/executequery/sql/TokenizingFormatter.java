@@ -22,6 +22,7 @@ package org.executequery.sql;
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import com.github.vertical_blank.sqlformatter.core.FormatConfig;
+import org.underworldlabs.util.MiscUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class TokenizingFormatter {
 
     public String format(String text) {
 
-        List<DerivedQuery> queries = queryTokenizer().tokenize(text);
+        List<DerivedQuery> queries = queryTokenizer().tokenize(MiscUtils.trimEnd(text));
         List<String> formattedQueries = formatQueries(queries);
 
         return rebuildQueryString(formattedQueries);

@@ -48,6 +48,9 @@ import java.util.Vector;
 public class TraceManagerPanel extends AbstractServiceManagerPanel implements TabView {
 
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
+    public static final String FRAME_ICON = "icon_manager_trace";
+
+
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
     private AnalisePanel analisePanel;

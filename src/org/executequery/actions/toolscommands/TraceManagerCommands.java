@@ -5,7 +5,6 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.browser.TraceManagerPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class TraceManagerCommands extends OpenFrameCommand
@@ -20,7 +19,7 @@ public class TraceManagerCommands extends OpenFrameCommand
 
         GUIUtilities.addCentralPane(
                 title,
-                (Icon) null,
+                TraceManagerPanel.FRAME_ICON,
                 new TraceManagerPanel(),
                 null,
                 true

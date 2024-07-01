@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class TableValidationPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundledString("Title");
-    public static final String FRAME_ICON = "icon_utility";
+    public static final String FRAME_ICON = "icon_table_validation";
 
     private List<DatabaseConnection> databaseConnections;
     private DatabaseConnection selectedConnection;

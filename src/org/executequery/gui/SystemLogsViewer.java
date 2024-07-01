@@ -50,7 +50,7 @@ public class SystemLogsViewer extends DefaultTextEditorContainer
         ActionListener {
 
     public static final String TITLE = bundleString("title");
-    public static final String FRAME_ICON = "icon_console";
+    public static final String FRAME_ICON = "icon_application_log";
 
     private JTextArea textArea;
     private JComboBox<?> logCombo;

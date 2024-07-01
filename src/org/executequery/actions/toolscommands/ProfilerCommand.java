@@ -5,7 +5,6 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class ProfilerCommand extends OpenFrameCommand
@@ -20,7 +19,7 @@ public class ProfilerCommand extends OpenFrameCommand
 
         GUIUtilities.addCentralPane(
                 title,
-                (Icon) null,
+                ProfilerPanel.FRAME_ICON,
                 new ProfilerPanel(),
                 null,
                 true

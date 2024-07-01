@@ -33,6 +33,7 @@ public class ProfilerPanel extends JPanel
         implements TabView {
 
     public final static String TITLE = bundleString("title");
+    public static final String FRAME_ICON = "icon_execute_profiler";
     private final static boolean SORTABLE = true;
 
     private static final int ACTIVE = 0;

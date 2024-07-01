@@ -5,7 +5,6 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.browser.DatabaseStatisticPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class DatabaseStatisticCommands extends OpenFrameCommand
@@ -20,7 +19,7 @@ public class DatabaseStatisticCommands extends OpenFrameCommand
 
         GUIUtilities.addCentralPane(
                 title,
-                (Icon) null,
+                DatabaseStatisticPanel.FRAME_ICON,
                 new DatabaseStatisticPanel(),
                 null,
                 true

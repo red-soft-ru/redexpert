@@ -40,7 +40,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
+
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
+    public static final String FRAME_ICON = "icon_db_statistic";
+
     private IFBStatisticManager statisticManager;
     protected RolloverButton fileStatButton;
     protected RolloverButton compareButton;

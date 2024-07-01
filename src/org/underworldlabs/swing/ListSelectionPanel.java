@@ -28,7 +28,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -41,297 +43,326 @@ import java.util.Vector;
 public class ListSelectionPanel extends ActionPanel
         implements ListSelection {
 
-    /**
-     * the available object list
-     */
-    private JList availableList;
+    private static final int DEFAULT_ROW_HEIGHT = 20;
+    private List<ListSelectionPanelListener> listeners;
 
-    /**
-     * the selected object list
-     */
+    // --- GUI components ---
+
+    private JLabel availableLabel;
+    private JLabel selectedLabel;
+    private JList availableList;
     private JList selectedList;
 
-    /**
-     * the selections made collection
-     */
+    private Vector available;
     private Vector selections;
 
-    /**
-     * the available objects collection
-     */
-    private Vector available;
+    private JButton moveUpButton;
+    private JButton moveDownButton;
+    private JButton selectOneButton;
+    private JButton selectAllButton;
+    private JButton removeOneButton;
+    private JButton removeAllButton;
+    private JButton movePageUpButton;
+    private JButton movePageDownButton;
 
-    /**
-     * label above the available object list
-     */
-    private JLabel availableLabel;
-
-    /**
-     * label above the selected object list
-     */
-    private JLabel selectedLabel;
-
-    private static final int DEFAULT_ROW_HEIGHT = 20;
-
-    private List<ListSelectionPanelListener> listeners;
+    // ---
 
     public ListSelectionPanel() {
         this(null);
     }
 
-    public ListSelectionPanel(Vector v) {
-        this(Bundles.get(ListSelectionPanel.class, "AvailableColumns"),
-                Bundles.get(ListSelectionPanel.class, "SelectedColumns"), v);
+    public ListSelectionPanel(Vector availableVector) {
+        this(
+                Bundles.get(ListSelectionPanel.class, "AvailableColumns"),
+                Bundles.get(ListSelectionPanel.class, "SelectedColumns"),
+                availableVector
+        );
     }
 
-    public ListSelectionPanel(String availLabel, String selectLabel) {
-        this(availLabel, selectLabel, null);
+    public ListSelectionPanel(String availableText, String selectedText) {
+        this(availableText, selectedText, null);
     }
 
-    public ListSelectionPanel(String availLabel, String selectLabel, Vector v) {
+    public ListSelectionPanel(String availLabel, String selectLabel, Vector availableVector) {
         super(new GridBagLayout());
 
-        listeners = new ArrayList<>();
         init();
-        selections = new Vector();
-        createAvailableList(v);
+        arrange();
+        createAvailableList(availableVector);
         setLabelText(availLabel, selectLabel);
     }
 
     private void init() {
-        // create the labels
+        selections = new Vector();
+        listeners = new ArrayList<>();
+
+        // --- labels ---
+
         availableLabel = new JLabel();
         selectedLabel = new JLabel();
 
-        // initialise the buttons
-        JButton selectOneButton = WidgetFactory.createRolloverButton(
+        // --- lists ---
+
+        MouseListener mouseListener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                if (e.getClickCount() < 2)
+                    return;
+
+                Object source = e.getSource();
+                if (source == availableList) {
+                    selectOneAction();
+
+                } else if (source == selectedList)
+                    removeOneAction();
+            }
+        };
+
+        availableList = new JList();
+        availableList.addMouseListener(mouseListener);
+        availableList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
+
+        selectedList = new JList();
+        selectedList.addMouseListener(mouseListener);
+        selectedList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
+
+        //  --- buttons ---
+
+        selectOneButton = WidgetFactory.createRolloverButton(
                 "selectOneButton",
                 bundleString("selectOneAction"),
                 "icon_move_next",
                 e -> selectOneAction()
         );
 
-        JButton selectAllButton = WidgetFactory.createRolloverButton(
+        selectAllButton = WidgetFactory.createRolloverButton(
                 "selectAllButton",
                 bundleString("selectAllAction"),
                 "icon_move_next_all",
                 e -> selectAllAction()
         );
 
-        JButton removeOneButton = WidgetFactory.createRolloverButton(
+        removeOneButton = WidgetFactory.createRolloverButton(
                 "removeOneButton",
                 bundleString("removeOneAction"),
                 "icon_move_previous",
                 e -> removeOneAction()
         );
 
-        JButton removeAllButton = WidgetFactory.createRolloverButton(
+        removeAllButton = WidgetFactory.createRolloverButton(
                 "removeAllButton",
                 bundleString("removeAllAction"),
                 "icon_move_previous_all",
                 e -> removeAllAction()
         );
 
-        // reset the button insets
-        Insets buttonInsets = UIManager.getInsets("Button.margin");
-        if (buttonInsets != null) {
-            selectOneButton.setMargin(buttonInsets);
-            selectAllButton.setMargin(buttonInsets);
-            removeOneButton.setMargin(buttonInsets);
-            removeAllButton.setMargin(buttonInsets);
-        }
-
-        JButton moveUpButton = WidgetFactory.createRolloverButton(
+        moveUpButton = WidgetFactory.createRolloverButton(
                 "moveUpButton",
                 bundleString("moveSelectionUp"),
                 "icon_move_up",
                 e -> moveSelectionUp()
         );
 
-        JButton movePageUpButton = WidgetFactory.createRolloverButton(
+        movePageUpButton = WidgetFactory.createRolloverButton(
                 "movePageUpButton",
                 bundleString("moveSelectionPageUp"),
                 "icon_move_up_all",
                 e -> moveSelectionPageUp()
         );
 
-        JButton moveDownButton = WidgetFactory.createRolloverButton(
+        moveDownButton = WidgetFactory.createRolloverButton(
                 "moveDownButton",
                 bundleString("moveSelectionDown"),
                 "icon_move_down",
                 e -> moveSelectionDown()
         );
 
-        JButton movePageDownButton = WidgetFactory.createRolloverButton(
+        movePageDownButton = WidgetFactory.createRolloverButton(
                 "movePageDownButton",
                 bundleString("moveSelectionPageDown"),
                 "icon_move_down_all",
                 e -> moveSelectionPageDown()
         );
-
-        // initialise the lists
-        availableList = new JList();
-        selectedList = new JList();
-
-        availableList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
-        selectedList.setFixedCellHeight(DEFAULT_ROW_HEIGHT);
-
-        // create the list scroll panes
-        JScrollPane availableScrollPane = new JScrollPane(availableList);
-        JScrollPane selectedScrollPane = new JScrollPane(selectedList);
-
-        Dimension listDim = new Dimension(180, 185);
-        availableScrollPane.setPreferredSize(listDim);
-        selectedScrollPane.setPreferredSize(listDim);
-
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-
-
-        //  selection buttons
-        JPanel buttonPanel = new JPanel(new GridBagLayout());
-        buttonPanel.add(selectOneButton, gbh.setLabelDefault().anchorCenter().topGap(15).bottomGap(5).get());
-        buttonPanel.add(selectAllButton, gbh.topGap(0).nextRow().get());
-        buttonPanel.add(removeOneButton, gbh.nextRow().get());
-        buttonPanel.add(removeAllButton, gbh.nextRow().get());
-
-        JPanel buttonMovePanel = new JPanel(new GridBagLayout());
-        gbh.fullDefaults();
-        buttonMovePanel.add(movePageUpButton, gbh.setLabelDefault().anchorCenter().topGap(15).bottomGap(5).get());
-        buttonMovePanel.add(moveUpButton, gbh.topGap(0).nextRow().get());
-        buttonMovePanel.add(new JLabel(bundleString("Move")), gbh.nextRow().get());
-        buttonMovePanel.add(moveDownButton, gbh.nextRow().get());
-        buttonMovePanel.add(movePageDownButton, gbh.nextRow().get());
-
-        gbh.fullDefaults();
-        add(availableLabel, gbh.setLabelDefault().get());
-        add(availableScrollPane, gbh.nextRow().fillBoth().setMaxWeightX().spanY().get());
-        add(buttonPanel, gbh.previousRow().nextCol().setLabelDefault().fillVertical().spanY().get());
-        add(selectedLabel, gbh.nextCol().setLabelDefault().get());
-        add(selectedScrollPane, gbh.nextRow().fillBoth().setMaxWeightX().spanY().get());
-
-        add(buttonMovePanel, gbh.previousRow().nextCol().setLabelDefault().fillVertical().spanY().get());
-
-        ListMouseSelectionListener mouseSelectionListener = new ListMouseSelectionListener();
-        availableList.addMouseListener(mouseSelectionListener);
-        selectedList.addMouseListener(mouseSelectionListener);
     }
 
-    public void setLabelText(String avail, String select) {
-        availableLabel.setText(avail);
-        selectedLabel.setText(select);
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- scroll panes ---
+
+        Dimension listDim = new Dimension(180, 185);
+
+        JScrollPane availableScrollPane = new JScrollPane(availableList);
+        availableScrollPane.setPreferredSize(listDim);
+
+        JScrollPane selectedScrollPane = new JScrollPane(selectedList);
+        selectedScrollPane.setPreferredSize(listDim);
+
+        // --- selection buttons panel ---
+
+        JPanel selectionButtonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorCenter();
+        selectionButtonPanel.add(selectOneButton, gbh.topGap(15).bottomGap(5).get());
+        selectionButtonPanel.add(selectAllButton, gbh.nextRow().topGap(0).get());
+        selectionButtonPanel.add(removeOneButton, gbh.nextRow().get());
+        selectionButtonPanel.add(removeAllButton, gbh.nextRow().bottomGap(15).get());
+
+        // --- movable buttons panel ---
+
+        JPanel movableButtonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorCenter();
+        movableButtonPanel.add(movePageUpButton, gbh.topGap(15).bottomGap(5).get());
+        movableButtonPanel.add(moveUpButton, gbh.nextRow().topGap(0).get());
+        movableButtonPanel.add(new JSeparator(JSeparator.HORIZONTAL), gbh.nextRow().get());
+        movableButtonPanel.add(moveDownButton, gbh.nextRow().get());
+        movableButtonPanel.add(movePageDownButton, gbh.nextRow().bottomGap(15).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 0, 5).anchorNorthWest().fillHorizontally();
+        mainPanel.add(availableLabel, gbh.get());
+        mainPanel.add(selectedLabel, gbh.nextCol().nextCol().rightGap(5).get());
+        mainPanel.add(availableScrollPane, gbh.nextRowFirstCol().topGap(0).rightGap(0).fillBoth().setMaxWeightX().spanY().get());
+        mainPanel.add(selectionButtonPanel, gbh.nextCol().fillVertical().setMinWeightX().get());
+        mainPanel.add(selectedScrollPane, gbh.nextCol().fillBoth().setMaxWeightX().get());
+        mainPanel.add(movableButtonPanel, gbh.nextCol().rightGap(5).fillVertical().setMinWeightX().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
+    }
+
+    public void setLabelText(String availableText, String selectedText) {
+        availableLabel.setText(availableText);
+        selectedLabel.setText(selectedText);
     }
 
     public void clear() {
+
         if (available != null) {
             available.clear();
             availableList.setListData(available);
         }
+
         if (selections != null) {
             selections.clear();
             selectedList.setListData(selections);
         }
+
         fireChange(ListSelectionPanelEvent.CLEAR);
     }
 
     public void createAvailableList(List values) {
-        createAvailableList(values.toArray(new Object[values.size()]));
+        createAvailableList(values.toArray(new Object[0]));
     }
 
     public void createAvailableList(Object[] values) {
-        available = new Vector(values.length);
-        for (int i = 0; i < values.length; i++) {
-            available.add(values[i]);
-        }
+
+        available = new Vector();
+        Collections.addAll(available, values);
+
+        selections.clear();
 
         availableList.setListData(available);
-        selections.clear();
         selectedList.setListData(selections);
         fireChange(ListSelectionPanelEvent.ADD);
     }
 
-    public void createAvailableList(Vector v) {
-        if (v == null) {
-            return;
-        }
+    public void createAvailableList(Vector vector) {
 
-        available = v;
-        availableList.setListData(available);
+        if (vector == null)
+            return;
+
+        available = vector;
         selections.clear();
+
+        availableList.setListData(available);
         selectedList.setListData(selections);
         fireChange(ListSelectionPanelEvent.ADD);
     }
 
     public void addAvailableItem(Object obj) {
+
         if (available == null)
             available = new Vector();
+
         available.add(obj);
-        availableList.setListData(available);
         selections.clear();
+
+        availableList.setListData(available);
         selectedList.setListData(selections);
         fireChange(ListSelectionPanelEvent.ADD);
     }
 
+    @Override
     public void removeAllAction() {
-        if (selections == null || selections.size() == 0) {
+
+        if (selections == null || selections.isEmpty())
             return;
-        }
-        for (int i = 0, n = selections.size(); i < n; i++) {
-            available.add(selections.elementAt(i));
-        }
+
+        available.addAll(selections);
+        selections.clear();
 
         availableList.setListData(available);
-        selections.clear();
         selectedList.setListData(selections);
         fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
+    @Override
     public void removeOneAction() {
-        if (selectedList.isSelectionEmpty()) {
-            return;
-        }
 
-        int index = selectedList.getSelectedIndex();
-        List selectedObjects = selectedList.getSelectedValuesList();
-        for (Object selection : selectedObjects) {
+        if (selectedList.isSelectionEmpty())
+            return;
+
+        int selectedIndex = selectedList.getSelectedIndex();
+        for (Object selection : selectedList.getSelectedValuesList()) {
             available.add(selection);
             selections.remove(selection);
         }
 
         selectedList.setListData(selections);
         availableList.setListData(available);
-        selectedList.setSelectedIndex(index);
+        selectedList.setSelectedIndex(selectedIndex);
         fireChange(ListSelectionPanelEvent.DESELECT);
     }
 
+    @Override
     public void selectAllAction() {
-        if (available == null) {
+
+        if (available == null)
             return;
-        }
-        for (int i = 0, n = available.size(); i < n; i++) {
-            selections.add(available.elementAt(i));
-        }
-        selectedList.setListData(selections);
+
+        selections.addAll(available);
         available.clear();
+
+        selectedList.setListData(selections);
         availableList.setListData(available);
         fireChange(ListSelectionPanelEvent.SELECT);
     }
 
+    @Override
     public void selectOneAction() {
-        if (availableList.isSelectionEmpty()) {
-            return;
-        }
 
-        int index = availableList.getSelectedIndex();
-        List selectedObjects = availableList.getSelectedValuesList();
-        for (Object selection : selectedObjects) {
+        if (availableList.isSelectionEmpty())
+            return;
+
+        int selectedIndex = availableList.getSelectedIndex();
+        for (Object selection : availableList.getSelectedValuesList()) {
             selections.add(selection);
             available.remove(selection);
         }
 
         availableList.setListData(available);
         selectedList.setListData(selections);
-        availableList.setSelectedIndex(index);
+        availableList.setSelectedIndex(selectedIndex);
         fireChange(ListSelectionPanelEvent.SELECT);
     }
 
@@ -347,20 +378,12 @@ public class ListSelectionPanel extends ActionPanel
     }
 
     public void selectOneStringAction(String object) {
-        if (available.size() <= 0 || !(available.get(0) instanceof String))
+
+        if (available.isEmpty() || !(available.get(0) instanceof String))
             return;
+
         for (int i = 0; i < getAvailableValues().size(); i++) {
             if (getAvailableValues().get(i).toString().contentEquals(object)) {
-                selectOneAction(i);
-                break;
-            }
-        }
-    }
-
-    public void selectOneObjectAction(Object object) {
-
-        for (int i = 0; i < getAvailableValues().size(); i++) {
-            if (getAvailableValues().get(i).equals(object)) {
                 selectOneAction(i);
                 break;
             }
@@ -376,79 +399,71 @@ public class ListSelectionPanel extends ActionPanel
     }
 
     public boolean hasSelections() {
-        return selections.size() > 0;
+        return !selections.isEmpty();
     }
 
     public void moveSelectionDown() {
-        if (selectedList.isSelectionEmpty() ||
-                selectedList.getSelectedIndex() == selections.size() - 1) {
-            return;
-        }
 
-        int index = selectedList.getSelectedIndex();
-        Object move = selectedList.getSelectedValue();
-        selections.removeElementAt(index);
-        selections.add(index + 1, move);
+        int selectedIndex = selectedList.getSelectedIndex();
+        if (selectedIndex < 0 || selectedIndex == selections.size() - 1)
+            return;
+
+        Object selectedValue = selectedList.getSelectedValue();
+        selections.removeElementAt(selectedIndex);
+        selections.add(selectedIndex + 1, selectedValue);
         selectedList.setListData(selections);
-        selectedList.setSelectedIndex(index + 1);
+        selectedList.setSelectedIndex(selectedIndex + 1);
+
         fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void moveSelectionPageDown() {
-        if (selectedList.isSelectionEmpty() ||
-                selectedList.getSelectedIndex() == selections.size() - 1) {
-            return;
-        }
 
-        int index = selectedList.getSelectedIndex();
-        Object move = selectedList.getSelectedValue();
-        selections.removeElementAt(index);
-        selections.add(move);
+        int selectedIndex = selectedList.getSelectedIndex();
+        if (selectedIndex < 0 || selectedIndex == selections.size() - 1)
+            return;
+
+        Object selectedValue = selectedList.getSelectedValue();
+        selections.removeElementAt(selectedIndex);
+        selections.add(selectedValue);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(selections.size() - 1);
+
         fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void moveSelectionUp() {
-        if (selectedList.isSelectionEmpty() ||
-                selectedList.getSelectedIndex() == 0) {
-            return;
-        }
 
-        int index = selectedList.getSelectedIndex();
-        Object move = selectedList.getSelectedValue();
-        selections.removeElementAt(index);
-        selections.add(index - 1, move);
+        int selectedIndex = selectedList.getSelectedIndex();
+        if (selectedIndex < 1)
+            return;
+
+        Object selectedValue = selectedList.getSelectedValue();
+        selections.removeElementAt(selectedIndex);
+        selections.add(selectedIndex - 1, selectedValue);
         selectedList.setListData(selections);
-        selectedList.setSelectedIndex(index - 1);
+        selectedList.setSelectedIndex(selectedIndex - 1);
+
         fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void moveSelectionPageUp() {
-        if (selectedList.isSelectionEmpty() ||
-                selectedList.getSelectedIndex() == 0) {
-            return;
-        }
 
-        int index = selectedList.getSelectedIndex();
-        Object move = selectedList.getSelectedValue();
-        selections.removeElementAt(index);
-        selections.add(0, move);
+        int selectedIndex = selectedList.getSelectedIndex();
+        if (selectedIndex < 1)
+            return;
+
+        Object selectedValue = selectedList.getSelectedValue();
+        selections.removeElementAt(selectedIndex);
+        selections.add(0, selectedValue);
         selectedList.setListData(selections);
         selectedList.setSelectedIndex(0);
+
         fireChange(ListSelectionPanelEvent.MOVE);
     }
 
     public void addListSelectionPanelListener(ListSelectionPanelListener listener) {
         listeners.add(listener);
-    }
-
-    public void removeListSelectionPanelListener(ListSelectionPanelListener listener) {
-        listeners.remove(listener);
-    }
-
-    public void removeAllListSelectionPanelListeners() {
-        listeners.clear();
     }
 
     private void fireChange(int type) {
@@ -457,27 +472,4 @@ public class ListSelectionPanel extends ActionPanel
             listener.changed(event);
     }
 
-
-    class ListMouseSelectionListener extends MouseAdapter {
-
-        public void mouseClicked(MouseEvent e) {
-
-            if (e.getClickCount() == 2) {
-
-                Object source = e.getSource();
-                if (source == availableList) {
-
-                    selectOneAction();
-
-                } else if (source == selectedList) {
-
-                    removeOneAction();
-                }
-
-            }
-
-        }
-
-    }
 }
-

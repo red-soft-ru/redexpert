@@ -8,13 +8,23 @@ import org.underworldlabs.swing.actions.BaseCommand;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class TraceManagerCommands extends OpenFrameCommand implements BaseCommand {
+public class TraceManagerCommands extends OpenFrameCommand
+        implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-            GUIUtilities.addCentralPane(TraceManagerPanel.TITLE,
-                    (Icon) null,
-                    new TraceManagerPanel(),
-                    null,
-                    true);
+
+        String title = TraceManagerPanel.TITLE;
+        if (isCentralPaneOpen(title))
+            return;
+
+        GUIUtilities.addCentralPane(
+                title,
+                (Icon) null,
+                new TraceManagerPanel(),
+                null,
+                true
+        );
     }
+
 }

@@ -36,7 +36,6 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
     protected final boolean isConnected() {
 
         if (!ConnectionManager.hasConnections()) {
-
             GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.notConnected"));
             return false;
         }
@@ -52,10 +51,20 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
     protected final boolean isDialogOpen(String title) {
 
         if (GUIUtilities.isDialogOpen(title)) {
-
             GUIUtilities.setSelectedDialog(title);
             return true;
         }
+
+        return false;
+    }
+
+    protected final boolean isCentralPaneOpen(String title) {
+
+        if (GUIUtilities.getCentralPane(title) != null) {
+            GUIUtilities.setSelectedCentralPane(title);
+            return true;
+        }
+
         return false;
     }
 

@@ -6,10 +6,6 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.TableValidationPanel;
-import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.Repository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -18,7 +14,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,46 +83,29 @@ public class TableValidationCommand extends OpenFrameCommand
 
     private void showPanel(TableValidationPanel tableValidationPanel) {
 
-        if (isActionableDialogOpen()) {
-            GUIUtilities.actionableDialogToFront();
+        String title = TableValidationPanel.TITLE;
+        if (isCentralPaneOpen(title))
             return;
+
+        try {
+            GUIUtilities.showWaitCursor();
+
+            GUIUtilities.addCentralPane(
+                    title,
+                    TableValidationPanel.FRAME_ICON,
+                    tableValidationPanel,
+                    null, true
+            );
+
+        } finally {
+            GUIUtilities.showNormalCursor();
         }
-
-        if (!isDialogOpen(TableValidationPanel.TITLE)) {
-            try {
-
-                GUIUtilities.showWaitCursor();
-
-                GUIUtilities.addCentralPane(
-                        TableValidationPanel.TITLE,
-                        TableValidationPanel.FRAME_ICON,
-                        tableValidationPanel,
-                        null, true
-                );
-
-            } finally {
-                GUIUtilities.showNormalCursor();
-            }
-        }
-
     }
 
     @Override
     public void execute(ActionEvent e) {
-        boolean hasActiveConnection = false;
-
-        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repo instanceof DatabaseConnectionRepository) {
-            List<DatabaseConnection> listConnections = ((DatabaseConnectionRepository) repo).findAll();
-            hasActiveConnection = listConnections.stream().anyMatch(DatabaseConnection::isConnected);
-        }
-
-        if (!hasActiveConnection) {
-            GUIUtilities.displayErrorMessage(Bundles.get("GrantManagerPanel.message.notConnected"));
-            return;
-        }
-
-        showPanel(new TableValidationPanel());
+        if (isConnected())
+            showPanel(new TableValidationPanel());
     }
 
 }

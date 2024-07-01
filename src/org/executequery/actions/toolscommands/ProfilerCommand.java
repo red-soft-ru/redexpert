@@ -14,19 +14,17 @@ public class ProfilerCommand extends OpenFrameCommand
     @Override
     public void execute(ActionEvent e) {
 
-        if (!isConnected()) {
+        String title = ProfilerPanel.TITLE;
+        if (!isConnected() || isCentralPaneOpen(title))
             return;
-        }
 
-        if (isActionableDialogOpen()) {
-            GUIUtilities.actionableDialogToFront();
-            return;
-        }
-
-        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
+        GUIUtilities.addCentralPane(
+                title,
                 (Icon) null,
                 new ProfilerPanel(),
                 null,
-                true);
+                true
+        );
     }
+
 }

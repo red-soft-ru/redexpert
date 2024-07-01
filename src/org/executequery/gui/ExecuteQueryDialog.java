@@ -7,6 +7,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -647,7 +648,14 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             switch (col) {
                 case VALID:
-                    return IconManager.getVectorIcon(action.executed ? "icon_grant" : "icon_revoke");
+                    return IconManager.getIcon(
+                            action.executed ?
+                                    BrowserConstants.GRANT_IMAGE :
+                                    BrowserConstants.REVOKE_IMAGE,
+                            "svg",
+                            16,
+                            IconManager.IconFolder.DEFAULT_DARK
+                    );
 
                 case NAME:
                     return action.nameOperation;

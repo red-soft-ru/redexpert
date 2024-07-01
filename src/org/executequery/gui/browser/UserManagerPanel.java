@@ -54,9 +54,9 @@ public class UserManagerPanel extends JPanel implements Runnable {
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
     public static final String FRAME_ICON = "icon_manager_user";
 
-    private static final Icon GRANT_ROLE_ICON = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
-    private static final Icon REVOKE_ROLE_ICON = IconManager.getIcon(BrowserConstants.NO_GRANT_IMAGE);
-    private static final Icon GRANT_ADMIN_ROLE_ICON = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+    private static final Icon GRANT_ROLE_ICON = IconManager.getIcon(BrowserConstants.GRANT_IMAGE, "svg", 16, IconManager.IconFolder.DEFAULT_DARK);
+    private static final Icon REVOKE_ROLE_ICON = IconManager.getIcon(BrowserConstants.REVOKE_IMAGE, "svg", 16, IconManager.IconFolder.DEFAULT_DARK);
+    private static final Icon GRANT_ADMIN_ROLE_ICON = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE, "svg", 16, IconManager.IconFolder.DEFAULT_DARK);
 
     private enum Action {
         REFRESH,

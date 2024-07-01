@@ -52,7 +52,7 @@ public class AboutPanel extends BaseDialog {
     }
 
     private void init() {
-        icon = IconManager.getVectorIcon("icon_red_expert", 70);
+        icon = IconManager.getIcon("icon_red_expert", "svg", 70, IconManager.IconFolder.DEFAULT_DARK);
 
         versionLabel = WidgetFactory.createLabel(
                 "RedExpert " + System.getProperty("executequery.minor.version"),

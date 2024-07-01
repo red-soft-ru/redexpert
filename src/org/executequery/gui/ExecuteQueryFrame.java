@@ -57,12 +57,10 @@ public class ExecuteQueryFrame extends JFrame
     private int lastHeight;
 
     public ExecuteQueryFrame() {
-
         super(TITLE);
 
-        ImageIcon frameIcon = (ImageIcon) IconManager.getVectorIcon(APPLICATION_ICON);
+        ImageIcon frameIcon = IconManager.getIcon(APPLICATION_ICON);
         setIconImage(frameIcon.getImage());
-
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {

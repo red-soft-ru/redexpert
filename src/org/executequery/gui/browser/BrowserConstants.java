@@ -75,7 +75,7 @@ public class BrowserConstants {
     public static final String SYSTEM_ROLE_IMAGE = "icon_db_role_system";
 
     public static final String GRANT_IMAGE = "icon_grant";
-    public static final String NO_GRANT_IMAGE = "icon_revoke";
+    public static final String REVOKE_IMAGE = "icon_revoke";
     public static final String ADMIN_OPTION_IMAGE = "icon_grant_admin";
     public static final String FIELD_GRANT_IMAGE = "icon_grant_disable";
 }

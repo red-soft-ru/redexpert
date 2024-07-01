@@ -1,6 +1,5 @@
 package org.executequery.gui;
 
-import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
@@ -21,6 +20,16 @@ import java.util.stream.Stream;
 
 public class IconManager {
 
+    public enum IconFolder {
+        CLASSIC,
+        DEFAULT_DARK,
+        DEFAULT_LIGHT
+    }
+
+    private static final String CLASSIC_ICONS_FOLDER = "/org/executequery/icons/classic/";
+    private static final String DEFAULT_DARK_ICONS_FOLDER = "/org/executequery/icons/default/dark/";
+    private static final String DEFAULT_LIGHT_ICONS_FOLDER = "/org/executequery/icons/default/light/";
+
     private static final Map<String, ImageIcon> iconsDark = new HashMap<>();
     private static final Map<String, ImageIcon> iconsLight = new HashMap<>();
     private static final boolean isDarkTheme = GUIUtilities.getLookAndFeel().isDarkTheme();
@@ -33,21 +42,20 @@ public class IconManager {
     public static void loadIcons() {
 
         if (isDefaultTheme) {
-            loadIcons("icons/default/dark/", iconsDark);
-            loadIcons("icons/default/light/", iconsLight);
+            loadIcons(DEFAULT_DARK_ICONS_FOLDER, iconsDark);
+            loadIcons(DEFAULT_LIGHT_ICONS_FOLDER, iconsLight);
             return;
         }
 
-        loadIcons("icons/classic/", iconsLight);
+        loadIcons(CLASSIC_ICONS_FOLDER, iconsLight);
     }
 
     private static void loadIcons(String resourceName, Map<String, ImageIcon> iconMap) {
 
-        URL iconsResource = ExecuteQuery.class.getResource(resourceName);
+        URL iconsResource = IconManager.class.getResource(resourceName);
         if (iconsResource == null)
             return;
 
-        final String basePath = "/org/executequery/" + resourceName;
         try {
             Path iconsPath = new File(iconsResource.toURI()).toPath();
             try (Stream<Path> iconsStream = Files.walk(iconsPath)) {
@@ -56,7 +64,7 @@ public class IconManager {
                         .map(File::getName)
                         .forEach(name -> iconMap.put(
                                 name.replaceAll("[.]\\w+$", ""),
-                                loadIcon(basePath + name, 18)
+                                loadIcon(resourceName + name, 18)
                         ));
             }
         } catch (Exception e) {
@@ -66,7 +74,7 @@ public class IconManager {
 
     private static ImageIcon loadIcon(String iconPath, int iconSize) {
 
-        URL url = ExecuteQuery.class.getResource(iconPath);
+        URL url = IconManager.class.getResource(iconPath);
         if (url == null) {
             Log.info("icon with path [" + iconPath + "] not found");
             return null;
@@ -89,7 +97,7 @@ public class IconManager {
      * Returns loaded icon by its name
      * without extension for the selected LAF
      *
-     * @param iconName the name of the icon that should be returned
+     * @param iconName the name of the icon
      */
     public static ImageIcon getIcon(String iconName) {
         if (isDefaultTheme && isDarkTheme)
@@ -97,22 +105,26 @@ public class IconManager {
         return iconsLight.get(iconName);
     }
 
-    private static Icon getIcon(String iconName, boolean fromDarkTheme) {
+    /**
+     * Loads icon from application resources
+     *
+     * @param iconName   the name of the icon
+     * @param iconType   the icon extension
+     * @param iconSize   the vector icon size
+     * @param iconFolder the resource folder name to load from
+     */
+    public static ImageIcon getIcon(String iconName, String iconType, int iconSize, IconFolder iconFolder) {
+        iconName = getFolder(iconFolder) + iconName + "." + iconType;
+        return loadIcon(iconName, iconSize);
+    }
+
+    private static ImageIcon getIcon(String iconName, boolean fromDarkTheme) {
         if ((isDefaultTheme && fromDarkTheme) || isDarkTheme)
             return iconsDark.get(iconName);
         return iconsLight.get(iconName);
     }
 
-    public static Icon getVectorIcon(String iconName) {
-        return getVectorIcon(iconName, 18);
-    }
-
-    public static Icon getVectorIcon(String iconName, int iconSize) {
-        iconName = "/org/executequery/icons/default/dark/" + iconName + ".svg";
-        return loadIcon(iconName, iconSize);
-    }
-
-    public static Icon getIconFromNode(DatabaseObjectNode node, boolean isSelected) {
+    public static ImageIcon getIconFromNode(DatabaseObjectNode node, boolean isSelected) {
 
         int type = node.getType();
         switch (type) {
@@ -131,15 +143,15 @@ public class IconManager {
         }
     }
 
-    public static Icon getIconFromType(int type) {
+    public static ImageIcon getIconFromType(int type) {
         return getIconFromType(type, false);
     }
 
-    public static Icon getIconFromDatabaseColumn(DatabaseColumn databaseColumn) {
+    public static ImageIcon getIconFromDatabaseColumn(DatabaseColumn databaseColumn) {
         return getIconFromDatabaseColumn(databaseColumn, false);
     }
 
-    private static Icon getIconFromDatabaseColumn(DatabaseColumn databaseColumn, boolean isLight) {
+    private static ImageIcon getIconFromDatabaseColumn(DatabaseColumn databaseColumn, boolean isLight) {
 
         String iconName = databaseColumn.isPrimaryKey() ?
                 BrowserConstants.PRIMARY_COLUMNS_IMAGE :
@@ -148,7 +160,7 @@ public class IconManager {
         return getIcon(iconName, isLight);
     }
 
-    private static Icon getIconHostNode(DatabaseHostNode hostNode, boolean isLight) {
+    private static ImageIcon getIconHostNode(DatabaseHostNode hostNode, boolean isLight) {
 
         String iconName = BrowserConstants.HOST_NOT_CONNECTED_IMAGE;
         if (hostNode.isConnected())
@@ -157,7 +169,7 @@ public class IconManager {
         return getIcon(iconName, isLight);
     }
 
-    private static Icon getIconFromType(int type, boolean isSelected) {
+    private static ImageIcon getIconFromType(int type, boolean isSelected) {
         String iconName;
 
         switch (type) {
@@ -344,7 +356,7 @@ public class IconManager {
         return getIcon(iconName, isSelected);
     }
 
-    private static Icon getIconFromMetaTag(String metadata, boolean isSelected) {
+    private static ImageIcon getIconFromMetaTag(String metadata, boolean isSelected) {
         String iconName;
 
         if (metadata.compareToIgnoreCase("index") == 0) {
@@ -450,6 +462,17 @@ public class IconManager {
             iconName = BrowserConstants.DATABASE_OBJECT_IMAGE;
 
         return getIcon(iconName, isSelected);
+    }
+
+    private static String getFolder(IconFolder iconFolder) {
+
+        String folderName = CLASSIC_ICONS_FOLDER;
+        if (iconFolder == IconFolder.DEFAULT_DARK) {
+            folderName = DEFAULT_DARK_ICONS_FOLDER;
+        } else if (iconFolder == IconFolder.DEFAULT_LIGHT)
+            folderName = DEFAULT_LIGHT_ICONS_FOLDER;
+
+        return folderName;
     }
 
 }

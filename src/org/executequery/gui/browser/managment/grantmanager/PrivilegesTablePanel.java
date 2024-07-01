@@ -97,10 +97,10 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         this.grantManagerPanel = grantManagerPanel;
         this.typeTable = typeTable;
         icons = new Icon[4];
-        icons[GRANT] = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
-        icons[REVOKE] = IconManager.getIcon(BrowserConstants.NO_GRANT_IMAGE);
-        icons[GRANT_OPTION] = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        icons[GRANT_FIELD] = IconManager.getIcon(BrowserConstants.FIELD_GRANT_IMAGE);
+        icons[GRANT] = loadIcon(BrowserConstants.GRANT_IMAGE);
+        icons[REVOKE] = loadIcon(BrowserConstants.REVOKE_IMAGE);
+        icons[GRANT_OPTION] = loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        icons[GRANT_FIELD] = loadIcon(BrowserConstants.FIELD_GRANT_IMAGE);
         objectVector = new Vector<>();
         tableMap = new HashMap<>();
         tableForColumnsMap = new HashMap<>();
@@ -195,7 +195,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
         for (int i = 0; i < grantFieldButtons.length; i++) {
             grantFieldButtons[i] = new RolloverButton();
-            grantFieldButtons[i].setIcon(IconManager.getIcon(iconNamesForFields[i]));
+            grantFieldButtons[i].setIcon(loadIcon(iconNamesForFields[i]));
             grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
             grantFieldButtons[i].setActionCommand("field_" + i);
             grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
@@ -211,7 +211,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantButtons = new RolloverButton[iconNames.length];
         for (int i = 0; i < grantButtons.length; i++) {
             grantButtons[i] = new RolloverButton();
-            grantButtons[i].setIcon(IconManager.getIcon(iconNames[i]));
+            grantButtons[i].setIcon(loadIcon(iconNames[i]));
             grantButtons[i].setActionCommand(iconNames[i]);
             grantButtons[i].setMouseEnteredContentAreaFill(false);
             grantButtons[i].setToolTipText(toolTips[i]);
@@ -1148,6 +1148,10 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                     ((RolloverButton) comp).removeActionListener(this);
                 }
             }
+    }
+
+    private ImageIcon loadIcon(String iconName) {
+        return IconManager.getIcon(iconName, "svg", 16, IconManager.IconFolder.DEFAULT_DARK);
     }
 
     class TypeObject {

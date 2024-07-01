@@ -8,7 +8,7 @@ package org.executequery.gui.browser;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.components.table.MembershipTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
 import org.executequery.databasemediators.ConnectionMediator;
@@ -135,7 +135,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
         // --- tables ---
 
         membershipTable = WidgetFactory.createTable("membershipTable", new String[]{"Title 1", "Title 2", "Title 3", "Title 4"});
-        membershipTable.setDefaultRenderer(Object.class, new BrowserTableCellRenderer());
+        membershipTable.setDefaultRenderer(Object.class, new MembershipTableCellRenderer());
         membershipTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {

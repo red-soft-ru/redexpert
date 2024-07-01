@@ -3,7 +3,7 @@ package org.executequery.gui.browser.managment.grantmanager;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.components.table.MembershipTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
@@ -206,9 +206,9 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         tablePrivileges = new JTable();
         privilegesForFieldTable = new JTable();
-        BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
-        tablePrivileges.setDefaultRenderer(Object.class, bctr);
-        privilegesForFieldTable.setDefaultRenderer(Object.class, bctr);
+        MembershipTableCellRenderer renderer = new MembershipTableCellRenderer();
+        tablePrivileges.setDefaultRenderer(Object.class, renderer);
+        privilegesForFieldTable.setDefaultRenderer(Object.class, renderer);
         grantToolBar = new JPanel();
 
         grantButtons = new RolloverButton[iconNames.length];

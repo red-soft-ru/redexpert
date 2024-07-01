@@ -42,8 +42,8 @@ public class TransactionParametersPanel extends JPanel {
     private DatabaseConnection databaseConnection;
 
     public TransactionParametersPanel(DatabaseConnection databaseConnection) {
-        setDatabaseConnection(databaseConnection);
         init();
+        setDatabaseConnection(databaseConnection);
     }
 
     private void init() {
@@ -132,8 +132,11 @@ public class TransactionParametersPanel extends JPanel {
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        if (databaseConnection != null)
+        if (databaseConnection != null) {
             transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
+            useOutTraBox.setVisible(databaseConnection.getMajorServerVersion() >= 4);
+            outTraField.setVisible(databaseConnection.getMajorServerVersion() >= 4);
+        }
     }
 
     private void checkEnabled() {

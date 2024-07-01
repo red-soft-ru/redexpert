@@ -42,7 +42,6 @@ public class RolloverButton extends JButton
     private String toolTip;
     private boolean isPressedByUser;
     private boolean selectionEnabled;
-    private boolean mouseEnteredContentAreaFill;
 
     public RolloverButton() {
         init();
@@ -85,7 +84,6 @@ public class RolloverButton extends JButton
 
     private void init() {
         selectionEnabled = true;
-        mouseEnteredContentAreaFill = true;
 
         setMargin(new Insets(1, 1, 1, 1));
         setToolTipText(toolTip);
@@ -107,9 +105,9 @@ public class RolloverButton extends JButton
         setMaximumSize(new Dimension(width, height));
     }
 
-    private void setPressedBackground(boolean paintBorder, boolean fillBackground) {
-        setBorderPainted(paintBorder);
-        setContentAreaFilled(fillBackground);
+    private void setPressedBackground(boolean isPressed) {
+        setBorderPainted(isPressed);
+        setContentAreaFilled(isPressed);
     }
 
     /**
@@ -131,17 +129,13 @@ public class RolloverButton extends JButton
         return selectionEnabled;
     }
 
-    public void setMouseEnteredContentAreaFill(boolean mouseEnteredContentAreaFill) {
-        this.mouseEnteredContentAreaFill = mouseEnteredContentAreaFill;
-    }
-
     public boolean isPressedByUser() {
         return isPressedByUser;
     }
 
     public void setPressed(boolean pressed) {
         this.isPressedByUser = pressed;
-        setPressedBackground(pressed, pressed);
+        setPressedBackground(pressed);
     }
 
     // --- MouseListener impl ---
@@ -152,7 +146,7 @@ public class RolloverButton extends JButton
     @Override
     public void mouseEntered(MouseEvent e) {
         if (isEnabled() && isSelectionRolloverEnabled())
-            setPressedBackground(true, mouseEnteredContentAreaFill);
+            setPressedBackground(true);
     }
 
     /**
@@ -162,7 +156,7 @@ public class RolloverButton extends JButton
     @Override
     public void mouseExited(MouseEvent e) {
         if (!isPressedByUser())
-            setPressedBackground(false, false);
+            setPressedBackground(false);
     }
 
     @Override

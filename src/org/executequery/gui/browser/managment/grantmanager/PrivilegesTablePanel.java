@@ -13,6 +13,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.GrantManagerPanel;
@@ -51,8 +52,8 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private static final int GRANT = 1;
     private static final int GRANT_OPTION = 2;
     private static final int GRANT_FIELD = 3;
-    JToolBar grantToolBar;
-    JToolBar grantFieldsToolbar;
+    JPanel grantToolBar;
+    JPanel grantFieldsToolbar;
     String grants;// "SUDIXRGA";
     String[] headers;// {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
     String[] headersFields = {bundleString("Field"), bundleString("Type"), "Update", "References"};
@@ -192,34 +193,36 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                 }
             }
         });
+
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
         for (int i = 0; i < grantFieldButtons.length; i++) {
-            grantFieldButtons[i] = new RolloverButton();
-            grantFieldButtons[i].setIcon(loadIcon(iconNamesForFields[i]));
-            grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
+            grantFieldButtons[i] = WidgetFactory.createRolloverButton(
+                    iconNamesForFields[i],
+                    bundleString(iconNamesForFields[i]),
+                    iconNamesForFields[i],
+                    this);
             grantFieldButtons[i].setActionCommand("field_" + i);
-            grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
-            grantFieldButtons[i].addActionListener(this);
         }
+
         tablePrivileges = new JTable();
         privilegesForFieldTable = new JTable();
         BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
         tablePrivileges.setDefaultRenderer(Object.class, bctr);
         privilegesForFieldTable.setDefaultRenderer(Object.class, bctr);
-        grantToolBar = new JToolBar();
-        grantToolBar.setFloatable(false);
+        grantToolBar = new JPanel();
+
         grantButtons = new RolloverButton[iconNames.length];
         for (int i = 0; i < grantButtons.length; i++) {
-            grantButtons[i] = new RolloverButton();
-            grantButtons[i].setIcon(loadIcon(iconNames[i]));
+            grantButtons[i] = WidgetFactory.createRolloverButton(
+                    iconNames[i],
+                    toolTips[i],
+                    iconNames[i],
+                    this);
             grantButtons[i].setActionCommand(iconNames[i]);
-            grantButtons[i].setMouseEnteredContentAreaFill(false);
-            grantButtons[i].setToolTipText(toolTips[i]);
             grantToolBar.add(grantButtons[i]);
-            grantButtons[i].addActionListener(this);
         }
-        grantFieldsToolbar = new JToolBar();
-        grantFieldsToolbar.setFloatable(false);
+
+        grantFieldsToolbar = new JPanel();
 
         tablePrivileges.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -296,17 +299,19 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             }
         });
 
-        refreshButton = new RolloverButton();
-        refreshButton.setToolTipText(bundleString("Refresh"));
-        refreshButton.setIcon(IconManager.getIcon("icon_refresh"));
-        refreshButton.setMouseEnteredContentAreaFill(false);
-        refreshButton.addActionListener(this);
+        refreshButton = WidgetFactory.createRolloverButton(
+                "refreshButton",
+                bundleString("Refresh"),
+                "icon_refresh",
+                this
+        );
 
-        cancelButton = new RolloverButton();
-        cancelButton.setToolTipText(bundleString("CancelFill"));
-        cancelButton.setIcon(IconManager.getIcon("icon_execute_stop"));
-        cancelButton.setMouseEnteredContentAreaFill(false);
-        cancelButton.addActionListener(this);
+        cancelButton = WidgetFactory.createRolloverButton(
+                "cancelButton",
+                bundleString("CancelFill"),
+                "icon_execute_stop",
+                this
+        );
 
         filterBox = new JComboBox<>();
         filterField = new JTextField();
@@ -366,7 +371,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantToolBar.add(refreshButton);
         grantToolBar.add(cancelButton);
 
-        bottomPanel.add(grantFieldsToolbar, gridBagHelper.fillHorizontally().spanX().get());
+        bottomPanel.add(grantFieldsToolbar, gridBagHelper.fillNone().spanX().get());
         JScrollPane scrollPane = new JScrollPane(privilegesForFieldTable);
         bottomPanel.add(scrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
@@ -390,7 +395,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         add(progressBar, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
 
-        add(grantToolBar, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        add(grantToolBar, gbh.nextRowFirstCol().fillNone().spanX().get());
 
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
     }

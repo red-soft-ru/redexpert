@@ -236,6 +236,19 @@ public final class ConnectionManager {
         return -1;
     }
 
+    public static long getCurrentSnapshotTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                return simpleDataSource.getSnapshotTransaction(connection);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
     public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection databaseConnection) {
         DataSource dataSource = getDataSource(databaseConnection);
         if (dataSource instanceof SimpleDataSource) {

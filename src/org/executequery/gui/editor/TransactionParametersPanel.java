@@ -35,6 +35,9 @@ public class TransactionParametersPanel extends JPanel {
     private JCheckBox recordVersionBox;
     private JCheckBox ignoreLimboCheckBox;
     private JCheckBox reservingCheckBox;
+    private JLabel curTraLabel;
+    private JCheckBox useOutTraBox;
+    private NumberTextField outTraField;
     private TransactionTablesTable transactionTablesTable;
     private DatabaseConnection databaseConnection;
 
@@ -64,6 +67,14 @@ public class TransactionParametersPanel extends JPanel {
         recordVersionBox = new JCheckBox("RECORD VERSION");
         noAutoUndoCheckBox = new JCheckBox("NO AUTO UNDO");
         ignoreLimboCheckBox = new JCheckBox("IGNORE LIMBO");
+        useOutTraBox = new JCheckBox("SET TRANSACTION SNAPSHOT");
+        useOutTraBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                checkEnabled();
+            }
+        });
+        outTraField = new NumberTextField();
         reservingCheckBox = new JCheckBox("RESERVING");
         //transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
         reservingCheckBox.addActionListener(new ActionListener() {
@@ -95,21 +106,28 @@ public class TransactionParametersPanel extends JPanel {
         add(ignoreLimboCheckBox, gbh.setLabelDefault().nextCol().get());
         levelLabel = new JLabel(Bundles.get("ConnectionPanel.IsolationLevel"));
         add(levelLabel, gbh.setLabelDefault().nextCol().get());
-        add(levelCombobox, gbh.setLabelDefault().nextCol().get());
-        add(recordVersionBox, gbh.nextCol().spanX().get());
+        add(levelCombobox, gbh.setLabelDefault().nextCol().setWidth(2).get());
+        add(recordVersionBox, gbh.nextCol().setLabelDefault().get());
+        curTraLabel = new JLabel("");
+        add(curTraLabel, gbh.nextCol().spanX().get());
         add(waitCheckBox, gbh.setLabelDefault().nextRowFirstCol().get());
         lockTimeOutLabel = new JLabel(bundleString("lockTimeout"));
         add(lockTimeOutLabel, gbh.nextCol().setLabelDefault().anchorNorthWest().get());
         add(lockTimeOutField, gbh.fillHorizontally().setWeightX(0.2).nextCol().get());
-        add(reservingCheckBox, gbh.setLabelDefault().nextCol().spanX().get());
+        add(reservingCheckBox, gbh.setLabelDefault().nextCol().get());
+        add(useOutTraBox, gbh.setLabelDefault().nextCol().get());
+        add(outTraField, gbh.nextCol().fillHorizontally().spanX().get());
         checkEnabled();
 
+    }
+
+    public void setCurrentTransaction(long currentTransaction, long snapshotTransaction) {
+        curTraLabel.setText("Current transaction id:" + currentTransaction + ", current snapshot transaction:" + snapshotTransaction);
     }
 
     public DatabaseConnection getDatabaseConnection() {
         return databaseConnection;
     }
-
 
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
@@ -122,6 +140,7 @@ public class TransactionParametersPanel extends JPanel {
         recordVersionBox.setEnabled(levelCombobox.getSelectedLevel() == Connection.TRANSACTION_READ_COMMITTED);
         lockTimeOutLabel.setEnabled(waitCheckBox.isSelected());
         lockTimeOutField.setEnabled(waitCheckBox.isSelected());
+        outTraField.setEnabled(useOutTraBox.isSelected());
 
     }
 
@@ -167,6 +186,9 @@ public class TransactionParametersPanel extends JPanel {
                 tpb.addArgument(ITPBConstants.isc_tpb_no_auto_undo);
             if (ignoreLimboCheckBox.isSelected())
                 tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
+            if (useOutTraBox.isSelected() && outTraField.getLongValue() > 0) {
+                tpb.addArgument(ITPBConstants.isc_tpb_at_snapshot_number, outTraField.getLongValue());
+            }
             if (reservingCheckBox.isSelected()) {
                 for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
                     if (reservingTable.isReadTable())

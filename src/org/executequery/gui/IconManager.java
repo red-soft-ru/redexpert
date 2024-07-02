@@ -82,7 +82,7 @@ public class IconManager {
                             .map(File::getName)
                             .forEach(name -> iconMap.put(
                                     name.replaceAll("[.]\\w+$", ""),
-                                    loadIcon(resourceName + name, 18)
+                                    loadIcon(resourceName + name, 20)
                             ));
                 }
             }

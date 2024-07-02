@@ -9,7 +9,6 @@ artifact installer VERSION
 file dist/unified/RedExpert-VERSION-installer-windows-x86_64.exe  windows-x64.exe
 file dist/unified/RedExpert-VERSION-installer-windows-x86.exe  windows-x86.exe
 file dist/unified/RedExpert-VERSION-installer-linux-x86_64.bin  linux-x64.bin
-file dist/unified/RedExpert-VERSION-installer-linux-x86.bin  linux-x86.bin
 end
 
 artifact src VERSION

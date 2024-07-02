@@ -114,7 +114,7 @@ build_docs:
 
 build:linux:
   extends: .build_template
-  image: ${BUILD_IMAGE}
+  image: oraclelinux:7
   tags:
     - docker
     - builder
@@ -123,6 +123,7 @@ build:linux:
     MAVEN_VERSION: 3.9.3
     M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
+    ARCH: x86_64
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
   before_script:
     - yum -y update
@@ -154,12 +155,6 @@ build:linux:
     - mv modules/redexpert/target/red_expert.png "${DIST}"
     - mv modules/redexpert/target/RedExpert.jar "${DIST}"
     - ./ci/build_installer.sh
-  parallel:
-    matrix:
-      - BUILD_IMAGE: oraclelinux:7
-        ARCH: x86_64
-      - BUILD_IMAGE: i386/centos:7
-        ARCH: x86
 
 build:windows:
   extends: .build_template
@@ -306,7 +301,7 @@ repackage:
   before_script:
     - apk --update add bash tar zip
   script:
-    - ./ci/repackage.sh linux-x86_64 linux-x86 windows-x86_64 windows-x86
+    - ./ci/repackage.sh linux-x86_64 windows-x86_64 windows-x86
   artifacts:
     expire_in: 1 day
     paths:

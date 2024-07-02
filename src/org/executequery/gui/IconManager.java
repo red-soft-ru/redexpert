@@ -12,7 +12,10 @@ import org.underworldlabs.swing.plaf.SVGImage;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -57,16 +60,33 @@ public class IconManager {
             return;
 
         try {
-            Path iconsPath = new File(iconsResource.toURI()).toPath();
-            try (Stream<Path> iconsStream = Files.walk(iconsPath)) {
-                iconsStream.map(Path::toFile)
-                        .filter(File::isFile)
-                        .map(File::getName)
-                        .forEach(name -> iconMap.put(
-                                name.replaceAll("[.]\\w+$", ""),
-                                loadIcon(resourceName + name, 18)
-                        ));
+            URI iconsUri = iconsResource.toURI();
+            if (iconsUri.getScheme().equals("jar")) {
+                try (FileSystem fileSystem = FileSystems.newFileSystem(iconsUri, Collections.emptyMap())) {
+
+                    Path iconsPath = fileSystem.getPath(resourceName);
+                    try (Stream<Path> iconsStream = Files.walk(iconsPath)) {
+                        iconsStream.map(Path::toString)
+                                .forEach(iconPath -> iconMap.put(
+                                        iconPath.replaceAll("\\w*/\\b|[.]\\w+$", ""),
+                                        loadIcon(iconPath, 18)
+                                ));
+                    }
+                }
+
+            } else {
+                Path iconsPath = new File(iconsResource.toURI()).toPath();
+                try (Stream<Path> iconsStream = Files.walk(iconsPath)) {
+                    iconsStream.map(Path::toFile)
+                            .filter(File::isFile)
+                            .map(File::getName)
+                            .forEach(name -> iconMap.put(
+                                    name.replaceAll("[.]\\w+$", ""),
+                                    loadIcon(resourceName + name, 18)
+                            ));
+                }
             }
+
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
         }

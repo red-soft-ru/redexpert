@@ -15,8 +15,6 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.sql.Connection;
 
@@ -32,15 +30,13 @@ public class TransactionParametersPanel extends JPanel {
     private JCheckBox waitCheck;
     private JCheckBox readOnlyCheck;
     private JCheckBox reservingCheck;
+    private JCheckBox noAutoUndoCheck;
     private JCheckBox ignoreLimboCheck;
     private JCheckBox recordVersionCheck;
-    private JCheckBox useTransactionSnapshotCheck;
+    private JCheckBox useSnapshotCheck;
 
-    private JLabel curTraLabel;
-
-    private JCheckBox noAutoUndoCheck;
     private NumberTextField lockTimeOutField;
-    private NumberTextField transactionSnapshotField;
+    private NumberTextField snapshotToConnectField;
     private TransactionIsolationComboBox isolationCombo;
 
     // ---
@@ -55,6 +51,8 @@ public class TransactionParametersPanel extends JPanel {
 
     private void init() {
 
+        // --- CheckBox ---
+
         readOnlyCheck = WidgetFactory.createCheckBox("readOnlyCheck", "READ ONLY");
         noAutoUndoCheck = WidgetFactory.createCheckBox("noAutoUndoCheck", "NO AUTO UNDO");
         ignoreLimboCheck = WidgetFactory.createCheckBox("ignoreLimboCheck", "IGNORE LIMBO");
@@ -66,17 +64,19 @@ public class TransactionParametersPanel extends JPanel {
         reservingCheck = WidgetFactory.createCheckBox("reservingCheck", "RESERVING");
         reservingCheck.addActionListener(e -> showReservingDialog());
 
-        useTransactionSnapshotCheck = WidgetFactory.createCheckBox("useTransactionSnapshotCheck", "SET TRANSACTION SNAPSHOT");
-        useTransactionSnapshotCheck.addActionListener(e -> checkEnabled());
+        useSnapshotCheck = WidgetFactory.createCheckBox("useSnapshotCheck", "SET TRANSACTION SNAPSHOT");
+        useSnapshotCheck.addActionListener(e -> checkEnabled());
+
+        // --- NumberTextField ---
 
         lockTimeOutField = WidgetFactory.createNumberTextField("lockTimeOutField");
-        transactionSnapshotField = WidgetFactory.createNumberTextField("transactionSnapshotField");
+        snapshotToConnectField = WidgetFactory.createNumberTextField("snapshotToConnectField");
+
+        // ---
 
         isolationCombo = new TransactionIsolationComboBox();
         isolationCombo.addItemListener(e -> checkEnabled());
         isolationCombo.setName("isolationCombo");
-
-        curTraLabel = new JLabel("");
     }
 
     private void arrange() {
@@ -92,7 +92,8 @@ public class TransactionParametersPanel extends JPanel {
         topPanel.add(ignoreLimboCheck, gbh.nextCol().get());
         topPanel.add(reservingCheck, gbh.nextCol().get());
         topPanel.add(recordVersionCheck, gbh.nextCol().get());
-        topPanel.add(waitCheck, gbh.nextCol().spanX().get());
+        topPanel.add(waitCheck, gbh.nextCol().get());
+        topPanel.add(useSnapshotCheck, gbh.nextCol().spanX().get());
 
         // --- bottom panel ---
 
@@ -101,9 +102,10 @@ public class TransactionParametersPanel extends JPanel {
         gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().leftGap(5).rightGap(5);
         bottomPanel.add(new JLabel(Bundles.get("ConnectionPanel.IsolationLevel")), gbh.topGap(3).get());
         bottomPanel.add(isolationCombo, gbh.nextCol().leftGap(0).topGap(0).get());
-        bottomPanel.add(new JLabel(bundleString("lockTimeout")), gbh.nextCol().topGap(3).get());
-        bottomPanel.add(lockTimeOutField, gbh.nextCol().topGap(0).spanX().get());\
-        //todo add "Transaction snapshot elements"
+        bottomPanel.add(new JLabel(bundleString("lockTimeout")), gbh.nextCol().leftGap(10).topGap(3).get());
+        bottomPanel.add(lockTimeOutField, gbh.nextCol().leftGap(0).topGap(0).get());
+        bottomPanel.add(new JLabel(bundleString("snapshotToConnect")), gbh.nextCol().leftGap(10).topGap(3).get());
+        bottomPanel.add(snapshotToConnectField, gbh.nextCol().leftGap(0).topGap(0).spanX().get());
 
         // --- main panel ---
 
@@ -127,11 +129,7 @@ public class TransactionParametersPanel extends JPanel {
             recordVersionCheck.setSelected(false);
 
         lockTimeOutField.setEnabled(waitCheck.isSelected());
-        transactionSnapshotField.setEnabled(useTransactionSnapshotCheck.isSelected());
-    }
-
-    public void setCurrentTransaction(long currentTransaction, long snapshotTransaction) {
-        curTraLabel.setText("Current transaction id:" + currentTransaction + ", current snapshot transaction:" + snapshotTransaction);
+        snapshotToConnectField.setEnabled(useSnapshotCheck.isSelected());
     }
 
     public final ITPB getTpb(DatabaseConnection databaseConnection) {
@@ -189,8 +187,8 @@ public class TransactionParametersPanel extends JPanel {
         if (ignoreLimboCheck.isSelected())
             tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
 
-        if (useTransactionSnapshotCheck.isSelected() && transactionSnapshotField.getLongValue() > 0)
-            tpb.addArgument(ITPBConstants.isc_tpb_at_snapshot_number, transactionSnapshotField.getLongValue());
+        if (useSnapshotCheck.isSelected() && snapshotToConnectField.getLongValue() > 0)
+            tpb.addArgument(ITPBConstants.isc_tpb_at_snapshot_number, snapshotToConnectField.getLongValue());
 
         if (reservingCheck.isSelected()) {
             for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
@@ -248,6 +246,10 @@ public class TransactionParametersPanel extends JPanel {
 
     private static String bundleString(String key, Object... args) {
         return Bundles.get(TransactionParametersPanel.class, key, args);
+    }
+
+    public void setCurrentTransaction(long currentSnapshotTransaction) {
+        snapshotToConnectField.setLongValue(currentSnapshotTransaction);
     }
 
 }

@@ -387,6 +387,10 @@ public class ErdToolBarPalette extends JPanel {
         return null;
     }
 
+    public void setSelectedConnection(DatabaseConnection connection) {
+        connectionsCombo.setSelectedItem(connection);
+    }
+
     private static String bundleString(String key) {
         return Bundles.get(ErdToolBarPalette.class, key);
     }

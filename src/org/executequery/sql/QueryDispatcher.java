@@ -277,7 +277,7 @@ public class QueryDispatcher {
                     }
                     querySender.setCloseConnectionAfterQuery(false);
                     querySender.releaseResourcesWithoutCommit();
-                    tpp.setCurrentTransaction(getIDTransaction(), querySender.getCurrentSnapshotTransaction());
+                    tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                     executing = false;
                 }
 
@@ -308,7 +308,7 @@ public class QueryDispatcher {
             }
             querySender.setCloseConnectionAfterQuery(false);
             querySender.releaseResourcesWithoutCommit();
-            tpp.setCurrentTransaction(getIDTransaction(), querySender.getCurrentSnapshotTransaction());
+            tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
             executing = false;
         }
     }
@@ -370,7 +370,7 @@ public class QueryDispatcher {
 
                 querySender.setCloseConnectionAfterQuery(false);
                 querySender.releaseResourcesWithoutCommit();
-                tpp.setCurrentTransaction(getIDTransaction(), querySender.getCurrentSnapshotTransaction());
+                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                 executing = false;
                 profilerPanel.updateUI();
             }

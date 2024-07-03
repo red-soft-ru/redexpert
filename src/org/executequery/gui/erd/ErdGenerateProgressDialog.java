@@ -40,14 +40,6 @@ import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.*;
-
-import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
-
-
 /**
  * @author Takis Diakoumis
  */
@@ -199,11 +191,9 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     Vector<ErdTableInfo> sort(Vector<ErdTableInfo> tableInfoList) {
         Map<ErdTableInfo, List<ErdTableInfo>> links = buildTableRelationships(tableInfoList);
         Vector<ErdTableInfo> result = new Vector<>();
-        if (tableInfoList != null) {
-            while (tableInfoList.size() > 0) {
-                result = addTableToSortVector(tableInfoList.elementAt(0), result, tableInfoList, links);
-            }
-        }
+
+        while (!tableInfoList.isEmpty())
+            result = addTableToSortVector(tableInfoList.elementAt(0), result, tableInfoList, links);
         return result;
     }
 
@@ -231,7 +221,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             GUIUtilities.showWaitCursor();
 
             ErdViewerPanel viewerPanel = new ErdViewerPanel(tableInfoList, false);
-            viewerPanel.setDatabaseConnection(databaseConnection);
+            viewerPanel.setDatabaseConnection(connection);
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();

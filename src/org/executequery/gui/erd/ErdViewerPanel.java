@@ -1238,6 +1238,10 @@ public class ErdViewerPanel extends DefaultTabView
         return tools.getSelectedConnection();
     }
 
+    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
+        tools.setSelectedConnection(databaseConnection);
+    }
+
     // --------------------------------------------
     // TabView implementation
     // --------------------------------------------
@@ -1245,21 +1249,14 @@ public class ErdViewerPanel extends DefaultTabView
     /**
      * Indicates the panel is being removed from the pane
      */
+    @Override
     public boolean tabViewClosing() {
 
-        //UserProperties properties = UserProperties.getInstance();
-
-        if (countUnsavedActions != 0) {
-
-            if (!GUIUtilities.saveOpenChanges(this)) {
-
+        if (countUnsavedActions != 0)
+            if (!GUIUtilities.saveOpenChanges(this))
                 return false;
-            }
-
-        }
 
         cleanup();
-
         return true;
     }
 

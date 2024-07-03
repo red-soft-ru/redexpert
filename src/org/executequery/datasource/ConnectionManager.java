@@ -218,7 +218,20 @@ public final class ConnectionManager {
             SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
             try {
                 return simpleDataSource.getIDTransaction(connection);
-            } catch (SQLException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return -1;
+    }
+
+    public static long getCurrentSnapshotTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        DataSource dataSource = getDataSource(databaseConnection);
+        if (dataSource instanceof SimpleDataSource) {
+            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+            try {
+                return simpleDataSource.getSnapshotTransaction(connection);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

@@ -344,6 +344,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         return ConnectionManager.getIDTransaction(databaseConnection, conn);
     }
 
+    public long getCurrentSnapshotTransaction() {
+        return ConnectionManager.getCurrentSnapshotTransaction(databaseConnection, conn);
+    }
+
     /**
      * <p>Executes the specified query (SELECT) and returns
      * a <code>ResultSet</code> object from this query.

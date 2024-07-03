@@ -1,15 +1,20 @@
 package biz.redsoft;
 
 
+
 import org.firebirdsql.gds.TransactionParameterBuffer;
 import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.gds.ng.FbTransaction;
+import org.firebirdsql.gds.ng.InfoProcessor;
 import org.firebirdsql.jca.FBSADataSource;
 import org.firebirdsql.jdbc.FBConnection;
 
 import javax.resource.ResourceException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
+import static org.firebirdsql.gds.VaxEncoding.iscVaxLong;
 
 
 public class FBDataSourceImpl implements IFBDataSource {
@@ -87,6 +92,26 @@ public class FBDataSourceImpl implements IFBDataSource {
         if (transaction != null)
             return transaction.getTransactionId();
         else return -1;
+    }
+
+    @Override
+    public long getSnapshotTransaction(Connection con) throws SQLException {
+        FbTransaction transaction = ((FBConnection) con).getGDSHelper().getCurrentTransaction();
+        if (transaction != null) {
+            return transaction.getTransactionInfo(new byte[]{ITPBConstants.fb_info_tra_snapshot_number}, 16, new InfoProcessor<Long>() {
+                @Override
+                public Long process(byte[] infoResponse) throws SQLException {
+                    if (infoResponse[0] != ITPBConstants.fb_info_tra_snapshot_number) {
+                        // TODO Message, SQL state, error code?
+                        throw new SQLException("Unexpected response buffer");
+                    }
+                    int length = iscVaxInteger2(infoResponse, 1);
+                    return iscVaxLong(infoResponse, 3, length);
+                }
+            });
+
+        } else return -1;
+
     }
 }
 

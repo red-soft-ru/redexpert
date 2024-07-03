@@ -40,6 +40,14 @@ import java.util.*;
 
 import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.*;
+
+import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+
+
 /**
  * @author Takis Diakoumis
  */
@@ -223,6 +231,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             GUIUtilities.showWaitCursor();
 
             ErdViewerPanel viewerPanel = new ErdViewerPanel(tableInfoList, false);
+            viewerPanel.setDatabaseConnection(databaseConnection);
 
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();
@@ -288,10 +297,8 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         for (int k = 0, m = tables.size(); k < m; k++) {
 
             cda = tables_array[k].getColumns();
-
-            if (cda == null) {
+            if (cda == null)
                 continue;
-            }
 
             for (ColumnData columnData : cda) {
 
@@ -299,7 +306,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                     continue;
 
                 cca = columnData.getColumnConstraintsArray();
-
                 for (ColumnConstraint columnConstraint : cca) {
 
                     if (columnConstraint.getType() == PRIMARY_KEY)

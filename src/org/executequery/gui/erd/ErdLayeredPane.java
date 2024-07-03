@@ -21,6 +21,7 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.components.OutlineDragPanel;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -53,6 +54,7 @@ public class ErdLayeredPane extends JLayeredPane
      */
     private static ErdMoveableComponent selectedComponent;
     private static ErdMoveableComponent changedSizeComponent;
+    private final OutlineDragPanel selectionDrawing;
     private static int changedSizeCursor;
 
     /** The title panel */
@@ -69,6 +71,7 @@ public class ErdLayeredPane extends JLayeredPane
         addMouseListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
+        selectionDrawing = new OutlineDragPanel(new Rectangle(0, 0, 1, 1), BorderFactory.createLineBorder(Color.BLUE, 2));
     }
 
     public void setScale(double scale) {
@@ -200,6 +203,13 @@ public class ErdLayeredPane extends JLayeredPane
         if (changedSizeComponent != null) {
             changedSizeComponent.changeSize(e, changedSizeCursor);
             dragged = true;
+        } else if (!e.isControlDown() && selectionDraw) {
+            int x = selectionX;
+            int y = selectionY;
+            int mouseX = (int) (e.getX() / scale);
+            int mouseY = (int) (e.getY() / scale);
+            selectionDrawing.setBounds(Math.min(x, mouseX), Math.min(y, mouseY), Math.abs(mouseX - x), Math.abs(mouseY - y));
+            parent.repaintLayeredPane();
         } else if (!e.isControlDown()) {
             ErdMoveableComponent[] selectComponents = parent.getSelectedComponentsArray();
             for (ErdMoveableComponent selectComponent : selectComponents) {
@@ -213,11 +223,28 @@ public class ErdLayeredPane extends JLayeredPane
     // ------ MouseListener implementations ------
     // -------------------------------------------
 
+    boolean selectionDraw = false;
+    int selectionX = 0;
+    int selectionY = 0;
+
+    void showSelectionArea(MouseEvent e) {
+        int mouseX = (int) (e.getX() / scale);
+        int mouseY = (int) (e.getY() / scale);
+        selectionX = mouseX;
+        selectionY = mouseY;
+        selectionDrawing.setBounds(mouseX, mouseY, 1, 1);
+        parent.addOutlinePanel(selectionDrawing);
+        selectionDraw = true;
+    }
+
     public void mousePressed(MouseEvent e) {
         ErdMoveableComponent clickedComponent = getClickedComponent(e);
         if (changedSizeComponent == null) {
             if (clickedComponent == null || !clickedComponent.isSelected() || e.isControlDown()) {
                 determineSelectedTable(e);
+                if (clickedComponent == null && !e.isControlDown()) {
+                    showSelectionArea(e);
+                }
                 if (selectedComponent != null) {
                     selectedComponent.selected(e);
                 }
@@ -305,6 +332,16 @@ public class ErdLayeredPane extends JLayeredPane
 
     }
 
+    void hideSelectionDraw() {
+        Vector<ErdMoveableComponent> vector = parent.getAllComponentsVector();
+        for (ErdMoveableComponent emc : vector) {
+            if (selectionDrawing.getBounds().intersects(emc.getBounds()))
+                emc.setSelected(true);
+        }
+        parent.removeOutlinePanel(selectionDrawing);
+        parent.repaintLayeredPane();
+    }
+
     public void mouseReleased(MouseEvent e) {
         ErdMoveableComponent[] comps = parent.getSelectedComponentsArray();
         if (dragged) {
@@ -313,6 +350,9 @@ public class ErdLayeredPane extends JLayeredPane
         for (ErdMoveableComponent comp : comps)
             comp.finishedDragging();
         dragged = false;
+        if (selectionDraw)
+            hideSelectionDraw();
+        selectionDraw = false;
         maybeShowPopup(e);
     }
 

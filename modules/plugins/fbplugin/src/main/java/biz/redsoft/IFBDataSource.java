@@ -27,4 +27,6 @@ public interface IFBDataSource {
     void setTransactionParameters(Connection connection, ITPB tpb) throws SQLException;
 
     long getIDTransaction(Connection con) throws SQLException;
+
+    long getSnapshotTransaction(Connection con) throws SQLException;
 }

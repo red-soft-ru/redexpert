@@ -205,7 +205,7 @@ Red Expert обладает рядом полезных компонентов: 
 Графическая визуализация схемы базы данных.
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width = 0.8\linewidth]{img/er_diagram.png}
+		\includegraphics[width = 0.8\linewidth]{img/erd_employee.png}
 	\end{figure}
 
 \anonsubsubsection[Модуль сравнения баз данных]{\hyperref[sec:compareDB_module]{Модуль сравнения баз данных}}
@@ -2359,6 +2359,12 @@ ER-диаграмма визуализирует табличные связи, 
 	\includegraphics[width = 0.45\linewidth]{img/erd2.png}
 \end{figure}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 1\linewidth]{img/erd_employee.png}
+	\caption{ER-диаграмма базы данных Employee}
+\end{figure}
+
 \anonsubsection{Панель инструментов}\label{sec:81}
 
 Следующие команды доступны на панели инструментов ERD:
@@ -2378,9 +2384,6 @@ ER-диаграмма визуализирует табличные связи, 
 	\pgftext{\includegraphics[width=11pt]{img/NewTable16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Создать новую таблицу & \\\hline
 	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=11pt]{img/AddTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Добавить таблицу из существующей базы данных & \\\hline
-	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/TableRelationship16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Создать табличную связь посредством внешних ключей & \\\hline
 	\begin{tikzpicture}
@@ -2388,13 +2391,16 @@ ER-диаграмма визуализирует табличные связи, 
 	\end{tikzpicture} & Удалить связь между выбранными таблицами & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/DropTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Удалить выбранные таблицы с диаграммы & \\\hline
+	\end{tikzpicture} & Удалить выбранные таблицы с диаграммы & Delete\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/CreateScripts16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Извлечь метаданные БД в SQL скрипт & \\\hline
+	\end{tikzpicture} & Создать сценарий SQL CREATE TABLE & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/ErdTitle16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Добавить описательный заголовок диаграммы & \\\hline
+	\begin{tikzpicture}
+	\pgftext{\includegraphics[width=11pt]{img/AddComment16.png}} at (0pt,0pt)
+	\end{tikzpicture} & Добавить текстовый блок & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/FontStyle16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Изменить шрифт всех таблиц & \\\hline
@@ -2403,16 +2409,19 @@ ER-диаграмма визуализирует табличные связи, 
 	\end{tikzpicture} & Изменить стиль линий связи & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/ErdForeground16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Изменить цвет фона содержимого выбранных таблиц & \\\hline
+	\end{tikzpicture} & Изменить цвет фона выбранных таблиц & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/ErdBackground16.png}} at (0pt,0pt)
 	\end{tikzpicture} & Изменить цвет холста & \\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/ZoomOut16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Уменьшить размер & \\\hline
+	\end{tikzpicture} & Уменьшить размер & Ctrl + колесо мыши\\\hline
 	\begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/ZoomIn16.png}} at (0pt,0pt)
-	\end{tikzpicture} & Увеличить размер & \\\hline
+	\end{tikzpicture} & Увеличить размер &  Ctrl + колесо мыши\\\hline
+	\begin{tikzpicture}
+		\pgftext{\includegraphics[width=11pt]{img/RecycleConnection16.png}} at (0pt,0pt)
+	\end{tikzpicture}& Реверс-инжиниринг & \\\hline
 \end{longtable}
 
 \anonsubsection{Создание новой диаграммы}
@@ -2422,9 +2431,7 @@ ER-диаграмма визуализирует табличные связи, 
 
 На диаграмме можно создать новые таблицы (\begin{tikzpicture}
 \pgftext{\includegraphics[width=11pt]{img/NewTable16.png}} at (0pt,0pt)
-\end{tikzpicture} ) или добавить существующие (\begin{tikzpicture}
-\pgftext{\includegraphics[width=11pt]{img/AddTable16.png}} at (0pt,0pt)
-\end{tikzpicture}) из открытого подключения к базе данных.
+\end{tikzpicture} ).
 Об этих и других функциях рассказано в подразделе \hyperref[sec:84]{Управление таблицами}.
 
 \anonsubsection{Диаграмма существующей базы данных}
@@ -2436,7 +2443,20 @@ ER-диаграмма визуализирует табличные связи, 
 	\item Выберите таблицы для включения в ERD с помощью кнопок-стрелок
 	\item Нажмите кнопку \textit{Generate}
 \end{enumerate}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width = 1\linewidth]{img/erd_employee.png}
+	\caption{ER-диаграмма базы данных Employee}
+\end{figure}
+
 На холсте будут изображены выбранные сущности и имеющиеся между ними связи.
+
+\anonsubsubsection{Обновление диаграммы из базы данных}
+
+В случае изменения структуры базы данных ER-диаграмму необходимо обновить. Для этого нужно нажать на кнопку \begin{tikzpicture}
+	\pgftext{\includegraphics[width=11pt]{img/RecycleConnection16.png}} at (0pt,0pt)
+\end{tikzpicture} и в открывшемся окне выбрать таблицы. После этого диаграмма будет актуализирована. 
 
 \anonsubsection{Управление таблицами}\label{sec:84}
 \anonsubsubsection{Создание новых таблиц}
@@ -2448,22 +2468,7 @@ ER-диаграмма визуализирует табличные связи, 
 	\item Введите имя таблицы, может содержать до 31 байта.
 	\item Создайте поля таблицы, заполнив соответствующую таблицу (см. \hyperref[tab:2]{подробное описание})
 	\item Заполните табличку с ограничениями таблицы (см. \hyperref[tab:3]{подробное описание})
-	\item Нажмите кнопку \textit{Создать}
-\end{enumerate}
-
-\anonsubsubsection{Добавление таблицы из существующей базы данных}
-\begin{enumerate}
-	\item Нажмите на кнопку \begin{tikzpicture}
-	\pgftext{\includegraphics[width=11pt]{img/AddTable16.png}} at (0pt,0pt)
-	\end{tikzpicture} на панели инструментов ERD
-	\item Выберите открытое соединение
-	\item В поле \ttt{Available Tables} будет подгружены все таблицы, доступные в выбранном соединении. Необходимые для построения диаграммы таблицы перенесите в окно \ttt{Selected Tables} с помощью кнопок \begin{tikzpicture}
-	\pgftext{\includegraphics[width=11pt]{img/Forward16.png}} at (0pt,0pt)
-	\end{tikzpicture},
-	\begin{tikzpicture}
-	\pgftext{\includegraphics[width=11pt]{img/SelectAll16.png}} at (0pt,0pt)
-	\end{tikzpicture}
-	\item Нажмите на кнопку \textit{Добавить}
+	\item Нажмите на кнопку \textit{Создать}
 \end{enumerate}
 
 \anonsubsubsection{Изменение таблиц}
@@ -2481,7 +2486,7 @@ ER-диаграмма визуализирует табличные связи, 
 	\item Введите (уникальное) имя для этого ограничения
 	\item Выберите таблицу и столбец, который ссылается внешним ключом
 	\item Выберите таблицу и столбец, который на который ссылается внешний ключ
-	\item нажмите кнопку «Создать»
+	\item Нажмите кнопку «Создать»
 \end{enumerate}
 Созданная связь будет показана с использованием одной стрелки между таблицами.
 
@@ -2505,7 +2510,7 @@ ER-диаграмма визуализирует табличные связи, 
 	\item Выделите на холсте таблицу для удаления при помощи мыши или выделите несколько таблиц, используя клавишу Ctrl
 	\item Нажмите кнопку \begin{tikzpicture}
 	\pgftext{\includegraphics[width=11pt]{img/DropTable16.png}} at (0pt,0pt)
-	\end{tikzpicture}
+	\end{tikzpicture} или клавишу \ttt{Delete}
 \end{enumerate}
 
 \anonsubsubsection{Генерирование SQL скриптов}
@@ -2528,11 +2533,18 @@ ER-диаграмма визуализирует табличные связи, 
 \end{enumerate}
 
 \anonsubsection{Манипулирование диаграммой}
-Диаграмма ERD позволяет выполнять несколько настроек, включая позиционирование каждой таблицы на холсте, выбор цвета фона и таблиц, выбор шрифта и стиля линий. Большинство этих функций доступны через панель инструментов ERD, описанную \hyperref[sec:81]{выше}. Остальные доступны через всплывающее меню по нажатию правой кнопки мыши на холсте.
+Диаграмма ERD позволяет выполнять несколько настроек, включая позиционирование каждой таблицы на холсте, выбор цвета фона и таблиц, выбор шрифта и стиля линий. Большинство этих функций доступны через панель инструментов, описанную \hyperref[sec:81]{выше}. Остальные доступны через всплывающее меню по нажатию правой кнопки мыши на холсте.
+
+\anonsubsubsection{Добавление текстового поля}
+
+На панель ERD можно добавить текстовое поле, нажав на кнопку \begin{tikzpicture}
+	\pgftext{\includegraphics[width=11pt]{img/AddComment16.png}} at (0pt,0pt)
+\end{tikzpicture} на панели инструментов.
+У текстового поля можно изменить цвет фона, выделив его и нажав на кнопку на панели инструментов. Также можно менять шрифт. 
 
 \anonsubsubsection{Перемещение объектов}
 
-Панель ERD дает возможность перемещать выбранные таблицы по холсту для получения более четкого представления структуры базы данных. Чтобы переместить таблицу, щелкните левой кнопкой мыши по заголовку таблицы и перетащите ее в нужное место. Связи между таблицами останутся неизменными.
+Панель ERD дает возможность перемещать выбранные таблицы по холсту для получения более четкого представления структуры базы данных. Чтобы переместить таблицу, щелкните левой кнопкой мыши по заголовку таблицы и перетащите ее в нужное место. Связи между таблицами останутся неизменными. Также можно выделить несколько таблиц. Для выделения можно использовать горячие клавиши \ttt{Ctrl + клик} и \ttt{Ctrl + A}. 
 
 \anonsubsubsection{Заголовок диаграммы}
 \begin{enumerate}
@@ -2547,7 +2559,9 @@ ER-диаграмма визуализирует табличные связи, 
 
 \anonsubsubsection{Отображение полей таблицы}
 
-На диаграмме таблицы могут быть показаны со всеми полями или только теми, которые имеют такие ограничения, как первичный и внешний ключи. Последний вариант может быть более предпочтительным в больших структурах базы данных, где пространство ограничено. Вид можно изменить через всплывающее меню (щелкнуть правой кнопкой мыши в области холста) \textit{View}$\rightarrow$\textit{Display Referenced keys only}.
+На диаграмме таблицы могут быть показаны со всеми полями или только теми, которые имеют такие ограничения, как первичный, внешний и уникальный ключи. Последний вариант может быть более предпочтительным в больших структурах базы данных, где пространство ограничено. Вид можно изменить через всплывающее меню (щелкнуть правой кнопкой мыши в области холста) \textit{Вид}$\rightarrow$\textit{Отображать только ключи базы данных}.
+
+Для отображения комментариев к таблицам или полям откройте меню \textit{Вид}$\rightarrow$\textit{Отображать комментарии к таблицам/полям}.
 
 \anonsubsection{Сохрание и экспорт}
 

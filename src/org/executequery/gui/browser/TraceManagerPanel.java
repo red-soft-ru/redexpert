@@ -208,7 +208,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                 }
             }
         });
-        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
+        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().fillHorizontally().setWeightX(0.1).get());
         //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
         visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "icon_find_next");
         visibleColumnsButton.addActionListener(new ActionListener() {

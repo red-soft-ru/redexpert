@@ -244,6 +244,15 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return -1;
     }
 
+    public long getSnapshotTransaction(Connection connection) throws SQLException {
+        if (dataSource != null) {
+            if (connection instanceof PooledConnection)
+                connection = ((PooledConnection) connection).getRealConnection();
+            return dataSource.getSnapshotTransaction(connection);
+        }
+        return -1;
+    }
+
     private Properties buildAdvancedProperties() {
 
         Properties advancedProperties = new Properties();

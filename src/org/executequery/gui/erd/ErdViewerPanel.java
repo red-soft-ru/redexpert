@@ -31,7 +31,6 @@ import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.PrintFunction;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -128,7 +127,7 @@ public class ErdViewerPanel extends DefaultTabView
     private Font columnNameFont;
 
     private Vector<ErdTable> tables;
-    private List<ErdTableInfo> tableInfos;
+    private Vector<ErdTableInfo> tableInfos;
     private Vector<ErdTextPanel> textPanels;
 
     private int next_x = 20;
@@ -139,6 +138,8 @@ public class ErdViewerPanel extends DefaultTabView
     private int textBlockFontStyle;
     private int columnNameFontStyle;
     private double defaultScaledView;
+
+    int countUnsavedActions = 0;
 
     public ErdViewerPanel(boolean showTools, boolean editable) {
         this(null, true, showTools, editable);
@@ -155,6 +156,8 @@ public class ErdViewerPanel extends DefaultTabView
 
         this.showTools = showTools;
         this.editable = editable;
+        if (tableInfos != null)
+            countUnsavedActions = 1;
 
         jbInit();
 
@@ -177,7 +180,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     public ErdViewerPanel(ErdSaveFileFormat savedErd, String absolutePath) {
         this(null, true, true, true);
-        setSavedErd(savedErd, absolutePath);
+//        setSavedErd(savedErd, absolutePath);
         fileName = savedErd.getFileName();
     }
 
@@ -254,14 +257,12 @@ public class ErdViewerPanel extends DefaultTabView
                 }
                 if (e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown()) {
                     if (!undoActions.isEmpty()) {
-                        UndoRedoAction undoRedoAction = undoActions.pop();
-                        undoRedoAction.undoExecute();
+                        popUndoAction();
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
                     if (!redoActions.isEmpty()) {
-                        UndoRedoAction undoRedoAction = redoActions.pop();
-                        undoRedoAction.undoExecute();
+                        popRedoAction();
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_A && e.isControlDown()) {
@@ -402,15 +403,18 @@ public class ErdViewerPanel extends DefaultTabView
         return editable;
     }
 
-    public void resetTableValues(List<ErdTableInfo> tableInfos) {
+    public void resetTableValues(Vector<ErdTableInfo> tableInfos) {
         removeAllTables();
+        next_x = 20;
+        next_y = 20;
+        lastWidth = 0;
         setTables(tableInfos);
         dependsPanel.setTableDependencies(buildTableRelationships());
         resizeCanvas();
         layeredPane.validate();
     }
 
-    public void setTables(List<ErdTableInfo> tableInfos) {
+    public void setTables(Vector<ErdTableInfo> tableInfos) {
 
         if (tableInfos != null) {
             tableNames = new Vector();
@@ -426,7 +430,7 @@ public class ErdViewerPanel extends DefaultTabView
 
         int size = tableNames.size();
         tables = new Vector(size);
-
+        List<ErdMoveableComponent> addList = new ArrayList<>();
         ErdTable table = null;
         for (int i = 0; i < size; i++) {
 
@@ -464,7 +468,10 @@ public class ErdViewerPanel extends DefaultTabView
 
             // add to the vector
             addTableToList(table);
+            addList.add(table);
         }
+
+        fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, addList));
     }
 
     /**
@@ -955,14 +962,15 @@ public class ErdViewerPanel extends DefaultTabView
 
     public void removeAllTables() {
         ErdTable[] allTables = getAllTablesArray();
-
+        List<ErdMoveableComponent> removeComponents = new ArrayList<>();
         for (int i = 0; i < allTables.length; i++) {
-            allTables[i].clean();
+            //allTables[i].clean();
             layeredPane.remove(allTables[i]);
             tables.remove(allTables[i]);
-            allTables[i] = null;
+            removeComponents.add(allTables[i]);
+            //allTables[i] = null;
         }
-
+        fireSaveUndoAction(new UndoRedoAction(DELETE, removeComponents));
         layeredPane.repaint();
 
     }
@@ -1068,6 +1076,7 @@ public class ErdViewerPanel extends DefaultTabView
             fileOut.close();
 
             savedErd = eqFormat;
+            countUnsavedActions = 0;
             return SaveFunction.SAVE_COMPLETE;
 
         } catch (Exception e) {
@@ -1238,9 +1247,9 @@ public class ErdViewerPanel extends DefaultTabView
      */
     public boolean tabViewClosing() {
 
-        UserProperties properties = UserProperties.getInstance();
+        //UserProperties properties = UserProperties.getInstance();
 
-        if (properties.getBooleanProperty("general.save.prompt")) {
+        if (countUnsavedActions != 0) {
 
             if (!GUIUtilities.saveOpenChanges(this)) {
 
@@ -1260,6 +1269,10 @@ public class ErdViewerPanel extends DefaultTabView
 
     public ErdScrollPane getScroll() {
         return scroll;
+    }
+
+    public Vector<ErdTableInfo> getTableInfos() {
+        return tableInfos;
     }
 
     /**
@@ -1379,8 +1392,28 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     void fireSaveUndoAction(UndoRedoAction undoRedoAction) {
-        undoActions.push(undoRedoAction);
+        pushUndoAction(undoRedoAction);
         redoActions.clear();
+    }
+
+    void popUndoAction() {
+        UndoRedoAction undoRedoAction = undoActions.pop();
+        undoRedoAction.undoExecute();
+        countUnsavedActions--;
+    }
+
+    void popRedoAction() {
+        UndoRedoAction undoRedoAction = redoActions.pop();
+        undoRedoAction.undoExecute();
+    }
+
+    void pushUndoAction(UndoRedoAction undoRedoAction) {
+        undoActions.push(undoRedoAction);
+        countUnsavedActions++;
+    }
+
+    void pushRedoAction(UndoRedoAction undoRedoAction) {
+        redoActions.push(undoRedoAction);
     }
 
     class UndoRedoAction {
@@ -1389,6 +1422,9 @@ public class ErdViewerPanel extends DefaultTabView
         List<Color> bgColors;
         List<Rectangle> boundsComponents;
         boolean undoAction;
+        private final int nextX;
+        private final int nextY;
+        private final int savedLastWidth;
 
         public UndoRedoAction(int typeAction, ErdMoveableComponent component) {
             this(typeAction, listFromSingleComponent(component));
@@ -1408,6 +1444,9 @@ public class ErdViewerPanel extends DefaultTabView
                 bgColors.add(emc.getTableBackground());
                 boundsComponents.add(emc.getBounds());
             }
+            nextX = next_x;
+            nextY = next_y;
+            savedLastWidth = lastWidth;
         }
 
         void undoExecute() {
@@ -1424,10 +1463,13 @@ public class ErdViewerPanel extends DefaultTabView
                             layeredPane.add(emc);
                             layeredPane.moveToFront(emc);
                         }
+                        next_x = nextX;
+                        next_y = nextY;
+                        lastWidth = savedLastWidth;
                     }
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(NEW_OBJECT, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(NEW_OBJECT, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(NEW_OBJECT, listComponents, true));
                 }
                 break;
                 case NEW_OBJECT: {
@@ -1440,16 +1482,19 @@ public class ErdViewerPanel extends DefaultTabView
                             textPanels.remove((ErdTextPanel) emc);
                             layeredPane.remove(emc);
                         }
+                        next_x = nextX;
+                        next_y = nextY;
+                        lastWidth = savedLastWidth;
                     }
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(DELETE, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(DELETE, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(DELETE, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(DELETE, listComponents, true));
                 }
                 break;
                 case CHANGE_BG_COLOR: {
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(CHANGE_BG_COLOR, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setTableBackground(bgColors.get(i));
                     }
@@ -1457,8 +1502,8 @@ public class ErdViewerPanel extends DefaultTabView
                 break;
                 case CHANGE_LOCATION: {
                     if (undoAction)
-                        redoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
-                    else undoActions.push(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
+                        pushRedoAction(new UndoRedoAction(CHANGE_LOCATION, listComponents, false));
+                    else pushUndoAction(new UndoRedoAction(CHANGE_LOCATION, listComponents, true));
                     for (int i = 0; i < listComponents.size(); i++) {
                         listComponents.get(i).setBounds(boundsComponents.get(i));
                     }

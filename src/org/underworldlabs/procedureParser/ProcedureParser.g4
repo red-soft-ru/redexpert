@@ -75,7 +75,7 @@ body:
   (spases_or_comment notnull)?
   (spases_or_comment K_COLLATE spases_or_comment order_collate)?
   (spases_or_comment default_statement)?)
-  ';' SPACES* comment? SPACES*
+  (spases_or_comment)?';' SPACES* comment? SPACES*
   ;
 
   default_statement:

@@ -249,7 +249,6 @@ public class QueryDispatcher {
         }
 
 
-
         statementCancelled = false;
         if (inBackground) {
             worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
@@ -312,7 +311,9 @@ public class QueryDispatcher {
             executing = false;
         }
     }
+
     ProfilerPanel profilerPanel;
+
     public void executeSQLQueryInProfiler(
             DatabaseConnection dc, final String query, final boolean executeAsBlock) {
 
@@ -427,7 +428,9 @@ public class QueryDispatcher {
                     delegate.setStatusMessage(" Statement cancelled");
                 }
 
-                querySender.releaseResources();
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                 executing = false;
             }
 
@@ -469,7 +472,7 @@ public class QueryDispatcher {
         } catch (SQLException e) {
             setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
         } finally {
-            querySender.releaseResources();
+            querySender.releaseResourcesWithoutCommit();
         }
     }
 
@@ -1255,7 +1258,7 @@ public class QueryDispatcher {
                     }
 
                 } finally {
-                    querySender.releaseResources();
+                    querySender.releaseResourcesWithoutCommit();
                     if (error && stopOnError)
                         break;
                 }

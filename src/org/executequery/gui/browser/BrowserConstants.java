@@ -31,7 +31,7 @@ package org.executequery.gui.browser;
 public class BrowserConstants {
 
     public static final String DATABASE_OBJECT_IMAGE = "icon_db_object";
-    public static final String CONNECTIONS_IMAGE = "icon_db_connection";
+    public static final String CONNECTIONS_IMAGE = "icon_db_search";
     public static final String CONNECTIONS_FOLDER_IMAGE = "icon_folder";
     public static final String CATALOG_IMAGE = "icon_db_image";
     public static final String HOST_NOT_CONNECTED_IMAGE = "icon_connection";

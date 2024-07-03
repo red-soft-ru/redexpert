@@ -164,7 +164,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         centralPanel.setVisible(false);
         topPanel.add(parseVariablesCheck, topGbh.nextRowFirstCol().leftGap(0).spanX().get());
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setPreferredSize(new Dimension(800, 500));
+        setPreferredSize(new Dimension(900, 500));
     }
 
     private void loadVariables() {

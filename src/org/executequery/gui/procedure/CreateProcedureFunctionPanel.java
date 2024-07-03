@@ -54,9 +54,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     // --- GUI components ---
 
-    protected NewProcedurePanel outputParamsPanel;
-    protected NewProcedurePanel inputParamsPanel;
-    protected NewProcedurePanel variablesPanel;
+    protected ProcedureDefinitionPanel outputParamsPanel;
+    protected ProcedureDefinitionPanel inputParamsPanel;
+    protected ProcedureDefinitionPanel variablesPanel;
     protected SimpleSqlTextPanel bodyTextPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
     protected JCheckBox parseVariablesCheck;
@@ -87,17 +87,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         parseVariablesCheck = WidgetFactory.createCheckBox("parseVariablesCheck", bundleString("parseVariables"), true);
         parseVariablesCheck.addItemListener(e -> fillSqlBody());
 
-        inputParamsPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
+        inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParamsPanel.setDomains(getDomains());
         inputParamsPanel.setDatabaseConnection(connection);
 
-        outputParamsPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
+        outputParamsPanel = new ProcedureDefinitionPanel(ColumnData.OUTPUT_PARAMETER);
         outputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         outputParamsPanel.setDomains(getDomains());
         outputParamsPanel.setDatabaseConnection(connection);
 
-        variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
+        variablesPanel = new ProcedureDefinitionPanel(ColumnData.VARIABLE);
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);

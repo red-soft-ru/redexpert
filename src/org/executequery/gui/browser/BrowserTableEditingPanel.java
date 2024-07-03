@@ -33,6 +33,7 @@ import org.executequery.gui.*;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.procedure.DefinitionPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
@@ -80,6 +81,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
         FocusListener,
         TableConstraintFunction,
+        DefinitionPanel,
         ChangeListener,
         VetoableChangeListener {
 
@@ -315,7 +317,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             @Override
             public void insert(ActionEvent e) {
-                insertAfter();
+                addRow();
             }
 
             @Override
@@ -345,7 +347,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         ) {
             @Override
             public void insert(ActionEvent e) {
-                insertAfter();
+                addRow();
             }
 
             @Override
@@ -369,7 +371,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         RolloverButton addRolloverButton = new RolloverButton();
         addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText("Insert column");
-        addRolloverButton.addActionListener(actionEvent -> insertAfter());
+        addRolloverButton.addActionListener(actionEvent -> addRow());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
@@ -381,13 +383,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         RolloverButton moveUpButton = new RolloverButton();
         moveUpButton.setIcon(IconManager.getIcon("icon_move_up"));
         moveUpButton.setToolTipText("Move up");
-        moveUpButton.addActionListener(actionEvent -> moveColumnUp());
+        moveUpButton.addActionListener(actionEvent -> moveRowUp());
         bar.add(moveUpButton);
 
         RolloverButton moveDownButton = new RolloverButton();
         moveDownButton.setIcon(IconManager.getIcon("icon_move_down"));
         moveDownButton.setToolTipText("Move down");
-        moveDownButton.addActionListener(actionEvent -> moveColumnDown());
+        moveDownButton.addActionListener(actionEvent -> moveRowDown());
         bar.add(moveDownButton);
 
         RolloverButton commitRolloverButton = new RolloverButton();
@@ -419,7 +421,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         RolloverButton addRolloverButton = new RolloverButton();
         addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText("Insert constraint");
-        addRolloverButton.addActionListener(actionEvent -> insertAfter());
+        addRolloverButton.addActionListener(actionEvent -> addRow());
         bar.add(addRolloverButton);
 
         RolloverButton deleteRolloverButton = new RolloverButton();
@@ -1171,7 +1173,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * Inserts a row after the selected row on the currently selected table.
      */
     @Override
-    public void insertAfter() {
+    public void addRow() {
 
         BaseDialog dialog = null;
         JPanel panelForDialog = null;
@@ -1247,17 +1249,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     @Override
-    public void insertBefore() {
-    }
-
-    @Override
-    public void moveColumnUp() {
+    public void moveRowUp() {
         if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveUpSelectedColumn();
     }
 
     @Override
-    public void moveColumnDown() {
+    public void moveRowDown() {
         if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveDownSelectedColumn();
     }

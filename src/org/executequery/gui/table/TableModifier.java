@@ -29,16 +29,10 @@ import org.executequery.databasemediators.DatabaseConnection;
  */
 public interface TableModifier extends CreateTableSQLSyntax {
 
-    int COLUMN_VALUES = 0;
-    int CONSTRAINT_VALUES = 1;
-    int EMPTY_VALUE = -1;
-
     /**
      * Generates and prints the SQL text.
      */
     void setSQLText();
-
-
 
     /**
      * Retrieves the currently selected/created table name.
@@ -50,15 +44,3 @@ public interface TableModifier extends CreateTableSQLSyntax {
     DatabaseConnection getSelectedConnection();
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

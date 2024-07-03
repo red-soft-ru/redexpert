@@ -1,13 +1,12 @@
 package org.executequery.gui.procedure;
 
 public interface DefinitionPanel {
-    void insertAfter();
 
-    void insertBefore();
+    void addRow();
 
     void deleteRow();
 
-    void moveColumnUp();
+    void moveRowUp();
 
-    void moveColumnDown();
+    void moveRowDown();
 }

@@ -36,6 +36,7 @@ import org.executequery.gui.databaseobjects.AbstractSQLSecurityObjectPanel;
 import org.executequery.gui.databaseobjects.CreateGlobalTemporaryTable;
 import org.executequery.gui.erd.ErdNewTableDialog;
 import org.executequery.gui.erd.ErdPopupMenu;
+import org.executequery.gui.procedure.DefinitionPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -70,6 +71,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         ItemListener,
         ChangeListener,
         TableModifier,
+        DefinitionPanel,
         TableConstraintFunction,
         TextEditorContainer {
 
@@ -698,20 +700,23 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     // -------- TableFunction implementations --------
     // -----------------------------------------------
 
-    public void moveColumnUp() {
+    @Override
+    public void moveRowUp() {
         int index = tabbedPane.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnUp();
         }
     }
 
-    public void moveColumnDown() {
+    @Override
+    public void moveRowDown() {
         int index = tabbedPane.getSelectedIndex();
         if (index == 0) {
             tablePanel.moveColumnDown();
         }
     }
 
+    @Override
     public void deleteRow() {
         if (tabbedPane.getSelectedIndex() == 0) {
             tablePanel.deleteRow();
@@ -720,11 +725,8 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         }
     }
 
-    public void insertBefore() {
-        tablePanel.insertBefore();
-    }
-
-    public void insertAfter() {
+    @Override
+    public void addRow() {
         if (tabbedPane.getSelectedIndex() == 0) {
             tablePanel.insertAfter();
         } else if (tabbedPane.getSelectedIndex() == 1) {

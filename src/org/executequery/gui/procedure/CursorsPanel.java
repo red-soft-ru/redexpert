@@ -3,6 +3,7 @@ package org.executequery.gui.procedure;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.table.CreateTableToolBar;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -40,7 +41,7 @@ public class CursorsPanel extends JPanel
     public List<String> descriptions;
 
 
-    private CreateProcedureToolBar tools;
+    private CreateTableToolBar tools;
 
     /**
      * The <code>Vector</code> of <code>ColumnData</code> objects
@@ -182,7 +183,7 @@ public class CursorsPanel extends JPanel
             _model.addTableModelListener(this);
         }
 
-        tools = new CreateProcedureToolBar(this);
+        tools = new CreateTableToolBar(this);
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
 
@@ -303,7 +304,8 @@ public class CursorsPanel extends JPanel
      * the table moving the column above the selection
      * below the selection.
      */
-    public void moveColumnUp() {
+    @Override
+    public void moveRowUp() {
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == 0) {
             return;
@@ -328,7 +330,8 @@ public class CursorsPanel extends JPanel
      * the table moving the column below the selection
      * above the selection.
      */
-    public void moveColumnDown() {
+    @Override
+    public void moveRowDown() {
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == tableVector.size() - 1) {
             return;
@@ -346,43 +349,6 @@ public class CursorsPanel extends JPanel
         table.setRowSelectionInterval(newPostn, newPostn);
         _model.fireTableRowsUpdated(selection, newPostn);
         addColumnLines(-1);
-    }
-
-    /**
-     * <p>Inserts a new column before the selected
-     * column moving the selected column down one row.
-     */
-    public void insertBefore() {
-        fireEditingStopped();
-
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-
-        int selection = table.getSelectedRow();
-
-        if (selection == -1)
-            selection = 0;
-        insertRow(new ColumnData(dc), selection);
-
-
-        _model.fireTableRowsInserted(
-                selection == 0 ? 0 : selection - 1,
-                selection == 0 ? 1 : selection);
-
-        table.setRowSelectionInterval(selection, selection);
-        table.setColumnSelectionInterval(1, 1);
-
-        table.setEditingRow(selection);
-        table.setEditingColumn(NAME_COLUMN);
-
-    }
-
-    public DefaultCellEditor createColumnEditor(ColumnData cd) {
-        DynamicComboBoxModel model = new DynamicComboBoxModel();
-        if (cd.getColumns() != null)
-            model.setElements(cd.getColumns());
-        return new DefaultCellEditor(new JComboBox(model));
     }
 
     public void insertRow(ColumnData cd, int position) {
@@ -464,30 +430,25 @@ public class CursorsPanel extends JPanel
      * <p>Inserts a new column after the selected
      * column moving the selected column up one row.
      */
-    public void insertAfter() {
+    @Override
+    public void addRow() {
         fireEditingStopped();
-        int selection = table.getSelectedRow();
-        int newRow = selection + 1;
-        if (selection == -1)
-            selection = tableVector.size();
-        ColumnData cd = new ColumnData(dc);
-        cd.setCursor(true);
-        if (selection == tableVector.size()) {
-            addRow(cd);
-        } else {
-            insertRow(cd, newRow);
-        }
 
-        _model.fireTableRowsInserted(selection, newRow);
+        int lastRow = tableVector.size() - 1;
+        int newRow = lastRow + 1;
+
+        ColumnData columnData = new ColumnData(dc);
+        columnData.setCursor(true);
+        addRow(columnData);
+
+        _model.fireTableRowsInserted(lastRow, newRow);
         table.setRowSelectionInterval(newRow, newRow);
         table.setColumnSelectionInterval(1, 1);
 
         table.setEditingRow(newRow);
         table.setEditingColumn(NAME_COLUMN);
-        ((DefaultCellEditor) table.getCellEditor(newRow, NAME_COLUMN)).
-                getComponent().requestFocus();
+        ((DefaultCellEditor) table.getCellEditor(newRow, NAME_COLUMN)).getComponent().requestFocus();
     }
-
 
     public void setEditingColumn(int col) {
         table.setEditingColumn(col);

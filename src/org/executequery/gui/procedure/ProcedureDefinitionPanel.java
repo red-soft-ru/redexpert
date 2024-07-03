@@ -7,6 +7,7 @@ import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.CreateTableToolBar;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -71,7 +72,7 @@ public class ProcedureDefinitionPanel extends JPanel
     private DatabaseTable table;
     private ProcedureParameterModel tableModel;
 
-    private CreateProcedureToolBar tools;
+    private CreateTableToolBar tools;
     private DynamicComboBoxModel tableEditorModel;
 
     private final boolean editing;
@@ -94,7 +95,7 @@ public class ProcedureDefinitionPanel extends JPanel
     }
 
     private void init() {
-        tools = new CreateProcedureToolBar(this);
+        tools = new CreateTableToolBar(this);
 
         tableModel = new ProcedureParameterModel(parameterType);
         table = new DatabaseTable(tableModel);
@@ -336,7 +337,7 @@ public class ProcedureDefinitionPanel extends JPanel
      * below the selection.
      */
     @Override
-    public void moveColumnUp() {
+    public void moveRowUp() {
 
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == 0)
@@ -361,7 +362,7 @@ public class ProcedureDefinitionPanel extends JPanel
      * above the selection.
      */
     @Override
-    public void moveColumnDown() {
+    public void moveRowDown() {
 
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == tableVector.size() - 1)
@@ -378,33 +379,6 @@ public class ProcedureDefinitionPanel extends JPanel
         insertRow(rowToMove, newPosition);
         table.setRowSelectionInterval(newPosition, newPosition);
         tableModel.fireTableRowsUpdated(selection, newPosition);
-    }
-
-    /**
-     * <p>Inserts a new column before the selected
-     * column moving the selected column down one row.
-     */
-    @Override
-    public void insertBefore() {
-        fireEditingStopped();
-
-        if (table.isEditing())
-            table.removeEditor();
-
-        int selection = table.getSelectedRow();
-        if (selection == -1)
-            selection = 0;
-
-        insertRow(new ColumnData(connection), selection);
-        tableModel.fireTableRowsInserted(
-                selection == 0 ? 0 : selection - 1,
-                selection == 0 ? 1 : selection
-        );
-
-        table.setRowSelectionInterval(selection, selection);
-        table.setColumnSelectionInterval(1, 1);
-        table.setEditingRow(selection);
-        table.setEditingColumn(NAME_COLUMN);
     }
 
     public DynamicComboBoxModel getColumnEditorModel(int row) {
@@ -498,24 +472,17 @@ public class ProcedureDefinitionPanel extends JPanel
      * column moving the selected column up one row.
      */
     @Override
-    public void insertAfter() {
+    public void addRow() {
         fireEditingStopped();
 
-        int selection = table.getSelectedRow();
-        int newRow = selection + 1;
+        int lastRow = tableVector.size() - 1;
+        int newRow = lastRow + 1;
 
-        if (selection == -1)
-            selection = tableVector.size();
+        ColumnData columnData = new ColumnData(connection);
+        columnData.setTypeParameter(parameterType);
+        addRow(columnData);
 
-        ColumnData cd = new ColumnData(connection);
-        cd.setTypeParameter(parameterType);
-
-        if (selection == tableVector.size())
-            addRow(cd);
-        else
-            insertRow(cd, newRow);
-
-        tableModel.fireTableRowsInserted(selection, newRow);
+        tableModel.fireTableRowsInserted(lastRow, newRow);
         table.setRowSelectionInterval(newRow, newRow);
         table.setColumnSelectionInterval(1, 1);
 

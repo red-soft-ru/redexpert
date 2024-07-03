@@ -426,8 +426,9 @@ public class QueryDispatcher {
                             "Statement cancelled", anyConnections);
                     delegate.setStatusMessage(" Statement cancelled");
                 }
-
-                querySender.releaseResources();
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                tpp.setCurrentTransaction(getIDTransaction(), querySender.getCurrentSnapshotTransaction());
                 executing = false;
             }
 
@@ -469,7 +470,7 @@ public class QueryDispatcher {
         } catch (SQLException e) {
             setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
         } finally {
-            querySender.releaseResources();
+            querySender.releaseResourcesWithoutCommit();
         }
     }
 
@@ -1262,7 +1263,7 @@ public class QueryDispatcher {
 
                 } finally {
 
-                    querySender.releaseResources();
+                    querySender.releaseResourcesWithoutCommit();
                     if (error && stopOnError)
                         break;
                 }

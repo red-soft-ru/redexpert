@@ -1,7 +1,6 @@
 package biz.redsoft;
 
 
-import org.firebirdsql.gds.ISCConstants;
 import org.firebirdsql.gds.JaybirdErrorCodes;
 import org.firebirdsql.gds.TransactionParameterBuffer;
 import org.firebirdsql.gds.impl.GDSType;
@@ -100,7 +99,7 @@ public class FBDataSourceImpl implements IFBDataSource {
         FbTransaction transaction = ((FBConnection) con).getGDSHelper().getCurrentTransaction();
         if (transaction != null) {
             return transaction.getTransactionInfo(new byte[]{ITPBConstants.fb_info_tra_snapshot_number}, 16, infoResponse -> {
-                if (infoResponse[0] != ISCConstants.isc_info_tra_id) {
+                if (infoResponse[0] != ITPBConstants.fb_info_tra_snapshot_number) {
                     throw FbExceptionBuilder.forException(JaybirdErrorCodes.jb_unexpectedInfoResponse)
                             .messageParameter(
                                     "transaction", "fb_info_tra_snapshot_number", ITPBConstants.fb_info_tra_snapshot_number, infoResponse[0])

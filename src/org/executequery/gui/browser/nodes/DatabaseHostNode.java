@@ -22,7 +22,6 @@ package org.executequery.gui.browser.nodes;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.*;
-import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
 
@@ -37,29 +36,17 @@ import java.util.List;
 public class DatabaseHostNode extends DatabaseObjectNode {
 
     private int order;
-
-    /**
-     * the direct descendants of this object
-     */
     private List<DatabaseObjectNode> visibleChildren;
     private List<DatabaseObjectNode> allChildren;
-
-
-    /**
-     * indicates whether to show only default catalogs/schemas
-     */
-    private boolean defaultCatalogsAndSchemasOnly;
-
     private ConnectionsFolderNode parentFolder;
 
     /**
      * Creates a new instance of DatabaseHostNode
      */
     public DatabaseHostNode(DatabaseHost host, ConnectionsFolderNode parentFolder) {
-
         super(host);
         this.parentFolder = parentFolder;
-        applyUserPreferences();
+        showAll();
     }
 
     @Override
@@ -77,23 +64,12 @@ public class DatabaseHostNode extends DatabaseObjectNode {
         return true;
     }
 
-    @Override
-    public boolean isNameEditable() {
-        return false;
-    }
-
     public void setParentFolder(ConnectionsFolderNode parentFolder) {
         this.parentFolder = parentFolder;
     }
 
     public ConnectionsFolderNode getParentFolder() {
         return parentFolder;
-    }
-
-    public void applyUserPreferences() {
-
-        setDefaultCatalogsAndSchemasOnly(UserProperties.getInstance().getBooleanProperty(
-                "browser.catalog.schema.defaults.only"));
     }
 
     /**
@@ -113,7 +89,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     public void populateChildren() throws DataSourceException {
         if (isConnected()) {
             super.populateChildren();
-            ensureValidCatalogsAndSchemasVisible();
+            showAll();
         }
     }
 
@@ -152,42 +128,16 @@ public class DatabaseHostNode extends DatabaseObjectNode {
             return visibleChildren;
         }
 
-        // check for catalogs - then schemas - then meta tags
         DatabaseHost host = (DatabaseHost) getDatabaseObject();
+        List<?> metaObjects = host.getMetaObjects();
+        if (metaObjects != null && !metaObjects.isEmpty()) {
 
-        // check for catalogs
-        List<?> _children = host.getCatalogs();
-
-
-        // check we have schemas
-        if (_children == null || _children.isEmpty()) {
-
-            // otherwise get meta tags
-            _children = host.getMetaObjects();
-
-        } else {  // have schemas so return these
-
-            int count = _children.size();
-            visibleChildren = new ArrayList<DatabaseObjectNode>();
-
-            for (int i = 0; i < count; i++) {
-
-                DatabaseSchema schema = (DatabaseSchema) _children.get(i);
-                visibleChildren.add(new DatabaseSchemaNode(schema));
-            }
-
-            return visibleChildren;
-        }
-
-        // check we have meta tags
-        if (_children != null && !_children.isEmpty()) {
-
-            int count = _children.size();
+            int count = metaObjects.size();
             visibleChildren = new ArrayList<>();
             allChildren = new ArrayList<>();
             for (int i = 0; i < count; i++) {
 
-                DatabaseMetaTag metaTag = (DatabaseMetaTag) _children.get(i);
+                DatabaseMetaTag metaTag = (DatabaseMetaTag) metaObjects.get(i);
                 DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag);
                 allChildren.add(metaTagNode);
                 if ((!metaTag.getMetaDataKey().contains("SYSTEM")
@@ -211,124 +161,23 @@ public class DatabaseHostNode extends DatabaseObjectNode {
     /**
      * Clears out the children of this node.
      */
+    @Override
     public void reset() {
         super.reset();
         visibleChildren = null;
-        allChildren=null;
+        allChildren = null;
     }
 
-    public boolean isDefaultCatalogsAndSchemasOnly() {
-        return defaultCatalogsAndSchemasOnly;
-    }
+    public void showAll() {
 
-    public void setDefaultCatalogsAndSchemasOnly(
-            boolean defaultCatalogsAndSchemasOnly) {
-
-        this.defaultCatalogsAndSchemasOnly = defaultCatalogsAndSchemasOnly;
-
-        ensureValidCatalogsAndSchemasVisible();
-    }
-
-    private void ensureValidCatalogsAndSchemasVisible() {
-
-        if (visibleChildren == null) {
-
+        if (visibleChildren == null)
             return;
+
+        for (int i = 0; i < visibleChildren.size(); i++) {
+            DatabaseObjectNode node = visibleChildren.get(i);
+            if (!childExists(node))
+                insert(node, i);
         }
-
-        if (isDefaultCatalogsAndSchemasOnly()) {
-
-            showOnlyDefaults();
-
-        } else {
-
-            showAll();
-        }
-
-    }
-
-    private void showAll() {
-
-        int index = 0;
-
-        for (DatabaseObjectNode node : visibleChildren) {
-
-            if (!childExists(node)) {
-
-                insert(node, index);
-            }
-
-            index++;
-        }
-
-    }
-
-    private void showOnlyDefaults() {
-
-        if (!hasDefaults()) {
-
-            return;
-        }
-
-        int index = 0;
-
-        for (DatabaseObjectNode node : visibleChildren) {
-
-            if (isDatabaseSourceNode(node)) {
-
-                DatabaseSource source = databaseSourceObjectFromNode(node);
-
-                if (source.isDefault()) {
-
-                    if (!childExists(node)) {
-
-                        insert(node, index);
-                    }
-
-                } else {
-
-                    if (getIndex(node) != -1) {
-
-                        remove(node);
-                    }
-
-                }
-
-            }
-
-            index++;
-        }
-
-    }
-
-    private boolean hasDefaults() {
-
-        for (DatabaseObjectNode node : visibleChildren) {
-
-            if (isDatabaseSourceNode(node)) {
-
-                DatabaseSource source = databaseSourceObjectFromNode(node);
-
-                if (source.isDefault()) {
-
-                    return true;
-                }
-
-            }
-
-        }
-
-        return false;
-    }
-
-    private DatabaseSource databaseSourceObjectFromNode(DatabaseObjectNode node) {
-
-        return (DatabaseSource) node.getDatabaseObject();
-    }
-
-    public boolean isDatabaseSourceNode(DatabaseObjectNode node) {
-
-        return (node.getDatabaseObject() instanceof DatabaseSource);
     }
 
     private boolean childExists(TreeNode node) {

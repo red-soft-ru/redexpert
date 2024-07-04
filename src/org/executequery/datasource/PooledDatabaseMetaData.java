@@ -1,7 +1,6 @@
 package org.executequery.datasource;
 
 import com.mchange.v2.sql.filter.FilterDatabaseMetaData;
-import org.executequery.log.Log;
 
 import java.sql.*;
 
@@ -19,8 +18,8 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
     }
 
     @Override
-    public ResultSet getSchemas(String s, String s1) throws SQLException {
-        return asPooledResultSet(inner.getSchemas(s, s1));
+    public ResultSet getSchemas(String s, String s1) {
+        return null;
     }
 
     @Override
@@ -88,12 +87,12 @@ public class PooledDatabaseMetaData extends FilterDatabaseMetaData {
         return asPooledResultSet(this.inner.getTables(a, b, c, d));
     }
 
-    public ResultSet getSchemas() throws SQLException {
-        return asPooledResultSet(this.inner.getSchemas());
+    public ResultSet getSchemas() {
+        return null;
     }
 
-    public ResultSet getCatalogs() throws SQLException {
-        return asPooledResultSet(this.inner.getCatalogs());
+    public ResultSet getCatalogs() {
+        return null;
     }
 
     public ResultSet getTableTypes() throws SQLException {

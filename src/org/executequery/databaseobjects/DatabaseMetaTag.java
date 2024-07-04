@@ -48,24 +48,10 @@ public interface DatabaseMetaTag extends NamedObject {
     DatabaseHost getHost();
 
     /**
-     * Returns the parent catalog object.
-     *
-     * @return the parent catalog object
-     */
-    DatabaseCatalog getCatalog();
-
-    /**
-     * Returns the parent schema object.
-     *
-     * @return the parent schema object
-     */
-    DatabaseSchema getSchema();
-
-    /**
-     * Returns the sub-type indicator of this meta tag - the type this
+     * Returns the subtype indicator of this meta tag - the type this
      * meta tag ultimately represents.
      *
-     * @return the sub-type
+     * @return the subtype
      */
     int getSubType();
 
@@ -73,9 +59,4 @@ public interface DatabaseMetaTag extends NamedObject {
 
     void loadColumnsForAllTables();
 
-
 }
-
-
-
-

@@ -1240,7 +1240,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     @Override
     public List<String> getTables() {
-        return controller.getTables(null);
+        return controller.getTables();
     }
 
     @Override

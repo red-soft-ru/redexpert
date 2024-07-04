@@ -56,16 +56,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     int typeTree;
 
     /**
-     * Catalog object for this meta tag
-     */
-    private DatabaseCatalog catalog;
-
-    /**
-     * Schema object for this meta tag
-     */
-    private DatabaseSchema schema;
-
-    /**
      * Host object for this meta tag
      */
     private final DatabaseHost host;
@@ -80,30 +70,20 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      */
     private List<NamedObject> children;
 
-    public DefaultDatabaseMetaTag(
-            DatabaseHost host, DatabaseCatalog catalog, DatabaseSchema schema, String metaDataKey, int typeTree) {
-
-        this.typeTree = typeTree;
-        this.host = host;
-        setCatalog(catalog);
-        setSchema(schema);
-        this.metaDataKey = metaDataKey;
+    public DefaultDatabaseMetaTag(DatabaseHost host, String metaDataKey) {
+        this(host, metaDataKey, TreePanel.DEFAULT);
     }
 
-    public DefaultDatabaseMetaTag(
-            DatabaseHost host, DatabaseCatalog catalog, DatabaseSchema schema, String metaDataKey) {
-
-        this(host, catalog, schema, metaDataKey, TreePanel.DEFAULT);
-    }
-
-    public DefaultDatabaseMetaTag(
-            DatabaseHost host, DatabaseCatalog catalog, DatabaseSchema schema, String metaDataKey,
-            int typeTree, DatabaseObject dependedObject) {
-
-        this(host, catalog, schema, metaDataKey, typeTree);
+    public DefaultDatabaseMetaTag(DatabaseHost host, String metaDataKey, int typeTree, DatabaseObject dependedObject) {
+        this(host, metaDataKey, typeTree);
         this.dependedObject = dependedObject;
     }
 
+    public DefaultDatabaseMetaTag(DatabaseHost host, String metaDataKey, int typeTree) {
+        this.typeTree = typeTree;
+        this.host = host;
+        this.metaDataKey = metaDataKey;
+    }
 
     /**
      * Returns the db object with the specified name
@@ -790,11 +770,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
      * Loads the database UDFs
      */
     private AbstractDatabaseObject getUDF(ResultSet rs) throws SQLException {
-
-        DefaultDatabaseUDF udf = new DefaultDatabaseUDF(
-                this, MiscUtils.trimEnd(rs.getString(1)), this.getHost());
-
-        return udf;
+        return new DefaultDatabaseUDF(this, MiscUtils.trimEnd(rs.getString(1)), this.getHost());
     }
 
     /**
@@ -810,9 +786,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getProceduresResultSet() throws SQLException {
-
-        String catalogName = catalogNameForQuery();
-        String schemaName = schemaNameForQuery();
 
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
         Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
@@ -843,8 +816,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
             return getResultSetFromQuery(sql);
 
-        } else // Another database
-            return dmd.getProcedures(catalogName, schemaName, null);
+        } else
+            return dmd.getProcedures(null, null, null);
     }
 
     private ResultSet getIndicesResultSet() throws SQLException {
@@ -1195,18 +1168,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getFunctionsResultSet() throws SQLException {
+        String query = "SELECT 0, 0,\n" +
+                "CAST (RDB$FUNCTION_NAME as VARCHAR(1024)) AS FUNCTION_NAME,\n" +
+                "RDB$DESCRIPTION AS REMARKS\n" +
+                "FROM RDB$FUNCTIONS\n" +
+                "WHERE (RDB$MODULE_NAME IS NULL) AND (RDB$PACKAGE_NAME IS NULL)\n" +
+                "ORDER BY FUNCTION_NAME ";
 
         try {
-
-            String catalogName = catalogNameForQuery();
-            String schemaName = schemaNameForQuery();
-
-            String query = "SELECT 0, 0,\n" +
-                    "CAST (RDB$FUNCTION_NAME as VARCHAR(1024)) AS FUNCTION_NAME,\n" +
-                    "RDB$DESCRIPTION AS REMARKS\n" +
-                    "FROM RDB$FUNCTIONS\n" +
-                    "WHERE (RDB$MODULE_NAME IS NULL) AND (RDB$PACKAGE_NAME IS NULL)\n" +
-                    "ORDER BY FUNCTION_NAME ";
 
             DatabaseMetaData dmd = getHost().getDatabaseMetaData();
             Connection realConnection = ((PooledConnection) dmd.getConnection()).getRealConnection();
@@ -1220,7 +1189,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 return getResultSetFromQuery(query);
 
             } else
-                return dmd.getFunctions(catalogName, schemaName, null);
+                return dmd.getFunctions(null, null, null);
 
         } catch (Throwable e) {
 
@@ -1234,15 +1203,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getFunctionResultSetOldImpl() throws SQLException {
         DatabaseMetaData dmd = getHost().getDatabaseMetaData();
-        return dmd.getProcedures(getCatalogName(), getSchemaName(), null);
-    }
-
-    private String schemaNameForQuery() {
-        return getHost().getSchemaNameForQueries(getSchemaName());
-    }
-
-    private String catalogNameForQuery() {
-        return getHost().getCatalogNameForQueries(getCatalogName());
+        return dmd.getProcedures(null, null, null);
     }
 
     /**
@@ -1256,24 +1217,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         objects.add(new DefaultSystemFunctionMetaTag(this, SYSTEM_DATE_TIME_FUNCTIONS, "Date/Time Functions"));
 
         return objects;
-    }
-
-    /**
-     * Returns the catalog name or null if there is
-     * no catalog attached.
-     */
-    private String getCatalogName() {
-        DatabaseCatalog catalog = getCatalog();
-        return (catalog != null) ? catalog.getName() : null;
-    }
-
-    /**
-     * Returns the schema name or null if there is
-     * no schema attached.
-     */
-    private String getSchemaName() {
-        DatabaseSchema schema = getSchema();
-        return (schema != null) ? schema.getName() : null;
     }
 
     /**
@@ -1321,33 +1264,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     /**
-     * Returns the parent catalog object.
-     *
-     * @return the parent catalog object
-     */
-    @Override
-    public DatabaseCatalog getCatalog() {
-        return catalog;
-    }
-
-    /**
-     * Returns the parent schema object.
-     *
-     * @return the parent schema object
-     */
-    @Override
-    public DatabaseSchema getSchema() {
-        return schema;
-    }
-
-    /**
      * Returns the parent named object of this object.
-     *
-     * @return the parent object - catalog or schema
      */
     @Override
     public NamedObject getParent() {
-        return getSchema() == null ? getCatalog() : getSchema();
+        return null;
     }
 
     /**
@@ -1381,22 +1302,6 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     @Override
     public boolean allowsChildren() {
         return true;
-    }
-
-    public void setCatalog(DatabaseCatalog catalog) {
-        this.catalog = catalog;
-    }
-
-    public void setSchema(DatabaseSchema schema) {
-        this.schema = schema;
-    }
-
-    public int getTypeTree() {
-        return typeTree;
-    }
-
-    public void setTypeTree(int typeTree) {
-        this.typeTree = typeTree;
     }
 
     private List<Integer> getTypeDependFromDatabaseObject(DatabaseObject databaseObject) {

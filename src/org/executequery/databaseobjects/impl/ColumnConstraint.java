@@ -37,7 +37,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
 
     /**
      * Returns the column object referenced by this column or
-     * null if its not a foreign key column.
+     * null if it's not a foreign key column.
      *
      * @return the referenced column
      */
@@ -75,18 +75,11 @@ public interface ColumnConstraint extends DatabaseObjectElement {
 
     /**
      * Returns the string representation of this constraints
-     * type - ie. PRIMARY, FOREIGN, UNIQUE.
+     * type - i.e. PRIMARY, FOREIGN, UNIQUE.
      *
      * @return the type name
      */
     String getTypeName();
-
-    /**
-     * Returns whether the schema has been defined.
-     *
-     * @return true | false
-     */
-    boolean hasSchemaName();
 
     /**
      * Returns the constraint type identifier.
@@ -129,27 +122,9 @@ public interface ColumnConstraint extends DatabaseObjectElement {
      */
     DatabaseTableColumn getColumn();
 
-    /**
-     * Returns the catalog name parent to this column.
-     *
-     * @return the catalog name
-     */
-    String getCatalogName();
-
-    /**
-     * Returns the schema name parent to this database column.
-     *
-     * @return the schema name
-     */
-    String getSchemaName();
-
     String getReferencedTable();
 
     String getReferencedColumn();
-
-    String getReferencedSchema();
-
-    String getReferencedCatalog();
 
     String getCheck();
 
@@ -160,7 +135,7 @@ public interface ColumnConstraint extends DatabaseObjectElement {
     /**
      * Returns whether this constraint has been modified.
      * A modification exists where this constraint is not new,
-     * an internal value has changed or it has been marked
+     * an internal value has changed, or it has been marked
      * for deletion.
      *
      * @return true | false
@@ -194,13 +169,4 @@ public interface ColumnConstraint extends DatabaseObjectElement {
 
     String getDeleteRule();
 
-    short getDeferrability();
-
 }
-
-
-
-
-
-
-

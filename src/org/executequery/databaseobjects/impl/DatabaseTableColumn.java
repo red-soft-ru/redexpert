@@ -86,12 +86,8 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
 
     /**
      * Initialises this object with values derived from the specified column.
-     *
-     * @param column
      */
     protected void initValues(DatabaseColumn column) {
-        setCatalogName(column.getCatalogName());
-        setSchemaName(column.getSchemaName());
         setName(column.getName());
         setTypeInt(column.getTypeInt());
         setTypeName(column.getTypeName());
@@ -584,36 +580,6 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
     }
 
     /**
-     * Returns the catalog name parent to this column.
-     *
-     * @return the catalog name
-     */
-    public String getCatalogName() {
-
-        if (table != null) {
-
-            return table.getCatalogName();
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the schema name parent to this database column.
-     *
-     * @return the schema name
-     */
-    public String getSchemaName() {
-
-        if (table != null) {
-
-            return table.getSchemaName();
-        }
-
-        return null;
-    }
-
-    /**
      * Override to clear the copy.
      */
     public void reset() {
@@ -694,11 +660,7 @@ public class DatabaseTableColumn extends DefaultDatabaseColumn {
      * @param source      the source column object
      * @param destination the destination column
      */
-    protected void copyColumn(DatabaseTableColumn source,
-                              DatabaseTableColumn destination) {
-
-        destination.setCatalogName(source.getCatalogName());
-        destination.setSchemaName(source.getSchemaName());
+    protected void copyColumn(DatabaseTableColumn source, DatabaseTableColumn destination) {
         destination.setName(source.getName());
         destination.setTypeInt(source.getTypeInt());
         destination.setTypeName(source.getTypeName());

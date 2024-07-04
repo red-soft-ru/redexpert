@@ -210,7 +210,7 @@ public class CreateDatabaseUserPanel extends AbstractCreateUserPanel {
 
             ConnectionsTreePanel panel = ConnectionsTreePanel.getPanelFromBrowser();
             DatabaseHost databaseHost = (DatabaseHost) panel.getHostNode(connection).getDatabaseObject();
-            DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseHost, null, null, getTypeObject());
+            DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseHost, getTypeObject());
 
             user = new DefaultDatabaseUser(metaTag, "", "");
             user.setParent(metaTag);

@@ -28,61 +28,16 @@ import org.executequery.databaseobjects.DatabaseObjectElement;
 public abstract class AbstractDatabaseObjectElement extends AbstractNamedObject implements DatabaseObjectElement {
 
     /**
-     * the catalog name
-     */
-    private String catalogName;
-
-    /**
-     * the schema name
-     */
-    private String schemaName;
-
-    /**
      * the object's remarks
      */
     private String remarks;
-
-    /**
-     * Returns the catalog name parent to this database object.
-     *
-     * @return the catalog name
-     */
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    /**
-     * Sets the parent catalog name to that specified.
-     *
-     * @param catalog the catalog name
-     */
-    public void setCatalogName(String catalog) {
-        this.catalogName = catalog;
-    }
-
-    /**
-     * Returns the schema name parent to this database object.
-     *
-     * @return the schema name
-     */
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    /**
-     * Sets the parent schema name to that specified.
-     *
-     * @param schema the schema name
-     */
-    public void setSchemaName(String schema) {
-        this.schemaName = schema;
-    }
 
     /**
      * Returns any remarks attached to this object.
      *
      * @return database object remarks
      */
+    @Override
     public String getRemarks() {
         return remarks;
     }
@@ -101,19 +56,19 @@ public abstract class AbstractDatabaseObjectElement extends AbstractNamedObject 
      *
      * @return the object type
      */
+    @Override
     public int getType() {
         return OTHER;
     }
 
     /**
-     * Returns the meta data key name of this object.
+     * Returns the metadata key name of this object.
      *
-     * @return the meta data key name.
+     * @return the metadata key name.
      */
+    @Override
     public String getMetaDataKey() {
         return "";
     }
 
 }
-
-

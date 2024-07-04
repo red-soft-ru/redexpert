@@ -201,14 +201,6 @@ public class IconManager {
                 iconName = BrowserConstants.CONNECTIONS_FOLDER_IMAGE;
                 break;
 
-            case NamedObject.CATALOG:
-                iconName = BrowserConstants.CATALOG_IMAGE;
-                break;
-
-            case NamedObject.SCHEMA:
-                iconName = BrowserConstants.SCHEMA_IMAGE;
-                break;
-
             case NamedObject.FUNCTION:
                 iconName = BrowserConstants.FUNCTIONS_IMAGE;
                 break;

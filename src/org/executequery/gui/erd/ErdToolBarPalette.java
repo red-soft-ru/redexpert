@@ -325,7 +325,7 @@ public class ErdToolBarPalette extends JPanel {
             GUIUtilities.showWaitCursor();
 
             BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
-            JPanel panel = new GenerateErdPanel(getSelectedConnection(), dialog, parent);
+            JPanel panel = new GenerateErdPanel(parent, dialog, getSelectedConnection());
 
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.setResizable(false);

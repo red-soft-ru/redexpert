@@ -38,12 +38,12 @@ import java.util.EventObject;
  */
 public class ConnectionTreeCellEditor extends DefaultTreeCellEditor {
 
-    private final SchemaTree schemaTree;
+    private final ConnectionTree connectionTree;
 
-    public ConnectionTreeCellEditor(SchemaTree tree, DefaultTreeCellRenderer renderer) {
+    public ConnectionTreeCellEditor(ConnectionTree tree, DefaultTreeCellRenderer renderer) {
 
         super(tree, renderer);
-        schemaTree = tree;
+        connectionTree = tree;
     }
 
     public boolean isCellEditable(EventObject event) {
@@ -72,7 +72,7 @@ public class ConnectionTreeCellEditor extends DefaultTreeCellEditor {
         } else if (lastPathComponent instanceof DatabaseHostNode) {
 
             DatabaseHostNode node = (DatabaseHostNode) lastPathComponent;
-            schemaTree.connectionNameChanged(value.toString());
+            connectionTree.connectionNameChanged(value.toString());
             EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
                     this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, node.getDatabaseConnection()));
         }

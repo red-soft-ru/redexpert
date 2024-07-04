@@ -66,7 +66,7 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
-        key = "editor.autocomplete.schema.on";
+        key = "editor.autocomplete.objects.on";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,

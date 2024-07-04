@@ -778,8 +778,6 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                         ConnectionsTreePanel
                                 .getPanelFromBrowser()
                                 .getDefaultDatabaseHostFromConnection(databaseConnection),
-                        null,
-                        null,
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
                 name,

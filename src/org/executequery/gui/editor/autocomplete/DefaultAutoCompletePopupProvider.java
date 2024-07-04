@@ -95,7 +95,7 @@ public class DefaultAutoCompletePopupProvider
     private boolean noProposals;
     private boolean rebuildingList;
     private boolean editorActionsSaved;
-    private final boolean autoCompleteSchema;
+    private final boolean autoCompleteObjects;
     private final boolean autoCompleteKeywords;
 
     public DefaultAutoCompletePopupProvider(DatabaseConnection connection, SQLTextArea sqlTextPane) {
@@ -105,7 +105,7 @@ public class DefaultAutoCompletePopupProvider
         this.connection = connection;
         this.sqlTextPane = sqlTextPane;
 
-        autoCompleteSchema = UserProperties.getInstance().getBooleanProperty("editor.autocomplete.schema.on");
+        autoCompleteObjects = UserProperties.getInstance().getBooleanProperty("editor.autocomplete.objects.on");
         autoCompleteKeywords = UserProperties.getInstance().getBooleanProperty("editor.autocomplete.keywords.on");
 
         listFocusAction = new AbstractAction() {
@@ -640,7 +640,7 @@ public class DefaultAutoCompletePopupProvider
                 null;
 
         autoCompleteListItems = new ArrayList<>();
-        selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);
+        selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteObjects, sqlTextPane);
     }
 
     private void reapplyIfVisible() {
@@ -903,13 +903,13 @@ public class DefaultAutoCompletePopupProvider
         @Override
         public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
 
-            if (o1.isSchemaObject() && o2.isSchemaObject()) {
+            if (o1.isTableOrColumn() && o2.isTableOrColumn()) {
                 return o1.getInsertionValue().compareTo(o2.getInsertionValue());
 
-            } else if (o1.isSchemaObject() && !o2.isSchemaObject()) {
+            } else if (o1.isTableOrColumn() && !o2.isTableOrColumn()) {
                 return -1;
 
-            } else if (o2.isSchemaObject() && !o1.isSchemaObject())
+            } else if (o2.isTableOrColumn() && !o1.isTableOrColumn())
                 return 1;
 
             return o1.getUpperCaseValue().compareTo(o2.getUpperCaseValue());

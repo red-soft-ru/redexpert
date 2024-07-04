@@ -55,7 +55,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     private SwingWorker worker;
     private Vector selectedTables;
 
-    public ErdGenerateProgressDialog(DatabaseConnection connection, Vector selectedTables) {
+    public ErdGenerateProgressDialog(Vector selectedTables, DatabaseConnection connection) {
         super(GUIUtilities.getParentFrame(), "Progress", false);
 
         this.connection = connection;

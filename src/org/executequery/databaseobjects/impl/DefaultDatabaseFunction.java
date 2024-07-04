@@ -85,16 +85,6 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     }
 
     /**
-     * Indicates whether this executable object has any arguments.
-     *
-     * @return true | false
-     */
-    public boolean hasParameters() {
-        List<FunctionArgument> arguments = getFunctionArguments();
-        return arguments != null && !arguments.isEmpty();
-    }
-
-    /**
      * Returns this object's arguments.
      */
     public List<FunctionArgument> getFunctionArguments() throws DataSourceException {

@@ -574,6 +574,17 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     /**
+     * <p>Returns a <code>ErdTableDependency</code> array of
+     * all recorded/manufactured table.
+     *
+     * @return the <code>ErdTableDependency</code> array of
+     * the open ERD
+     */
+    public ErdTableDependency[] getTableDependencies() {
+        return dependsPanel.getTableDependencies();
+    }
+
+    /**
      * <p>Adds the outline panel of a selected table to the
      * layered pane when a drag operation occurs.
      *

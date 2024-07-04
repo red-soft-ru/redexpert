@@ -405,7 +405,6 @@ public abstract class TableConstraintsPanel extends JPanel
                     }
 
                     cc.setColumn(Constants.EMPTY);
-                    cc.setRefSchema(Constants.EMPTY);
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
                     break;

@@ -142,8 +142,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        //base.add(new JLabel("Schema:"), gbc);
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;
@@ -162,7 +160,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(triggerNameField, gbc);
         ++gbc.gridy;
         gbc.insets.top = 0;
-        //base.add(schemaNameField, gbc);
 
         setContentPanel(base);
     }

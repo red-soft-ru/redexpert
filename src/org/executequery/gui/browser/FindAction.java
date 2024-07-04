@@ -21,10 +21,9 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -297,7 +296,7 @@ public abstract class FindAction<T> extends AbstractAction
             return;
         }
 
-        if (e.getSource() instanceof SchemaTree)
+        if (e.getSource() instanceof ConnectionTree)
             searchField.setText(String.valueOf(e.getKeyChar()));
     }
 

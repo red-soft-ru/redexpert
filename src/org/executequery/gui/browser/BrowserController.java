@@ -186,7 +186,7 @@ public class BrowserController {
             if (connection == null)
                 connection = getDatabaseConnection();
 
-            if (node.isHostNode() || node.getType() == NamedObject.CATALOG) {
+            if (node.isHostNode()) {
                 panel.setObjectName(null);
 
             } else if (node.getType() == NamedObject.TABLE_COLUMN) {
@@ -537,7 +537,7 @@ public class BrowserController {
     protected Vector<String> getColumnNamesVector(DatabaseConnection dc, String table) {
         try {
             metaData.setDatabaseConnection(dc);
-            return metaData.getColumnNamesVector(table, null);
+            return metaData.getColumnNamesVector(table);
 
         } catch (DataSourceException e) {
             handleException(e);
@@ -555,17 +555,17 @@ public class BrowserController {
     /**
      * Propagates the call to the metadata object.
      */
-    protected Vector<String> getTables(String schema) {
-        return getTables(getDatabaseConnection(), schema);
+    protected Vector<String> getTables() {
+        return getTables(getDatabaseConnection());
     }
 
     /**
      * Propagates the call to the metadata object.
      */
-    protected Vector<String> getTables(DatabaseConnection dc, String schema) {
+    protected Vector<String> getTables(DatabaseConnection dc) {
         try {
             metaData.setDatabaseConnection(dc);
-            return metaData.getSchemaTables(schema);
+            return metaData.getAllTables();
 
         } catch (DataSourceException e) {
             handleException(e);

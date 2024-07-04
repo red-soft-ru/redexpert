@@ -481,8 +481,6 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         tablePanel.setDatabaseConnection(connection);
         columnChangeConnection(connection);
 
-        // reset schema values
-
         // reset data types
         try {
             populateDataTypes(getDatabaseConnection().getDataTypesArray(), getDatabaseConnection().getIntDataTypesArray());

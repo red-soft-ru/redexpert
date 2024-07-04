@@ -1,5 +1,5 @@
 /*
- * SchemaTree.java
+ * ConnectionTree.java
  *
  * Copyright (C) 2002-2017 Takis Diakoumis
  *
@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
 /**
  * @author Takis Diakoumis
  */
-public class SchemaTree extends DynamicTree
+public class ConnectionTree extends DynamicTree
         implements TreeExpansionListener,
         TreeSelectionListener,
         MouseListener,
@@ -69,7 +69,7 @@ public class SchemaTree extends DynamicTree
     private boolean loadingNode;
     private final TreePanel panel;
 
-    public SchemaTree(DefaultMutableTreeNode root, TreePanel panel) {
+    public ConnectionTree(DefaultMutableTreeNode root, TreePanel panel) {
 
         super(root);
         this.panel = panel;
@@ -79,7 +79,7 @@ public class SchemaTree extends DynamicTree
         addMouseListener(this);
         addKeyListener(this);
 
-        SchemaTree tree = this;
+        ConnectionTree tree = this;
         getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK), "search");
         getActionMap().put("search", new AbstractAction() {
             @Override
@@ -225,7 +225,7 @@ public class SchemaTree extends DynamicTree
                 return;
 
             DatabaseObjectNode node = (DatabaseObjectNode) selectionPath.getLastPathComponent();
-            if (!node.isCatalog() && !node.isHostNode())
+            if (!node.isRootNode() && !node.isHostNode())
                 if (node.getDatabaseObject() != null && node.getDatabaseObject().getType() != NamedObject.META_TAG)
                     panel.valueChanged(node);
         }
@@ -271,7 +271,7 @@ public class SchemaTree extends DynamicTree
             else
                 expandPath(selectionPath);
 
-            if (!node.isCatalog())
+            if (!node.isRootNode())
                 panel.valueChanged(node);
 
         } else if (Pattern.compile("\\w").matcher(String.valueOf(e.getKeyChar())).find())

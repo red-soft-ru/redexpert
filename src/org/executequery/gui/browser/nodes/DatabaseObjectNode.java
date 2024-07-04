@@ -345,7 +345,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return databaseObject.isSystem();
     }
 
-    public boolean isCatalog() {
+    public boolean isRootNode() {
         return this instanceof RootDatabaseObjectNode;
     }
 

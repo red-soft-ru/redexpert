@@ -192,8 +192,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
                         ConnectionsTreePanel
                                 .getPanelFromBrowser()
                                 .getDefaultDatabaseHostFromConnection(connection),
-                        null,
-                        null,
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
                 name,

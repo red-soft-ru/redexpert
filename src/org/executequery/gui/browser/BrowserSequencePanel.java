@@ -118,8 +118,6 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        //base.add(new JLabel("Schema:"), gbc);
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;

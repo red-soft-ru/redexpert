@@ -191,8 +191,6 @@ public class ColumnConstraintTableModel extends AbstractPrintableTableModel {
                     tableConstraint.setKeyType(ColumnConstraint.CHECK_KEY);
                 }
 
-                tableConstraint.setReferencedCatalog(Constants.EMPTY);
-                tableConstraint.setReferencedSchema(Constants.EMPTY);
                 tableConstraint.setReferencedTable(Constants.EMPTY);
                 tableConstraint.setReferencedColumn(Constants.EMPTY);
                 break;

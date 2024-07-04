@@ -22,8 +22,6 @@ public class TablespaceTreePopupMenu extends JPopupMenu implements ActionListene
 
     private final DependPanel treePanel;
 
-    private StatementToEditorWriter statementWriter;
-
     private DatabaseConnection currentSelection;
 
     private TreePath currentPath;

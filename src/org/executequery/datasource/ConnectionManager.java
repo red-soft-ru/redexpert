@@ -86,7 +86,6 @@ public final class ConnectionManager {
         ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         if (panel != null) {
             DatabaseObjectNode hostNode = panel.getHostNode(databaseConnection);
-            ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
             loadTree(hostNode, connectionBuilder);
             panel.getTree().nodeChanged(hostNode);
         }
@@ -123,12 +122,8 @@ public final class ConnectionManager {
             while (nodes.hasMoreElements()) {
 
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-                if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
+                if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                     loadTree(node, connectionBuilder);
-
-                    if (node.getType() == NamedObject.META_TAG)
-                        ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
-                }
             }
 
         } catch (Exception e) {
@@ -140,7 +135,7 @@ public final class ConnectionManager {
     /**
      * Returns a connection from the pool of the specified type.
      *
-     * @param the stored database connection properties object
+     * @param databaseConnection stored database connection properties object
      * @return the connection itself
      */
     public static Connection getConnection(DatabaseConnection databaseConnection) {

@@ -21,7 +21,6 @@
 package org.executequery.databaseobjects;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.impl.ColumnInformation;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.sql.Connection;
@@ -59,68 +58,32 @@ public interface DatabaseHost extends NamedObject {
     Connection getConnection() throws DataSourceException;
 
     /**
-     * Returns the database meta data for this host.
+     * Returns the database metadata for this host.
      *
      * @return the database meta data
      */
     DatabaseMetaData getDatabaseMetaData() throws DataSourceException;
 
     /**
-     * Returns the meta type objects from this schema
+     * Returns the meta type objects
      *
      * @return the meta type objects
      */
     List<DatabaseMetaTag> getMetaObjects() throws DataSourceException;
 
     /**
-     * Returns the meta type objects from this schema
-     *
-     * @return the meta type objects
-     */
-    List<DatabaseMetaTag> getMetaObjects(DatabaseCatalog catalog,
-                                         DatabaseSchema schema) throws DataSourceException;
-
-    /**
-     * Returns the catalogs hosted by this host.
-     *
-     * @return the hosted catalogs
-     */
-    List<DatabaseCatalog> getCatalogs() throws DataSourceException;
-
-    /**
-     * Returns the schemas hosted by this host.
-     *
-     * @return the hosted schemas
-     */
-    List<DatabaseSchema> getSchemas() throws DataSourceException;
-
-    /**
      * Returns the columns of the specified database object.
      *
      * @return the columns
      */
-
-    List<DatabaseColumn> getColumns( String table);
-
-    /**
-     * Returns the exported keys columns of the specified database object.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
-     * @return the exported keys
-     */
-    List<DatabaseColumn> getExportedKeys(String catalog, String schema, String table)
-            throws DataSourceException;
+    List<DatabaseColumn> getColumns(String table);
 
     /**
-     * Returns the priviliges of the specified object.
+     * Returns the privileges of the specified object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
+     * @param table the database object name
      */
-    List<TablePrivilege> getPrivileges(String catalog, String schema, String table)
+    List<TablePrivilege> getPrivileges(String table)
             throws DataSourceException;
 
     /**
@@ -163,46 +126,28 @@ public interface DatabaseHost extends NamedObject {
     /**
      * Returns the column names of the specified database object.
      *
-     * @param table   the database object name
+     * @param table the database object name
      * @return the column names
      */
     List<String> getColumnNames(String table)
             throws DataSourceException;
 
     /**
-     * Returns the table names hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
+     * Returns the table names hosted by this host.
      *
      * @return the hosted tables
      */
-    List<String> getTableNames()
-            throws DataSourceException;
+    List<String> getTableNames() throws DataSourceException;
 
     /**
-     * Returns the default connected to catalog or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default catalog
-     */
-    DatabaseSource getDefaultCatalog();
-
-    /**
-     * Returns the default connected to schema or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default schema
-     */
-    DatabaseSource getDefaultSchema();
-
-    /**
-     * Returns whethere a current and valiud connection exists for this host.
+     * Returns whether a current and valid connection exists for this host.
      *
      * @return true | false
      */
     boolean isConnected();
 
     /**
-     * Concatenates product name and product verision.
+     * Concatenates product name and product version.
      */
     String getDatabaseProductNameVersion();
 
@@ -213,64 +158,24 @@ public interface DatabaseHost extends NamedObject {
 
     int getDatabaseMajorVersion() throws SQLException;
 
-    int getDatabaseMinorVersion() throws SQLException;
-
     /**
      * Returns the default prefix name value for objects from this host.
-     * ie. default catalog or schema name - with schema taking precedence.
      *
      * @return the default database object prefix
      */
     String getDefaultNamePrefix();
 
     /**
-     * Returns the default database source object - schema or catalog with
-     * schema taking precedence.
+     * Returns the database source object with the specified name.
      *
-     * @return the default database object prefix
-     */
-    DatabaseSource getDefaultDatabaseSource();
-
-    /**
-     * Returns the database source object with the specified name - schema or
-     * catalog with schema taking precedence.
-     *
-     * @param name
      * @return the default database object prefix
      */
     DatabaseSource getDatabaseSource(String name);
 
-    boolean supportsSchemasInTableDefinitions();
-
-    boolean supportsCatalogsInTableDefinitions();
-
-    boolean storesMixedCaseQuotedIdentifiers();
-
-    boolean storesUpperCaseQuotedIdentifiers();
-
-    boolean storesLowerCaseQuotedIdentifiers();
-
-    boolean supportsMixedCaseQuotedIdentifiers();
-
-    List<ColumnInformation> getColumnInformation(String catalog, String schema, String table) throws DataSourceException;
-
-    String getCatalogNameForQueries(String catalogName);
-
-    String getSchemaNameForQueries(String schemaName);
-
-    boolean hasTablesForType(String catalog, String schema, String type);
-
-    boolean supportCatalogOrSchemaInFunctionOrProcedureCalls();
-
     Connection getTemporaryConnection();
-
-    int countFinishedMetaTags();
-
-    void incCountFinishedMetaTags();
 
     boolean isPauseLoadingTreeForSearch();
 
     void setPauseLoadingTreeForSearch(boolean pauseLoadingTreeForSearch);
 
 }
-

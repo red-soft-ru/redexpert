@@ -30,7 +30,6 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.log.Log;
-import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
 
@@ -174,11 +173,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     }
 
     @Override
-    public Printable getPrintable() {
-        return new TablePrinter(null, "Database Server: " + getDatabaseConnection().toString());
-    }
-
-    @Override
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent);
     }
@@ -194,6 +188,11 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
     @Override
     public void cleanup() {
+    }
+
+    @Override
+    public Printable getPrintable() {
+        return null;
     }
 
 }

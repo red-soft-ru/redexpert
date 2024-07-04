@@ -22,12 +22,10 @@ package org.executequery.gui;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.gui.erd.ErdGenerateProgressDialog;
 import org.executequery.gui.erd.ErdViewerPanel;
 import org.executequery.gui.erd.ErdSelectionPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
@@ -52,9 +50,8 @@ public class GenerateErdPanel extends JPanel {
         this(null, parent, null);
     }
 
-    public GenerateErdPanel(DatabaseConnection connection, ActionContainer parent, ErdViewerPanel erdPanel) {
+    public GenerateErdPanel(ErdViewerPanel erdPanel, ActionContainer parent, DatabaseConnection connection) {
         super(new BorderLayout());
-
         this.connection = connection;
         this.erdPanel = erdPanel;
         this.parent = parent;
@@ -111,8 +108,8 @@ public class GenerateErdPanel extends JPanel {
 
         if (erdPanel == null) {
             new ErdGenerateProgressDialog(
-                    selectionPanel.getDatabaseConnection(),
-                    selectionPanel.getSelectedValues()
+                    selectionPanel.getSelectedValues(),
+                    selectionPanel.getDatabaseConnection()
             );
 
         } else {
@@ -127,7 +124,6 @@ public class GenerateErdPanel extends JPanel {
     }
 
     public void dispose() {
-        selectionPanel.cleanup();
         parent.finished();
     }
 

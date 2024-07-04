@@ -61,15 +61,15 @@ public class AutoCompleteSelectionsFactory {
         this.provider = provider;
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema, QueryEditor queryEditor) {
-        build(databaseHost, autoCompleteKeywords, autoCompleteSchema, (Object) queryEditor);
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, QueryEditor queryEditor) {
+        build(databaseHost, autoCompleteKeywords, autoCompleteObjects, (Object) queryEditor);
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema, SQLTextArea queryEditor) {
-        build(databaseHost, autoCompleteKeywords, autoCompleteSchema, (Object) queryEditor);
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, SQLTextArea queryEditor) {
+        build(databaseHost, autoCompleteKeywords, autoCompleteObjects, (Object) queryEditor);
     }
 
-    private void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema, Object editor) {
+    private void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, Object editor) {
 
         List<AutoCompleteListItem> listSelections = new ArrayList<>();
         if (autoCompleteKeywords)
@@ -89,7 +89,7 @@ public class AutoCompleteSelectionsFactory {
                     ((QueryEditor) editor).updateSQLKeywords();
             }
 
-            if (autoCompleteSchema) {
+            if (autoCompleteObjects) {
                 databaseTablesForHost(databaseHost);
                 databaseExecutablesForHost(databaseHost);
             }

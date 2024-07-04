@@ -84,7 +84,7 @@ public class AutoCompleteListItem {
         return type.isTable();
     }
 
-    public boolean isSchemaObject() {
+    public boolean isTableOrColumn() {
         return type.isTableColumn() || type.isTable();
     }
 

@@ -40,7 +40,7 @@ import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -85,7 +85,7 @@ public class ConnectionsTreePanel extends TreePanel
     private boolean rootSelectOnDisconnect;
     private boolean moveScrollAfterExpansion;
 
-    private SchemaTree tree;
+    private ConnectionTree tree;
     private TreePath oldSelectionPath;
     private BrowserController controller;
     private TreeFindAction treeFindAction;
@@ -125,7 +125,7 @@ public class ConnectionsTreePanel extends TreePanel
         moveScrollAfterExpansion = false;
         controller = new BrowserController(this);
 
-        tree = new SchemaTree(createTreeStructure(), this);
+        tree = new ConnectionTree(createTreeStructure(), this);
         tree.addMouseListener(new MouseHandler());
 
         treeFindAction = new TreeFindAction();
@@ -1327,7 +1327,7 @@ public class ConnectionsTreePanel extends TreePanel
         tree.setSelectionPath(treePath);
     }
 
-    public SchemaTree getTree() {
+    public ConnectionTree getTree() {
         return tree;
     }
 
@@ -1656,7 +1656,7 @@ public class ConnectionsTreePanel extends TreePanel
             return;
 
         RootDatabaseObjectNode root = (RootDatabaseObjectNode) tree.getConnectionsBranchNode();
-        root.getHostNodes().forEach(DatabaseHostNode::applyUserPreferences);
+        root.getHostNodes().forEach(DatabaseHostNode::showAll);
     }
 
     @Override

@@ -39,7 +39,9 @@ public class QueryTable {
     }
 
     public String getCompareName() {
-        return name.contains(".") ? name.substring(name.indexOf('.') + 1) : name;
+        if (name.contains("."))
+            return name.substring(name.indexOf('.') + 1);
+        return name;
     }
 
 }

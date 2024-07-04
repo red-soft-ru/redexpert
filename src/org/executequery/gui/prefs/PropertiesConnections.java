@@ -155,14 +155,6 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
-        key = "browser.catalog.schema.defaults.only";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("ShowOnlyDefaultCatalogOrSchema"),
-                SystemProperties.getBooleanProperty("user", key)
-        ));
-
         key = "browser.show.connection.properties";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

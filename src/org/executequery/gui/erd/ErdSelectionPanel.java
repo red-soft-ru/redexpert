@@ -45,17 +45,6 @@ import java.util.Vector;
 @SuppressWarnings({"rawtypes"})
 public class ErdSelectionPanel extends JPanel
         implements ItemListener {
-    //ActionListener {
-
-    /**
-     * The schema combo box
-     */
-    protected JComboBox schemaCombo;
-
-    /**
-     * the schema combo box model
-     */
-    protected DynamicComboBoxModel schemaModel;
 
     /**
      * The connection combo selection
@@ -63,7 +52,7 @@ public class ErdSelectionPanel extends JPanel
     protected JComboBox connectionsCombo;
 
     /**
-     * the schema combo box model
+     * The connections combo box model
      */
     protected DynamicComboBoxModel connectionsModel;
 
@@ -78,8 +67,6 @@ public class ErdSelectionPanel extends JPanel
     private DatabaseConnection databaseConnection;
     private final ErdViewerPanel erdViewer;
 
-    private boolean useCatalogs;
-
     public ErdSelectionPanel() {
         this(null, null);
     }
@@ -88,15 +75,10 @@ public class ErdSelectionPanel extends JPanel
         super(new GridBagLayout());
         this.databaseConnection = databaseConnection;
         this.erdViewer = erdViewer;
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
     }
 
-    private void jbInit() throws Exception {
+    private void init() {
 
         listPanel = new ListSelectionPanel(bundleString("availableTables"), bundleString("selected Tables"));
 
@@ -105,10 +87,6 @@ public class ErdSelectionPanel extends JPanel
         connectionsModel = new DynamicComboBoxModel(connections);
         connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
         connectionsCombo.addItemListener(this);
-
-        schemaModel = new DynamicComboBoxModel();
-        schemaCombo = WidgetFactory.createComboBox("schemaCombo", schemaModel);
-        schemaCombo.addItemListener(this);
 
         setBorder(BorderFactory.createEtchedBorder());
 
@@ -134,91 +112,36 @@ public class ErdSelectionPanel extends JPanel
         gbc.fill = GridBagConstraints.BOTH;
         add(listPanel, gbc);
 
-        // check initial values for possible value inits
-        if (connections == null || connections.isEmpty()) {
-            schemaCombo.setEnabled(false);
+        if (connections.isEmpty())
             connectionsCombo.setEnabled(false);
-        } else {
-            schemaChanged();
+        else
             connectionChanged();
-        }
 
         setPreferredSize(new Dimension(700, 380));
-    }
-
-    public void setInProcess(boolean inProcess) {
     }
 
     /**
      * Invoked when an item has been selected or deselected by the user.
      */
     public void itemStateChanged(ItemEvent event) {
-        // interested in selections only
-        if (event.getStateChange() == ItemEvent.DESELECTED) {
+
+        if (event.getStateChange() == ItemEvent.DESELECTED)
             return;
-        }
         listPanel.clear();
 
         final Object source = event.getSource();
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-                try {
-                    setInProcess(true);
-                    if (source == connectionsCombo) {
-                        connectionChanged();
-                    } else if (source == schemaCombo) {
-                        schemaChanged();
-                    }
-                } finally {
-                    setInProcess(false);
-                }
-            }
-        });
-        
-        
-        /*
-        if (source == connectionsCombo) {
-            try {
-                // retrieve connection selection
-                DatabaseConnection connection = 
-                        (DatabaseConnection)connectionsCombo.getSelectedItem();
-                // reset meta data
-                metaData.setDatabaseConnection(connection);
-                // reset schema values
-                Vector schemas = metaData.getHostedSchemasVector();
-                if (schemas == null || schemas.isEmpty()) {
-                    useCatalogs = true;
-                    schemas = metaData.getHostedCatalogsVector();
-                } else {
-                    useCatalogs = false;
-                }
-                schemaCombo.removeItemListener(this);
-                schemaModel.setElements(schemas);
-                schemaCombo.setEnabled(true);
-                //schemaChanged();
-            }
-            catch (DataSourceException e) {
-                GUIUtilities.displayExceptionErrorDialog(
-                        "Error retrieving the catalog/schema names for the " +
-                        "current connection.\n\nThe system returned:\n" + 
-                        e.getExtendedMessage(), e);
-            }
-            finally {
-                schemaCombo.addItemListener(this);
-            }
-        }
-        else if (source == schemaCombo) {
-            schemaChanged();
-        }
-         */
+        if (source == connectionsCombo)
+            GUIUtils.startWorker(this::connectionChanged);
     }
 
     private void connectionChanged() {
+        databaseConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+
         try {
-            // retrieve connection selection
-            databaseConnection =
-                    (DatabaseConnection) connectionsCombo.getSelectedItem();
-            List<String> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+            List<String> tables = ConnectionsTreePanel.getPanelFromBrowser()
+                    .getDefaultDatabaseHostFromConnection(databaseConnection)
+                    .getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]);
+
             if (erdViewer != null) {
                 for (ErdTable table : erdViewer.getAllTablesArray()) {
                     if (!tables.contains(table.getTableName()))
@@ -228,63 +151,14 @@ public class ErdSelectionPanel extends JPanel
             populateTableValues(tables);
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the catalog/schema names for the " +
+                    "Error retrieving the tables names for the " +
                             "current connection.\n\nThe system returned:\n" +
                             e.getExtendedMessage(), e);
         }
     }
 
-    private void populateSchemaValues(final Vector<?> schemas) {
-        GUIUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                schemaModel.setElements(schemas);
-                schemaCombo.setEnabled(true);
-                if (schemas != null && schemas.size() > 0) {
-                    schemaCombo.setSelectedIndex(0);
-                }
-            }
-        });
-    }
-
-    private void schemaChanged() {
-        try {
-
-
-            // String[] tables = metaData.getTables(catalogName, schemaName, "TABLE");
-            // populateTableValues(tables);
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the table names for the selected " +
-                            "catalog/schema.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
-            //  populateTableValues(new String[0]);
-        }
-    }
-
     private void populateTableValues(List<String> tables) {
-        GUIUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                listPanel.createAvailableList(tables);
-            }
-        });
-    }
-
-    public String getSchema() {
-
-        Object schema = schemaCombo.getSelectedItem();
-        if (schema != null) {
-
-            return schema.toString();
-        }
-
-        return null;
-    }
-
-    /**
-     * Releases database resources before closing.
-     */
-    public void cleanup() {
-
+        GUIUtils.invokeAndWait(() -> listPanel.createAvailableList(tables));
     }
 
     public Vector getSelectedValues() {
@@ -296,9 +170,8 @@ public class ErdSelectionPanel extends JPanel
     }
 
     public DatabaseConnection getDatabaseConnection() {
-        if (databaseConnection == null) {
+        if (databaseConnection == null)
             return (DatabaseConnection) connectionsCombo.getSelectedItem();
-        }
         return databaseConnection;
     }
 
@@ -307,14 +180,3 @@ public class ErdSelectionPanel extends JPanel
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

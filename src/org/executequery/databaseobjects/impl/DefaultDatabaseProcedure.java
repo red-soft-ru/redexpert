@@ -51,15 +51,6 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
     }
 
     /**
-     * Creates a new instance of DefaultDatabaseProcedure with
-     * the specified values.
-     */
-    public DefaultDatabaseProcedure(String schema, String name) {
-        setName(name);
-        setSchemaName(schema);
-    }
-
-    /**
      * Returns the database object type.
      *
      * @return the object type
@@ -73,8 +64,6 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
      *
      * @return the metadata key name
      */
-
-
     public String getMetaDataKey() {
         return META_TYPES[PROCEDURE];
     }
@@ -255,11 +244,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
 
     @Override
     public void finishLoadingInfo() {
-        if (getProcedureType() == 0) {
-            if (procedureOutputParameters.size() > 0)
-                setProcedureType(SELECTABLE);
-            else setProcedureType(EXECUTABLE);
-        }
+        if (getProcedureType() == 0)
+            setProcedureType(procedureOutputParameters.isEmpty() ? EXECUTABLE : SELECTABLE);
     }
 
     @Override

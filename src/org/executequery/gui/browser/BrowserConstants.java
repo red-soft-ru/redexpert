@@ -33,10 +33,8 @@ public class BrowserConstants {
     public static final String DATABASE_OBJECT_IMAGE = "icon_db_object";
     public static final String CONNECTIONS_IMAGE = "icon_db_search";
     public static final String CONNECTIONS_FOLDER_IMAGE = "icon_folder";
-    public static final String CATALOG_IMAGE = "icon_db_image";
     public static final String HOST_NOT_CONNECTED_IMAGE = "icon_connection";
     public static final String HOST_CONNECTED_IMAGE = "icon_connection_active";
-    public static final String SCHEMA_IMAGE = "icon_db_user";
     public static final String FUNCTIONS_IMAGE = "icon_db_function";
     public static final String INDEXES_IMAGE = "icon_db_index";
     public static final String PROCEDURES_IMAGE = "icon_db_procedure";

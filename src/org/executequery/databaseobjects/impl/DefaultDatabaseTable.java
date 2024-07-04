@@ -48,7 +48,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
     protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
 
-    static final long serialVersionUID = -963831243178078154L;
+    private static final long serialVersionUID = -963831243178078154L;
 
     List<ColumnConstraint> constraints;
     TokenizingFormatter formatter;
@@ -63,10 +63,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     private String modifiedSQLText;
     private transient TableDataChangeWorker tableDataChangeExecutor;
 
-    private String externalFile;
-    private String tablespace;
-    private List<DefaultDatabaseTrigger> triggers;
+    private ErdTable erd;
     private String adapter;
+    private String tablespace;
+    private String externalFile;
+    private List<DefaultDatabaseTrigger> triggers;
 
     protected List<ColumnData> listCD;
     protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
@@ -127,8 +128,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             setDependObject(null);
         }
     }
-
-    ErdTable erd;
 
     public DefaultDatabaseTable(ErdTable erd) {
 

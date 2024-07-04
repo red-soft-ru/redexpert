@@ -21,6 +21,7 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
+import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
@@ -245,17 +246,23 @@ public class ErdToolBarPalette extends JPanel {
 
     private void generateScript() {
 
-        Vector<ErdMoveableComponent> tables = parent.getAllComponentsVector();
-        if (tables.isEmpty()) {
+        Vector<ErdMoveableComponent> allComponentsVector = parent.getAllComponentsVector();
+        if (allComponentsVector.isEmpty()) {
             GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
             return;
         }
 
-        Vector<ErdMoveableComponent> clonedTables = new Vector<>(tables.size());
-        for (int i = 0; i < tables.size(); i++)
-            clonedTables.add(tables.elementAt(i));
+        Vector<ErdTable> erdTables = new Vector<>(allComponentsVector.size());
+        allComponentsVector.stream()
+                .filter(object -> object instanceof ErdTable)
+                .forEach(erdTable -> erdTables.add((ErdTable) erdTable));
 
-        new ErdScriptGenerator(clonedTables, parent);
+        if (erdTables.isEmpty()) {
+            GUIUtilities.displayErrorMessage(bundleString("NoTablesError"));
+            return;
+        }
+
+        new ComparerDBCommands().erdScript(erdTables, null);
     }
 
     private void createTitle() {

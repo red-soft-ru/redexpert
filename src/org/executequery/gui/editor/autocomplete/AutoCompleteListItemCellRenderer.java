@@ -32,7 +32,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
     private static final int TEXT_ICON_GAP = 10;
 
-    private static final Icon sql92Keyword;
     private static final Icon databaseSpecificKeyword;
     private static final Icon databaseTable;
     private static final Icon nothingFound;
@@ -47,8 +46,7 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final Icon databaseTableView;
 
     static {
-        sql92Keyword = IconManager.getIcon("icon_sql92");
-        animatedSpinner = (ImageIcon) IconManager.getIcon("icon_loading"/*, "gif"*/);
+        animatedSpinner = IconManager.getIcon("icon_loading"/*, "gif"*/);
         databaseSpecificKeyword = IconManager.getIcon("icon_db_keyword");
         nothingFound = IconManager.getIcon("icon_warning");
         databaseTable = IconManager.getIcon("icon_db_table");
@@ -78,9 +76,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
             switch (item.getType()) {
 
                 case SQL92_KEYWORD:
-                    setIcon(sql92Keyword);
-                    break;
-
                 case DATABASE_DEFINED_KEYWORD:
                     setIcon(databaseSpecificKeyword);
                     break;

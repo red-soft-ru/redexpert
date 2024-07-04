@@ -50,7 +50,6 @@ public class ErdToolBarPalette extends JPanel {
     private int selectedScaleIndex;
 
     private RolloverButton createTableButton;
-    private RolloverButton addTableButton;
     private RolloverButton dropTableButton;
     private RolloverButton createRelationButton;
     private RolloverButton deleteRelationButton;
@@ -93,15 +92,8 @@ public class ErdToolBarPalette extends JPanel {
         createTableButton = WidgetFactory.createRolloverButton(
                 "createTableButton",
                 bundleString("createTable"),
-                "icon_table_new",
-                e -> new ErdNewTableDialog(parent)
-        );
-
-        addTableButton = WidgetFactory.createRolloverButton(
-                "addTableButton",
-                bundleString("addTable"),
                 "icon_table_add",
-                e -> new ErdSelectionDialog(parent)
+                e -> new ErdNewTableDialog(parent)
         );
 
         dropTableButton = WidgetFactory.createRolloverButton(
@@ -206,8 +198,6 @@ public class ErdToolBarPalette extends JPanel {
         GridBagHelper gbh = new GridBagHelper().anchorWest().fillHorizontally();
         add(connectionsCombo, gbh.setWeightX(0.2).get());
         add(createTableButton, gbh.nextCol().setMinWeightX().get());
-        add(createTableButton, gbh.nextCol().get());
-        add(addTableButton, gbh.nextCol().get());
         add(dropTableButton, gbh.nextCol().get());
         add(createRelationButton, gbh.nextCol().get());
         add(deleteRelationButton, gbh.nextCol().get());

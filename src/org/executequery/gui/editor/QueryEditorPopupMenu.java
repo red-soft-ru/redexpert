@@ -83,7 +83,7 @@ public class QueryEditorPopupMenu extends JPopupMenu
         add(createClearOutputMenuItem());
         add(createAddToUserDefinedKeywordsMenuItem());
         add(createUseKeywordAutoComplete());
-        add(createUseSchemaAutoComplete());
+        add(createUseObjectsAutoComplete());
         add(createRemoveCommentsForQueryMenuItem());
         add(createShowHideToolsPanelMenuItem());
         add(createRecycleResultSetTabMenuItem());
@@ -106,13 +106,13 @@ public class QueryEditorPopupMenu extends JPopupMenu
         return menuItem;
     }
 
-    private JMenuItem createUseSchemaAutoComplete() {
+    private JMenuItem createUseObjectsAutoComplete() {
 
         JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(action());
         menuItem.setText(bundleString("auto-complete-database-objects"));
         menuItem.setSelected(SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "editor.autocomplete.schema.on"));
-        menuItem.setActionCommand("updateAutoCompleteSchemaUsage");
+                Constants.USER_PROPERTIES_KEY, "editor.autocomplete.objects.on"));
+        menuItem.setActionCommand("updateAutoCompleteObjectsUsage");
         executeActionButtons().add(menuItem);
         return menuItem;
     }
@@ -149,9 +149,9 @@ public class QueryEditorPopupMenu extends JPopupMenu
         checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.autocomplete.keywords.on");
     }
 
-    public void updateAutoCompleteSchemaUsage(ActionEvent e) {
+    public void updateAutoCompleteObjectsUsage(ActionEvent e) {
 
-        checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.autocomplete.schema.on");
+        checkboxPreferenceChanged((JCheckBoxMenuItem) e.getSource(), "editor.autocomplete.objects.on");
     }
 
     private void checkboxPreferenceChanged(JCheckBoxMenuItem item, String key) {

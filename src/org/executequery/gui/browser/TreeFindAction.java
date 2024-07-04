@@ -23,7 +23,7 @@ package org.executequery.gui.browser;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -87,7 +87,7 @@ public class TreeFindAction extends FindAction<TreePath> {
             return;
         }
 
-        SchemaTree tree = (SchemaTree) comp;
+        ConnectionTree tree = (ConnectionTree) comp;
         String prefix = searchString;
 
         if (ignoreCase()) {
@@ -141,8 +141,8 @@ public class TreeFindAction extends FindAction<TreePath> {
     }
 
     private void changeSelection(JTree tree, TreePath path) {
-        SchemaTree schemaTree = (SchemaTree) tree;
-        ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) schemaTree.getTreePanel();
+        ConnectionTree connectionTree = (ConnectionTree) tree;
+        ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) connectionTree.getTreePanel();
         TreePath parent = path.getParentPath();
         boolean expand = true;
         if (parent != null)

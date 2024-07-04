@@ -32,7 +32,6 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
 import org.executequery.repository.KeywordRepository;
@@ -71,42 +70,9 @@ public class AutoCompleteSelectionsFactory {
         this.provider = provider;
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
-                      QueryEditor queryEditor) {
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, SQLTextArea queryEditor) {
 
-        tables = new ArrayList<AutoCompleteListItem>();
-
-        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
-        if (autoCompleteKeywords) {
-
-            addToProvider(listSelections);
-        }
-
-        if (databaseHost != null && databaseHost.isConnected()) {
-
-            if (autoCompleteKeywords) {
-
-                addDatabaseDefinedKeywords(databaseHost, listSelections);
-                addFirebirdDefinedKeywords(databaseHost, listSelections);
-                addToProvider(listSelections);
-                queryEditor.updateSQLKeywords();
-            }
-
-            if (autoCompleteSchema) {
-
-                databaseTablesForHost(databaseHost);
-//                databaseColumnsForTables(databaseHost, tables);
-                databaseExecutablesForHost(databaseHost);
-            }
-
-        }
-
-    }
-
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
-                      SQLTextArea queryEditor) {
-
-        tables = new ArrayList<AutoCompleteListItem>();
+        tables = new ArrayList<>();
 
         List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
         if (autoCompleteKeywords) {
@@ -125,12 +91,11 @@ public class AutoCompleteSelectionsFactory {
                 queryEditor.setSQLKeywords(true);
             }
 
-            if (autoCompleteSchema) {
-
+            if (autoCompleteObjects) {
                 databaseTablesForHost(databaseHost);
-//                databaseColumnsForTables(databaseHost, tables);
                 databaseExecutablesForHost(databaseHost);
             }
+
             addParametersToProvider();
             addVariablesToProvider();
         }
@@ -162,7 +127,7 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void addVariablesToProvider() {
-        if(variables!=null) {
+        if (variables != null) {
             trace("Building autocomplete variables list");
             List<String> tableNames = new ArrayList<String>();
             tableNames.addAll(variables);
@@ -170,8 +135,9 @@ public class AutoCompleteSelectionsFactory {
             addTablesToProvider(VARIABLE_DESCRIPTION, AutoCompleteListItemType.VARIABLE, tableNames, list);
         }
     }
+
     private void addParametersToProvider() {
-        if(parameters!=null) {
+        if (parameters != null) {
             trace("Building autocomplete variables list");
             List<String> tableNames = new ArrayList<String>();
             tableNames.addAll(parameters);
@@ -403,8 +369,8 @@ public class AutoCompleteSelectionsFactory {
         try {
             if (rs != null) {
                 Statement st = rs.getStatement();
-                if(st!=null)
-                    if(!st.isClosed())
+                if (st != null)
+                    if (!st.isClosed())
                         st.close();
                 //rs.close();
             }

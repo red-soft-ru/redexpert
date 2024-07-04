@@ -20,7 +20,6 @@
 
 package org.executequery.gui.erd;
 
-import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -29,9 +28,7 @@ import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.RolloverButton;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
@@ -49,14 +46,12 @@ public class ErdToolBarPalette extends PanelToolBar
 
     private final ErdViewerPanel parent;
     private RolloverButton createTableButton;
-    private RolloverButton addTableButton;
     private RolloverButton relationButton;
     private RolloverButton deleteRelationButton;
     private RolloverButton dropTableButton;
     private RolloverButton genScriptsButton;
     private RolloverButton fontStyleButton;
     private RolloverButton lineStyleButton;
-    private RolloverButton commitButton;
     private RolloverButton canvasBgButton;
     private RolloverButton canvasFgButton;
     private RolloverButton erdTitleButton;
@@ -75,27 +70,19 @@ public class ErdToolBarPalette extends PanelToolBar
      * The scale combo box
      */
     private JComboBox scaleCombo;
-    private DynamicComboBoxModel connectionModel;
 
     private OpenConnectionsComboboxPanel connectionsComboBox;
 
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
         this.parent = parent;
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        jbInit();
     }
 
     private void jbInit() {
 
         dropTableButton = new RolloverButton("/org/executequery/icons/DropTable16.png",
                 bundleString("dropTable"));
-
-//        commitButton = new RolloverButton("/org/executequery/icons/Commit16.png",
-//                                         "Commit any schema changes");
 
         connectionsComboBox = new OpenConnectionsComboboxPanel();
 
@@ -118,9 +105,6 @@ public class ErdToolBarPalette extends PanelToolBar
         createTableButton = new RolloverButton("/org/executequery/icons/NewTable16.png",
                 bundleString("createTable"));
 
-        addTableButton = new RolloverButton("/org/executequery/icons/AddTable16.png",
-                "Add tables from an existing schema");
-
         canvasBgButton = new RolloverButton("/org/executequery/icons/ErdBackground16.png",
                 bundleString("canvasBg"));
 
@@ -138,24 +122,20 @@ public class ErdToolBarPalette extends PanelToolBar
         genScriptsButton.addActionListener(this);
         canvasFgButton.addActionListener(this);
         canvasBgButton.addActionListener(this);
-        addTableButton.addActionListener(this);
         createTableButton.addActionListener(this);
         dropTableButton.addActionListener(this);
         lineStyleButton.addActionListener(this);
         fontStyleButton.addActionListener(this);
-        //commitButton.addActionListener(this);
         relationButton.addActionListener(this);
         deleteRelationButton.addActionListener(this);
         erdTitleButton.addActionListener(this);
         erdTextBlockButton.addActionListener(this);
         updateFromDatabase.addActionListener(this);
         addButton(createTableButton);
-        //addButton(addTableButton);
         addButton(relationButton);
         addButton(deleteRelationButton);
         addButton(dropTableButton);
         addButton(genScriptsButton);
-        //addButton(commitButton);
         addSeparator();
         addButton(erdTitleButton);
         addButton(erdTextBlockButton);
@@ -182,7 +162,6 @@ public class ErdToolBarPalette extends PanelToolBar
 
         addSeparator();
         addButton(zoomOutButton);
-        //addComboBox(scaleCombo);
         addButton(zoomInButton);
         addSeparator();
         addButton(updateFromDatabase);
@@ -224,8 +203,8 @@ public class ErdToolBarPalette extends PanelToolBar
 
             if (tablesSelected) {
                 parent.fireChangedBgColor();
-                for (int i = 0; i < selectedTables.length; i++) {
-                    selectedTables[i].setTableBackground(newColour);
+                for (ErdMoveableComponent selectedTable : selectedTables) {
+                    selectedTable.setTableBackground(newColour);
                 }
                 parent.repaintLayeredPane();
             } else {
@@ -282,15 +261,6 @@ public class ErdToolBarPalette extends PanelToolBar
                 _tables.add(tables.elementAt(i));
             }
             new ComparerDBCommands().erdScript(tables, null);
-        } else if (btnObject == addTableButton) {
-            new ErdSelectionDialog(parent);
-        } else if (btnObject == commitButton) {
-            String sql = parent.getAllSQLText();
-
-            if (sql != null && sql.length() > 0)
-                new ErdExecuteSQL(parent, sql);
-            else
-                GUIUtilities.displayErrorMessage(bundleString("NoSchemaChangesRecordedError"));
 
         } else if (btnObject == dropTableButton) {
             parent.removeSelectedTables();
@@ -377,7 +347,7 @@ public class ErdToolBarPalette extends PanelToolBar
         try {
             GUIUtilities.showWaitCursor();
             BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
-            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(dialog, parent, getSelectedConnection()));
+            dialog.addDisplayComponentWithEmptyBorder(new GenerateErdPanel(parent, getSelectedConnection()));
             dialog.setResizable(false);
             dialog.display();
         } finally {
@@ -388,19 +358,7 @@ public class ErdToolBarPalette extends PanelToolBar
     }
 
     private DatabaseConnection getSelectedConnection() {
-        DatabaseConnection selectedConnection = connectionsComboBox.getSelectedConnection();
-        return selectedConnection;
-    }
-
-    /**
-     * Creates a button with the action specified by the action name
-     * and with the specified tool tip text.
-     */
-    private RolloverButton createButton(String actionId, String toolTipText) {
-        RolloverButton button =
-                new RolloverButton(ActionBuilder.get(actionId), toolTipText);
-        button.setText(Constants.EMPTY);
-        return button;
+        return connectionsComboBox.getSelectedConnection();
     }
 
     private String bundleString(String key) {

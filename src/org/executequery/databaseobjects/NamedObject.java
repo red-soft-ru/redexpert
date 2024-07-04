@@ -70,8 +70,6 @@ public interface NamedObject extends Named, java.io.Serializable {
     int META_TAG = 93;
     int OTHER = 95;
     int ROOT = 96;
-    int SCHEMA = 97;
-    int CATALOG = 98;
     int HOST = 99;
 
     int BRANCH_NODE = 100;

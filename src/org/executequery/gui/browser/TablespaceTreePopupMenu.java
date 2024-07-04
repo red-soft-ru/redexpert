@@ -1,19 +1,16 @@
 package org.executequery.gui.browser;
 
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.depend.DependPanel;
-import org.executequery.gui.browser.nodes.DatabaseCatalogNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -24,8 +21,6 @@ public class TablespaceTreePopupMenu extends JPopupMenu implements ActionListene
     private final JMenuItem delete;
 
     private final DependPanel treePanel;
-
-    private StatementToEditorWriter statementWriter;
 
     private DatabaseConnection currentSelection;
 
@@ -64,38 +59,8 @@ public class TablespaceTreePopupMenu extends JPopupMenu implements ActionListene
         return menuItem;
     }
 
-    private JCheckBoxMenuItem createCheckBoxMenuItem(String text,
-                                                     String actionCommand,
-                                                     ActionListener listener) {
-
-        JCheckBoxMenuItem menuItem = MenuItemFactory.createCheckBoxMenuItem(text);
-        menuItem.setActionCommand(actionCommand);
-        menuItem.addActionListener(listener);
-        return menuItem;
-    }
-
-
-    private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {
-
-        return (DatabaseCatalog) (asDatabaseObjectNode(currentPathComponent)).getDatabaseObject();
-    }
-
-    private DatabaseObjectNode asDatabaseObjectNode(DefaultMutableTreeNode currentPathComponent) {
-
-        return (DatabaseObjectNode) currentPathComponent;
-    }
-
-    private boolean isCatalog(DefaultMutableTreeNode currentPathComponent) {
-
-        return currentPathComponent instanceof DatabaseCatalogNode;
-    }
-
     public DependPanel getTreePanel() {
         return treePanel;
-    }
-
-    public DatabaseConnection getCurrentSelection() {
-        return currentSelection;
     }
 
     public void setCurrentSelection(DatabaseConnection currentSelection) {

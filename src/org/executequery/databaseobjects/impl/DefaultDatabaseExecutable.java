@@ -24,7 +24,6 @@ import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,24 +64,6 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
 
     public DefaultDatabaseExecutable(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
-        if (metaTagParent.getCatalog() != null) {
-            setCatalogName(metaTagParent.getCatalog().getName());
-        }
-
-        if (metaTagParent.getSchema() != null) {
-            setSchemaName(metaTagParent.getSchema().getName());
-        }
-
-    }
-
-    /**
-     * Indicates whether this executable object has any parameters.
-     *
-     * @return true | false
-     */
-    public boolean hasParameters() {
-        List<ProcedureParameter> _parameters = getParameters();
-        return _parameters != null && !_parameters.isEmpty();
     }
 
     /**
@@ -112,45 +93,6 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
                 ProcedureParameter[parameters.size()]);
     }
 
-    public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            return dmd.supportsCatalogsInProcedureCalls() || dmd.supportsSchemasInProcedureCalls();
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean supportCatalogInFunctionOrProcedureCalls() throws DataSourceException {
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            return dmd.supportsCatalogsInProcedureCalls();
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean supportSchemaInFunctionOrProcedureCalls() throws DataSourceException {
-
-        try {
-
-            DatabaseMetaData dmd = getMetaTagParent().getHost().getDatabaseMetaData();
-            return dmd.supportsSchemasInProcedureCalls();
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
     /**
      * Returns this object's parameters.
      */
@@ -160,7 +102,6 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
         return parameters;
 
     }
-
 
 
     /**
@@ -201,20 +142,6 @@ public abstract class DefaultDatabaseExecutable extends AbstractDatabaseObject
     @Override
     public boolean allowsChildren() {
         return false;
-    }
-
-    /**
-     * The executable (procedure) type:<br>
-     * <ul>
-     * <li> procedureResultUnknown - May return a result
-     * <li> procedureNoResult - Does not return a result
-     * <li> procedureReturnsResult - Returns a result
-     * </ul>
-     *
-     * @return the proc type
-     */
-    public short getExecutableType() {
-        return executableType;
     }
 
     public void setExecutableType(short executableType) {

@@ -22,10 +22,8 @@ package org.executequery.databaseobjects;
 
 import org.underworldlabs.jdbc.DataSourceException;
 
-import java.util.List;
-
 /**
- * Defines a database 'source' object - typically a catalog or schema.
+ * Defines a database 'source' object.
  *
  * @author Takis Diakoumis
  */
@@ -40,13 +38,6 @@ public interface DatabaseSource extends NamedObject {
     DatabaseMetaTag getDatabaseMetaTag(String name) throws DataSourceException;
 
     /**
-     * Returns the meta type objects from this schema
-     *
-     * @return the meta type objects
-     */
-    List<DatabaseMetaTag> getMetaObjects() throws DataSourceException;
-
-    /**
      * Returns the parent host object.
      *
      * @return the parent object
@@ -56,7 +47,6 @@ public interface DatabaseSource extends NamedObject {
     /**
      * Returns the procedure with the specified name.
      *
-     * @param name
      * @return the named procedure
      */
     DatabaseProcedure getProcedure(String name);
@@ -64,7 +54,6 @@ public interface DatabaseSource extends NamedObject {
     /**
      * Returns the function with the specified name.
      *
-     * @param name
      * @return the named function
      */
     DatabaseFunction getFunction(String name);
@@ -76,30 +65,4 @@ public interface DatabaseSource extends NamedObject {
      */
     boolean isDefault();
 
-    /**
-     * Returns the parent catalog object.
-     *
-     * @return the parent catalog object
-     */
-    DatabaseCatalog getCatalog();
-
-    /**
-     * Returns the parent schema object.
-     *
-     * @return the parent schema object
-     */
-    DatabaseSchema getSchema();
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

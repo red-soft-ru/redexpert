@@ -53,13 +53,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     List<ColumnConstraint> constraints;
     TokenizingFormatter formatter;
 
-    /** the table columns exported */
-    private List<DatabaseColumn> exportedColumns;
-
-    /** the table indexed columns */
+    /**
+     * the table indexed columns
+     */
     private List<DefaultDatabaseIndex> indexes;
 
-    /** the user modified SQL text for changes */
+    /**
+     * the user modified SQL text for changes
+     */
     private String modifiedSQLText;
     private transient TableDataChangeWorker tableDataChangeExecutor;
 
@@ -187,24 +188,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
-    public List<DatabaseColumn> getExportedKeys() throws DataSourceException {
-
-        if (!isMarkedForReload() && exportedColumns != null)
-            return exportedColumns;
-
-        if (exportedColumns != null) {
-            exportedColumns.clear();
-            exportedColumns = null;
-        }
-
-        DatabaseHost host = getHost();
-        if (host != null)
-            exportedColumns = host.getExportedKeys(getCatalogName(), getSchemaName(), getName());
-
-        return exportedColumns;
-    }
-
-    @Override
     public boolean hasReferenceTo(DatabaseTable anotherTable) {
 
         List<ColumnConstraint> constraints = getConstraints();
@@ -321,11 +304,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         try {
 
             DatabaseHost _host = getHost();
-            rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
+            rs = _host.getDatabaseMetaData().getIndexInfo(null, null, getName(), false, true);
             TableColumnIndex lastIndex = null;
             indexes = new ArrayList<>();
-            List<TableColumnIndex> tindexes = new ArrayList<>();
 
+            List<TableColumnIndex> tableColumnIndices = new ArrayList<>();
             while (rs.next()) {
                 String name = rs.getString(6);
                 if (StringUtils.isBlank(name))
@@ -337,7 +320,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                     index.addIndexedColumn(rs.getString(9));
                     index.setMetaData(resultSetRowToMap(rs));
                     lastIndex = index;
-                    tindexes.add(index);
+                    tableColumnIndices.add(index);
 
                 } else
                     lastIndex.addIndexedColumn(rs.getString(9));
@@ -345,9 +328,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             releaseResources(rs, null);
             DefaultDatabaseMetaTag metaTag =
-                    new DefaultDatabaseMetaTag(getHost(), null, null, META_TYPES[INDEX]);
+                    new DefaultDatabaseMetaTag(getHost(), META_TYPES[INDEX]);
 
-            for (TableColumnIndex index : tindexes) {
+            for (TableColumnIndex index : tableColumnIndices) {
                 DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
                 index1.getObjectInfo();
                 indexes.add(index1);

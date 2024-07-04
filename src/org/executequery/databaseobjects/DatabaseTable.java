@@ -38,8 +38,6 @@ public interface DatabaseTable extends DatabaseTableObject {
      */
     List<NamedObject> getObjects() throws DataSourceException;
 
-    List<DatabaseColumn> getExportedKeys() throws DataSourceException;
-
     DatabaseColumn getColumn(String name) throws DataSourceException;
 
     /**

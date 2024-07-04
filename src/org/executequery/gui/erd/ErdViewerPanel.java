@@ -601,8 +601,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     /**
      * <p>Returns a <code>ErdTableDependency</code> array of
-     * all recorded/manufactured table dependencies within the
-     * schema ERD displayed.
+     * all recorded/manufactured table.
      *
      * @return the <code>ErdTableDependency</code> array of
      * the open ERD

@@ -24,7 +24,6 @@ import org.executequery.ApplicationException;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
-import org.executequery.databaseobjects.impl.DefaultDatabaseSchema;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -41,7 +40,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Combo box group controller containing connection -> catalog/schema -> table
+ * Combo box group controller containing connection -> table
  * selection combo boxes.
  *
  * @author Takis Diakoumis
@@ -50,8 +49,6 @@ public class TableSelectionCombosGroup implements ItemListener {
 
     private final JComboBox connectionsCombo;
 
-    private final JComboBox schemasCombo;
-
     private final JComboBox tablesCombo;
 
     private final JComboBox columnsCombo;
@@ -59,34 +56,18 @@ public class TableSelectionCombosGroup implements ItemListener {
     private List<ItemSelectionListener> itemListeners;
 
     public TableSelectionCombosGroup() {
-
-        this(WidgetFactory.createComboBox("connectionsCombo"), WidgetFactory.createComboBox("schemaCombo"), WidgetFactory.createComboBox("tableCombo"), null);
+        this(WidgetFactory.createComboBox("connectionsCombo"), WidgetFactory.createComboBox("tableCombo"), null);
     }
 
     public TableSelectionCombosGroup(JComboBox connectionsCombo) {
-
         this(connectionsCombo, null, null);
     }
 
-    public TableSelectionCombosGroup(JComboBox connectionsCombo,
-                                     JComboBox schemasCombo) {
-
-        this(connectionsCombo, schemasCombo, null);
-    }
-
-    public TableSelectionCombosGroup(JComboBox connectionsCombo,
-                                     JComboBox schemasCombo, JComboBox tablesCombo) {
-
-        this(connectionsCombo, schemasCombo, tablesCombo, null);
-    }
-
-    public TableSelectionCombosGroup(JComboBox connectionsCombo,
-                                     JComboBox schemasCombo, JComboBox tablesCombo, JComboBox columnsCombo) {
+    public TableSelectionCombosGroup(JComboBox connectionsCombo, JComboBox tablesCombo, JComboBox columnsCombo) {
 
         super();
 
         this.connectionsCombo = connectionsCombo;
-        this.schemasCombo = schemasCombo;
         this.tablesCombo = tablesCombo;
         this.columnsCombo = columnsCombo;
 
@@ -99,21 +80,11 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         initConnectionsCombo(connectionsCombo);
 
-        if (schemasCombo != null) {
-
-            initSchemasCombo(schemasCombo);
-        }
-
-        if (tablesCombo != null) {
-
+        if (tablesCombo != null)
             initTablesCombo(tablesCombo);
-        }
 
-        if (columnsCombo != null) {
-
+        if (columnsCombo != null)
             initTablesCombo(columnsCombo);
-        }
-
     }
 
     public void connectionOpened(DatabaseConnection databaseConnection) {
@@ -233,7 +204,6 @@ public class TableSelectionCombosGroup implements ItemListener {
     }
 
     private boolean connectionSelectionPending;
-    private boolean schemaSelectionPending;
     private boolean tableSelectionPending;
 
     public void setSelectedDatabaseTable(DatabaseTable databaseTable) {
@@ -249,7 +219,7 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         } else {
 
-            setSelectedDatabaseSource(databaseTable.getDatabaseSource());
+            setSelectedDatabaseHost(databaseTable.getDatabaseSource().getHost());
 
             try {
 
@@ -278,62 +248,6 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         }
 
-    }
-
-    public void setSelectedDatabaseSource(DatabaseSource databaseSource) {
-
-        if (schemasCombo.getSelectedItem() == databaseSource) {
-
-            return;
-        }
-
-        try {
-
-            schemaSelectionPending = true;
-
-            if (comboContains(schemasCombo, databaseSource)) {
-
-                schemasCombo.setSelectedItem(databaseSource);
-
-            } else {
-
-                setSelectedDatabaseHost(databaseSource.getHost());
-
-                ComboBoxModel model = schemasCombo.getModel();
-
-                String schemaName = databaseSource.getName();
-
-                for (int i = 0, n = model.getSize(); i < n; i++) {
-
-                    DatabaseSource source = (DatabaseSource) model.getElementAt(i);
-
-                    if (schemaName.equals(source.getName())) {
-
-                        schemasCombo.setSelectedItem(source);
-                        break;
-                    }
-
-                }
-
-            }
-
-            schemaSelected();
-
-        } finally {
-
-            schemaSelectionPending = false;
-        }
-
-    }
-
-    public DatabaseSource getSelectedSource() {
-
-        if (schemasCombo != null && schemasCombo.getSelectedItem() != null) {
-
-            return (DatabaseSource) schemasCombo.getSelectedItem();
-        }
-
-        return null;
     }
 
     public DatabaseTable getSelectedTable() {
@@ -376,10 +290,6 @@ public class TableSelectionCombosGroup implements ItemListener {
 
                         connectionSelected();
 
-                    } else if (source == schemasCombo) {
-
-                        schemaSelected();
-
                     } else if (source == tablesCombo) {
 
                         tableSelected();
@@ -396,9 +306,7 @@ public class TableSelectionCombosGroup implements ItemListener {
     }
 
     private boolean selectionPending() {
-
-        return (connectionSelectionPending
-                || schemaSelectionPending || tableSelectionPending);
+        return connectionSelectionPending || tableSelectionPending;
     }
 
     private synchronized void fireItemStateChanged(ItemEvent e) {
@@ -433,70 +341,7 @@ public class TableSelectionCombosGroup implements ItemListener {
     }
 
     private void connectionSelected() {
-
-        try {
-
-            DatabaseHost host = getSelectedHost();
-
-            if (host != null && schemasCombo != null) {
-
-                List<DatabaseSchema> schemas = host.getSchemas();
-                if (schemas != null && schemas.size() > 0) {
-
-                    populateModelForCombo(schemasCombo, schemas);
-
-                } else {
-
-                    List<DatabaseCatalog> catalogs = host.getCatalogs();
-                    if (catalogs != null && catalogs.size() > 0) {
-
-                        populateModelForCombo(schemasCombo, catalogs);
-
-                    } else {
-
-//                        clearCombos();
-                        DatabaseSchema databaseSchema = new DefaultDatabaseSchema(host, "");
-                        schemas.add(databaseSchema);
-                        populateModelForCombo(schemasCombo, schemas);
-                    }
-
-                }
-
-                schemaSelected();
-
-            } else {
-
-                clearCombos();
-            }
-
-        } catch (DataSourceException e) {
-
-            handleDataSourceException(e);
-        }
-    }
-
-    private void schemaSelected() {
-
-        try {
-
-            DatabaseSource schema = getSelectedSource();
-
-            if (schema != null) {
-
-                List<NamedObject> tables = tablesForSchema(schema);
-
-                populateModelForCombo(tablesCombo, tables);
-
-            } else {
-
-                populateModelForCombo(tablesCombo, null);
-            }
-
-        } catch (DataSourceException e) {
-
-            handleDataSourceException(e);
-        }
-
+        clearCombos();
     }
 
     private void tableSelected() {
@@ -525,18 +370,6 @@ public class TableSelectionCombosGroup implements ItemListener {
 
         }
 
-    }
-
-    public List<NamedObject> tablesForSchema(DatabaseSource schema) {
-
-        DatabaseMetaTag databaseMetaTag = schema.getDatabaseMetaTag("TABLE");
-
-        if (databaseMetaTag != null) {
-
-            return databaseMetaTag.getObjects();
-        }
-
-        return null;
     }
 
     private void populateModelForCombo(JComboBox comboBox, List<?> list) {
@@ -580,23 +413,8 @@ public class TableSelectionCombosGroup implements ItemListener {
     }
 
     private void clearCombos() {
-
-        if (schemasCombo != null) {
-
-            populateModelForCombo(schemasCombo, null);
-        }
-
-        if (tablesCombo != null) {
-
+        if (tablesCombo != null)
             populateModelForCombo(tablesCombo, null);
-        }
-
-    }
-
-    private void initSchemasCombo(JComboBox comboBox) {
-
-        comboBox.setModel(new DynamicComboBoxModel());
-        initComboBox(comboBox);
     }
 
     private void initTablesCombo(JComboBox comboBox) {
@@ -661,45 +479,12 @@ public class TableSelectionCombosGroup implements ItemListener {
         return connectionsCombo;
     }
 
-    public JComboBox getSchemasCombo() {
-        return schemasCombo;
-    }
-
     public JComboBox getTablesCombo() {
         return tablesCombo;
     }
 
-    public JComboBox getColumnsCombo() {
-        return columnsCombo;
-    }
-
-    public void setSchemaSelectionUpdatesEnabled(boolean enable) {
-
-        if (schemasCombo != null) {
-
-            if (enable) {
-
-                schemasCombo.addItemListener(this);
-//                schemaSelected();
-
-            } else {
-
-                schemasCombo.removeItemListener(this);
-                populateModelForCombo(tablesCombo, null);
-            }
-
-        }
-
-    }
     public String bundleString(String key) {
         return Bundles.get(getClass(), key);
     }
 
 }
-
-
-
-
-
-
-

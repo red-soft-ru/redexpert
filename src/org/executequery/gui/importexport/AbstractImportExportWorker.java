@@ -183,12 +183,6 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         try {
 
             StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM ");
-
-            String schema = parent.getSchemaName();
-            if (!MiscUtils.isNull(schema)) {
-                query.append(schema).append('.');
-            }
-
             query.append(formatTableName(tableName));
 
             appendProgressText("Retrieving row count for table [ " + tableName + " ] ...");
@@ -241,18 +235,12 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
         StringBuilder query = new StringBuilder("SELECT ");
         query.append(columnNamesAsCommaSeparatedString(table, columns));
         query.append(" FROM ");
-
-        String schema = parent.getSchemaName();
-        if (!MiscUtils.isNull(schema)) {
-            query.append(schema).append('.');
-        }
-
         query.append(formatTableName(table));
 
         if (stmnt != null) {
             try {
                 stmnt.close();
-            } catch (SQLException e) {
+            } catch (SQLException ignored) {
             }
         }
 
@@ -315,14 +303,8 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
             columns = getColumns(table);
         }
 
-        String schema = parent.getSchemaName();
         StringBuffer query = new StringBuffer();
         query.append("INSERT INTO ");
-
-        if (!MiscUtils.isNull(schema)) {
-            query.append(schema).append('.');
-        }
-
         query.append(formatTableName(table));
         query.append(" (");
         query.append(columnNamesAsCommaSeparatedString(table, columns));
@@ -376,10 +358,9 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
             throws SQLException {
         Vector<ColumnData> columns = parent.getSelectedColumns();
         if (columns == null) {
-            String schema = parent.getSchemaName();
             MetaDataValues metaData = parent.getMetaDataUtility();
             try {
-                columns = metaData.getColumnMetaDataVector(table, schema);
+                columns = metaData.getColumnMetaDataVector(table);
             } catch (DataSourceException e) {
                 if (e.getCause() instanceof SQLException) {
                     throw (SQLException) (e.getCause());
@@ -664,8 +645,6 @@ public abstract class AbstractImportExportWorker implements ImportExportWorker {
 
     /**
      * Sets the progress bar's position during the process.
-     *
-     * @param the new process status
      */
     public void setProgressStatus(int status) {
         progress.setProgressStatus(status);

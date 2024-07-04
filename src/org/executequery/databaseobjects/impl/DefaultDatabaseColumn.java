@@ -489,11 +489,9 @@ public class DefaultDatabaseColumn extends AbstractDatabaseObjectElement
         try {
 
             DatabaseHost databaseHost = ((DatabaseObject) _parent).getHost();
-            String _catalog = databaseHost.getCatalogNameForQueries(getCatalogName());
-            String _schema = databaseHost.getSchemaNameForQueries(getSchemaName());
 
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
-            rs = dmd.getColumns(_catalog, _schema, getParentsName(), getName());
+            rs = dmd.getColumns(null, null, getParentsName(), getName());
 
             if (rs.next()) {
 

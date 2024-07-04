@@ -62,7 +62,7 @@ public class CreateErdFromDatabaseCommand extends OpenFrameCommand
                 try {
                     GUIUtilities.showWaitCursor();
                     BaseDialog dialog = createDialog(GenerateErdPanel.TITLE, false);
-                    GenerateErdPanel panel = new GenerateErdPanel(dialog);
+                    GenerateErdPanel panel = new GenerateErdPanel();
                     dialog.addDisplayComponentWithEmptyBorder(panel);
                     dialog.setResizable(false);
                     dialog.display();

@@ -37,7 +37,7 @@ import java.io.File;
 /**
  * This panel is used within those components that display
  * SQL text. Typically, this will be used within functions that
- * modify the database schema and the SQL produced as a result
+ * modify the database SQL produced as a result
  * will be displayed here with complete syntax highlighting and
  * other associated visual enhancements.<p>
  * Examples of use include within the Create Table and Browser

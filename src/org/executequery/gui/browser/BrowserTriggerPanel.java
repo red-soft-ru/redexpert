@@ -141,8 +141,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        //base.add(new JLabel("Schema:"), gbc);
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;
@@ -161,7 +159,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(triggerNameField, gbc);
         ++gbc.gridy;
         gbc.insets.top = 0;
-        //base.add(schemaNameField, gbc);
 
         setHeaderText("Database Procedure");
         setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
@@ -260,7 +257,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerNameField.setText(metaObject.getName());
         }
 
-        //schemaNameField.setText(metaObject.getSchemaName());
     }
 
     private void setHeaderIcon(String icon) {

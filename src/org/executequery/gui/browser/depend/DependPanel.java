@@ -10,7 +10,7 @@ import org.executequery.gui.browser.TablespaceTreePopupMenu;
 import org.executequery.gui.browser.TreeFindAction;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.underworldlabs.swing.util.SwingWorker;
 
@@ -22,7 +22,7 @@ import java.awt.event.MouseEvent;
 
 public class DependPanel extends TreePanel {
 
-    private SchemaTree tree;
+    private ConnectionTree tree;
     private DatabaseObject databaseObject;
     private DatabaseConnection databaseConnection;
     private TablespaceTreePopupMenu tablespacePopupMenu;
@@ -64,7 +64,7 @@ public class DependPanel extends TreePanel {
                 new DefaultDatabaseHost(databaseConnection, treeType, databaseObject), null);
         hostNode.populateChildren();
 
-        tree = new SchemaTree(hostNode, this);
+        tree = new ConnectionTree(hostNode, this);
         tree.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -148,7 +148,7 @@ public class DependPanel extends TreePanel {
 
             nodeName = nodeName.replace("$", "\\$");
             TreeFindAction action = new TreeFindAction();
-            SchemaTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
+            ConnectionTree tree = ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree();
             action.install(tree);
             action.findString(tree, nodeName, ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getHostNode(databaseConnection));
             JList jList = action.getResultsList();
@@ -203,11 +203,11 @@ public class DependPanel extends TreePanel {
         return databaseObject;
     }
 
-    public SchemaTree getTree() {
+    public ConnectionTree getTree() {
         return tree;
     }
 
-    public void setTree(SchemaTree tree) {
+    public void setTree(ConnectionTree tree) {
         this.tree = tree;
     }
 

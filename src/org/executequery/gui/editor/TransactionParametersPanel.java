@@ -76,7 +76,6 @@ public class TransactionParametersPanel extends JPanel {
         });
         outTraField = new NumberTextField();
         reservingCheckBox = new JCheckBox("RESERVING");
-        //transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
         reservingCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

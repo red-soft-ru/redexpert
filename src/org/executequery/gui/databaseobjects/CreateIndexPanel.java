@@ -148,7 +148,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     protected void initEdited() {
 
         nameField.setText(databaseIndex.getName().trim());
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), null, null, NamedObject.META_TYPES[NamedObject.INDEX]);
+        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), NamedObject.META_TYPES[NamedObject.INDEX]);
         databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         nameField.setEditable(false);
 

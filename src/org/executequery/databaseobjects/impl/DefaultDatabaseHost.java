@@ -42,6 +42,7 @@ import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.Named;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -80,15 +81,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     private transient DatabaseMetaData databaseMetaData;
 
-    /**
-     * the catalogs of this host
-     */
-    private List<DatabaseCatalog> catalogs;
-
-    /**
-     * the schemas of this host
-     */
-    private List<DatabaseSchema> schemas;
+    private List<DatabaseMetaTag> metaTags;
     private DatabaseObject dependObject;
     private boolean pauseLoadingTreeForSearch = false;
 
@@ -198,11 +191,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return ConnectionManager.getTemporaryConnection(getDatabaseConnection());
     }
 
-    @Override
-    public int countFinishedMetaTags() {
-        return countFinishedMetaTags;
-    }
-
     public void resetCountFinishedMetaTags() {
         countFinishedMetaTags = 0;
     }
@@ -213,7 +201,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     /**
-     * Returns the database meta data for this host.
+     * Returns the database metadata for this host.
      *
      * @return the database meta data
      */
@@ -258,228 +246,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     /**
-     * Returns the catalogs hosted by this host.
-     *
-     * @return the hosted catalogs
-     */
-    public List<DatabaseCatalog> getCatalogs() throws DataSourceException {
-
-        if (!isMarkedForReload() && catalogs != null) {
-
-            return catalogs;
-        }
-
-        ResultSet rs = null;
-        try {
-
-            catalogs = new ArrayList<DatabaseCatalog>();
-            rs = getDatabaseMetaData().getCatalogs();
-            while (rs.next()) {
-
-                catalogs.add(new DefaultDatabaseCatalog(this, rs.getString(1)));
-            }
-
-            return catalogs;
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        } finally {
-
-            releaseResources(rs, null);
-            setMarkedForReload(false);
-        }
-    }
-
-    /**
-     * Returns the schemas hosted by this host.
-     *
-     * @return the hosted schemas
-     */
-    public List<DatabaseSchema> getSchemas() throws DataSourceException {
-
-        if (!isMarkedForReload() && schemas != null) {
-
-            return schemas;
-        }
-
-        ResultSet rs = null;
-        try {
-
-            schemas = new ArrayList<DatabaseSchema>();
-
-            rs = getDatabaseMetaData().getSchemas();
-            if (rs != null) {
-
-                while (rs.next()) {
-
-                    schemas.add(new DefaultDatabaseSchema(this, rs.getString(1)));
-                }
-
-            }
-
-            return schemas;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs, null);
-            setMarkedForReload(false);
-        }
-    }
-
-    @SuppressWarnings("resource")
-    public boolean hasTablesForType(String catalog, String schema, String type) {
-
-        ResultSet rs = null;
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            rs = dmd.getTables(_catalog, _schema, null, new String[]{type});
-            while (rs.next()) {
-
-                if (StringUtils.equalsIgnoreCase(type, rs.getString(4))) {
-
-                    return true;
-                }
-
-            }
-
-            return false;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Tables not available for type "
-                        + type + " - driver returned: " + e.getMessage());
-            }
-
-            return false;
-
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
-    private DatabaseSchema getSchema(String name) throws DataSourceException {
-
-        if (name != null) {
-
-            name = name.toUpperCase();
-
-            List<DatabaseSchema> _schemas = getSchemas();
-            for (DatabaseSchema schema : _schemas) {
-
-                if (name.equals(schema.getName().toUpperCase())) {
-
-                    return schema;
-                }
-
-            }
-
-        } else if (getSchemas().size() == 1) {
-
-            return getSchemas().get(0);
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the exported keys columns of the specified database object.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
-     * @return the exported keys
-     */
-    public List<DatabaseColumn> getExportedKeys(String catalog, String schema, String table)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
-
-            String tableTagName = "TABLE";
-
-            // retrieve the base column info
-            rs = dmd.getExportedKeys(_catalog, _schema, table);
-            while (rs.next()) {
-
-                String fkSchema = rs.getString(6);
-                DatabaseSchema databaseSchema = getSchema(fkSchema);
-
-                if (databaseSchema != null) {
-
-                    String fkTable = rs.getString(7);
-                    String fkColumn = rs.getString(8);
-
-                    DatabaseMetaTag metaTag = databaseSchema.getDatabaseMetaTag(tableTagName);
-
-                    DatabaseTable databaseTable = (DatabaseTable) metaTag.getNamedObject(fkTable);
-                    columns.add(databaseTable.getColumn(fkColumn));
-                }
-
-            }
-
-            return columns;
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
-    public String getCatalogNameForQueries(String catalogName) {
-
-        DatabaseMetaData dmd = getDatabaseMetaData();
-        try {
-            if (!dmd.supportsCatalogsInTableDefinitions()) {
-
-                return null;
-            }
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        return catalogName;
-    }
-
-    public String getSchemaNameForQueries(String schemaName) {
-
-        DatabaseMetaData dmd = getDatabaseMetaData();
-        try {
-            if (!dmd.supportsSchemasInTableDefinitions()) {
-
-                return null;
-            }
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        return schemaName;
-    }
-
-    /**
-     * Returns the table names hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
+     * Returns the table names hosted by this host.
      */
     public List<String> getTableNames()
             throws DataSourceException {
@@ -506,7 +273,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the column names of the specified database object.
      *
-     * @param table   the database object name
+     * @param table the database object name
      * @return the column names
      */
     public List<String> getColumnNames(String table)
@@ -525,86 +292,24 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     private final transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
 
-    /**
-     * Returns the column names of the specified database object.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
-     * @return the column names
-     */
-    public List<ColumnInformation> getColumnInformation(String catalog, String schema, String table)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-        List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
-
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            if (!isConnected()) {
-
-                return new ArrayList<ColumnInformation>(0);
-            }
-
-            // retrieve the base column info
-            rs = dmd.getColumns(_catalog, _schema, table, null);
-            while (rs.next()) {
-
-                String name = rs.getString(4);
-                columns.add(columnInformationFactory.build(
-                        table,
-                        name,
-                        rs.getString(6),
-                        rs.getInt(5),
-                        rs.getInt(7),
-                        rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
-            }
-
-            return columns;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + table
-                        + " using connection " + getDatabaseConnection(), e);
-            }
-
-            return columns;
-
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
 
     private PooledStatement statementForColumns;
 
-    public void releaseStatementForColumns()
-    {
-        if(querySender!=null)
+    public void releaseStatementForColumns() {
+        if (querySender != null)
             querySender.releaseResources();
         releaseResources(statementForColumns);
     }
 
+    DefaultStatementExecutor querySender;
+
     /**
      * Returns the columns of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
+     * @param table the database object name
      * @return the columns
      */
-
-    DefaultStatementExecutor querySender;
-
-
+    @Override
     public synchronized List<DatabaseColumn> getColumns(String table) {
         for (NamedObject namedObject : getTables()) {
             if (namedObject.getName().contentEquals(table))
@@ -632,25 +337,25 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     static final int SUBTYPE_NUMERIC = 1;
     static final int SUBTYPE_DECIMAL = 2;
 
-    final static int SQL_TEXT      = 452;
-    final static int SQL_VARYING   = 448;
-    final static int SQL_SHORT     = 500;
-    final static int SQL_LONG      = 496;
-    final static int SQL_FLOAT     = 482;
-    final static int SQL_DOUBLE    = 480;
-    final static int SQL_D_FLOAT   = 530;
+    final static int SQL_TEXT = 452;
+    final static int SQL_VARYING = 448;
+    final static int SQL_SHORT = 500;
+    final static int SQL_LONG = 496;
+    final static int SQL_FLOAT = 482;
+    final static int SQL_DOUBLE = 480;
+    final static int SQL_D_FLOAT = 530;
     final static int SQL_TIMESTAMP = 510;
-    final static int SQL_BLOB      = 520;
-    final static int SQL_ARRAY     = 540;
-    final static int SQL_QUAD      = 550;
+    final static int SQL_BLOB = 520;
+    final static int SQL_ARRAY = 540;
+    final static int SQL_QUAD = 550;
     final static int SQL_TYPE_TIME = 560;
     final static int SQL_TYPE_DATE = 570;
-    final static int SQL_INT64     = 580;
-    final static int SQL_BOOLEAN   = 32764;
-    final static int SQL_NULL      = 32766;
+    final static int SQL_INT64 = 580;
+    final static int SQL_BOOLEAN = 32764;
+    final static int SQL_NULL = 32766;
 
-    final static int CS_NONE    = 0; /* No Character Set */
-    final static int CS_BINARY  = 1; /* BINARY BYTES */
+    final static int CS_NONE = 0; /* No Character Set */
+    final static int CS_BINARY = 1; /* BINARY BYTES */
     final static int CS_dynamic = 127; // Pseudo number for runtime charset (see intl\charsets.h and references to it in Firebird)
 
     public static int getDataType(int fieldType, int fieldSubType, int fieldScale, int characterSetId) {
@@ -676,179 +381,66 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
 
-    public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
-
-        try {
-
-            DatabaseMetaData dmd = getDatabaseMetaData();
-            return dmd.supportsCatalogsInProcedureCalls() || dmd.supportsSchemasInProcedureCalls();
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
     /**
-     * Returns the priviliges of the specified object.
+     * Returns the privileges of the specified object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
+     * @param table the database object name
      */
-    public List<TablePrivilege> getPrivileges(String catalog, String schema, String table)
+    @Override
+    public List<TablePrivilege> getPrivileges(String table)
             throws DataSourceException {
 
         ResultSet rs = null;
         try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
+            List<TablePrivilege> privileges = new ArrayList<>();
 
-            List<TablePrivilege> privs = new ArrayList<TablePrivilege>();
-            rs = dmd.getTablePrivileges(_catalog, _schema, table);
+            DatabaseMetaData dmd = getDatabaseMetaData();
+            rs = dmd.getTablePrivileges(null, null, table);
             while (rs.next()) {
-                privs.add(new TablePrivilege(rs.getString(4),
+                privileges.add(new TablePrivilege(rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7)));
             }
-            return privs;
+            return privileges;
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
+
         } finally {
             releaseResources(rs, connection);
         }
-
     }
 
     /**
      * Returns the default prefix name value for objects from this host.
-     * ie. default catalog or schema name - with schema taking precedence.
      *
      * @return the default database object prefix
      */
     public String getDefaultNamePrefix() {
-
-        DatabaseSource source = getDefaultDatabaseSource();
-        if (source != null) {
-
-            return source.getName();
-        }
-
         return null;
     }
 
     /**
-     * Returns the database source with the name specified scanning schema
-     * sources first, then catalogs.
+     * Returns the database source with the specified name.
      *
      * @param name name
      * @return the database source object
      */
     public DatabaseSource getDatabaseSource(String name) {
-
-        if (name == null) {
-
+        if (name == null)
             return getDatabaseSource(getDefaultNamePrefix());
-        }
-
-        DatabaseSource source = findByName(getSchemas(), name);
-        if (source == null) {
-
-            source = findByName(getCatalogs(), name);
-        }
-
-        return source;
-    }
-
-    private DatabaseSource findByName(List<?> sources, String name) {
-
-        if (sources != null) {
-
-            String _name = name.toUpperCase();
-            for (int i = 0, n = sources.size(); i < n; i++) {
-
-                DatabaseSource source = (DatabaseSource) sources.get(i);
-                if (source.getName().toUpperCase().equals(_name)) {
-
-                    return source;
-                }
-
-            }
-
-        }
-
         return null;
     }
 
     /**
-     * Returns the default database source object - schema or catalog with
-     * schema taking precedence.
-     *
-     * @return the default database object prefix
-     */
-    public DatabaseSource getDefaultDatabaseSource() {
-
-        DatabaseSource source = getDefaultSchema();
-        if (source == null) {
-
-            source = getDefaultCatalog();
-        }
-
-        return source;
-    }
-
-    /**
-     * Returns the default connected to catalog or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default catalog
-     */
-    public DatabaseSource getDefaultCatalog() {
-
-        for (DatabaseCatalog databaseCatalog : getCatalogs()) {
-
-            if (databaseCatalog.isDefault()) {
-
-                return databaseCatalog;
-            }
-
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the default connected to schema or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default schema
-     */
-    public DatabaseSource getDefaultSchema() {
-
-        for (DatabaseSchema databaseSchema : getSchemas()) {
-
-            if (databaseSchema.isDefault()) {
-
-                return databaseSchema;
-            }
-
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the meta type objects from the specified schema and catalog.
+     * Returns the meta type objects.
      *
      * @return the meta type objects
      */
-    List<DatabaseMetaTag> metaTags;
-
     public List<DatabaseMetaTag> getMetaObjects() throws DataSourceException {
         if (metaTags == null)
-            metaTags = getMetaObjects(null, null);
+            metaTags = loadMetaObjects();
         return metaTags;
     }
 
@@ -857,18 +449,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         metaTags = null;
     }
 
-    /**
-     * Returns the meta type objects from the specified schema and catalog.
-     *
-     * @return the meta type objects
-     */
-    public List<DatabaseMetaTag> getMetaObjects(DatabaseCatalog catalog,
-                                                DatabaseSchema schema) throws DataSourceException {
+    public List<DatabaseMetaTag> loadMetaObjects() throws DataSourceException {
 
-        List<DatabaseMetaTag> metaObjects = new ArrayList<DatabaseMetaTag>();
+        List<DatabaseMetaTag> metaObjects = new ArrayList<>();
 
         try {
-            createDefaultMetaObjects(catalog, schema, metaObjects);
+            createDefaultMetaObjects(metaObjects);
         } catch (Exception e) {
             throw new DataSourceException(e);
         }
@@ -882,24 +468,20 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 String type = rs.getString(1);
                 if (!MiscUtils.containsValue(META_TYPES, type)) {
-
-                    DatabaseMetaTag metaTag =
-                            createDatabaseMetaTag(catalog, schema, type);
+                    DatabaseMetaTag metaTag = createDatabaseMetaTag(type);
                     metaObjects.add(metaTag);
-
-
                 }
-
             }
 
             return metaObjects;
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
+
         } finally {
             releaseResources(rs, connection);
             setMarkedForReload(false);
         }
-
     }
 
     public List<ColumnData> getColumnDataListFromTableName(String tableName) {
@@ -919,29 +501,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         else return new ColumnData[0];
     }
 
-    private void createDefaultMetaObjects(DatabaseCatalog catalog,
-                                          DatabaseSchema schema, List<DatabaseMetaTag> metaObjects)
-            throws Exception {
+    private void createDefaultMetaObjects(List<DatabaseMetaTag> metaObjects) throws Exception {
 
         for (int i = 0; i < META_TYPES.length; i++) {
 
-            DefaultDatabaseMetaTag metaTag =
-                    createDatabaseMetaTag(catalog, schema, META_TYPES[i]);
-
-            metaTag.setCatalog(catalog);
-            metaTag.setSchema(schema);
-            if (supportedObject(i)) {
+            DefaultDatabaseMetaTag metaTag = createDatabaseMetaTag(META_TYPES[i]);
+            if (supportedObject(i))
                 metaObjects.add(metaTag);
-                //!NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
-            }
-            if (SystemProperties.getBooleanProperty("user", "treeconnection.alphabet.sorting"))
-                metaObjects.sort(new Comparator<DatabaseMetaTag>() {
-                    @Override
-                    public int compare(DatabaseMetaTag o1, DatabaseMetaTag o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
 
+            if (SystemProperties.getBooleanProperty("user", "treeconnection.alphabet.sorting"))
+                metaObjects.sort(Comparator.comparing(Named::getName));
         }
     }
 
@@ -994,18 +563,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return getDatabaseProductName().toLowerCase().contains("reddatabase");
     }
 
-    private DefaultDatabaseMetaTag createDatabaseMetaTag(
-            DatabaseCatalog catalog, DatabaseSchema schema, String type) {
-        DefaultDatabaseMetaTag tag = null;
-        if (typeTree != TreePanel.DEFAULT) {
-            tag = new DefaultDatabaseMetaTag(this, catalog, schema, type, typeTree, dependObject);
-        } else tag = new DefaultDatabaseMetaTag(this, catalog, schema, type);
-        return tag;
+    private DefaultDatabaseMetaTag createDatabaseMetaTag(String type) {
+        return typeTree != TreePanel.DEFAULT ?
+                new DefaultDatabaseMetaTag(this, type, typeTree, dependObject) :
+                new DefaultDatabaseMetaTag(this, type);
     }
 
     /**
      * Retrieves key/value type pairs using the <code>Reflection</code>
-     * API to call and retrieve values from the connection's meta data
+     * API to call and retrieve values from the connection's metadata
      * object's methods and variables.
      *
      * @return the database properties as key/value pairs
@@ -1094,8 +660,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Closes the connection associated with this host.
      */
     public void close() {
-        schemas = null;
-        catalogs = null;
         databaseMetaData = null;
         connection = null;
         databaseProperties = null;
@@ -1324,30 +888,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return value;
     }
 
-    public boolean supportsCatalogsInTableDefinitions() {
-
-        try {
-
-            return getDatabaseMetaData().supportsCatalogsInTableDefinitions();
-
-        } catch (SQLException e) {
-
-            return false;
-        }
-    }
-
-    public boolean supportsSchemasInTableDefinitions() {
-
-        try {
-
-            return getDatabaseMetaData().supportsSchemasInTableDefinitions();
-
-        } catch (SQLException e) {
-
-            return false;
-        }
-    }
-
     /**
      * Concatenates product name and product version
      */
@@ -1373,11 +913,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public int getDatabaseMajorVersion() throws SQLException {
         return getDatabaseMetaData().getDatabaseMajorVersion();
-    }
-
-    @Override
-    public int getDatabaseMinorVersion() throws SQLException {
-        return getDatabaseMetaData().getDatabaseMinorVersion();
     }
 
     public boolean isConnected() {
@@ -1475,69 +1010,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     private static final long serialVersionUID = 1L;
-
-    public boolean storesLowerCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesLowerCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean storesUpperCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesUpperCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean storesMixedCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesMixedCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean supportsMixedCaseQuotedIdentifiers() {
-        try {
-
-            return getDatabaseMetaData().supportsMixedCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
 
     public List<NamedObject> getDatabaseObjectsForMetaTag(String metadatakey) {
         for (DatabaseMetaTag metaTag : getMetaObjects()) {

@@ -128,10 +128,6 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
         return exportDataModel;
     }
 
-    public final JComboBox getSchemasCombo() {
-        return tableSelectionCombosGroup.getSchemasCombo();
-    }
-
     public final JComboBox getTablesCombo() {
         return tableSelectionCombosGroup.getTablesCombo();
     }
@@ -349,7 +345,7 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
     @SuppressWarnings("unchecked")
     private void secondPanelToModel() {
 
-        exportDataModel.setDatabaseSource(tableSelectionCombosGroup.getSelectedSource());
+        exportDataModel.setDatabaseSource(null);
 
         List<DatabaseTable> tables = null;
         if (exportDataModel.isMultipleTableImportExport()) {
@@ -374,10 +370,6 @@ public class ExportAsSQLWizard extends ImportExportWizardProcessPanel
                 tableSelectionCombosGroup.getSelectedHost());
         exportDataModel.setImportExportType(firstPanel.getExportType());
         exportDataModel.setImportExportFileType(firstPanel.getExportFileType());
-
-        tableSelectionCombosGroup.setSchemaSelectionUpdatesEnabled(
-                !(exportDataModel.isMultipleTableImportExport()));
-
     }
 
     private boolean doPrevious() {

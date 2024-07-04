@@ -20,10 +20,8 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.localization.Bundles;
-
 /**
- * Reuseable constants for construction and reference
+ * Reusable constants for construction and reference
  * to the tree structure within the Database Browser Panel.<br>
  * This is purely a convenience class due to the large
  * use of the same String objects in many places.
@@ -31,31 +29,6 @@ import org.executequery.localization.Bundles;
  * @author Takis Diakoumis
  */
 public class BrowserConstants {
-
-    // --------------------------------------------
-    // parent labels and hashtable keys for images
-    // --------------------------------------------
-
-
-
-
-
-    // ------------------------------------------
-    // to add a new node - ALL icons must be in same order as META_TYPES
-    // ------------------------------------------
-
-     // system function
-
-    /** The String 'All Types' */
-    //  String ALL_TYPES = "All Types";
-    /**
-     * The String 'All Types Closed'
-     *
-
-    // -----------------------------
-    // image icons for tree nodes
-    // -----------------------------
-     */
 
     public static final String DATABASE_OBJECT_IMAGE = "DatabaseObject16.png";
 
@@ -65,11 +38,6 @@ public class BrowserConstants {
     public static final String CONNECTIONS_IMAGE = "DatabaseConnections16.png";
 
     public static final String CONNECTIONS_FOLDER_IMAGE = "ConnectionsFolder16.png";
-
-    /**
-     * The image icon 'Database16.png'
-     */
-    public static final String CATALOG_IMAGE = "DBImage16.png";
 
     /**
      * The image icon 'Database16.png'
@@ -85,11 +53,6 @@ public class BrowserConstants {
      * The image icon 'DatabaseConnected16.png'
      */
     public static final String HOST_CONNECTED_IMAGE = "DatabaseConnected16.png";
-
-    /**
-     * The image icon 'User16.png'
-     */
-    public static final String SCHEMA_IMAGE = "User16.png";
 
     /**
      * The image icon 'SystemFunction16.png'
@@ -195,11 +158,9 @@ public class BrowserConstants {
 
     public static final String[] NODE_ICONS = {CONNECTIONS_IMAGE,
             CONNECTIONS_FOLDER_IMAGE,
-            CATALOG_IMAGE,
             HOST_IMAGE,
             HOST_NOT_CONNECTED_IMAGE,
             HOST_CONNECTED_IMAGE,
-            SCHEMA_IMAGE,
             FUNCTIONS_IMAGE,
             INDEXES_IMAGE,
             PROCEDURES_IMAGE,
@@ -237,14 +198,4 @@ public class BrowserConstants {
             SYSTEM_SEQUENCES_IMAGE
     };
 
-    private static String bundleString(String key) {
-
-        return Bundles.get(BrowserConstants.class, key);
-    }
 }
-
-
-
-
-
-

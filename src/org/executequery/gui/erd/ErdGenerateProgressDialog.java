@@ -34,8 +34,6 @@ import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
 
@@ -79,58 +77,22 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
      */
     private final DatabaseConnection databaseConnection;
 
-    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection,
-                                     Vector selectedTables) {
-
+    public ErdGenerateProgressDialog(DatabaseConnection databaseConnection, Vector selectedTables) {
         super(GUIUtilities.getParentFrame(), "Progress", false);
-
         this.databaseConnection = databaseConnection;
         this.selectedTables = selectedTables;
 
-        //GUIUtilities.setFrameIconified(GenerateErdPanel.TITLE, true);
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        display();
-
-    }
-
-    public ErdGenerateProgressDialog(Vector selectedTables,
-                                     ErdViewerPanel parent, String schema) {
-
-        super(GUIUtilities.getParentFrame(), "Adding Tables", false);
-
-        databaseConnection = parent.getDatabaseConnection();
-        this.selectedTables = selectedTables;
-        this.parent = parent;
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
         display();
     }
 
-    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent, DatabaseConnection connection, String schema) {
-
+    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent, DatabaseConnection connection) {
         super(GUIUtilities.getParentFrame(), "Adding Tables", false);
-
         this.databaseConnection = connection;
         this.selectedTables = selectedTables;
         this.parent = parent;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
         display();
     }
 
@@ -140,15 +102,11 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         setVisible(true);
     }
 
-    private void jbInit() {
+    private void init() {
         JPanel base = new JPanel(new GridBagLayout());
 
         cancelButton = new JButton(Bundles.get("common.cancel.button"));
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                worker.interrupt();
-            }
-        });
+        cancelButton.addActionListener(e -> worker.interrupt());
 
         progressBar = new JProgressBar(0, selectedTables.size() * 2);
         progressBar.setPreferredSize(new Dimension(250, 20));
@@ -201,7 +159,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
             int count = 0;
 
-            for (int i = 0; i < v_size; i++) {
+            for (Object selectedTable : selectedTables) {
                 progressBar.setValue(count++);
 
                 if (Thread.interrupted()) {
@@ -210,7 +168,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
                 try {
                     ErdTableInfo etf = new ErdTableInfo();
-                    etf.setName((String) selectedTables.get(i));
+                    etf.setName((String) selectedTable);
                     etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getColumnDataArrayFromTableName(etf.getName()));
                     AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTableFromName(etf.getName());
                     if (tableObject != null)
@@ -236,11 +194,8 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
     Vector<ErdTableInfo> sort(Vector<ErdTableInfo> tableInfoList) {
         Map<ErdTableInfo, List<ErdTableInfo>> links = buildTableRelationships(tableInfoList);
         Vector<ErdTableInfo> result = new Vector<>();
-        if (tableInfoList != null) {
-            while (tableInfoList.size() > 0) {
-                result = addTableToSortVector(tableInfoList.elementAt(0), result, tableInfoList, links);
-            }
-        }
+        while (!tableInfoList.isEmpty())
+            result = addTableToSortVector(tableInfoList.elementAt(0), result, tableInfoList, links);
         return result;
     }
 

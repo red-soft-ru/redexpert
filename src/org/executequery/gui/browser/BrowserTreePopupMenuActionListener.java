@@ -661,17 +661,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
-    public void switchDefaultCatalogAndSchemaDisplay(ActionEvent e) {
-
-        JCheckBoxMenuItem check = (JCheckBoxMenuItem) e.getSource();
-
-        DatabaseHostNode node =
-                (DatabaseHostNode) currentPath.getLastPathComponent();
-        node.setDefaultCatalogsAndSchemasOnly(check.isSelected());
-
-        treePanel.nodeStructureChanged(node);
-    }
-
     public void delete(ActionEvent e) {
         if (currentPath != null) {
             DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
@@ -798,14 +787,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     private void importExportDialog(int transferType) {
 
         NamedObject object = treePanel.getSelectedNamedObject();
-        if (object == null || !(object instanceof DatabaseObject)) {
+        if (!(object instanceof DatabaseObject)) {
             return;
         }
 
         DatabaseConnection dc = treePanel.getSelectedDatabaseConnection();
 
         DatabaseObject _object = (DatabaseObject) object;
-        String schemaName = _object.getNamePrefix(); // _object.getSchemaName();
         String tableName = _object.getName();
 
         BaseDialog dialog = null;
@@ -819,35 +807,35 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                     dialog = new BaseDialog(bundledString("ExportData"), false, false);
                     panel = new ImportExportDelimitedPanel(
                             dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
+                            dc, tableName);
                     break;
 
                 case ImportExportDataProcess.IMPORT_DELIMITED:
                     dialog = new BaseDialog(bundledString("ImportData"), false, false);
                     panel = new ImportExportDelimitedPanel(
                             dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
+                            dc, tableName);
                     break;
 
                 case ImportExportDataProcess.EXPORT_XML:
                     dialog = new BaseDialog(bundledString("exportXml"), false, false);
                     panel = new ImportExportXMLPanel(
                             dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
+                            dc, null, tableName);
                     break;
 
                 case ImportExportDataProcess.IMPORT_XML:
                     dialog = new BaseDialog(bundledString("importXml"), false, false);
                     panel = new ImportExportXMLPanel(
                             dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
+                            dc, null, tableName);
                     break;
 
                 case ImportExportDataProcess.EXCEL:
                     dialog = new BaseDialog(bundledString("exportExcel"), false, false);
                     panel = new ImportExportExcelPanel(
                             dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
+                            dc, null, tableName);
                     break;
 
             }

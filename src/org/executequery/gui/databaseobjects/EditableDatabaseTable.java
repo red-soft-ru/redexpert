@@ -29,8 +29,6 @@ import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 /**
  * @author Takis Diakoumis
@@ -45,7 +43,6 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
         super();
         getDatabaseTableModel().setEditable(false);
         setCellEditorListeners();
-        //addMouseListener(new MouseHandler());
     }
 
     /**
@@ -259,41 +256,4 @@ public class EditableDatabaseTable extends DefaultDatabaseObjectTable
     public void keyPressed(KeyEvent e) {
     }
 
-    /**
-     * Mouse adapter class to handle click events within
-     * the first column to enable reverting a mark deleted flag.
-     */
-    private class MouseHandler extends MouseAdapter {
-
-        public void mouseClicked(MouseEvent e) {
-
-            /*int mouseX = e.getX();
-            int mouseY = e.getY();
-
-            int col = columnAtPoint(new Point(mouseX, mouseY));
-            if (col != 0) {
-
-                return;
-            }
-
-            int row = rowAtPoint(new Point(mouseX, mouseY));
-            DatabaseObjectTableModel _model = getDatabaseTableModel();
-            DatabaseTableColumn column = (DatabaseTableColumn)_model.getValueAt(row, 0);
-            if (column.isMarkedDeleted()) {
-
-                column.setMarkedDeleted(false);
-                _model.fireTableRowsUpdated(row, row);
-            }*/
-
-
-        }
-
-    } // class MouseHandler
-
 }
-
-
-
-
-
-

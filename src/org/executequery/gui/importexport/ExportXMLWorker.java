@@ -77,8 +77,6 @@ public class ExportXMLWorker extends AbstractImportExportWorker
     /**
      * Constructs a new instance with the specified
      * parent object - an instance of <code>ImportExportXMLPanel</code>.
-     *
-     * @param the parent for this process
      */
     public ExportXMLWorker(ImportExportDataProcess parent,
                            ImportExportProgressPanel exportingDialog) {
@@ -275,10 +273,6 @@ public class ExportXMLWorker extends AbstractImportExportWorker
             }
         }
 
-        public String getSchemaName() {
-            return getParent().getSchemaName();
-        }
-
     } // class TableDataInputSource
 
 
@@ -368,8 +362,6 @@ public class ExportXMLWorker extends AbstractImportExportWorker
                 handler.startDocument();
 
                 if (xmlFormat == ImportExportDataProcess.SCHEMA_ELEMENT) {
-                    atts.addAttribute(EMPTY, NAME, NAME, attType1,
-                            input.getSchemaName());
                     atts.addAttribute(EMPTY, schemaUrlAtt, schemaUrlAtt,
                             attType1, input.getJDBCURL());
                     atts.addAttribute(EMPTY, schemaUserAtt, schemaUserAtt,

@@ -148,17 +148,11 @@ public class ImportExportXMLPanel extends WizardProcessPanel
             firstPanel.setDatabaseConnection(databaseConnection);
             next();
 
-            if (schemaName != null) {
-                secondPanel.setSelectedSchema(schemaName);
-                if (tableName != null) {
-                    secondPanel.setSelectedTable(tableName);
-                    secondPanel.selectAllAvailable();
-                }
-
+            if (tableName != null) {
+                secondPanel.setSelectedTable(tableName);
+                secondPanel.selectAllAvailable();
             }
-
         }
-
     }
 
     private void jbInit() throws Exception {
@@ -204,10 +198,6 @@ public class ImportExportXMLPanel extends WizardProcessPanel
      */
     public void cleanup() {
         metaData.closeConnection();
-    }
-
-    public String getSchemaName() {
-        return secondPanel.getSelectedSchema();
     }
 
     /**

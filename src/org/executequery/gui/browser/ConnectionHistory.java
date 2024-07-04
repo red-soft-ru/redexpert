@@ -6,7 +6,7 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.forms.FormObjectView;
 import org.executequery.repository.RepositoryException;
 import org.executequery.repository.spi.AbstractXMLRepositoryHandler;
@@ -135,7 +135,7 @@ public class ConnectionHistory extends AbstractXMLResourceReaderWriter<String[]>
     public void connected(ConnectionEvent connectionEvent) {
         try {
             ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-            SchemaTree tree = panel.getTree();
+            ConnectionTree tree = panel.getTree();
             int n = getListPaths().size();
             for (int i = 0; i < n; i++) {
                 DatabaseObjectNode node = (DatabaseObjectNode) tree.getRootNode();

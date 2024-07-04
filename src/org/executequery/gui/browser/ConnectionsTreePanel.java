@@ -37,7 +37,7 @@ import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.ConnectionFoldersRepository;
@@ -82,7 +82,7 @@ public class ConnectionsTreePanel extends TreePanel
     private boolean treeExpanding = false;
     private boolean moveScrollAfterExpansion = false;
 
-    private SchemaTree tree;
+    private ConnectionTree tree;
     private BrowserController controller;
     private TreePath oldSelectionPath;
 
@@ -111,7 +111,7 @@ public class ConnectionsTreePanel extends TreePanel
         rootSelectOnDisconnect = false;
 
         controller = new BrowserController(this);
-        tree = new SchemaTree(createTreeStructure(), this);
+        tree = new ConnectionTree(createTreeStructure(), this);
 
         MouseHandler mouseHandler = new MouseHandler();
         tree.addMouseListener(mouseHandler);
@@ -1715,7 +1715,7 @@ public class ConnectionsTreePanel extends TreePanel
             List<DatabaseHostNode> hosts = root.getHostNodes();
 
             for (DatabaseHostNode host : hosts)
-                host.applyUserPreferences();
+                host.showAll();
         }
 
     }
@@ -1780,7 +1780,7 @@ public class ConnectionsTreePanel extends TreePanel
         return getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).getDatabaseObjectFromMetaTagAndName(metaTag, name);
     }
 
-    public SchemaTree getTree() {
+    public ConnectionTree getTree() {
         return tree;
     }
 

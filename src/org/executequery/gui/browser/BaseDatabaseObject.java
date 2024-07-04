@@ -30,59 +30,17 @@ import java.util.List;
  */
 public class BaseDatabaseObject implements NamedObject {
 
-    /**
-     * the node type
-     */
     private int type;
-
-    /**
-     * whether this a system type node
-     */
-    private boolean systemObject;
-
-    /**
-     * the name of the associated schema
-     */
-    private String schemaName;
-
-    // a 'parent' entity name - eg table name for a column
-    private String parentName;
-
-    /**
-     * the name of the associated catalog
-     */
-    private String catalogName;
-
-    /**
-     * the meta data key identifier (@see BrowserConstants)
-     */
-    private String metaDataKey;
-
-    /**
-     * the name of this node
-     */
-    private String name;
-
-    /**
-     * any remarks associated with this object
-     */
-    private String remarks;
-
-    /**
-     * whether this is the default connected catalog
-     */
-    private boolean defaultCatalog;
-
-    private boolean useInQuery;
-
     private boolean isSystem;
 
+    private String name;
+    private String remarks;
+    private String metaDataKey;
+
     public BaseDatabaseObject() {
-        useInQuery = true;
     }
 
     public BaseDatabaseObject(int type, String name) {
-        useInQuery = true;
         this.name = name;
         this.type = type;
     }
@@ -111,22 +69,6 @@ public class BaseDatabaseObject implements NamedObject {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
     }
 
     public String getMetaDataKey() {
@@ -165,38 +107,6 @@ public class BaseDatabaseObject implements NamedObject {
         this.remarks = remarks;
     }
 
-    public boolean isDefaultCatalog() {
-        return defaultCatalog;
-    }
-
-    public void setDefaultCatalog(boolean defaultCatalog) {
-        this.defaultCatalog = defaultCatalog;
-    }
-
-    public String getParentName() {
-        return parentName;
-    }
-
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
-    }
-
-    public boolean isUseInQuery() {
-        return useInQuery;
-    }
-
-    public void setUseInQuery(boolean useInQuery) {
-        this.useInQuery = useInQuery;
-    }
-
-    public boolean isSystemObject() {
-        return systemObject;
-    }
-
-    public void setSystemObject(boolean systemObject) {
-        this.systemObject = systemObject;
-    }
-
     /**
      * Creates and returns a copy of this object.
      *
@@ -223,19 +133,5 @@ public class BaseDatabaseObject implements NamedObject {
     public int getRDBType() {
         return -1;
     }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

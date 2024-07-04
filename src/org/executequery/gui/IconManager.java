@@ -52,15 +52,6 @@ public class IconManager {
                 return (icons.get(
                         BrowserConstants.CONNECTIONS_FOLDER_IMAGE));
 
-
-            case NamedObject.CATALOG:
-                return (icons.get(BrowserConstants.CATALOG_IMAGE));
-
-
-            case NamedObject.SCHEMA:
-                return (icons.get(BrowserConstants.SCHEMA_IMAGE));
-
-
             case NamedObject.SYSTEM_FUNCTION:
 
             case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:

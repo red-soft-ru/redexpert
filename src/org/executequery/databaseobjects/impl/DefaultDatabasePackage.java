@@ -3,7 +3,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -179,10 +178,10 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
             childs = new ArrayList<>();
         if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.PROCEDURE])) {
             procedures = new ArrayList<>();
-            procedureMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
+            procedureMetatag = new DefaultDatabaseMetaTag(getHost(), metatag);
         } else if (metatag.contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION])) {
             functions = new ArrayList<>();
-            functionMetatag = new DefaultDatabaseMetaTag(getHost(), null, null, metatag);
+            functionMetatag = new DefaultDatabaseMetaTag(getHost(), metatag);
         }
     }
 

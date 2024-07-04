@@ -103,10 +103,14 @@ public interface ImportExportDataProcess {
      * A multiple file export - multiple table
      */
     int MULTIPLE_FILE = 11;
-    /** DBUnit dataset export */
+    /**
+     * DBUnit dataset export
+     */
     int EXPORT_DBUNIT = 12;
-    
-    /** indicator for commit and end of file */
+
+    /**
+     * indicator for commit and end of file
+     */
     int COMMIT_END_OF_FILE = -99;
 
     /**
@@ -218,8 +222,6 @@ public interface ImportExportDataProcess {
 
     /**
      * Returns whether this process defines an export.
-     *
-     * @return
      */
     boolean isExport();
 
@@ -251,13 +253,6 @@ public interface ImportExportDataProcess {
      * @return true | false
      */
     boolean isSingleFileExport();
-
-    /**
-     * Returns the schema name where applicable.
-     *
-     * @return the schema name
-     */
-    String getSchemaName();
 
     /**
      * Returns the selected database connection properties object.
@@ -330,12 +325,3 @@ public interface ImportExportDataProcess {
     JDialog getDialog();
 
 }
-
-
-
-
-
-
-
-
-

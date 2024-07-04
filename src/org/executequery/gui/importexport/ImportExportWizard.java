@@ -26,8 +26,6 @@ public interface ImportExportWizard {
 
     ImportExportDataModel getExportDataModel();
 
-    JComboBox getSchemasCombo();
-
     JComboBox getTablesCombo();
 
     JComboBox getConnectionsCombo();
@@ -43,10 +41,3 @@ public interface ImportExportWizard {
     void enableButtons(boolean enable);
 
 }
-
-
-
-
-
-
-

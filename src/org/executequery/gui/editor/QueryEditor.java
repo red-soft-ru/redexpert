@@ -465,15 +465,15 @@ public class QueryEditor extends DefaultTabView
 
         if (userProperties.containsKey("editor.autocomplete.on")
                 && (!userProperties.containsKey("editor.autocomplete.keywords.on"))
-                && !userProperties.containsKey("editor.autocomplete.schema.on")) {
+                && !userProperties.containsKey("editor.autocomplete.objects.on")) {
 
             boolean allOn = userProperties.getBooleanProperty("editor.autocomplete.on");
             userProperties.setBooleanProperty("editor.autocomplete.keywords.on", allOn);
-            userProperties.setBooleanProperty("editor.autocomplete.schema.on", allOn);
+            userProperties.setBooleanProperty("editor.autocomplete.objects.on", allOn);
         }
 
         return userProperties.getBooleanProperty("editor.autocomplete.keywords.on")
-                || userProperties.getBooleanProperty("editor.autocomplete.schema.on");
+                || userProperties.getBooleanProperty("editor.autocomplete.objects.on");
     }
 
     private boolean isAutoCommit() {

@@ -41,36 +41,22 @@ public class GenerateErdPanel extends JPanel
 
     public static final String TITLE = Bundles.get(GenerateErdPanel.class, "title");
 
-    /**
-     * The table selection panel
-     */
     private ErdSelectionPanel selectionPanel;
-
-    /**
-     * the parent container
-     */
-    private final ActionContainer parent;
     private final ErdViewerPanel parentErdPanel;
     private final DatabaseConnection connection;
 
-    public GenerateErdPanel(ActionContainer parent) {
-        this(parent, null, null);
+    public GenerateErdPanel() {
+        this(null, null);
     }
 
-    public GenerateErdPanel(ActionContainer parent, ErdViewerPanel parentErdPanel, DatabaseConnection connection) {
+    public GenerateErdPanel(ErdViewerPanel parentErdPanel, DatabaseConnection connection) {
         super(new BorderLayout());
-        this.parent = parent;
         this.parentErdPanel = parentErdPanel;
         this.connection = connection;
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
     }
 
-    private void jbInit() throws Exception {
+    private void init() {
 
         selectionPanel = new ErdSelectionPanel(connection, parentErdPanel);
         JPanel basePanel = new JPanel(new BorderLayout());
@@ -80,39 +66,24 @@ public class GenerateErdPanel extends JPanel
         add(basePanel, BorderLayout.CENTER);
     }
 
-    /**
-     * Releases database resources before closing.
-     */
-    public void cleanup() {
-        selectionPanel.cleanup();
-    }
-
-    public void setInProcess(boolean inProcess) {
-        if (inProcess) {
-
-            parent.block();
-
-        } else {
-            new ErdGenerateProgressDialog(selectionPanel.getSelectedValues(),
-                    parentErdPanel, connection, selectionPanel.getSchema());
-
-            parent.unblock();
-        }
-    }
-
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         if (selectionPanel.hasSelections()) {
 
             if (parentErdPanel == null) {
-                new ErdGenerateProgressDialog(selectionPanel.getDatabaseConnection(),
-                        selectionPanel.getSelectedValues());
+                new ErdGenerateProgressDialog(
+                        selectionPanel.getDatabaseConnection(),
+                        selectionPanel.getSelectedValues()
+                );
 
             } else {
-                new ErdGenerateProgressDialog(selectionPanel.getSelectedValues(),
-                        parentErdPanel, selectionPanel.getDatabaseConnection(), selectionPanel.getSchema());
+                new ErdGenerateProgressDialog(
+                        selectionPanel.getSelectedValues(),
+                        parentErdPanel,
+                        selectionPanel.getDatabaseConnection()
+                );
 
-                cleanup();
                 SwingUtilities.getWindowAncestor(this).dispose();
             }
 
@@ -124,10 +95,4 @@ public class GenerateErdPanel extends JPanel
         return Bundles.get(GenerateErdPanel.class, key);
     }
 
-
 }
-
-
-
-
-

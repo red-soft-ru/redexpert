@@ -108,23 +108,18 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
     /**
      * Creates a new instance of the process with the specified parent
      * container and process type.
-     *
-     * @param the process type - import/export
      */
     public ImportExportDelimitedPanel(ActionContainer parent, int transferType) {
-        this(parent, transferType, null, null, null);
+        this(parent, transferType, null, null);
     }
 
     /**
      * Creates a new instance of the process with the specified parent
      * container and process type.
-     *
-     * @param the process type - import/export
      */
     public ImportExportDelimitedPanel(ActionContainer parent,
                                       int transferType,
                                       DatabaseConnection databaseConnection,
-                                      String schemaName,
                                       String tableName) {
         this.transferType = transferType;
         model = new TransferDelimitedWizardModel();
@@ -142,17 +137,11 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
             firstPanel.setDatabaseConnection(databaseConnection);
             next();
 
-            if (schemaName != null) {
-                secondPanel.setSelectedSchema(schemaName);
-                if (tableName != null) {
-                    secondPanel.setSelectedTable(tableName);
-                    secondPanel.selectAllAvailable();
-                }
-
+            if (tableName != null) {
+                secondPanel.setSelectedTable(tableName);
+                secondPanel.selectAllAvailable();
             }
-
         }
-
     }
 
     /**
@@ -184,10 +173,6 @@ public class ImportExportDelimitedPanel extends WizardProcessPanel
      */
     public void cleanup() {
         metaData.closeConnection();
-    }
-
-    public String getSchemaName() {
-        return secondPanel.getSelectedSchema();
     }
 
     /**

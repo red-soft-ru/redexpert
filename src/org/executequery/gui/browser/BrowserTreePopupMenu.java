@@ -22,10 +22,8 @@ package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseCatalog;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.gui.browser.nodes.DatabaseCatalogNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.menu.MenuItemFactory;
@@ -66,8 +64,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
     private final JMenuItem dataBaseInformation;
 
-    private JCheckBoxMenuItem showDefaultCatalogsAndSchemas;
-
     private JMenu active;
     private JMenu sqlTable;
     private JMenu sqlView;
@@ -100,11 +96,6 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(onlineTableValidation);
 
         addSeparator();
-
-        /*showDefaultCatalogsAndSchemas = createCheckBoxMenuItem(
-                bundleString("switchDefaultCatalogAndSchemaDisplay"),
-                "switchDefaultCatalogAndSchemaDisplay", listener);
-        add(showDefaultCatalogsAndSchemas);*/
 
         addNewConnection = createMenuItem(bundleString("addNewConnection"), "addNewConnection", listener);
         add(addNewConnection);
@@ -318,20 +309,11 @@ public class BrowserTreePopupMenu extends JPopupMenu {
             delete.setText(bundleString("deleteText", name));
             duplicate.setText(bundleString("duplicateText", name));
 
-            // eeekkk...
-            if (isCatalog(currentPathComponent) && asDatabaseCatalog(currentPathComponent).getHost().supportsCatalogsInTableDefinitions()) {
-
-                duplicateWithSource.setVisible(true);
-                duplicateWithSource.setText(bundleString("duplicateWithSourceText1", currentPathComponent.toString()));
-
-            } else {
-
-                duplicateWithSource.setText(bundleString("duplicateWithSourceText2"));
-                duplicateWithSource.setVisible(false);
-            }
+            duplicateWithSource.setText(bundleString("duplicateWithSourceText2"));
+            duplicateWithSource.setVisible(false);
 
             if (label != null) {
-                reload.setText(bundleString("reload", label));              //Кнопка перезагрузки(Если нажать по узлу триггеров то покажет меню "перезагрузить триггеры")
+                reload.setText(bundleString("reload", label));
             } else {
                 reload.setText(bundleString("reload", StringUtils.EMPTY));
             }
@@ -369,19 +351,9 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         return str;
     }
 
-    private DatabaseCatalog asDatabaseCatalog(DefaultMutableTreeNode currentPathComponent) {
-
-        return (DatabaseCatalog) (asDatabaseObjectNode(currentPathComponent)).getDatabaseObject();
-    }
-
     private DatabaseObjectNode asDatabaseObjectNode(DefaultMutableTreeNode currentPathComponent) {
 
         return (DatabaseObjectNode) currentPathComponent;
-    }
-
-    private boolean isCatalog(DefaultMutableTreeNode currentPathComponent) {
-
-        return currentPathComponent instanceof DatabaseCatalogNode;
     }
 
     private void createImportMenu(ActionListener listener) {
@@ -410,7 +382,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         add(sqlTable);
     }
 
-    private void createViewSqlMenu (ActionListener listener) {
+    private void createViewSqlMenu(ActionListener listener) {
         sqlView = MenuItemFactory.createMenu(bundleString("SQL"));
         sqlView.add(createMenuItem(bundleString("selectStatement"), "viewSelectStatement", listener));
         sqlView.add(createMenuItem(bundleString("insertStatement"), "viewInsertStatement", listener));

@@ -26,7 +26,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 
 import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
@@ -50,16 +49,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     private List<String> referenceColumnsDisplayList;
 
     /**
-     * The referenced catalog of this constraint
-     */
-    private String referencedCatalog;
-
-    /**
-     * The referenced schema of this constraint
-     */
-    private String referencedSchema;
-
-    /**
      * The referenced table of this constraint
      */
     private String referencedTable;
@@ -78,11 +67,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      * What happens to the foreign key when primary is deleted
      */
     private String deleteRule;
-
-    /**
-     * can the evaluation of foreign key constraints be deferred until commit
-     */
-    private short deferrability;
 
     /**
      * The type of constraint
@@ -225,15 +209,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     }
 
     /**
-     * Returns whether the schema has been defined.
-     *
-     * @return true | false
-     */
-    public boolean hasSchemaName() {
-        return !(MiscUtils.isNull(getSchemaName()));
-    }
-
-    /**
      * Sets the constraint type as specified.
      *
      * @param keyType the constraint type
@@ -265,7 +240,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     @Override
     public void setTable(DatabaseTable table) {
-        this.column=new DatabaseTableColumn(table);
+        this.column = new DatabaseTableColumn(table);
     }
 
     /**
@@ -337,30 +312,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
             referenceColumnsDisplayList.add(column.trim());
     }
 
-    /**
-     * Returns the catalog name parent to this column.
-     *
-     * @return the catalog name
-     */
-    public String getCatalogName() {
-        if (column != null) {
-            return column.getCatalogName();
-        }
-        return null;
-    }
-
-    /**
-     * Returns the schema name parent to this database column.
-     *
-     * @return the schema name
-     */
-    public String getSchemaName() {
-        if (column != null) {
-            return column.getSchemaName();
-        }
-        return null;
-    }
-
     public String getReferencedTable() {
         return referencedTable;
     }
@@ -380,18 +331,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
             referenceColumnsDisplayList.add(referencedColumn.trim());
     }
 
-    public String getReferencedSchema() {
-        return referencedSchema;
-    }
-
-    public void setReferencedSchema(String referencedSchema) {
-        this.referencedSchema = referencedSchema;
-    }
-
-    public String getReferencedCatalog() {
-        return referencedCatalog;
-    }
-
     @Override
     public String getCheck() {
         return check;
@@ -400,10 +339,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
     @Override
     public void setCheck(String check) {
         this.check = check;
-    }
-
-    public void setReferencedCatalog(String referencedCatalog) {
-        this.referencedCatalog = referencedCatalog;
     }
 
     public String getUpdateRule() {
@@ -420,14 +355,6 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     public void setDeleteRule(String deleteRule) {
         this.deleteRule = deleteRule;
-    }
-
-    public short getDeferrability() {
-        return deferrability;
-    }
-
-    public void setDeferrability(short deferrability) {
-        this.deferrability = deferrability;
     }
 
     public boolean isMarkedDeleted() {
@@ -592,12 +519,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
      * @param source      the source constraint object
      * @param destination the destination constraint
      */
-    protected void copyConstraint(TableColumnConstraint source,
-                                  TableColumnConstraint destination) {
+    protected void copyConstraint(TableColumnConstraint source, TableColumnConstraint destination) {
         destination.setKeyType(source.getKeyType());
         destination.setColumn(source.getColumn());
-        destination.setReferencedCatalog(source.getReferencedCatalog());
-        destination.setReferencedSchema(source.getReferencedSchema());
         destination.setReferencedTable(source.getReferencedTable());
         destination.setReferencedColumn(source.getReferencedColumn());
         destination.setName(source.getName());

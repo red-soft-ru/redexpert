@@ -30,12 +30,6 @@ public interface CreateTableSQLSyntax {
     int CREATE_TABLE_MODE = 0;
     int EDIT_TABLE_MODE = 1;
 
-    //------------------------------------------------
-    // The following are reuseable String constants
-    // used in the SQL text pane when making table
-    // or other schema modifications.
-    //------------------------------------------------
-
     String[] KEY_NAMES = {ColumnConstraint.PRIMARY,
             ColumnConstraint.FOREIGN,
             ColumnConstraint.UNIQUE};

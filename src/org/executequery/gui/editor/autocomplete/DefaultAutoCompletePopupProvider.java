@@ -5,8 +5,6 @@ import org.antlr.v4.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.databaseobjects.DatabaseObjectFactory;
-import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.ConnectionChangeListener;
@@ -74,15 +72,13 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
     private QueryEditorAutoCompletePopupPanel autoCompletePopup;
 
-    private final DatabaseObjectFactory databaseObjectFactory;
-
     private DefaultDatabaseHost databaseHost;
 
     private List<AutoCompleteListItem> autoCompleteListItems;
 
     private boolean autoCompleteKeywords;
 
-    private boolean autoCompleteSchema;
+    private boolean autoCompleteObjects;
 
     SQLTextArea sqlTextPane;
 
@@ -95,7 +91,6 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
         sqlTextPane = textPane;
 
         selectionsFactory = new AutoCompleteSelectionsFactory(this);
-        databaseObjectFactory = new DatabaseObjectFactoryImpl();
 
         setAutoCompleteOptionFlags();
         queryEditorTextComponent().addFocusListener(this);
@@ -108,7 +103,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         UserProperties userProperties = UserProperties.getInstance();
         autoCompleteKeywords = userProperties.getBooleanProperty("editor.autocomplete.keywords.on");
-        autoCompleteSchema = userProperties.getBooleanProperty("editor.autocomplete.schema.on");
+        autoCompleteObjects = userProperties.getBooleanProperty("editor.autocomplete.objects.on");
     }
 
     public void reset() {
@@ -617,15 +612,15 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
 
         public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
 
-            if (o1.isSchemaObject() && o2.isSchemaObject()) {
+            if (o1.isTableOrColumn() && o2.isTableOrColumn()) {
 
                 return o1.getInsertionValue().compareTo(o2.getInsertionValue());
 
-            } else if (o1.isSchemaObject() && !o2.isSchemaObject()) {
+            } else if (o1.isTableOrColumn() && !o2.isTableOrColumn()) {
 
                 return -1;
 
-            } else if (o2.isSchemaObject() && !o1.isSchemaObject()) {
+            } else if (o2.isTableOrColumn() && !o1.isTableOrColumn()) {
 
                 return 1;
             }
@@ -966,7 +961,7 @@ public class DefaultAutoCompletePopupProvider implements AutoCompletePopupProvid
             databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(selectedConnection);
         }
         autoCompleteListItems = new ArrayList<>();
-        selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteSchema, sqlTextPane);
+        selectionsFactory.build(databaseHost, autoCompleteKeywords, autoCompleteObjects, sqlTextPane);
 
         return true;
     }

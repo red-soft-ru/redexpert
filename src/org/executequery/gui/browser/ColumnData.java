@@ -78,9 +78,7 @@ public class ColumnData implements Serializable {
     private boolean remarkAsSingleComment;
 
     private String check;
-    private String schema;
     private String domain;
-    private String catalog;
     private String charset;
     private String remarks;
     private String collate;
@@ -611,22 +609,6 @@ public class ColumnData implements Serializable {
 
     public int getSize() {
         return size;
-    }
-
-    public String getCatalog() {
-        return catalog;
-    }
-
-    public void setCatalog(String catalog) {
-        this.catalog = catalog;
-    }
-
-    public String getSchema() {
-        return schema;
-    }
-
-    public void setSchema(String schema) {
-        this.schema = schema;
     }
 
     public boolean isMarkedDeleted() {

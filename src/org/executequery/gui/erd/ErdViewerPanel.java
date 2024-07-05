@@ -488,6 +488,39 @@ public class ErdViewerPanel extends DefaultTabView
 
     }
 
+    public void updateErd(Vector<ErdTableInfo> tableInfoList) {
+        List<ErdMoveableComponent> removed = new ArrayList<>();
+        List<ErdMoveableComponent> added = new ArrayList<>();
+        for (ErdTableInfo tableInfo : tableInfoList) {
+
+            ColumnData[] columnData = tableInfo.getColumns();
+            if (columnData == null || columnData.length == 0) {
+
+                for (ErdTable t : getAllTablesArray()) {
+                    if (t.getTableName().contentEquals(tableInfo.getName())) {
+                        removeTable(t);
+                        removed.add(t);
+                        break;
+                    }
+                }
+            } else {
+
+                ErdTable table = new ErdTable(
+                        tableInfo.getName(),
+                        tableInfo.getColumns(),
+                        this
+                );
+                table.setEditable(this.isEditable());
+                table.setDescriptionTable(tableInfo.getComment());
+
+                if (this.addNewTable(table, false))
+                    added.add(table);
+            }
+        }
+        fireSaveUndoAction(new UndoRedoAction(DELETE, removed));
+        fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, added));
+    }
+
     /**
      * <p>Sets the relationships between each table.
      *

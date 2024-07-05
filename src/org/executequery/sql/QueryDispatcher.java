@@ -344,8 +344,14 @@ public class QueryDispatcher {
                         executeSQL(query, executeAsBlock, false);
                         profilerExecutor.finishSession();
                         profilerPanel = new ProfilerPanel(sessionId, dc);
-                        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
-                                (Icon) null, profilerPanel, null, true);
+
+                        GUIUtilities.addCentralPane(
+                                ProfilerPanel.TITLE,
+                                ProfilerPanel.FRAME_ICON,
+                                profilerPanel,
+                                null,
+                                true
+                        );
 
                     } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));

@@ -416,19 +416,16 @@
     <action id="import-connections-from-file-command"
             name="Import Connections"
             mnemonic="m"
-            small-icon="icon_import_connection"
             execute-class="org.executequery.actions.databasecommands.ImportConnectionsCommand"/>
 
     <action id="import-connections-from-DB-command"
             name="Import Connections"
             mnemonic="m"
-            small-icon="icon_import_connection"
             execute-class="org.executequery.actions.databasecommands.ImportConnectionsFromDBCommand"/>
 
     <action id="export-connections-command"
             name="Export Connections"
             mnemonic="x"
-            small-icon="icon_export_connections"
             execute-class="org.executequery.actions.databasecommands.ExportConnectionsCommand"/>
 
     <action id="console-command"

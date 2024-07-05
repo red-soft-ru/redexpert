@@ -1,6 +1,5 @@
 package org.executequery.gui.browser.profiler;
 
-import org.executequery.GUIUtilities;
 import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 
@@ -21,7 +20,7 @@ public class ProfilerTreeCellRenderer extends AbstractTreeCellRenderer {
 
         switch ((String) node.getProcessType()) {
             case ProfilerData.BLOCK:
-                setIcon(IconManager.getIcon("icon_create_script"));
+                setIcon(IconManager.getIcon("icon_execute_statement"));
                 break;
             case ProfilerData.FUNCTION:
                 setIcon(IconManager.getIcon("icon_db_function"));

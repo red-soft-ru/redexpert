@@ -1215,7 +1215,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     break;
 
                 case NamedObject.COLLATION:
-                    setIcon(IconManager.getIcon("icon_file_xml"));
+                    setIcon(IconManager.getIcon("icon_db_collation"));
                     break;
 
                 default:

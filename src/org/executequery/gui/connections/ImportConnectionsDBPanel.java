@@ -22,9 +22,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class ImportConnectionsDBPanel extends JPanel {
-
     public static final String TITLE = "Import Connections";
-    public static final String FRAME_ICON = "icon_import_connection";
+
     ActionContainer parent;
     OpenConnectionsComboboxPanel connectionsComboboxPanel;
     DatabaseConnectionFactory databaseConnectionFactory;

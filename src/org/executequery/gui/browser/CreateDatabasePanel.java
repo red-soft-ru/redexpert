@@ -1621,7 +1621,6 @@ public class CreateDatabasePanel extends ActionPanel
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
             setIcon(IconManager.getIcon("icon_trash"));
-            setPressedIcon(IconManager.getIcon("icon_trash_open"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());

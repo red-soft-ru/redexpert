@@ -21,6 +21,7 @@
 package org.executequery.components;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.HeapMemoryDialog;
@@ -68,8 +69,12 @@ public class HeapMemoryStatusSnippet extends JPanel
         memProgress = new JProgressBar(progModel);
         memProgress.addMouseListener(new ProgressMouseAdapter());
 
-        JButton gcButton = new NoFocusButton("icon_trash", "icon_trash_open");
-        gcButton.addActionListener(this);
+        JButton gcButton = WidgetFactory.createRolloverButton(
+                "gcButton",
+                null,
+                "icon_trash",
+                this
+        );
 
         memProgress.setBorder(null);
         memProgress.setBorderPainted(false);

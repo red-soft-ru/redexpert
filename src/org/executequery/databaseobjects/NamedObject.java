@@ -76,6 +76,7 @@ public interface NamedObject extends Named, java.io.Serializable {
     int FOREIGN_KEYS_FOLDER_NODE = 102;
     int PRIMARY_KEYS_FOLDER_NODE = 103;
     int INDEXES_FOLDER_NODE = 104;
+    int TRIGGERS_FOLDER_NODE = 105;
 
     int PRIMARY_KEY = 999;
     int FOREIGN_KEY = 998;

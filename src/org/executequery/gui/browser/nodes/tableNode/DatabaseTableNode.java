@@ -43,6 +43,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
         nodes.add(new PrimaryKeysFolderNode(databaseTable));
         nodes.add(new ForeignKeysFolderNode(databaseTable));
         nodes.add(new IndexesFolderNode(databaseTable));
+        nodes.add(new TriggersFolderNode(databaseTable));
 
         return nodes;
     }

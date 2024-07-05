@@ -213,6 +213,7 @@ public class IconManager {
             case NamedObject.BRANCH_NODE:
             case NamedObject.COLUMNS_FOLDER_NODE:
             case NamedObject.INDEXES_FOLDER_NODE:
+            case NamedObject.TRIGGERS_FOLDER_NODE:
             case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
             case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
                 iconName = BrowserConstants.FOLDER_IMAGE;

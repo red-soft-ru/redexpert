@@ -4,8 +4,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.List;
 
@@ -19,12 +17,12 @@ class IndexesFolderNode extends TableFolderNode {
     }
 
     @Override
-    public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
+    protected void buildObjectNodes() {
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[INDEX]);
 
         List<DefaultDatabaseIndex> indices = databaseTable.getIndexes();
         indices.forEach(index -> index.setParent(metaTag));
-        return buildObjectNodes(indices);
+        buildObjectNodes(indices);
     }
 
     @Override

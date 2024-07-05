@@ -4,8 +4,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.List;
 
@@ -18,12 +16,12 @@ class TriggersFolderNode extends TableFolderNode {
     }
 
     @Override
-    public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
+    protected void buildObjectNodes() {
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[TRIGGER]);
 
         List<DefaultDatabaseTrigger> indices = databaseTable.getTriggers();
         indices.forEach(index -> index.setParent(metaTag));
-        return buildObjectNodes(indices);
+        buildObjectNodes(indices);
     }
 
     @Override

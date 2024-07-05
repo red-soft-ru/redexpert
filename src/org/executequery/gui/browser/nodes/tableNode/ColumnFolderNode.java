@@ -2,10 +2,6 @@ package org.executequery.gui.browser.nodes.tableNode;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.underworldlabs.jdbc.DataSourceException;
-
-import java.util.List;
 
 class ColumnFolderNode extends TableFolderNode {
 
@@ -14,8 +10,8 @@ class ColumnFolderNode extends TableFolderNode {
     }
 
     @Override
-    public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
-        return buildObjectNodes(databaseTable.getObjects());
+    protected void buildObjectNodes() {
+        buildObjectNodes(databaseTable.getObjects());
     }
 
     @Override

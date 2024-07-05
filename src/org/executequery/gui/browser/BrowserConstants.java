@@ -39,6 +39,12 @@ public class BrowserConstants {
     public static final String HOST_NOT_CONNECTED_IMAGE = "icon_connection";
     public static final String HOST_CONNECTED_IMAGE = "icon_connection_active";
 
+    // --- table constraints ---
+
+    public static final String PRIMARY_COLUMNS_IMAGE = "icon_db_table_column_primary";
+    public static final String PRIMARY_KEY_IMAGE = "icon_key_primary";
+    public static final String FOREIGN_KEY_IMAGE = "icon_key_foreign";
+
     // --- DB objects ---
 
     public static final String FUNCTIONS_IMAGE = "icon_db_function";
@@ -48,7 +54,6 @@ public class BrowserConstants {
     public static final String TABLES_IMAGE = "icon_db_table";
     public static final String GLOBAL_TABLES_IMAGE = "icon_db_table_global";
     public static final String COLUMNS_IMAGE = "icon_db_table_column";
-    public static final String PRIMARY_COLUMNS_IMAGE = "icon_db_table_column_primary";
     public static final String VIEWS_IMAGE = "icon_db_view";
     public static final String TABLE_TRIGGER_IMAGE = "icon_db_trigger_table";
     public static final String DB_TRIGGER_IMAGE = "icon_db_trigger_db";

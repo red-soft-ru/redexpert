@@ -292,10 +292,13 @@ public class IconManager {
                 break;
 
             case NamedObject.PRIMARY_KEY:
-                iconName = BrowserConstants.PRIMARY_COLUMNS_IMAGE;
+                iconName = BrowserConstants.PRIMARY_KEY_IMAGE;
                 break;
 
             case NamedObject.FOREIGN_KEY:
+                iconName = BrowserConstants.FOREIGN_KEY_IMAGE;
+                break;
+
             case NamedObject.UNIQUE_KEY:
                 iconName = BrowserConstants.COLUMNS_IMAGE;
                 break;

@@ -3,6 +3,7 @@ package org.executequery.gui.table;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -67,6 +68,10 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
     }
 
     public EditConstraintPanel(DatabaseTable table, ActionContainer dialog, ColumnConstraint columnConstraint) {
+        super(table.getHost().getDatabaseConnection(), dialog, columnConstraint, new Object[]{table});
+    }
+
+    public EditConstraintPanel(DatabaseTableObject table, ActionContainer dialog, ColumnConstraint columnConstraint) {
         super(table.getHost().getDatabaseConnection(), dialog, columnConstraint, new Object[]{table});
     }
 

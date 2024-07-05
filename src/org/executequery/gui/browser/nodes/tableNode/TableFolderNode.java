@@ -28,13 +28,23 @@ abstract class TableFolderNode extends DatabaseObjectNode {
     }
 
     @Override
-    protected String bundleString(String key) {
-        return Bundles.get(DatabaseTableNode.class, key);
+    public NamedObject getDatabaseObject() {
+        return databaseTable;
+    }
+
+    @Override
+    public String getShortName() {
+        return databaseTable.getShortName();
     }
 
     @Override
     public String getDisplayName() {
         return getName();
+    }
+
+    @Override
+    protected String bundleString(String key) {
+        return Bundles.get(DatabaseTableNode.class, key);
     }
 
 }

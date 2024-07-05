@@ -225,13 +225,6 @@
             small-icon="icon_print_plan"
             execute-class="org.executequery.actions.queryeditor.PrintPlanCommand"/>
 
-    <action id="print-explained-plan-command"
-            name="Print Explained Plan"
-            accel-key="control alt P"
-            accel-editable="true"
-            small-icon="icon_print_plan_explained"
-            execute-class="org.executequery.actions.queryeditor.PrintExplainedPlanCommand"/>
-
     <action id="move-row-up-command"
             name="Move text up"
             accel-key="alt UP"
@@ -465,7 +458,7 @@
 
     <action id="application-logs-command"
             accel-editable="false"
-                small-icon="icon_application_log"
+            small-icon="icon_application_log"
             execute-class="org.executequery.actions.toolscommands.ApplicationLogsCommand"/>
 
     <action id="user-manager-command"

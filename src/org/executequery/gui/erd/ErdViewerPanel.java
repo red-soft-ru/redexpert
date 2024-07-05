@@ -489,6 +489,7 @@ public class ErdViewerPanel extends DefaultTabView
     }
 
     public void updateErd(Vector<ErdTableInfo> tableInfoList) {
+        calculateNextXY();
         List<ErdMoveableComponent> removed = new ArrayList<>();
         List<ErdMoveableComponent> added = new ArrayList<>();
         for (ErdTableInfo tableInfo : tableInfoList) {
@@ -519,6 +520,7 @@ public class ErdViewerPanel extends DefaultTabView
         }
         fireSaveUndoAction(new UndoRedoAction(DELETE, removed));
         fireSaveUndoAction(new UndoRedoAction(NEW_OBJECT, added));
+        resizeCanvas();
     }
 
     /**
@@ -1598,6 +1600,31 @@ public class ErdViewerPanel extends DefaultTabView
         layeredPane.add(newTable, JLayeredPane.DEFAULT_LAYER, tables.size());
         newTable.toFront();
         return true;
+    }
+
+    public void calculateNextXY() {
+        int lx = 20, rx = 20;
+        Vector<ErdTable> list = getAllTablesVector();
+        for (ErdTable t : list) {
+            if ((t.getBounds().x + t.getBounds().width) > rx) {
+                rx = t.getBounds().x + t.getBounds().width;
+                lx = t.getBounds().x;
+            }
+        }
+        int uy = 20, dy = 20;
+        for (ErdTable t : list) {
+            if (t.getBounds().x + t.getBounds().width < lx)
+                continue;
+            if (t.getBounds().y + t.getBounds().height > dy) {
+                dy = t.getBounds().y + t.getBounds().height;
+                uy = t.getBounds().y;
+            }
+        }
+        next_x = lx;
+        if (dy > 20)
+            next_y = dy + VERT_DIFF;
+        else next_y = 20;
+        lastWidth = rx - lx;
     }
 
     protected List<ErdMoveableComponent> getSelectedComponents() {

@@ -529,7 +529,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             // TODO check after the 5 version is released
             if (getDatabaseMajorVersion() == 2) {
                 switch (type) {
-                    case NamedObject.SYNONYM:
                     case NamedObject.FUNCTION:
                     case NamedObject.SYSTEM_VIEW:
                     case NamedObject.PACKAGE:
@@ -544,7 +543,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 }
             }
             switch (type) {
-                case NamedObject.SYNONYM:
                 case NamedObject.SYSTEM_VIEW:
                 case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:

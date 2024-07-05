@@ -81,11 +81,6 @@ public class BrowserConstants {
     public static final String SYSTEM_SEQUENCES_IMAGE = "SystemSequence16.png";
 
     /**
-     * The image icon 'Synonym16.png'
-     */
-    public static final String SYNONYMS_IMAGE = "Synonym16.png";
-
-    /**
      * The image icon 'SystemTables16.png'
      */
     public static final String SYSTEM_TABLES_IMAGE = "SystemTable16.png";
@@ -165,7 +160,6 @@ public class BrowserConstants {
             INDEXES_IMAGE,
             PROCEDURES_IMAGE,
             SEQUENCES_IMAGE,
-            SYNONYMS_IMAGE,
             SYSTEM_TABLES_IMAGE,
             TABLES_IMAGE,
             VIEWS_IMAGE,

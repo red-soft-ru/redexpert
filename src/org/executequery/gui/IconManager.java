@@ -81,10 +81,6 @@ public class IconManager {
                 return (icons.get(BrowserConstants.SYSTEM_SEQUENCES_IMAGE));
 
 
-            case NamedObject.SYNONYM:
-                return (icons.get(BrowserConstants.SYNONYMS_IMAGE));
-
-
             case NamedObject.VIEW:
                 return (icons.get(BrowserConstants.VIEWS_IMAGE));
 

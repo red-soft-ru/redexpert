@@ -20,20 +20,17 @@
 
 package org.executequery.gui.editor.autocomplete;
 
-import org.executequery.ApplicationException;
 import org.executequery.gui.IconManager;
-import org.executequery.log.Log;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.ImageObserver;
 
 public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
     private static final int TEXT_ICON_GAP = 10;
 
+    private static final ImageIcon animatedSpinner;
     private static final Icon databaseTable;
-    private static final Icon nothingFound;
     private static final Icon databaseTableColumn;
     private static final Icon systemFunction;
     private static final Icon databaseFunction;
@@ -41,12 +38,10 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
     private static final Icon databasePackage;
     private static final Icon variable;
     private static final Icon parameter;
-    private static final ImageIcon animatedSpinner;
     private static final Icon databaseTableView;
 
     static {
-        animatedSpinner = IconManager.getIcon("icon_loading"/*, "gif"*/);
-        nothingFound = IconManager.getIcon("icon_warning");
+        animatedSpinner = IconManager.getIcon("icon_loading");
         databaseTable = IconManager.getIcon("icon_db_table");
         databaseTableColumn = IconManager.getIcon("icon_db_table_column");
         databaseTableView = IconManager.getIcon("icon_db_view");
@@ -58,122 +53,84 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
         parameter = IconManager.getIcon("icon_function");
     }
 
-
     @Override
     public Component getListCellRendererComponent(JList list, Object value,
                                                   int index, boolean isSelected, boolean cellHasFocus) {
 
-        JLabel listLabel = (JLabel) super.getListCellRendererComponent(
-                list, value, index, isSelected, cellHasFocus);
+        JLabel listLabel = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         listLabel.setIconTextGap(TEXT_ICON_GAP);
 
         AutoCompleteListItem item = (AutoCompleteListItem) value;
+        switch (item.getType()) {
 
-        try {
+            case DATABASE_TABLE:
+                setIcon(databaseTable);
+                break;
 
-            switch (item.getType()) {
+            case DATABASE_VIEW:
+                setIcon(databaseTableView);
+                break;
 
-                case DATABASE_TABLE:
-                    setIcon(databaseTable);
-                    break;
+            case DATABASE_TABLE_COLUMN:
+                setIcon(databaseTableColumn);
+                break;
 
-                case DATABASE_VIEW:
-                    setIcon(databaseTableView);
-                    break;
+            case DATABASE_FUNCTION:
+                setIcon(databaseFunction);
+                break;
 
-                case DATABASE_TABLE_COLUMN:
-                    setIcon(databaseTableColumn);
-                    break;
+            case DATABASE_PROCEDURE:
+                setIcon(databaseProcedure);
+                break;
 
-                case DATABASE_FUNCTION:
-                    setIcon(databaseFunction);
-                    break;
+            case DATABASE_PACKAGE:
+                setIcon(databasePackage);
+                break;
 
-                case DATABASE_PROCEDURE:
-                    setIcon(databaseProcedure);
-                    break;
+            case SYSTEM_FUNCTION:
+                setIcon(systemFunction);
+                break;
 
-                case DATABASE_PACKAGE:
-                    setIcon(databasePackage);
-                    break;
+            case VARIABLE:
+                setIcon(variable);
+                break;
 
-                case SYSTEM_FUNCTION:
-                    setIcon(systemFunction);
-                    break;
+            case PARAMETER:
+                setIcon(parameter);
+                break;
 
-                case NOTHING_PROPOSED:
-                    setBackground(list.getBackground());
-                    setForeground(list.getForeground());
-                    setBorder(noFocusBorder);
-                    setIcon(nothingFound);
-                    break;
+            case GENERATING_LIST:
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+                setIcon(animatedSpinner(list, index));
+                setBorder(noFocusBorder);
+                break;
 
-                case GENERATING_LIST:
-                    setBackground(list.getBackground());
-                    setForeground(list.getForeground());
-                    setBorder(noFocusBorder);
-                    setIcon(animateImageIcon(animatedSpinner, list, index));
-                    break;
-
-                case VARIABLE:
-                    setIcon(variable);
-                    break;
-
-                case PARAMETER:
-                    setIcon(parameter);
-                    break;
-
-                default:
-                    setIcon(null);
-                    break;
-            }
-
-
-        } catch (Exception e) {
-
-            if (e instanceof NullPointerException) { // setIcon throwing ???
-
-                Log.trace("NPE for item renderer item: " + item.getType().name(), e);
-            }
-
-            throw new ApplicationException(e);
+            default:
+                setIcon(null);
+                break;
         }
 
         return listLabel;
     }
 
+    private ImageIcon animatedSpinner(final JList list, final int row) {
 
-    private ImageIcon animateImageIcon(ImageIcon icon, final JList list, final int row) {
+        AutoCompleteListItemCellRenderer.animatedSpinner.setImageObserver((img, infoflags, x, y, width, height) -> {
 
-        icon.setImageObserver(new ImageObserver() {
+            if (list.isShowing() && (infoflags & (FRAMEBITS | ALLBITS)) != 0) {
 
-            public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h) {
+                if (list.getSelectedIndex() == row)
+                    list.repaint();
 
-                if (list.isShowing() && (infoflags & (FRAMEBITS | ALLBITS)) != 0) {
-
-                    if (list.getSelectedIndex() == row) {
-
-                        list.repaint();
-                    }
-
-                    if (list.isShowing()) {
-
-                        list.repaint(list.getCellBounds(row, row));
-                    }
-
-                }
-                return (infoflags & (ALLBITS | ABORT)) == 0;
+                if (list.isShowing())
+                    list.repaint(list.getCellBounds(row, row));
             }
 
+            return (infoflags & (ALLBITS | ABORT)) == 0;
         });
 
-        return icon;
+        return AutoCompleteListItemCellRenderer.animatedSpinner;
     }
 
 }
-
-
-
-
-
-

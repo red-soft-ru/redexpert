@@ -32,7 +32,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
     private static final int TEXT_ICON_GAP = 10;
 
-    private static final Icon databaseSpecificKeyword;
     private static final Icon databaseTable;
     private static final Icon nothingFound;
     private static final Icon databaseTableColumn;
@@ -47,7 +46,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
     static {
         animatedSpinner = IconManager.getIcon("icon_loading"/*, "gif"*/);
-        databaseSpecificKeyword = IconManager.getIcon("icon_db_keyword");
         nothingFound = IconManager.getIcon("icon_warning");
         databaseTable = IconManager.getIcon("icon_db_table");
         databaseTableColumn = IconManager.getIcon("icon_db_table_column");
@@ -75,11 +73,6 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
 
             switch (item.getType()) {
 
-                case SQL92_KEYWORD:
-                case DATABASE_DEFINED_KEYWORD:
-                    setIcon(databaseSpecificKeyword);
-                    break;
-
                 case DATABASE_TABLE:
                     setIcon(databaseTable);
                     break;
@@ -99,6 +92,7 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                 case DATABASE_PROCEDURE:
                     setIcon(databaseProcedure);
                     break;
+
                 case DATABASE_PACKAGE:
                     setIcon(databasePackage);
                     break;
@@ -120,11 +114,17 @@ public class AutoCompleteListItemCellRenderer extends DefaultListCellRenderer {
                     setBorder(noFocusBorder);
                     setIcon(animateImageIcon(animatedSpinner, list, index));
                     break;
+
                 case VARIABLE:
                     setIcon(variable);
                     break;
+
                 case PARAMETER:
                     setIcon(parameter);
+                    break;
+
+                default:
+                    setIcon(null);
                     break;
             }
 

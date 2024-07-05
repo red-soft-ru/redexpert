@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
+import org.executequery.gui.browser.nodes.tableNode.DatabaseTableNode;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;

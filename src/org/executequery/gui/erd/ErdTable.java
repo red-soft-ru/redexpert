@@ -917,16 +917,6 @@ public class ErdTable extends ErdMoveableComponent
 
     }
 
-    public void selected(MouseEvent e) {
-        super.selected(e);
-
-
-
-        // need to repaint layered pane to show
-        // selected border on tables
-        parent.repaintLayeredPane();
-    }
-
     /**
      * <p>Returns a string representation of this
      * component - the table name.

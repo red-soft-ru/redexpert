@@ -125,7 +125,7 @@ public class ErdScrollPane extends JScrollPane {
 
                 // determine the min/max extents of all components
                 ErdMoveableComponent component = null;
-                ErdTable[] tables = parent.getAllTablesArray();
+                ErdMoveableComponent[] tables = parent.getAllComponentsArray();
 
                 int x = 0, y = 0;
                 int c_width = 0, c_height = 0;
@@ -234,7 +234,7 @@ public class ErdScrollPane extends JScrollPane {
 
                 }
 
-                Dimension viewDim = new Dimension((int) maxX, (int) (maxY));
+                Dimension viewDim = new Dimension((int) maxX + 50, (int) (maxY + 50));
                 view.setViewSize(viewDim);
 
 //                view.setViewPosition(new Point((int)(viewP.x - minX),

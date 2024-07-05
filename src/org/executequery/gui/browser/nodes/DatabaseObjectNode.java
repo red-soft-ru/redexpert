@@ -24,7 +24,6 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
-import org.executequery.gui.browser.DatabaseObjectChangeProvider;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -41,28 +40,14 @@ import java.util.Vector;
  */
 public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
-    /**
-     * the underlying database object associated with this node
-     */
-    private NamedObject databaseObject;
-
-    /**
-     * indicates that children have been retrieved
-     */
     private boolean childrenRetrieved;
-    List<DatabaseObjectNode> childrenList;
+    private NamedObject databaseObject;
+    private List<DatabaseObjectNode> childrenList;
 
-    /**
-     * Creates a new instance of DefaultDatabaseObjectNode
-     */
     public DatabaseObjectNode() {
     }
 
-    /**
-     * Creates a new instance of DefaultDatabaseObjectNode
-     */
     public DatabaseObjectNode(NamedObject databaseObject) {
-
         super(databaseObject);
         this.databaseObject = databaseObject;
     }
@@ -95,89 +80,27 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     /**
-     * Returns whether any changes have been made to the
-     * database object represented by this node within the
-     * view panel.
-     */
-    public boolean isObjectModified() throws DataSourceException {
-        NamedObject namedObject = getDatabaseObject();
-        if (isDatabaseTable(namedObject)) {
-            return ((DatabaseTable) namedObject).isAltered();
-        }
-        return false;
-    }
-
-    /**
-     * Reverts any changes on the underlying database object.
-     */
-    public void revert() {
-        NamedObject namedObject = getDatabaseObject();
-        if (isDatabaseTable(namedObject)) {
-            ((DatabaseTable) namedObject).revert();
-        }
-    }
-
-    public boolean isNameEditable() {
-        return false;
-    }
-
-    public boolean isDraggable() {
-        return getType() == NamedObject.TABLE || getType() == NamedObject.INDEX;
-    }
-
-    /**
-     * Returns whether the object represented by this
-     * node may be dropped/deleted.
-     */
-    public boolean
-    isDroppable() {
-        NamedObject namedObject = getDatabaseObject();
-        return isDatabaseTable(namedObject);
-    }
-
-    /**
      * Drops/deletes the object represented by this node.
      */
     public int drop() throws DataSourceException {
-
         NamedObject namedObject = getDatabaseObject();
 
         int result = namedObject.drop();
-
-        if (result >= 0) {
-
+        if (result >= 0)
             namedObject.getParent().getObjects().remove(namedObject);
-        }
-/*        
-        // retrieve the parent node and check the meta type
-        // to remove itself from the children
-        TreeNode _parent = getParent();
-        if (_parent instanceof DatabaseObjectNode) {
-            DatabaseObjectNode parentNode = (DatabaseObjectNode)_parent;
-            parentNode.getDatabaseObject().getObjects().remove(namedObject);
-        }
-*/
+
         return result;
     }
 
-    /**
-     * Applies any changes on the underlying database object.
-     */
-    public void applyChanges() throws DataSourceException {
+    public TreePath getTreePath() {
 
-//        NamedObject namedObject = getDatabaseObject();
-        new DatabaseObjectChangeProvider(getDatabaseObject()).applyChanges(true);
+        TreeNode parent = getParent();
+        if (parent instanceof DatabaseObjectNode) {
+            TreePath treePath = ((DatabaseObjectNode) parent).getTreePath();
+            return new RETreePath(treePath, this);
+        }
 
-//        if (isDatabaseTable(namedObject)) {
-//
-//            ((DatabaseTable)namedObject).applyChanges();
-//        }
-
-    }
-
-    private boolean isDatabaseTable(NamedObject namedObject) {
-
-        return (namedObject instanceof DatabaseTable);
+        return new TreePath(this);
     }
 
     /**
@@ -185,12 +108,8 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      */
     public void populateChildren() throws DataSourceException {
         if (!childrenRetrieved) {
-            List<DatabaseObjectNode> children = getChildObjects();
-            if (children != null) {
-                for (int i = 0, n = children.size(); i < n; i++) {
-                    add(children.get(i));
-                }
-            }
+            for (DatabaseObjectNode child : getChildObjects())
+                add(child);
             childrenRetrieved = true;
         }
     }
@@ -201,23 +120,20 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * @return a list of children for this node
      */
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
-        if (childrenList == null) {
-            NamedObject _namedObject = getDatabaseObject();
-            if (_namedObject != null) {
 
-                List<NamedObject> values = _namedObject.getObjects();
-                if (values != null) {
+        if (childrenList != null)
+            return childrenList;
 
-                    childrenList = new ArrayList<DatabaseObjectNode>();
-                    for (int i = 0, n = values.size(); i < n; i++) {
-                        /*if(values.get(i) instanceof AbstractTableObject&&!(values.get(i)instanceof DefaultDatabaseView))
-                            childrenList.add(new DatabaseTableNode(values.get(i)));
-                        else*/
-                        childrenList.add(new DatabaseObjectNode(values.get(i)));
-                    }
-                }
-            }
-        }
+        if (databaseObject == null)
+            return new ArrayList<>();
+
+        List<NamedObject> childObjects = databaseObject.getObjects();
+        if (childObjects == null)
+            return new ArrayList<>();
+
+        childrenList = new ArrayList<>();
+        for (NamedObject childObject : childObjects)
+            childrenList.add(new DatabaseObjectNode(childObject));
 
         return childrenList;
     }
@@ -232,9 +148,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * @return true | false
      */
     public boolean allowsChildren() {
-        if (databaseObject != null)
-            return databaseObject.allowsChildren();
-        else return true;
+        return databaseObject == null || databaseObject.allowsChildren();
     }
 
     /**
@@ -242,6 +156,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      *
      * @return true | false
      */
+    @Override
     public boolean isLeaf() {
 
         if (getDatabaseObject() != null) {
@@ -253,21 +168,15 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
                     || type == NamedObject.UNIQUE_KEY
                     || type == NamedObject.TABLE_INDEX
                     || type == NamedObject.DOMAIN
-            )
-
+            ) {
                 return true;
-            if (type == NamedObject.META_TAG) {
-                return databaseObject.getObjects().size() == 0;
             }
+
+            if (type == NamedObject.META_TAG)
+                return databaseObject.getObjects().isEmpty();
         }
 
-
-        return !(allowsChildren());
-    }
-
-    public boolean isHostNode() {
-
-        return (getType() == NamedObject.HOST);
+        return !allowsChildren();
     }
 
     /**
@@ -322,25 +231,6 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return databaseObject.getMetaDataKey();
     }
 
-    /**
-     * Returns the display name.
-     */
-    public String toString() {
-        String metadatakey = getMetaDataKey();
-        if (metadatakey != null) {
-            if (databaseObject instanceof DatabaseTableColumn) {
-                return ((DatabaseTableColumn) databaseObject).getTable().getName().trim() + "." + getShortName() + ":" + "COLUMN";
-            } else if (databaseObject instanceof DefaultDatabaseColumn) {
-                return databaseObject.getParent().getName().trim() + "." + getShortName() + ":" + "COLUMN";
-            } else return getShortName() + ":" + getMetaDataKey();
-        } else return getShortName();
-    }
-
-    protected String bundleString(String key) {
-
-        return Bundles.get(getClass(), key);
-    }
-
     public boolean isSystem() {
         return databaseObject.isSystem();
     }
@@ -349,12 +239,49 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return this instanceof RootDatabaseObjectNode;
     }
 
-    public TreePath getTreePath() {
-        if (getParent() != null && getParent() instanceof DatabaseObjectNode) {
-            TreePath treePath = ((DatabaseObjectNode) getParent()).getTreePath();
-            return new RETreePath(treePath, this);
-        } else return new TreePath(this);
+    public boolean isHostNode() {
+        return getType() == NamedObject.HOST;
+    }
+
+    private boolean isDatabaseTable(NamedObject namedObject) {
+        return namedObject instanceof DatabaseTable;
+    }
+
+    public boolean isNameEditable() {
+        return false;
+    }
+
+    public boolean isDraggable() {
+        return getType() == NamedObject.TABLE || getType() == NamedObject.INDEX;
+    }
+
+    /**
+     * Returns whether the object represented by this
+     * node may be dropped/deleted.
+     */
+    public boolean isDroppable() {
+        return isDatabaseTable(getDatabaseObject());
+    }
+
+    @Override
+    public String toString() {
+
+        String shortName = getShortName();
+        String metaDataKey = getMetaDataKey();
+        if (metaDataKey == null)
+            return shortName;
+
+        if (databaseObject instanceof DatabaseTableColumn)
+            return ((DatabaseTableColumn) databaseObject).getTable().getName().trim() + "." + shortName + ":" + "COLUMN";
+
+        if (databaseObject instanceof DefaultDatabaseColumn)
+            return databaseObject.getParent().getName().trim() + "." + shortName + ":" + "COLUMN";
+
+        return shortName + ":" + metaDataKey;
+    }
+
+    protected String bundleString(String key) {
+        return Bundles.get(getClass(), key);
     }
 
 }
-

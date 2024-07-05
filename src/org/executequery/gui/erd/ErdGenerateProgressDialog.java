@@ -235,36 +235,15 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 return;
             }
 
-            GUIUtilities.showWaitCursor();
+            try {
+                GUIUtilities.showWaitCursor();
+                parent.updateErd(tableInfoList);
+                parent.updateTableRelationships();
 
-            for (ErdTableInfo tableInfo : tableInfoList) {
-
-                ColumnData[] columnData = tableInfo.getColumns();
-                if (columnData == null || columnData.length == 0) {
-
-                    for (ErdTable t : parent.getAllTablesArray()) {
-                        if (t.getTableName().contentEquals(tableInfo.getName())) {
-                            parent.removeTable(t);
-                            break;
-                        }
-                    }
-
-                } else {
-
-                    ErdTable table = new ErdTable(
-                            tableInfo.getName(),
-                            tableInfo.getColumns(),
-                            parent
-                    );
-                    table.setEditable(parent.isEditable());
-                    table.setDescriptionTable(tableInfo.getComment());
-
-                    parent.addNewTable(table, false);
-                }
+            } finally {
+                GUIUtilities.showNormalCursor();
             }
 
-            parent.updateTableRelationships();
-            GUIUtilities.showNormalCursor();
             selectedTables = null;
             dispose();
         }

@@ -73,10 +73,6 @@ public class TablespaceTreePopupMenu extends JPopupMenu implements ActionListene
         return treePanel;
     }
 
-    public DatabaseConnection getCurrentSelection() {
-        return currentSelection;
-    }
-
     public void setCurrentSelection(DatabaseConnection currentSelection) {
         this.currentSelection = currentSelection;
     }

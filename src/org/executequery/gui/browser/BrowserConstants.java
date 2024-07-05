@@ -39,7 +39,6 @@ public class BrowserConstants {
     public static final String INDEXES_IMAGE = "icon_db_index";
     public static final String PROCEDURES_IMAGE = "icon_db_procedure";
     public static final String SEQUENCES_IMAGE = "icon_db_generator";
-    public static final String SYNONYMS_IMAGE = "icon_synonym";
     public static final String TABLES_IMAGE = "icon_db_table";
     public static final String GLOBAL_TABLES_IMAGE = "icon_db_table_global";
     public static final String COLUMNS_IMAGE = "icon_db_table_column";

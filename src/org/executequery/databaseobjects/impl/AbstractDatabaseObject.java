@@ -284,9 +284,6 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             case SEQUENCE:
                 queryStart = "DROP SEQUENCE ";
                 break;
-            case SYNONYM:
-                queryStart = "DROP SYNONYM ";
-                break;
             case SYSTEM_TABLE:
             case TABLE:
                 queryStart = "DROP TABLE ";

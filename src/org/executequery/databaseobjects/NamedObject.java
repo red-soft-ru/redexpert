@@ -65,7 +65,6 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_PACKAGE = SYSTEM_INDEX + 1;
     int TABLE_COLUMN = SYSTEM_PACKAGE + 1;
     int CONSTRAINT = TABLE_COLUMN + 1;
-    int SYNONYM = CONSTRAINT + 1;
 
     int META_TAG = 93;
     int OTHER = 95;
@@ -131,7 +130,6 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM PACKAGE",
             "TABLE COLUMN",
             "CONSTRAINT",
-            "SYNONYM",
     };
     String[] META_TYPES_FOR_BUNDLE = {
             "DOMAIN",
@@ -167,7 +165,6 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_PACKAGE",
             "TABLE_COLUMN",
             "CONSTRAINT",
-            "SYNONYM"
     };
 
     Integer[] META_TYPES_FOR_COMPARE = {

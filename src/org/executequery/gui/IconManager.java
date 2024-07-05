@@ -222,10 +222,6 @@ public class IconManager {
                 iconName = BrowserConstants.SEQUENCES_IMAGE;
                 break;
 
-            case NamedObject.SYNONYM:
-                iconName = BrowserConstants.SYNONYMS_IMAGE;
-                break;
-
             case NamedObject.VIEW:
                 iconName = BrowserConstants.VIEWS_IMAGE;
                 break;

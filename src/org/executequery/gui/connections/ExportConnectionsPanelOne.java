@@ -183,7 +183,7 @@ public class ExportConnectionsPanelOne extends ActionPanel {
 
             Object userObject = ((DefaultMutableTreeNode) value).getUserObject();
             if (userObject instanceof ConnectionsFolder) {
-                setIcon(IconManager.getIcon(BrowserConstants.CONNECTIONS_FOLDER_IMAGE));
+                setIcon(IconManager.getIcon(BrowserConstants.FOLDER_IMAGE));
 
             } else if (userObject instanceof DatabaseConnection)
                 setIcon(IconManager.getIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE));

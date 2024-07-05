@@ -198,7 +198,11 @@ public class IconManager {
                 break;
 
             case NamedObject.BRANCH_NODE:
-                iconName = BrowserConstants.CONNECTIONS_FOLDER_IMAGE;
+            case NamedObject.COLUMNS_FOLDER_NODE:
+            case NamedObject.INDEXES_FOLDER_NODE:
+            case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
+            case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
+                iconName = BrowserConstants.FOLDER_IMAGE;
                 break;
 
             case NamedObject.FUNCTION:
@@ -272,22 +276,6 @@ public class IconManager {
 
             case NamedObject.GLOBAL_TEMPORARY:
                 iconName = BrowserConstants.GLOBAL_TABLES_IMAGE;
-                break;
-
-            case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
-                iconName = BrowserConstants.FOLDER_FOREIGN_KEYS_IMAGE;
-                break;
-
-            case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
-                iconName = BrowserConstants.FOLDER_PRIMARY_KEYS_IMAGE;
-                break;
-
-            case NamedObject.COLUMNS_FOLDER_NODE:
-                iconName = BrowserConstants.FOLDER_COLUMNS_IMAGE;
-                break;
-
-            case NamedObject.INDEXES_FOLDER_NODE:
-                iconName = BrowserConstants.FOLDER_INDEXES_IMAGE;
                 break;
 
             case NamedObject.DATABASE_TRIGGER:

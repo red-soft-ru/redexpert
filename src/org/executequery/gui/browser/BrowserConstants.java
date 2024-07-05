@@ -32,7 +32,7 @@ public class BrowserConstants {
 
     public static final String DATABASE_OBJECT_IMAGE = "icon_db_object";
     public static final String CONNECTIONS_IMAGE = "icon_db_search";
-    public static final String CONNECTIONS_FOLDER_IMAGE = "icon_folder";
+    public static final String FOLDER_IMAGE = "icon_folder";
     public static final String HOST_NOT_CONNECTED_IMAGE = "icon_connection";
     public static final String HOST_CONNECTED_IMAGE = "icon_connection_active";
     public static final String FUNCTIONS_IMAGE = "icon_db_function";
@@ -56,11 +56,6 @@ public class BrowserConstants {
     public static final String USER_IMAGE = "icon_db_user";
     public static final String TABLESPACE_IMAGE = "icon_db_tablespace";
     public static final String JOB_IMAGE = "icon_db_job";
-
-    public static final String FOLDER_FOREIGN_KEYS_IMAGE = "icon_folder_foreign";
-    public static final String FOLDER_PRIMARY_KEYS_IMAGE = "icon_folder_primary";
-    public static final String FOLDER_COLUMNS_IMAGE = "icon_folder_column";
-    public static final String FOLDER_INDEXES_IMAGE = "icon_folder_index";
 
     public static final String SYSTEM_DOMAIN_IMAGE = "icon_db_domain_system";
     public static final String SYSTEM_TABLES_IMAGE = "icon_db_table_system";

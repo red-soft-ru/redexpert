@@ -57,6 +57,14 @@ public class ViewOptionsCommand extends AbstractViewOptionsCommand {
     }
 
     @SuppressWarnings("unused")
+    public void viewTableCatalogs(ActionEvent e) {
+        GUIUtilities.updatePreference(ConnectionsTreePanel.TABLES_CATALOGS_KEY, selectionFromEvent(e));
+        JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (component instanceof ConnectionsTreePanel)
+            ((ConnectionsTreePanel) component).reloadOpenedConnections();
+    }
+
+    @SuppressWarnings("unused")
     public void viewSystemObjects(ActionEvent e) {
         GUIUtilities.updatePreference(ConnectionsTreePanel.SYSTEM_OBJECTS_KEY, selectionFromEvent(e));
         JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);

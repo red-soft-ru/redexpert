@@ -147,6 +147,14 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
+        key = "browser.show.table.catalogs";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("ShowTableCatalogs"),
+                SystemProperties.getBooleanProperty("user", key)
+        ));
+
         key = "browser.show.system.objects";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

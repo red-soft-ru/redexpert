@@ -22,11 +22,14 @@ package org.executequery.gui.browser.nodes;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
+import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -132,8 +135,12 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
             return new ArrayList<>();
 
         childrenList = new ArrayList<>();
-        for (NamedObject childObject : childObjects)
-            childrenList.add(new DatabaseObjectNode(childObject));
+        for (NamedObject childObject : childObjects) {
+            childrenList.add(isTableCatalog(childObject) ?
+                    new DatabaseTableNode(childObject) :
+                    new DatabaseObjectNode(childObject)
+            );
+        }
 
         return childrenList;
     }
@@ -245,6 +252,12 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
     private boolean isDatabaseTable(NamedObject namedObject) {
         return namedObject instanceof DatabaseTable;
+    }
+
+    private boolean isTableCatalog(NamedObject databaseObject) {
+        return SystemProperties.getBooleanProperty("user", "browser.show.table.catalogs")
+                && databaseObject instanceof AbstractTableObject
+                && !(databaseObject instanceof DefaultDatabaseView);
     }
 
     public boolean isNameEditable() {

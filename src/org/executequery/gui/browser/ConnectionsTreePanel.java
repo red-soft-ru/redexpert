@@ -76,6 +76,7 @@ public class ConnectionsTreePanel extends TreePanel
     public static final String TITLE = Bundles.get(ConnectionsTreePanel.class, "Connections");
     public static final String PROPERTY_KEY = "system.display.connections";
     public static final String SYSTEM_OBJECTS_KEY = "browser.show.system.objects";
+    public static final String TABLES_CATALOGS_KEY = "browser.show.table.catalogs";
     public static final String CONNECTION_PROPERTIES_KEY = "browser.show.connection.properties";
     public static final String MENU_ITEM_KEY = "viewConnections";
 

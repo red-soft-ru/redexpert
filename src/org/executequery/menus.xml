@@ -170,6 +170,13 @@
                    property-key="browser.show.connection.properties"
                    tool-tip="Opens connection properties panel"/>
 
+        <menu-item name="Tables catalogs"
+                   key="menu.view.connections.table.catalogs"
+                   class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"
+                   action-command="viewTableCatalogs"
+                   property-key="browser.show.table.catalogs"
+                   tool-tip="Show folders for tables"/>
+
         <menu-item name="System objects"
                    key="menu.view.connections.system.objects"
                    class="org.underworldlabs.swing.menu.MainCheckBoxMenuItem"

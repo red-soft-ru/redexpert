@@ -1384,7 +1384,7 @@ public class ErdViewerPanel extends DefaultTabView
         }
         next_x = lx;
         if (dy > 20)
-            next_y = dy + VERT_DIFF;
+            next_y = dy + VERTICAL_DIFF;
         else next_y = 20;
         lastWidth = rx - lx;
     }

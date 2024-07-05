@@ -648,13 +648,9 @@ public class ExecuteQueryDialog extends BaseDialog {
 
             switch (col) {
                 case VALID:
-                    return IconManager.getIcon(
-                            action.executed ?
-                                    BrowserConstants.GRANT_IMAGE :
-                                    BrowserConstants.REVOKE_IMAGE,
-                            "svg",
-                            16,
-                            IconManager.IconFolder.DEFAULT_DARK
+                    return IconManager.getIcon(action.executed ?
+                            BrowserConstants.GRANT_IMAGE :
+                            BrowserConstants.REVOKE_IMAGE
                     );
 
                 case NAME:

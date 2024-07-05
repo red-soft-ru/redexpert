@@ -22,6 +22,7 @@ package org.executequery.gui;
 
 import org.executequery.Application;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
@@ -45,8 +46,6 @@ public class ExecuteQueryFrame extends JFrame
 
     public static final String TITLE = "Red Expert";
 
-    private static final String APPLICATION_ICON = "icon_red_expert";
-
     private static final String WINDOW_POSITION_KEY = "window.position";
 
     private static final long serialVersionUID = 1L;
@@ -59,7 +58,7 @@ public class ExecuteQueryFrame extends JFrame
     public ExecuteQueryFrame() {
         super(TITLE);
 
-        ImageIcon frameIcon = IconManager.getIcon(APPLICATION_ICON);
+        ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE);
         setIconImage(frameIcon.getImage());
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 

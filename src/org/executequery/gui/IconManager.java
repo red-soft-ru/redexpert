@@ -24,15 +24,18 @@ import java.util.stream.Stream;
 public class IconManager {
 
     public enum IconFolder {
+        BASE,
         CLASSIC,
         DEFAULT_DARK,
         DEFAULT_LIGHT
     }
 
+    private static final String BASE_ICONS_FOLDER = "/org/executequery/icons/base/";
     private static final String CLASSIC_ICONS_FOLDER = "/org/executequery/icons/classic/";
     private static final String DEFAULT_DARK_ICONS_FOLDER = "/org/executequery/icons/default/dark/";
     private static final String DEFAULT_LIGHT_ICONS_FOLDER = "/org/executequery/icons/default/light/";
 
+    private static final Map<String, ImageIcon> iconsBase = new HashMap<>();
     private static final Map<String, ImageIcon> iconsDark = new HashMap<>();
     private static final Map<String, ImageIcon> iconsLight = new HashMap<>();
     private static final boolean isDarkTheme = GUIUtilities.getLookAndFeel().isDarkTheme();
@@ -43,6 +46,7 @@ public class IconManager {
      * and put them to the maps
      */
     public static void loadIcons() {
+        loadIcons(BASE_ICONS_FOLDER, iconsBase, 16);
 
         if (isDefaultTheme) {
             loadIcons(DEFAULT_DARK_ICONS_FOLDER, iconsDark);
@@ -54,6 +58,10 @@ public class IconManager {
     }
 
     private static void loadIcons(String resourceName, Map<String, ImageIcon> iconMap) {
+        loadIcons(resourceName, iconMap, 20);
+    }
+
+    private static void loadIcons(String resourceName, Map<String, ImageIcon> iconMap, int iconSize) {
 
         URL iconsResource = IconManager.class.getResource(resourceName);
         if (iconsResource == null)
@@ -69,7 +77,7 @@ public class IconManager {
                         iconsStream.map(Path::toString)
                                 .forEach(iconPath -> iconMap.put(
                                         iconPath.replaceAll("\\w*/\\b|[.]\\w+$", ""),
-                                        loadIcon(iconPath, 18)
+                                        loadIcon(iconPath, iconSize)
                                 ));
                     }
                 }
@@ -82,7 +90,7 @@ public class IconManager {
                             .map(File::getName)
                             .forEach(name -> iconMap.put(
                                     name.replaceAll("[.]\\w+$", ""),
-                                    loadIcon(resourceName + name, 20)
+                                    loadIcon(resourceName + name, iconSize)
                             ));
                 }
             }
@@ -120,8 +128,13 @@ public class IconManager {
      * @param iconName the name of the icon
      */
     public static ImageIcon getIcon(String iconName) {
+
+        if (iconsBase.containsKey(iconName))
+            return iconsBase.get(iconName);
+
         if (isDefaultTheme && isDarkTheme)
             return iconsDark.get(iconName);
+
         return iconsLight.get(iconName);
     }
 
@@ -462,8 +475,10 @@ public class IconManager {
 
     private static String getFolder(IconFolder iconFolder) {
 
-        String folderName = CLASSIC_ICONS_FOLDER;
-        if (iconFolder == IconFolder.DEFAULT_DARK) {
+        String folderName = BASE_ICONS_FOLDER;
+        if (iconFolder == IconFolder.CLASSIC) {
+            folderName = CLASSIC_ICONS_FOLDER;
+        } else if (iconFolder == IconFolder.DEFAULT_DARK) {
             folderName = DEFAULT_DARK_ICONS_FOLDER;
         } else if (iconFolder == IconFolder.DEFAULT_LIGHT)
             folderName = DEFAULT_LIGHT_ICONS_FOLDER;

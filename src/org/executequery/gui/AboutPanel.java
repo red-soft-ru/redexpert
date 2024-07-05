@@ -20,6 +20,7 @@
 
 package org.executequery.gui;
 
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -52,7 +53,7 @@ public class AboutPanel extends BaseDialog {
     }
 
     private void init() {
-        icon = IconManager.getIcon("icon_red_expert", "svg", 70, IconManager.IconFolder.DEFAULT_DARK);
+        icon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE, "svg", 70, IconManager.IconFolder.BASE);
 
         versionLabel = WidgetFactory.createLabel(
                 "RedExpert " + System.getProperty("executequery.minor.version"),

@@ -29,6 +29,7 @@ package org.executequery.gui.browser;
  * @author Takis Diakoumis
  */
 public class BrowserConstants {
+    public static final String APPLICATION_IMAGE = "icon_red_expert";
 
     // --- connections tree ---
 

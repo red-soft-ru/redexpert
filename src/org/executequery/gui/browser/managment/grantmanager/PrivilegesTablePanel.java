@@ -98,10 +98,10 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         this.grantManagerPanel = grantManagerPanel;
         this.typeTable = typeTable;
         icons = new Icon[4];
-        icons[GRANT] = loadIcon(BrowserConstants.GRANT_IMAGE);
-        icons[REVOKE] = loadIcon(BrowserConstants.REVOKE_IMAGE);
-        icons[GRANT_OPTION] = loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        icons[GRANT_FIELD] = loadIcon(BrowserConstants.FIELD_GRANT_IMAGE);
+        icons[GRANT] = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
+        icons[REVOKE] = IconManager.getIcon(BrowserConstants.REVOKE_IMAGE);
+        icons[GRANT_OPTION] = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        icons[GRANT_FIELD] = IconManager.getIcon(BrowserConstants.FIELD_GRANT_IMAGE);
         objectVector = new Vector<>();
         tableMap = new HashMap<>();
         tableForColumnsMap = new HashMap<>();
@@ -1151,10 +1151,6 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                     ((RolloverButton) comp).removeActionListener(this);
                 }
             }
-    }
-
-    private ImageIcon loadIcon(String iconName) {
-        return IconManager.getIcon(iconName, "svg", 16, IconManager.IconFolder.DEFAULT_DARK);
     }
 
     class TypeObject {

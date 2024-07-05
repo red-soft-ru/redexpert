@@ -265,8 +265,7 @@ public abstract class ErdMoveableComponent extends JComponent {
      * @param the event causing the selection
      */
     public void selected(MouseEvent e) {
-
-        //calculateDragging(e);
+        parent.repaintLayeredPane();
     }
 
     public void calculateDragging(MouseEvent e) {

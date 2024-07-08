@@ -194,71 +194,21 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             return;
 
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        int nodeType = node.getType();
+        String query = getDropQuery(node, node.getType());
+        if (query == null)
+            return;
 
         DatabaseObjectNode indecesNode = null;
-
-        String query;
-        StringBuilder tabName = new StringBuilder();
-        if (nodeType == NamedObject.TABLE_COLUMN) {
-            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
-            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
-            query = SQLUtils.generateDefaultDropColumnQuery(
-                    node.getName(),
-                    table.getName(),
-                    table.getHost().getDatabaseConnection(),
-                    false
-            );
-
-            tabName.append(parent.getShortName())
-                    .append(".").append(node.getShortName())
-                    .append(":").append(NamedObject.META_TYPES[nodeType])
-                    .append(":").append(table.getHost());
-
-        } else if (nodeType >= NamedObject.PRIMARY_KEY && nodeType <= NamedObject.CHECK_KEY) {
-            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
-            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
-            query = SQLUtils.generateDefaultDropColumnQuery(
-                    node.getName(),
-                    table.getName(),
-                    table.getHost().getDatabaseConnection(),
-                    true
-            );
-
-            tabName.append("null");
-
-        } else {
-            DatabaseObject object = (DatabaseObject) node.getUserObject();
-            tabName.append(node.getShortName())
-                    .append(":").append(node.getMetaDataKey())
-                    .append(":").append(object.getHost());
-
-            String type;
-            if (nodeType == NamedObject.GLOBAL_TEMPORARY)
-                type = NamedObject.META_TYPES[NamedObject.TABLE];
-            else if (nodeType == NamedObject.DATABASE_TRIGGER || nodeType == NamedObject.DDL_TRIGGER)
-                type = NamedObject.META_TYPES[NamedObject.TRIGGER];
-            else
-                type = NamedObject.META_TYPES[nodeType];
-
-            query = SQLUtils.generateDefaultDropQuery(type, node.getName(), currentSelection);
-        }
-
-        if (GUIUtilities.getOpenFrame(tabName.toString()) != null) {
-            GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
-            return;
-        }
-
         if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
             indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
                     .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
                     .findFirst().orElse(null);
         }
 
-        ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
-        eqd.display();
+        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(bundledString("DropObject"), query, currentSelection, true);
+        executeQueryDialog.display();
 
-        if (eqd.getCommit()) {
+        if (executeQueryDialog.getCommit()) {
             treePanel.reloadPath(currentPath.getParentPath());
             if (indecesNode != null)
                 treePanel.reloadPath(indecesNode.getTreePath());
@@ -372,7 +322,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
     }
 
-    private AbstractCreateObjectPanel getCreateObjectPanel(DatabaseObjectNode node, BaseDialog dialog, DatabaseConnection connection) {
+    private AbstractCreateObjectPanel getCreateObjectPanel(DatabaseObjectNode node, BaseDialog
+            dialog, DatabaseConnection connection) {
 
         int type = node.getType();
         if (type == NamedObject.META_TAG) {
@@ -491,7 +442,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         return panel;
     }
 
-    private AbstractCreateObjectPanel getEditObjectPanel(DatabaseObjectNode node, BaseDialog dialog, DatabaseConnection connection) {
+    private AbstractCreateObjectPanel getEditObjectPanel(DatabaseObjectNode node, BaseDialog
+            dialog, DatabaseConnection connection) {
 
         int type = node.getType();
         if (type == NamedObject.META_TAG) {
@@ -590,6 +542,67 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
 
         return panel;
+    }
+
+    private String getDropQuery(DatabaseObjectNode node, int nodeType) {
+
+        if (nodeType == NamedObject.TABLE_COLUMN) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+
+            StringBuilder tabName = new StringBuilder()
+                    .append(parent.getShortName()).append(".").append(node.getShortName())
+                    .append(":").append(NamedObject.META_TYPES[nodeType])
+                    .append(":").append(table.getHost());
+
+            if (isOpen(node, tabName.toString()))
+                return null;
+
+            return SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    false
+            );
+        }
+
+        if (nodeType >= NamedObject.PRIMARY_KEY && nodeType <= NamedObject.CHECK_KEY) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+
+            return SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    true
+            );
+        }
+
+        StringBuilder tabName = new StringBuilder()
+                .append(node.getShortName())
+                .append(":").append(node.getMetaDataKey())
+                .append(":").append(((DatabaseObject) node.getUserObject()).getHost());
+
+        if (isOpen(node, tabName.toString()))
+            return null;
+
+        String type;
+        if (nodeType == NamedObject.GLOBAL_TEMPORARY)
+            type = NamedObject.META_TYPES[NamedObject.TABLE];
+        else if (nodeType == NamedObject.DATABASE_TRIGGER || nodeType == NamedObject.DDL_TRIGGER)
+            type = NamedObject.META_TYPES[NamedObject.TRIGGER];
+        else
+            type = NamedObject.META_TYPES[nodeType];
+
+        return SQLUtils.generateDefaultDropQuery(type, node.getName(), currentSelection);
+    }
+
+    private boolean isOpen(DatabaseObjectNode node, String tabName) {
+        if (GUIUtilities.getOpenFrame(tabName) != null) {
+            GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
+            return true;
+        }
+        return false;
     }
 
     private void setSelectedObjectActive(boolean isActive) {

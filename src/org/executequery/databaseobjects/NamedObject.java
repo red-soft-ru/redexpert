@@ -78,18 +78,11 @@ public interface NamedObject extends Named, java.io.Serializable {
     int INDEXES_FOLDER_NODE = 104;
     int TRIGGERS_FOLDER_NODE = 105;
 
-    int PRIMARY_KEY = 999;
-    int FOREIGN_KEY = 998;
-    int UNIQUE_KEY = 997;
-    int CHECK_KEY = 996;
-    int TABLE_INDEX = 995;
-
-    String[] KEYS = {
-            "PRIMARY KEY",
-            "FOREIGN KEY",
-            "UNIQUE KEY",
-            "CHECK KEY"
-    };
+    int PRIMARY_KEY = 1000;
+    int FOREIGN_KEY = 1001;
+    int UNIQUE_KEY = 1002;
+    int CHECK_KEY = 1003;
+    int TABLE_INDEX = 1004;
 
     String[] KEYS_BUNDLE = {
             "PRIMARY_KEY",
@@ -97,6 +90,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "UNIQUE_KEY",
             "CHECK_KEY"
     };
+
     String[] META_TYPES = {
             "DOMAIN",
             "TABLE",
@@ -132,6 +126,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "TABLE COLUMN",
             "CONSTRAINT",
     };
+
     String[] META_TYPES_FOR_BUNDLE = {
             "DOMAIN",
             "TABLE",
@@ -188,6 +183,34 @@ public interface NamedObject extends Named, java.io.Serializable {
             DATABASE_TRIGGER,
             PACKAGE
     };
+
+    static boolean isTableFolder(int type) {
+        return type > BRANCH_NODE && type <= TRIGGERS_FOLDER_NODE;
+    }
+
+    static String getTypeForBundle(int type) {
+
+        if (isTableFolder(type)) {
+            switch (type) {
+                case FOREIGN_KEYS_FOLDER_NODE:
+                    return KEYS_BUNDLE[FOREIGN_KEY % 1000];
+
+                case PRIMARY_KEYS_FOLDER_NODE:
+                    return KEYS_BUNDLE[PRIMARY_KEY % 1000];
+
+                case COLUMNS_FOLDER_NODE:
+                    return META_TYPES_FOR_BUNDLE[TABLE_COLUMN];
+
+                case INDEXES_FOLDER_NODE:
+                    return META_TYPES_FOR_BUNDLE[INDEX];
+
+                case TRIGGERS_FOLDER_NODE:
+                    return META_TYPES_FOR_BUNDLE[TRIGGER];
+            }
+        }
+
+        return META_TYPES_FOR_BUNDLE[type];
+    }
 
     /**
      * Marks this object as being 'reset', where for any loaded object
@@ -292,6 +315,6 @@ public interface NamedObject extends Named, java.io.Serializable {
      */
     default NamedObject copy() {
         return null;
-    };
-    
+    }
+
 }

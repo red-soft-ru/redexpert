@@ -182,7 +182,7 @@ public class BrowserController {
             String type = "";
 
             int nodeType = node.getType();
-            if (nodeType > NamedObject.BRANCH_NODE && nodeType <= NamedObject.TRIGGERS_FOLDER_NODE)
+            if (NamedObject.isTableFolder(nodeType))
                 return;
 
             if (nodeType < NamedObject.META_TYPES.length)

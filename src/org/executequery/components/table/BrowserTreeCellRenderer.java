@@ -148,7 +148,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         } else
             setForeground(selectedTextForeground);
 
-        boolean useBoldFont = type == NamedObject.META_TAG || type > NamedObject.BRANCH_NODE && type <= NamedObject.TRIGGERS_FOLDER_NODE;
+        boolean useBoldFont = type == NamedObject.META_TAG || NamedObject.isTableFolder(type);
         if (useBoldFont && !node.isLeaf())
             setFont(treeFont.deriveFont(Font.BOLD));
         else

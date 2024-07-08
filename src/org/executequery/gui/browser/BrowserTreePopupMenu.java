@@ -129,7 +129,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
 
         // --- user objects catalog ---
 
-        if (nodeType == NamedObject.META_TAG) {
+        if (nodeType == NamedObject.META_TAG || NamedObject.isTableFolder(nodeType)) {
             int subType = getSubType(objectNode);
 
             boolean isTrigger = isTrigger(subType);
@@ -239,7 +239,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
                 getSubType(objectNode) :
                 objectNode.getType();
 
-        return NamedObject.META_TYPES_FOR_BUNDLE[metaType];
+        return NamedObject.getTypeForBundle(metaType);
     }
 
     private int getSubType(DatabaseObjectNode objectNode) {

@@ -15,6 +15,7 @@ abstract class TableFolderNode extends DatabaseObjectNode {
     protected List<DatabaseObjectNode> children;
 
     protected TableFolderNode(DatabaseTable databaseTable) {
+        super(databaseTable);
         this.databaseTable = databaseTable;
         this.children = new ArrayList<>();
         buildObjectNodes();

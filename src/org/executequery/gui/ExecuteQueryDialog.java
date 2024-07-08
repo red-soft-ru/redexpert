@@ -351,8 +351,6 @@ public class ExecuteQueryDialog extends BaseDialog {
                 model.insertRow(action, 0);
 
             setMessages(action);
-            addMessages(action);
-
             if (action.executed)
                 success++;
             else
@@ -389,8 +387,6 @@ public class ExecuteQueryDialog extends BaseDialog {
                 model.insertRow(action, 0);
 
             setMessages(action);
-            addMessages(action);
-
             if (action.executed)
                 success++;
             else
@@ -447,14 +443,6 @@ public class ExecuteQueryDialog extends BaseDialog {
 
     private void setMessages(RowAction row) {
         queryPane.setText(row.queryAction);
-        setOutputMessage(row.executed ?
-                        SqlMessages.PLAIN_MESSAGE :
-                        SqlMessages.ERROR_MESSAGE,
-                row.sqlMessage
-        );
-    }
-
-    private void addMessages(RowAction row) {
         setOutputMessage(row.executed ?
                         SqlMessages.PLAIN_MESSAGE :
                         SqlMessages.ERROR_MESSAGE,

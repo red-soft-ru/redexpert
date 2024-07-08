@@ -55,6 +55,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
         this(table, dialog, null);
     }
 
+    public InsertColumnPanel(DatabaseTableColumn tableColumn, ActionContainer dialog, boolean editing) {
+        super(tableColumn.getTable().getHost().getDatabaseConnection(), dialog, editing ? tableColumn : null, new Object[]{tableColumn.getTable()});
+    }
+
     public InsertColumnPanel(DatabaseTable table, ActionContainer dialog, DatabaseColumn column) {
         super(table.getHost().getDatabaseConnection(), dialog, column, new Object[]{table});
     }

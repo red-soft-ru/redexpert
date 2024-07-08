@@ -36,6 +36,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.table.CreateTablePanel;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.actions.ReflectiveAction;
@@ -191,34 +192,50 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             return;
 
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        DatabaseObject object = (DatabaseObject) node.getUserObject();
+        int nodeType = node.getType();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.getShortName())
-                .append(":").append(node.getMetaDataKey())
-                .append(":").append(object.getHost());
+        DatabaseObjectNode indecesNode = null;
 
-        if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
+        String query;
+        StringBuilder tabName = new StringBuilder();
+        if (nodeType == NamedObject.TABLE_COLUMN) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+
+            query = SQLUtils.generateDefaultDropColumnQuery(node.getName(), table.getName(), table.getHost().getDatabaseConnection());
+            tabName.append(parent.getShortName())
+                    .append(".").append(node.getShortName())
+                    .append(":").append(NamedObject.META_TYPES[nodeType])
+                    .append(":").append(table.getHost());
+
+        } else {
+            DatabaseObject object = (DatabaseObject) node.getUserObject();
+            tabName.append(node.getShortName())
+                    .append(":").append(node.getMetaDataKey())
+                    .append(":").append(object.getHost());
+
+            String type;
+            if (nodeType == NamedObject.GLOBAL_TEMPORARY)
+                type = NamedObject.META_TYPES[NamedObject.TABLE];
+            else if (nodeType == NamedObject.DATABASE_TRIGGER || nodeType == NamedObject.DDL_TRIGGER)
+                type = NamedObject.META_TYPES[NamedObject.TRIGGER];
+            else
+                type = NamedObject.META_TYPES[nodeType];
+
+            query = SQLUtils.generateDefaultDropQuery(type, node.getName(), currentSelection);
+        }
+
+        if (GUIUtilities.getOpenFrame(tabName.toString()) != null) {
             GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
             return;
         }
 
-        String type;
-        if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
-            type = NamedObject.META_TYPES[NamedObject.TABLE];
-        else if (node.getType() == NamedObject.DATABASE_TRIGGER || node.getType() == NamedObject.DDL_TRIGGER)
-            type = NamedObject.META_TYPES[NamedObject.TRIGGER];
-        else
-            type = NamedObject.META_TYPES[node.getType()];
-
-        DatabaseObjectNode indecesNode = null;
         if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
             indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
                     .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
                     .findFirst().orElse(null);
         }
 
-        String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName(), currentSelection);
         ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
         eqd.display();
 
@@ -379,6 +396,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 panel = new CreateProcedurePanel(connection, dialog);
                 break;
 
+            case NamedObject.TRIGGERS_FOLDER_NODE:
+                type = NamedObject.TRIGGER;
             case NamedObject.TRIGGER:
             case NamedObject.DATABASE_TRIGGER:
             case NamedObject.DDL_TRIGGER:
@@ -390,6 +409,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 break;
 
             case NamedObject.INDEX:
+            case NamedObject.INDEXES_FOLDER_NODE:
                 panel = new CreateIndexPanel(connection, dialog);
                 break;
 
@@ -415,6 +435,14 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             case NamedObject.JOB:
                 panel = new CreateJobPanel(connection, dialog);
+                break;
+
+            case NamedObject.TABLE_COLUMN:
+                panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, false);
+                break;
+
+            case NamedObject.COLUMNS_FOLDER_NODE:
+                panel = new InsertColumnPanel((DatabaseTable) node.getDatabaseObject(), dialog);
                 break;
 
             default:
@@ -466,6 +494,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 panel = new CreateDomainPanel(connection, dialog, MiscUtils.trimEnd(node.getName()));
                 break;
 
+            case NamedObject.TRIGGERS_FOLDER_NODE:
+                type = NamedObject.TRIGGER;
             case NamedObject.TRIGGER:
             case NamedObject.DATABASE_TRIGGER:
             case NamedObject.DDL_TRIGGER:
@@ -477,6 +507,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 break;
 
             case NamedObject.INDEX:
+            case NamedObject.INDEXES_FOLDER_NODE:
                 panel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
                 break;
 
@@ -502,6 +533,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             case NamedObject.TABLESPACE:
                 panel = new CreateTablespacePanel(connection, dialog, node.getDatabaseObject());
+                break;
+
+            case NamedObject.TABLE_COLUMN:
+                panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, true);
                 break;
 
             default:

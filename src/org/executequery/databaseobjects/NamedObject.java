@@ -190,23 +190,23 @@ public interface NamedObject extends Named, java.io.Serializable {
 
     static String getTypeForBundle(int type) {
 
-        if (isTableFolder(type)) {
-            switch (type) {
-                case FOREIGN_KEYS_FOLDER_NODE:
-                    return KEYS_BUNDLE[FOREIGN_KEY % 1000];
+        switch (type) {
+            case FOREIGN_KEY:
+            case FOREIGN_KEYS_FOLDER_NODE:
+                return KEYS_BUNDLE[FOREIGN_KEY % 1000];
 
-                case PRIMARY_KEYS_FOLDER_NODE:
-                    return KEYS_BUNDLE[PRIMARY_KEY % 1000];
+            case PRIMARY_KEY:
+            case PRIMARY_KEYS_FOLDER_NODE:
+                return KEYS_BUNDLE[PRIMARY_KEY % 1000];
 
-                case COLUMNS_FOLDER_NODE:
-                    return META_TYPES_FOR_BUNDLE[TABLE_COLUMN];
+            case COLUMNS_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[TABLE_COLUMN];
 
-                case INDEXES_FOLDER_NODE:
-                    return META_TYPES_FOR_BUNDLE[INDEX];
+            case INDEXES_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[INDEX];
 
-                case TRIGGERS_FOLDER_NODE:
-                    return META_TYPES_FOR_BUNDLE[TRIGGER];
-            }
+            case TRIGGERS_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[TRIGGER];
         }
 
         return META_TYPES_FOR_BUNDLE[type];
@@ -273,7 +273,7 @@ public interface NamedObject extends Named, java.io.Serializable {
      * @return drop statement result
      */
     int drop() throws DataSourceException;
-    
+
     String getDescription();
 
     boolean isSystem();

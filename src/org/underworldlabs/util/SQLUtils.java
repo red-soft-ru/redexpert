@@ -898,8 +898,8 @@ public final class SQLUtils {
         return "DROP " + metaTag + " " + format(name, dc) + " USING PLUGIN " + plugin + ";\n";
     }
 
-    public static String generateDefaultDropColumnQuery(String name, String tableName, DatabaseConnection dc) {
-        return "ALTER TABLE " + format(tableName, dc) + " DROP " + format(name, dc) + ";\n";
+    public static String generateDefaultDropColumnQuery(String name, String tableName, DatabaseConnection dc, boolean isConstraint) {
+        return "ALTER TABLE " + format(tableName, dc) + " DROP " + (isConstraint ? "CONSTRAINT " : "") + format(name, dc) + ";\n";
     }
 
     public static String generateCreateDomain(

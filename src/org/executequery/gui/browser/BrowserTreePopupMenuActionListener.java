@@ -29,6 +29,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.AnaliseRecompileDialog;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -36,6 +37,7 @@ import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.table.CreateTablePanel;
+import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
@@ -201,12 +203,29 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (nodeType == NamedObject.TABLE_COLUMN) {
             DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
             DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+            query = SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    false
+            );
 
-            query = SQLUtils.generateDefaultDropColumnQuery(node.getName(), table.getName(), table.getHost().getDatabaseConnection());
             tabName.append(parent.getShortName())
                     .append(".").append(node.getShortName())
                     .append(":").append(NamedObject.META_TYPES[nodeType])
                     .append(":").append(table.getHost());
+
+        } else if (nodeType >= NamedObject.PRIMARY_KEY && nodeType <= NamedObject.CHECK_KEY) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+            query = SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    true
+            );
+
+            tabName.append("null");
 
         } else {
             DatabaseObject object = (DatabaseObject) node.getUserObject();
@@ -365,6 +384,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             }
         }
 
+        ColumnConstraint constraint;
         AbstractCreateObjectPanel panel = null;
         switch (type) {
 
@@ -445,6 +465,24 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 panel = new InsertColumnPanel((DatabaseTable) node.getDatabaseObject(), dialog);
                 break;
 
+            case NamedObject.PRIMARY_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, NamedObject.PRIMARY_KEY);
+                break;
+
+            case NamedObject.FOREIGN_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, NamedObject.FOREIGN_KEY);
+                break;
+
+            case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
+                panel = new EditConstraintPanel((DatabaseTable) node.getDatabaseObject(), dialog, NamedObject.PRIMARY_KEY);
+                break;
+
+            case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
+                panel = new EditConstraintPanel((DatabaseTable) node.getDatabaseObject(), dialog, NamedObject.FOREIGN_KEY);
+                break;
+
             default:
                 GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
                 break;
@@ -465,6 +503,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             }
         }
 
+        ColumnConstraint constraint;
         AbstractCreateObjectPanel panel = null;
         switch (type) {
 
@@ -537,6 +576,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             case NamedObject.TABLE_COLUMN:
                 panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, true);
+                break;
+
+            case NamedObject.PRIMARY_KEY:
+            case NamedObject.FOREIGN_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, constraint);
                 break;
 
             default:

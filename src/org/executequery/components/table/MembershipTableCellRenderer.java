@@ -12,10 +12,9 @@ public class MembershipTableCellRenderer extends BrowserTableCellRenderer {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         setBackground(null);
-        if (isSelected && hasFocus) {
+        setForeground(FOREGROUND_COLOR);
+        if (isSelected && hasFocus)
             setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
-            setForeground(FOREGROUND_COLOR);
-        }
 
         return this;
     }

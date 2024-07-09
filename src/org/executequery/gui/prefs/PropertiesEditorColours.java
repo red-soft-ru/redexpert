@@ -49,6 +49,14 @@ import java.util.*;
 public class PropertiesEditorColours extends AbstractPropertiesColours
         implements Constants {
 
+    public static final String[] EDITOR_OUTPUT_COLORS_KEYS = new String[]{
+            "editor.output.background",
+            "editor.output.plain.color",
+            "editor.output.error.color",
+            "editor.output.warning.color",
+            "editor.output.action.color",
+    };
+
     private SamplePanel samplePanel;
     private SyntaxColorTableModel syntaxColoursTableModel;
     private EditorColourPreferencesTableModel editorColoursPreferencesTableModel;
@@ -200,6 +208,10 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
     public void restoreDefaults() {
         editorColoursPreferencesTableModel.restoreAllDefaults();
         syntaxColoursTableModel.restoreAllDefaults();
+
+        Properties themeDefaultsProperty = defaultsForTheme();
+        for (String key : EDITOR_OUTPUT_COLORS_KEYS)
+            SystemProperties.setColourProperty("user", key, asColour(themeDefaultsProperty.getProperty(key)));
     }
 
     @Override

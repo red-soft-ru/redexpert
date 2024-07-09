@@ -25,6 +25,7 @@ import org.executequery.gui.editor.QueryEditorSettings;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -82,8 +83,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
     private void init() {
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
-        textPane.setFont(QueryEditorSettings.getEditorFont());
-        textPane.setDragEnabled(true);
         textComponent = textPane;
 
         queryScroll = new RTextScrollPane(textPane);
@@ -94,8 +93,33 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
         defaultBorder = queryScroll.getBorder();
         sqlBuffer = new StringBuffer();
 
+        applyUserProperties();
         add(queryScroll, BorderLayout.CENTER);
         add(textPane.getCaretPositionLabel(), BorderLayout.SOUTH);
+    }
+
+    private void applyUserProperties() {
+        Color foreground = SystemProperties.getColourProperty("user", "editor.text.foreground.colour");
+        Color background = SystemProperties.getColourProperty("user", "editor.text.background.colour");
+        Color selection = SystemProperties.getColourProperty("user", "editor.text.selection.background");
+
+        queryScroll.setLineNumbersEnabled(true);
+        queryScroll.setFoldIndicatorEnabled(true);
+        queryScroll.getGutter().setBackground(background);
+        queryScroll.getGutter().setLineNumberColor(foreground);
+        queryScroll.getGutter().setCurrentLineNumberColor(selection);
+        queryScroll.getGutter().setLineNumberFont(QueryEditorSettings.getEditorFont());
+
+        textPane.setCaretPosition(0);
+        textPane.setDragEnabled(true);
+        textPane.setForeground(foreground);
+        textPane.setBackground(background);
+        textPane.setSelectionColor(selection);
+        textPane.setUseSelectedTextColor(true);
+        textPane.setBracketMatchingEnabled(false);
+        textPane.setFont(QueryEditorSettings.getEditorFont());
+        textPane.setSelectedTextColor(SystemProperties.getColourProperty("user", "editor.text.selection.foreground"));
+        textPane.setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
     }
 
     public void setSQLText(String text) {

@@ -459,21 +459,19 @@ public class QueryEditor extends DefaultTabView
      * Sets the editor user preferences.
      */
     public void setEditorPreferences() {
-        setPanelBackgrounds();
-
         useMultipleConnections = SystemProperties.getBooleanProperty("user", "editor.use.multiple.connections");
         maxRecordsCount = SystemProperties.getBooleanProperty("user", "editor.limit.records.count") ?
                 SystemProperties.getIntProperty("user", "editor.max.records.count") : -1;
 
         statusBar.setVisible(isStatusBarVisible());
         toolBar.setVisible(isToolsPanelVisible());
-        editorPanel.showLineNumbers(isLineNumbersVisible());
-        editorPanel.setLineNumbersForeground(getLineNumbersForeground());
-        editorPanel.setLineNumbersFont(editorPanel.getQueryArea().getEditorTextComponent().getFont());
+        editorPanel.showLineNumbers(isLineNumbersVisible(), editorPanel.getQueryArea().getEditorTextComponent().getFont());
+        editorPanel.setTextPaneBackground(userProperties().getColourProperty("editor.text.background.colour"));
         editorPanel.preferencesChanged();
         delegate.preferencesChanged();
         delegate.setCommitMode(isAutoCommit());
         popup.setCommitMode(isAutoCommit());
+        resultsPanel.setResultBackground(userProperties().getColourProperty("editor.output.background"));
         resultsPanel.setTableProperties();
 
         transactionParametersPanel.setVisible(isToolsPanelVisible() && SystemProperties.getBooleanProperty("user", "editor.display.transaction.params"));
@@ -514,10 +512,6 @@ public class QueryEditor extends DefaultTabView
 
     private boolean isLineNumbersVisible() {
         return userProperties().getBooleanProperty("editor.display.linenums");
-    }
-
-    private Color getLineNumbersForeground() {
-        return userProperties().getColourProperty("editor.linenumber.foreground");
     }
 
     private boolean isStatusBarVisible() {
@@ -698,15 +692,6 @@ public class QueryEditor extends DefaultTabView
      */
     public boolean isResultSetSelected() {
         return resultsPanel.isResultSetSelected();
-    }
-
-    /**
-     * Sets the respective panel background colours within
-     * the editor as specified by the user defined properties.
-     */
-    public void setPanelBackgrounds() {
-        editorPanel.setTextPaneBackground(userProperties().getColourProperty("editor.text.background.colour"));
-        resultsPanel.setResultBackground(userProperties().getColourProperty("editor.output.background"));
     }
 
     /**

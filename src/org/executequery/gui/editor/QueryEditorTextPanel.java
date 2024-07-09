@@ -28,6 +28,7 @@ import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -141,16 +142,14 @@ public class QueryEditorTextPanel extends JPanel {
         queryEditor = null;
     }
 
-    public void showLineNumbers(boolean show) {
+    public void showLineNumbers(boolean show, Font font) {
         queryScroll.setLineNumbersEnabled(show);
-    }
-
-    public void setLineNumbersForeground(Color color) {
-        queryScroll.getGutter().setLineNumberColor(color);
-    }
-
-    public void setLineNumbersFont(Font font) {
-        queryScroll.getGutter().setLineNumberFont(font);
+        if (show) {
+            queryScroll.getGutter().setLineNumberFont(font);
+            queryScroll.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
+            queryScroll.getGutter().setLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.foreground.colour"));
+            queryScroll.getGutter().setCurrentLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.selection.background"));
+        }
     }
 
     protected void setTextFocus() {

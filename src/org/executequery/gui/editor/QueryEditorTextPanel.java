@@ -145,6 +145,14 @@ public class QueryEditorTextPanel extends JPanel {
         queryScroll.setLineNumbersEnabled(show);
     }
 
+    public void setLineNumbersForeground(Color color) {
+        queryScroll.getGutter().setLineNumberColor(color);
+    }
+
+    public void setLineNumbersFont(Font font) {
+        queryScroll.getGutter().setLineNumberFont(font);
+    }
+
     protected void setTextFocus() {
         GUIUtils.requestFocusInWindow(queryPane);
     }

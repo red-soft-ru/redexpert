@@ -46,7 +46,7 @@ public final class UserPreferencesManager {
     public static Color getOutputPaneBackground() {
 
         return SystemProperties.getColourProperty(
-                Constants.USER_PROPERTIES_KEY, "editor.results.background.colour");
+                Constants.USER_PROPERTIES_KEY, "editor.output.background");
     }
 
     public static boolean isTransposingSingleRowResultSets() {

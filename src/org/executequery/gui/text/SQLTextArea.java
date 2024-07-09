@@ -77,7 +77,10 @@ public class SQLTextArea extends RSyntaxTextArea
 
     protected void setEditorPreferences() {
 
+        setUseSelectedTextColor(true);
+        setPaintMatchedBracketPair(true);
         setSelectionColor(QueryEditorSettings.getSelectionColour());
+        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
         setCurrentLineHighlightColor(QueryEditorSettings.isDisplayLineHighlight() ?
                 QueryEditorSettings.getLineHighlightColour() :

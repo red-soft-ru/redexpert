@@ -539,22 +539,25 @@ public class SimplePreferencesPanel extends JPanel
 
         protected Properties defaultsForTheme() {
 
+            LookAndFeelType selectedLaf = GUIUtilities.getLookAndFeel();
+
+            String resourcePath;
+            if (selectedLaf.isDefaultTheme()) {
+                resourcePath = selectedLaf.isDarkTheme() ?
+                        "org/executequery/gui/editor/resource/sql-syntax.default.dark.profile" :
+                        "org/executequery/gui/editor/resource/sql-syntax.default.light.profile";
+            } else {
+                resourcePath = selectedLaf.isDarkTheme() ?
+                        "org/executequery/gui/editor/resource/sql-syntax.classic.dark.profile" :
+                        "org/executequery/gui/editor/resource/sql-syntax.classic.light.profile";
+            }
+
             try {
-
-                Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
-                if (currentlySavedLookAndFeel().isDarkTheme())
-                    defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
-
-                return defaults;
+                return FileUtils.loadPropertiesResource(resourcePath);
 
             } catch (IOException e) {
                 throw new ApplicationException(e);
             }
-        }
-
-        private LookAndFeelType currentlySavedLookAndFeel() {
-            String lookAndFeel = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.lookandfeel");
-            return LookAndFeelType.valueOf(lookAndFeel);
         }
 
     } // class PreferencesTableModel

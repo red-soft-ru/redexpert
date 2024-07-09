@@ -514,7 +514,7 @@ public class TableDataTab extends JPanel
 
             boolean showLineLumbers = SystemProperties.getBooleanProperty("user", "results.table.row.numbers");
             if (showLineLumbers) {
-                Color background = SystemProperties.getColourProperty("user", "editor.results.background.colour");
+                Color background = SystemProperties.getColourProperty("user", "editor.output.background");
 
                 if (rowNumberHeader == null) {
                     rowNumberHeader = new RowNumberHeader(table);

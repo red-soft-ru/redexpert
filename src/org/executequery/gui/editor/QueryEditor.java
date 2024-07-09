@@ -468,6 +468,8 @@ public class QueryEditor extends DefaultTabView
         statusBar.setVisible(isStatusBarVisible());
         toolBar.setVisible(isToolsPanelVisible());
         editorPanel.showLineNumbers(isLineNumbersVisible());
+        editorPanel.setLineNumbersForeground(getLineNumbersForeground());
+        editorPanel.setLineNumbersFont(editorPanel.getQueryArea().getEditorTextComponent().getFont());
         editorPanel.preferencesChanged();
         delegate.preferencesChanged();
         delegate.setCommitMode(isAutoCommit());
@@ -512,6 +514,10 @@ public class QueryEditor extends DefaultTabView
 
     private boolean isLineNumbersVisible() {
         return userProperties().getBooleanProperty("editor.display.linenums");
+    }
+
+    private Color getLineNumbersForeground() {
+        return userProperties().getColourProperty("editor.linenumber.foreground");
     }
 
     private boolean isStatusBarVisible() {
@@ -700,7 +706,7 @@ public class QueryEditor extends DefaultTabView
      */
     public void setPanelBackgrounds() {
         editorPanel.setTextPaneBackground(userProperties().getColourProperty("editor.text.background.colour"));
-        resultsPanel.setResultBackground(userProperties().getColourProperty("editor.results.background.colour"));
+        resultsPanel.setResultBackground(userProperties().getColourProperty("editor.output.background"));
     }
 
     /**

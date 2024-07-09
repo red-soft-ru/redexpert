@@ -57,13 +57,19 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
 
     protected Properties defaultsForTheme() {
 
+        String resourcePath;
+        if (selectedLookAndFeel().isDefaultTheme()) {
+            resourcePath = selectedLookAndFeel().isDarkTheme() ?
+                    "org/executequery/gui/editor/resource/sql-syntax.default.dark.profile" :
+                    "org/executequery/gui/editor/resource/sql-syntax.default.light.profile";
+        } else {
+            resourcePath = selectedLookAndFeel().isDarkTheme() ?
+                    "org/executequery/gui/editor/resource/sql-syntax.classic.dark.profile" :
+                    "org/executequery/gui/editor/resource/sql-syntax.classic.light.profile";
+        }
+
         try {
-
-            Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
-            if (selectedLookAndFeel().isDarkTheme())
-                defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
-
-            return defaults;
+            return FileUtils.loadPropertiesResource(resourcePath);
 
         } catch (IOException e) {
             throw new ApplicationException(e);

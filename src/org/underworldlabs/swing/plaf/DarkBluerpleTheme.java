@@ -412,7 +412,7 @@ public class DarkBluerpleTheme extends DefaultMetalTheme {
                 "editor.text.background.colour", new ColorUIResource(-14803167),
                 "results.table.cell.char.background.colour", new ColorUIResource(-14803167),
                 "sqlsyntax.colour.normal", new ColorUIResource(-5654586),
-                "editor.results.background.colour", new ColorUIResource(-12828863),
+                "editor.output.background", new ColorUIResource(-12828863),
                 "editor.text.selection.background", new ColorUIResource(-14597501),
                 "results.table.cell.other.background.colour", new ColorUIResource(-14803167),
                 "editor.linenumber.foreground", new ColorUIResource(-8882056),

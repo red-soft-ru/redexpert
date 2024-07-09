@@ -10,6 +10,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.SVGImage;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URI;
@@ -118,6 +119,9 @@ public class IconManager {
             Log.info("icon with path [" + iconPath + "] not found");
             return null;
         }
+
+        if (url.getPath().endsWith(".gif"))
+            return new ImageIcon(new ImageIcon(url).getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_REPLICATE));
 
         if (!url.getPath().endsWith(".svg"))
             return new ImageIcon(url);

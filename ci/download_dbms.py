@@ -1,5 +1,4 @@
 import re
-import bs4
 import requests
 import sys
 import urllib.request
@@ -8,18 +7,22 @@ args = sys.argv
 
 DBMS = args[1]
 ARCH = args[2]
+OS = args[3]
 
 
 print("Download DBMS")
 
 if "rdb" in DBMS:
+    os = OS
+    bin = "bin" if os == "linux" else "exe"
+
     if DBMS == "rdb30":
-        last_stable_version = "3.0.15-rc.1"
+        last_stable_version = "3.0.15"
 
     if DBMS == "rdb50":
-        last_stable_version = "5.0.0-Beta7"       
+        last_stable_version = "5.0.0-rc.2"       
 
-    url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:windows-x86_64-enterprise:{last_stable_version}:exe"
+    url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:{os}-x86_64-enterprise:{last_stable_version}:{bin}"
 
 else:
     if ARCH == "x86_64":
@@ -41,4 +44,4 @@ else:
         if url != "":
             break
     
-urllib.request.urlretrieve(url, 'installer.exe')
+urllib.request.urlretrieve(url, f'installer.{bin}')

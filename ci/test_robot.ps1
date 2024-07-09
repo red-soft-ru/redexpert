@@ -35,7 +35,7 @@ start-process "${PYTHON}" "-m robot -x results.xml .\tests" -wait -nonewwindow
 echo "Copy test results"
 if (Test-Path "results.xml") {
     mkdir "${WORKSPACE}\test-results\"
-    copy "results.xml" "${WORKSPACE}\test-results\robot-${DISTRO}-${DBMS}-${ARCH}.xml"
+    copy "results.xml" "${WORKSPACE}\test-results\${DISTRO}-${DBMS}-${ARCH}.xml"
 }
 else
 {

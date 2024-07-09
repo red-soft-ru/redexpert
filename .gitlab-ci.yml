@@ -227,7 +227,7 @@ test:windows:
     DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
     PYTHON: c:\Python38\python.exe
     WORKSPACE: ${CI_PROJECT_DIR}
-    DISTRO: red-expert-tests
+    DISTRO: windows-lackey
   parallel:
     matrix:
       - TEST_TYPE: core
@@ -238,8 +238,7 @@ test:windows:
    - cd $TEST_DIR
    - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci
-   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
-   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH} windows" -wait -nonewwindow
    - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci
@@ -265,7 +264,7 @@ test:windows-robot:
     DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
     PYTHON: c:\Python38\python.exe
     WORKSPACE: ${CI_PROJECT_DIR}
-    DISTRO: red-expert-robot-tests
+    DISTRO: windows-robot
   parallel:
     matrix:
       - TEST_TYPE: core
@@ -276,14 +275,51 @@ test:windows-robot:
    - cd $TEST_DIR
    - unzip -q ${CI_PROJECT_DIR}\dist-src\RedExpert-$env:VERSION-src.zip
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci
-   - start-process "${PYTHON}" "-m pip install beautifulsoup4" -wait -nonewwindow
-   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH}" -wait -nonewwindow
+   - start-process "${PYTHON}" ".\download_dbms.py ${DBMS} ${ARCH} windows" -wait -nonewwindow
    - powershell -ExecutionPolicy ByPass -file install_dbms.ps1
   script:
    - cd $TEST_DIR\RedExpert-$env:VERSION\ci
    - powershell -ExecutionPolicy ByPass -file test_robot.ps1
   dependencies: ["prepare", "sources", "build:windows"]
   needs: ["prepare", "sources", "build:windows"]
+  timeout: 2 hours
+  only:
+    variables:
+      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
+      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
+
+test:linux-robot:
+  extends: .test_template
+  tags: 
+    - gui 
+    - linux 
+    - red_expert 
+    - tester
+  variables:
+    PROXMOX_TEMPLATE: template-testing-re-ubuntu-20
+    ErrorActionPreference: STOP
+    DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
+    PYTHON: /usr/bin/python3
+    WORKSPACE: ${CI_PROJECT_DIR}
+    DISTRO: linux-robot
+  parallel:
+    matrix:
+      - TEST_TYPE: core
+        ARCH: ["x86_64"]
+        DBMS: ["rdb30", "rdb50"]
+  before_script:
+   - cd ${CI_PROJECT_DIR}
+   - tar xf ${CI_PROJECT_DIR}/dist-src/RedExpert-$VERSION-src.tar.gz
+   - cd RedExpert-$VERSION
+   - $PYTHON ./ci/download_dbms.py ${DBMS} ${ARCH} linux
+   - chmod +x ./ci/install_dbms.sh
+   - ./ci/install_dbms.sh
+  script:
+   - chmod +x ./ci/test_robot.sh
+   - ./ci/test_robot.sh
+  dependencies: ["prepare", "sources", "build:linux"]
+  needs: ["prepare", "sources", "build:linux"]
   timeout: 2 hours
   only:
     variables:

@@ -1132,6 +1132,14 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private static class ComparerTreeCellRenderer extends AbstractTreeCellRenderer {
 
+        private final Color textForeground;
+        private final Color selectedTextForeground;
+
+        ComparerTreeCellRenderer() {
+            textForeground = UIManager.getColor("Tree.textForeground");
+            selectedTextForeground = UIManager.getColor("Tree.selectionForeground");
+        }
+
         @Override
         public Component getTreeCellRendererComponent(
                 JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -1140,88 +1148,68 @@ public class ComparerDBPanel extends JPanel implements TabView {
             this.hasFocus = hasFocus;
 
             ComparerTreeNode treeNode = (ComparerTreeNode) value;
+            selected &= hasFocus;
             switch (treeNode.type) {
-
                 case NamedObject.DOMAIN:
-                    setIcon(IconManager.getIcon("icon_db_domain"));
+                    setIcon(IconManager.getIcon("icon_db_domain", selected));
                     break;
-
                 case NamedObject.TABLE:
-                    setIcon(IconManager.getIcon("icon_db_table"));
+                    setIcon(IconManager.getIcon("icon_db_table", selected));
                     break;
-
                 case NamedObject.GLOBAL_TEMPORARY:
-                    setIcon(IconManager.getIcon("icon_db_table_global"));
+                    setIcon(IconManager.getIcon("icon_db_table_global", selected));
                     break;
-
                 case NamedObject.VIEW:
-                    setIcon(IconManager.getIcon("icon_db_view"));
+                    setIcon(IconManager.getIcon("icon_db_view", selected));
                     break;
-
                 case NamedObject.PROCEDURE:
-                    setIcon(IconManager.getIcon("icon_db_procedure"));
+                    setIcon(IconManager.getIcon("icon_db_procedure", selected));
                     break;
-
                 case NamedObject.FUNCTION:
-                    setIcon(IconManager.getIcon("icon_db_function"));
+                    setIcon(IconManager.getIcon("icon_db_function", selected));
                     break;
-
                 case NamedObject.PACKAGE:
-                    setIcon(IconManager.getIcon("icon_db_package"));
+                    setIcon(IconManager.getIcon("icon_db_package", selected));
                     break;
-
                 case NamedObject.TRIGGER:
-                    setIcon(IconManager.getIcon("icon_db_trigger_table"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_table", selected));
                     break;
-
                 case NamedObject.DDL_TRIGGER:
-                    setIcon(IconManager.getIcon("icon_db_trigger_ddl"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_ddl", selected));
                     break;
-
                 case NamedObject.DATABASE_TRIGGER:
-                    setIcon(IconManager.getIcon("icon_db_trigger_db"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_db", selected));
                     break;
-
                 case NamedObject.SEQUENCE:
-                    setIcon(IconManager.getIcon("icon_db_generator"));
+                    setIcon(IconManager.getIcon("icon_db_generator", selected));
                     break;
-
                 case NamedObject.EXCEPTION:
-                    setIcon(IconManager.getIcon("icon_db_exception"));
+                    setIcon(IconManager.getIcon("icon_db_exception", selected));
                     break;
-
                 case NamedObject.UDF:
-                    setIcon(IconManager.getIcon("icon_db_udf"));
+                    setIcon(IconManager.getIcon("icon_db_udf", selected));
                     break;
-
                 case NamedObject.USER:
-                    setIcon(IconManager.getIcon("icon_db_user"));
+                    setIcon(IconManager.getIcon("icon_db_user", selected));
                     break;
-
                 case NamedObject.ROLE:
-                    setIcon(IconManager.getIcon("icon_db_role"));
+                    setIcon(IconManager.getIcon("icon_db_role", selected));
                     break;
-
                 case NamedObject.INDEX:
-                    setIcon(IconManager.getIcon("icon_db_index"));
+                    setIcon(IconManager.getIcon("icon_db_index", selected));
                     break;
-
                 case NamedObject.TABLESPACE:
-                    setIcon(IconManager.getIcon("icon_db_tablespace"));
+                    setIcon(IconManager.getIcon("icon_db_tablespace", selected));
                     break;
-
                 case NamedObject.JOB:
-                    setIcon(IconManager.getIcon("icon_db_job"));
+                    setIcon(IconManager.getIcon("icon_db_job", selected));
                     break;
-
                 case NamedObject.COLLATION:
-                    setIcon(IconManager.getIcon("icon_db_collation"));
+                    setIcon(IconManager.getIcon("icon_db_collation", selected));
                     break;
-
                 default:
-                    setIcon(getDefaultOpenIcon());
+                    setIcon(IconManager.getIcon("icon_folder", selected));
                     break;
-
             }
 
             Font font = getFont();
@@ -1236,6 +1224,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     setFont(font.deriveFont(Font.PLAIN));
             }
 
+            setForeground(selected ? selectedTextForeground : textForeground);
             return this;
         }
 

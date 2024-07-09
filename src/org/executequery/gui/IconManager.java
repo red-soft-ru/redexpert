@@ -162,7 +162,7 @@ public class IconManager {
         return loadIcon(iconName, iconSize);
     }
 
-    private static ImageIcon getIcon(String iconName, boolean fromDarkTheme) {
+    public static ImageIcon getIcon(String iconName, boolean fromDarkTheme) {
         if ((isDefaultTheme && fromDarkTheme) || isDarkTheme)
             return iconsDark.get(iconName);
         return iconsLight.get(iconName);

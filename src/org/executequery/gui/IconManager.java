@@ -38,8 +38,19 @@ public class IconManager {
     private static final Map<String, ImageIcon> iconsBase = new HashMap<>();
     private static final Map<String, ImageIcon> iconsDark = new HashMap<>();
     private static final Map<String, ImageIcon> iconsLight = new HashMap<>();
-    private static final boolean isDarkTheme = GUIUtilities.getLookAndFeel().isDarkTheme();
-    private static final boolean isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+
+    private static boolean isDarkTheme;
+    private static boolean isDefaultTheme;
+
+    static {
+        try {
+            isDarkTheme = GUIUtilities.getLookAndFeel().isDarkTheme();
+            isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+        } catch (RuntimeException e) {
+            isDarkTheme = false;
+            isDefaultTheme = true;
+        }
+    }
 
     /**
      * Loads all needed for selected LAF icons

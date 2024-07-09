@@ -18,8 +18,6 @@ editor.output.error.color=14433596
 editor.output.warning.color=14859102
 editor.output.action.color=5679349
 
-
-
 sqlsyntax.font.size=16
 sqlsyntax.font.name=Dialog
 
@@ -45,9 +43,6 @@ sqlsyntax.colour.quote=6727023
 sqlsyntax.colour.singlecomment=-8355712
 sqlsyntax.colour.multicomment=-8355712
 
-
-
-results.alternating.row.background=-14803167
 results.table.cell.background.colour=-14803167
 results.table.cell.blob.background.colour=-14803167
 results.table.cell.boolean.background.colour=-14803167
@@ -61,4 +56,6 @@ results.table.cell.null.background.colour=-14803167
 results.table.cell.null.deleting.background.colour=-14803167
 results.table.cell.numeric.background.colour=-14803167
 results.table.cell.other.background.colour=-14803167
+
+results.alternating.row.background=-14803167
 results.table.focus.row.background.colour=-14597501

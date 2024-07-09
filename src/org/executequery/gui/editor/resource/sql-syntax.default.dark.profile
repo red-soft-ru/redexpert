@@ -8,7 +8,7 @@ editor.text.foreground.colour=13487826
 editor.text.background.colour=2236962
 editor.text.background.alternate.color=2236962
 
-editor.text.selection.foreground=13487826
+editor.text.selection.foreground=-1
 editor.text.selection.background=14433596
 editor.text.selection.background.alternative=14433596
 
@@ -32,10 +32,10 @@ sqlsyntax.style.operator=0
 sqlsyntax.style.quote=0
 sqlsyntax.style.singlecomment=0
 
-sqlsyntax.colour.datatype=13602413
+sqlsyntax.colour.datatype=14859102
 sqlsyntax.colour.dbobjects=12154286
-sqlsyntax.colour.keyword=14859102
-sqlsyntax.colour.literal=13602413
+sqlsyntax.colour.keyword=13602413
+sqlsyntax.colour.literal=14859102
 sqlsyntax.colour.normal=13487826
 sqlsyntax.colour.number=5679349
 sqlsyntax.colour.operator=13487826

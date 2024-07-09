@@ -51,11 +51,11 @@ results.table.cell.char.background.colour=-1
 results.table.cell.date.background.colour=-1
 results.table.cell.deleted.background.colour=-1498604
 results.table.cell.new.background.colour=-1
-results.table.cell.null.adding.background.colour=-5390348
-results.table.cell.null.background.colour=-5390348
-results.table.cell.null.deleting.background.colour=-5390348
+results.table.cell.null.adding.background.colour=13553358
+results.table.cell.null.background.colour=13553358
+results.table.cell.null.deleting.background.colour=13553358
 results.table.cell.numeric.background.colour=-1
 results.table.cell.other.background.colour=-1
 
-results.alternating.row.background=-1314561
-results.table.focus.row.background.colour=-16719891
+results.alternating.row.background=-723724
+results.table.focus.row.background.colour=16766159

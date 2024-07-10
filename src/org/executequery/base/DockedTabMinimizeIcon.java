@@ -25,8 +25,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 /**
- * Simple icon drawing the close button
- * for a closeable tab on the CloseTabbedPane.
+ * Simple icon drawing the close button for a closeable tab.
  *
  * @author Takis Diakoumis
  */

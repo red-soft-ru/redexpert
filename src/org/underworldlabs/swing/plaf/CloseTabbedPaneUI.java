@@ -20,6 +20,10 @@
 
 package org.underworldlabs.swing.plaf;
 
+import org.executequery.GUIUtilities;
+import org.executequery.base.DockedTabCloseIcon;
+import org.executequery.base.TabControlIcon;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.SimpleCloseTabbedPane;
 import org.underworldlabs.swing.TabPopupMenuContainer;
 
@@ -678,24 +682,29 @@ public class CloseTabbedPaneUI extends BasicTabbedPaneUI
         closeIcon.paintIcon(tabPane, g, closeIconRect.x, closeIconRect.y);
 
         if (tabIndex == currentCloseRolloverIndex) {
-            g.setColor(Color.GRAY);
-            g.drawRect(closeIconRect.x - 2,
-                    closeIconRect.y - 2,
-                    closeIconRect.width + 3,
-                    closeIconRect.height + 3);
+            g.setColor(TabControlIcon.iconColor());
+            g.drawRoundRect(
+                    closeIconRect.x + (isDefaultTheme ? 2 : -2),
+                    closeIconRect.y + (isDefaultTheme ? 2 : -2),
+                    closeIconRect.width + (isDefaultTheme ? -1 : 3),
+                    closeIconRect.height + (isDefaultTheme ? -1 : 3),
+                    (isDefaultTheme ? 2 : 0),
+                    (isDefaultTheme ? 2 : 0)
+            );
         }
-
-
     }
 
-    private final Icon closeIcon = new TabCloseIcon();
+    private final boolean isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+    private final Icon closeIcon = GUIUtilities.getLookAndFeel().isDefaultTheme() ?
+            IconManager.getIcon("icon_close") :
+            new DockedTabCloseIcon();
 
     private Rectangle getCloseIconRectangle(Rectangle tabRect) {
-        int iconWidth = closeIcon.getIconWidth();
-        int iconHeight = closeIcon.getIconHeight();
+        int iconWidth = TabControlIcon.iconWidth();
+        int iconHeight = TabControlIcon.iconHeight();
 
-        int y = tabRect.y + ((tabRect.height - iconHeight) / 2);
-        int x = tabRect.x + (tabRect.width - iconWidth - 6);
+        int y = tabRect.y + (tabRect.height - iconHeight) / 2 + (isDefaultTheme ? -2 : 0);
+        int x = tabRect.x + tabRect.width - iconWidth - 6;
 
         return new Rectangle(x, y, iconWidth, iconHeight);
     }

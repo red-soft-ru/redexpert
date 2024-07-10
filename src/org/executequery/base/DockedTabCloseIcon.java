@@ -23,7 +23,7 @@ package org.executequery.base;
 import java.awt.*;
 
 /**
- * Simple icon drawing the close button for a closeable tab on the CloseTabbedPane.
+ * Simple icon drawing the close button for a closeable tab.
  *
  * @author Takis Diakoumis
  */

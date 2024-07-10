@@ -28,6 +28,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
+import org.executequery.gui.prefs.*;
 import org.executequery.localization.Bundles;
 import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
@@ -55,6 +56,8 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class ApplicationLauncher {
+
+    private static boolean needUpdateColorsAndFonts = false;
 
     // agent.jar
     // http://blog.dutchworks.nl/2011/01/09/make-intellij-idea-behave-properly-in-linux-docks/
@@ -269,28 +272,38 @@ public class ApplicationLauncher {
     }
 
     private void loadLookAndFeel(LookAndFeelLoader loader) {
-
-        String lookAndFeel = userProperties().getStringProperty("startup.display.lookandfeel");
         try {
 
+            String lookAndFeel = userProperties().getStringProperty("startup.display.lookandfeel");
             LookAndFeelType lookAndFeelType = loader.loadLookAndFeel(lookAndFeel);
             userProperties().setStringProperty("startup.display.lookandfeel", lookAndFeelType.name());
 
-        } catch (ApplicationException e) {
+            if (needUpdateColorsAndFonts) {
+                needUpdateColorsAndFonts = false;
 
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Error loading look and feel", e);
+                Arrays.stream(new UserPreferenceFunction[]{
+                                new PropertiesEditorFonts(null),
+                                new PropertiesConsoleFonts(null),
+                                new PropertiesEditorColours(null),
+                                new PropertiesTreeConnectionsFonts(null),
+                                new PropertiesResultSetTableColours(null),
+                        })
+                        .forEach(userPreferenceFunction -> {
+                            userPreferenceFunction.restoreDefaults();
+                            userPreferenceFunction.save();
+                        });
             }
+
+        } catch (ApplicationException e) {
+            Log.debug("Error loading look and feel", e);
             loadDefaultLookAndFeel(loader);
         }
-
     }
 
     private void loadDefaultLookAndFeel(LookAndFeelLoader loader) {
         try {
-            loader.loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT);
-            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.CLASSIC_LIGHT.name());
+            loader.loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
+            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.DEFAULT_LIGHT.name());
 
         } catch (ApplicationException e) {
             Log.debug("Error loading default EQ look and feel", e);
@@ -561,6 +574,10 @@ public class ApplicationLauncher {
             return "";
         }
 
+    }
+
+    public static void setNeedUpdateColorsAndFonts(boolean needUpdateColorsAndFonts) {
+        ApplicationLauncher.needUpdateColorsAndFonts = needUpdateColorsAndFonts;
     }
 
     String bundleString(String key) {

@@ -21,8 +21,8 @@
 package org.executequery.util;
 
 import com.formdev.flatlaf.FlatLaf;
-import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.ApplicationException;
+import org.executequery.ApplicationLauncher;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.plaf.*;
 import org.underworldlabs.swing.plaf.base.CustomTextAreaUI;
@@ -38,12 +38,11 @@ public final class LookAndFeelLoader {
 
     public LookAndFeelType loadLookAndFeel(String lookAndFeelType) {
         try {
-            return NumberUtils.isDigits(lookAndFeelType) ?
-                    loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT) :
-                    loadLookAndFeel(LookAndFeelType.valueOf(lookAndFeelType));
+            return loadLookAndFeel(LookAndFeelType.valueOf(lookAndFeelType));
 
         } catch (IllegalArgumentException e) {
-            return loadLookAndFeel(LookAndFeelType.CLASSIC_LIGHT);
+            ApplicationLauncher.setNeedUpdateColorsAndFonts(true);
+            return loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
         }
     }
 
@@ -53,11 +52,11 @@ public final class LookAndFeelLoader {
         try {
 
             switch (lookAndFeelType) {
-                case DEFAULT_LIGHT:
-                    loadDefaultLightLookAndFeel();
-                    break;
                 case DEFAULT_DARK:
                     loadDefaultDarkLookAndFeel();
+                    break;
+                case CLASSIC_LIGHT:
+                    loadClassicLightLookAndFeel();
                     break;
                 case CLASSIC_DARK:
                     loadClassicDarkLookAndFeel();
@@ -71,9 +70,8 @@ public final class LookAndFeelLoader {
                 case LACKEY:
                     loadLackeyLookAndFeel();
                     break;
-                case CLASSIC_LIGHT:
                 default:
-                    loadClassicLightLookAndFeel();
+                    loadDefaultLightLookAndFeel();
                     break;
             }
 

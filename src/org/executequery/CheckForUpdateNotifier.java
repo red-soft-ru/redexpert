@@ -67,6 +67,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private boolean checkUnstable = false;
     private boolean useReleaseHub = false;
+    private boolean useHttpsProtocol = true;
     private boolean monitorProgress = false;
     private static boolean waitingForUpdate = false;
     private static boolean waitingForRestart = false;
@@ -132,7 +133,8 @@ public class CheckForUpdateNotifier implements Interruptible {
             return;
         }
 
-        useReleaseHub = UserProperties.getInstance().getBooleanProperty("releasehub");
+        useHttpsProtocol = UserProperties.getInstance().getBooleanProperty("update.use.https");
+        useReleaseHub = UserProperties.getInstance().getBooleanProperty("update.use.releasehub");
         checkUnstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
 
         if (useReleaseHub)
@@ -158,7 +160,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void checkFromReddatabase() {
         Log.info(String.format(bundledString("CheckingForNewVersion"), "https://reddatabase.ru"));
 
-        new DefaultRemoteHttpClient().setHttp("https");
+        new DefaultRemoteHttpClient().setHttp(useHttpsProtocol ? "https" : "http");
         new DefaultRemoteHttpClient().setHttpPort(443);
 
         try {

@@ -1874,16 +1874,14 @@ public class QueryDispatcher {
 
         String checkUpdatesToLog = "Checking for updates from the release hub is ";
         if (query.toLowerCase().trim().startsWith("releasehub on")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "true");
+            SystemProperties.setProperty("user", "update.use.releasehub", "true");
             checkUpdatesToLog += "enabled";
             Log.info(checkUpdatesToLog);
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return false;
         }
         if (query.toLowerCase().trim().startsWith("releasehub off")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "false");
+            SystemProperties.setProperty("user", "update.use.releasehub", "false");
             checkUpdatesToLog += "disabled";
             Log.info(checkUpdatesToLog);
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);

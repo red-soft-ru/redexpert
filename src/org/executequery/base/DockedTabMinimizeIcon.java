@@ -36,21 +36,13 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
     /**
      * The icons orientation
      */
-    private int orientation;
-
-    /**
-     * Creates a new instance of DockedTabMinimizeIcon
-     * with default orientation WEST.
-     */
-    public DockedTabMinimizeIcon() {
-        this(WEST);
-    }
+    private final int orientation;
 
     /**
      * Creates a new instance of DockedTabMinimizeIcon
      * at the specified orientation.
      *
-     * @param the orientation - SwingConstants.WEST | EAST | CENTER
+     * @param orientation orientation - WEST | EAST | CENTER
      */
     public DockedTabMinimizeIcon(int orientation) {
         this.orientation = orientation;
@@ -61,8 +53,9 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
      *
      * @return the height of the icon
      */
+    @Override
     public int getIconHeight() {
-        return ICON_HEIGHT;
+        return TabControlIcon.iconHeight();
     }
 
     /**
@@ -70,28 +63,25 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
      *
      * @return the width of the icon
      */
+    @Override
     public int getIconWidth() {
-        return ICON_WIDTH;
+        return TabControlIcon.iconWidth();
     }
 
     /**
      * Draw the icon at the specified location.
-     *
-     * @param the component
-     * @param the graphics context
-     * @param x   coordinate
-     * @param y   coordinate
      */
+    @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
         Graphics2D g2 = (Graphics2D) g;
         AffineTransform oldTransform = g2.getTransform();
 
-        g2.setColor(ICON_COLOR);
+        g2.setColor(TabControlIcon.iconColor());
 
         if (orientation != WEST) {
             double theta = 0;
-            double xOrigin = x + (ICON_WIDTH / 2);
-            double yOrigin = y + (ICON_HEIGHT / 2);
+            double xOrigin = x + ((double) getIconWidth() / 2);
+            double yOrigin = y + ((double) getIconHeight() / 2);
 
             if (orientation == CENTER) {
                 theta = Math.PI * 1.5;
@@ -101,34 +91,18 @@ public class DockedTabMinimizeIcon implements TabControlIcon,
             g2.rotate(theta, xOrigin, yOrigin);
         }
 
-        int x1 = x + ICON_WIDTH - 1;
-        int y2 = y + ICON_HEIGHT - 1;
-        g2.drawLine(x1, y, x + ICON_WIDTH - 1, y2);
+        int x1 = x + getIconWidth() - 1;
+        int y2 = y + getIconHeight() - 1;
+        g2.drawLine(x1, y, x + getIconWidth() - 1, y2);
 
-        x1 = x + ICON_WIDTH - 3;
+        x1 = x + getIconWidth() - 3;
         g2.drawLine(x1, y, x1, y2);
 
-        y2 = y + (ICON_HEIGHT / 2);
+        y2 = y + (getIconHeight() / 2);
         g2.drawLine(x1 - 1, y, x, y2);
-        g2.drawLine(x1 - 1, y + ICON_HEIGHT - 1, x, y2);
+        g2.drawLine(x1 - 1, y + getIconHeight() - 1, x, y2);
 
         g2.setTransform(oldTransform);
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

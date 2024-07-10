@@ -40,8 +40,9 @@ public class DockedTabCloseIcon implements TabControlIcon {
      *
      * @return the height of the icon
      */
+    @Override
     public int getIconHeight() {
-        return ICON_HEIGHT;
+        return TabControlIcon.iconHeight();
     }
 
     /**
@@ -49,24 +50,19 @@ public class DockedTabCloseIcon implements TabControlIcon {
      *
      * @return the width of the icon
      */
+    @Override
     public int getIconWidth() {
-        return ICON_WIDTH;
+        return TabControlIcon.iconWidth();
     }
 
     /**
      * Draw the icon at the specified location.
-     *
-     * @param the component
-     * @param the graphics context
-     * @param x   coordinate
-     * @param y   coordinate
      */
+    @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
-        g.setColor(ICON_COLOR);
-        g.drawLine(x, y, x + ICON_WIDTH - 1, y + ICON_HEIGHT - 1);
-        g.drawLine(x + ICON_WIDTH - 1, y, x, y + ICON_HEIGHT - 1);
+        g.setColor(TabControlIcon.iconColor());
+        g.drawLine(x, y, x + getIconWidth() - 1, y + getIconHeight() - 1);
+        g.drawLine(x + getIconWidth() - 1, y, x, y + getIconHeight() - 1);
     }
 
 }
-
-

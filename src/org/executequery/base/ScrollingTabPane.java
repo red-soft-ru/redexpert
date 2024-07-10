@@ -20,6 +20,8 @@
 
 package org.executequery.base;
 
+import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -202,9 +204,9 @@ public class ScrollingTabPane extends AbstractTabPane
      * @return the close icon bounds
      */
     private Rectangle getCloseIconRectangle(Rectangle tabRect) {
-        int y = tabRect.y + ((tabRect.height - TabControlIcon.ICON_HEIGHT) / 2);
-        int x = tabRect.x + tabRect.width - TabControlIcon.ICON_WIDTH - 6;
-        return new Rectangle(x, y, TabControlIcon.ICON_WIDTH, TabControlIcon.ICON_HEIGHT);
+        int y = tabRect.y + ((tabRect.height - TabControlIcon.iconHeight()) / 2);
+        int x = tabRect.x + tabRect.width - TabControlIcon.iconWidth() - 6;
+        return new Rectangle(x, y, TabControlIcon.iconWidth(), TabControlIcon.iconHeight());
     }
 
     /**
@@ -1031,7 +1033,7 @@ public class ScrollingTabPane extends AbstractTabPane
                         metrics, tabComponent.getDisplayName());
 
                 // add the close icon width
-                rect.width += TabControlIcon.ICON_WIDTH + 6;
+                rect.width += TabControlIcon.iconWidth() + 6;
                 rect.height = tabPanel.getTabHeight();
             }
 
@@ -1150,11 +1152,16 @@ public class ScrollingTabPane extends AbstractTabPane
                 closeIcon.paintIcon(this, g, buttonRect.x, buttonRect.y);
 
                 if (i == currentCloseRolloverIndex) {
-                    g.setColor(TabControlIcon.ICON_COLOR);
-                    g.drawRect(buttonRect.x - 2,
-                            buttonRect.y - 2,
-                            buttonRect.width + 3,
-                            buttonRect.height + 3);
+                    boolean isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+                    g.setColor(TabControlIcon.iconColor());
+                    g.drawRoundRect(
+                            buttonRect.x + (isDefaultTheme ? 2 : -2),
+                            buttonRect.y + (isDefaultTheme ? 2 : -2),
+                            buttonRect.width + (isDefaultTheme ? -1 : 3),
+                            buttonRect.height + (isDefaultTheme ? -1 : 3),
+                            (isDefaultTheme ? 2 : 0),
+                            (isDefaultTheme ? 2 : 0)
+                    );
                 }
 
                 // add the text
@@ -1181,7 +1188,9 @@ public class ScrollingTabPane extends AbstractTabPane
         /**
          * the close icon for each tab
          */
-        private final transient Icon closeIcon = new DockedTabCloseIcon();
+        private final transient Icon closeIcon = GUIUtilities.getLookAndFeel().isDefaultTheme() ?
+                IconManager.getIcon("icon_close") :
+                new DockedTabCloseIcon();
 
         private void initDefaults() {
             Font _font = getFont();

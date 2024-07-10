@@ -20,7 +20,9 @@
 
 package org.executequery.base;
 
+import org.executequery.GUIUtilities;
 import org.executequery.gui.GUIConstants;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -173,9 +175,9 @@ public class DockedTabPane extends AbstractTabPane {
      * @return the close icon bounds
      */
     private Rectangle getCloseIconRectangle(Rectangle tabRect) {
-        int y = tabRect.y + ((tabRect.height - TabControlIcon.ICON_HEIGHT) / 2);
-        int x = tabRect.x + ((int) (tabRect.width - TabControlIcon.ICON_WIDTH - 6));
-        return new Rectangle(x, y, TabControlIcon.ICON_WIDTH, TabControlIcon.ICON_HEIGHT);
+        int y = tabRect.y + (tabRect.height - TabControlIcon.iconHeight()) / 2;
+        int x = tabRect.x + tabRect.width - TabControlIcon.iconWidth() - 6;
+        return new Rectangle(x, y, TabControlIcon.iconWidth(), TabControlIcon.iconHeight());
     }
 
     /**
@@ -186,9 +188,9 @@ public class DockedTabPane extends AbstractTabPane {
      * @return the close icon bounds
      */
     private Rectangle getMinimizeIconRectangle(Rectangle tabRect) {
-        int y = tabRect.y + ((tabRect.height - TabControlIcon.ICON_HEIGHT) / 2);
-        int x = tabRect.x + ((int) (tabRect.width - (TabControlIcon.ICON_WIDTH * 2) - 10));
-        return new Rectangle(x, y, TabControlIcon.ICON_WIDTH, TabControlIcon.ICON_HEIGHT);
+        int y = tabRect.y + (tabRect.height - TabControlIcon.iconHeight()) / 2;
+        int x = tabRect.x + tabRect.width - (TabControlIcon.iconWidth() * 2) - 10;
+        return new Rectangle(x, y, TabControlIcon.iconWidth(), TabControlIcon.iconHeight());
     }
 
     protected Rectangle getTabRectangleAtLocation(int x, int y) {
@@ -588,11 +590,16 @@ public class DockedTabPane extends AbstractTabPane {
                     closeIcon.paintIcon(this, g, buttonRect.x, buttonRect.y);
 
                     if (selectedIndex == currentCloseRolloverIndex) {
-                        g.setColor(TabControlIcon.ICON_COLOR);
-                        g.drawRect(buttonRect.x - 2,
-                                buttonRect.y - 2,
-                                buttonRect.width + 3,
-                                buttonRect.height + 3);
+                        boolean isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+                        g.setColor(TabControlIcon.iconColor());
+                        g.drawRoundRect(
+                                buttonRect.x + (isDefaultTheme ? 2 : -2),
+                                buttonRect.y + (isDefaultTheme ? 2 : -2),
+                                buttonRect.width + (isDefaultTheme ? -1 : 3),
+                                buttonRect.height + (isDefaultTheme ? -1 : 3),
+                                (isDefaultTheme ? 2 : 0),
+                                (isDefaultTheme ? 2 : 0)
+                        );
                     }
 
                     // paint the minimise button
@@ -600,15 +607,20 @@ public class DockedTabPane extends AbstractTabPane {
                     minimizeIcon.paintIcon(this, g, buttonRect.x, buttonRect.y);
 
                     if (selectedIndex == currentMinimizeRolloverIndex) {
-                        g.setColor(TabControlIcon.ICON_COLOR);
-                        g.drawRect(buttonRect.x - 2,
-                                buttonRect.y - 2,
-                                buttonRect.width + 3,
-                                buttonRect.height + 3);
+                        boolean isDefaultTheme = GUIUtilities.getLookAndFeel().isDefaultTheme();
+                        g.setColor(TabControlIcon.iconColor());
+                        g.drawRoundRect(
+                                buttonRect.x + (isDefaultTheme ? 2 : -2),
+                                buttonRect.y + (isDefaultTheme ? 2 : -2),
+                                buttonRect.width + (isDefaultTheme ? -1 : 3),
+                                buttonRect.height + (isDefaultTheme ? -1 : 3),
+                                (isDefaultTheme ? 2 : 0),
+                                (isDefaultTheme ? 2 : 0)
+                        );
                     }
 
                     // smaller text crop area
-                    tabRect.width -= (TabControlIcon.ICON_WIDTH * 2) + 4;
+                    tabRect.width -= TabControlIcon.iconWidth() * 2 + 4;
                 }
 
                 // text crop offset
@@ -635,7 +647,7 @@ public class DockedTabPane extends AbstractTabPane {
                     g.setColor(UIManager.getColor("TabbedPane.foreground"));
                 }
 
-                g.drawString(title, textRect.x + 3, textRect.y + textRect.height - 3);
+                g.drawString(title, textRect.x + 3, textRect.y + textRect.height);
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antialiasHint);
             }
         }
@@ -664,9 +676,13 @@ public class DockedTabPane extends AbstractTabPane {
             return textRect;
         }
 
-        // the close and minimise icon
-        private transient Icon closeIcon = new DockedTabCloseIcon();
-        private transient Icon minimizeIcon = new DockedTabMinimizeIcon(parent.getOrientation());
+        private final transient Icon closeIcon = GUIUtilities.getLookAndFeel().isDefaultTheme() ?
+                IconManager.getIcon("icon_close") :
+                new DockedTabCloseIcon();
+
+        private final transient Icon minimizeIcon = GUIUtilities.getLookAndFeel().isDefaultTheme() ?
+                IconManager.getIcon("icon_move_down") :
+                new DockedTabMinimizeIcon(parent.getOrientation());
 
         private void initDefaults() {
             Font _font = DockedTabPane.this.getFont();

@@ -320,7 +320,6 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private void startUpdate() {
-
         try {
 
             List<String> argsList = new ArrayList<>();
@@ -379,6 +378,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("Update error", e);
+            GUIUtilities.getStatusBar().reset();
+            updateDownloadNotifier();
         }
     }
 

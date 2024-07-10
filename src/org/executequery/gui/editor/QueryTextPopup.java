@@ -124,7 +124,6 @@ class QueryTextPopup extends JPanel {
         hidePopupButton.addMouseListener(mouseListener);
 
         textPane = new SQLTextArea();
-        textPane.setBackground(UIUtils.getColour("executequery.QueryEditor.queryTooltipBackground", new Color(255, 255, 235)));
         textPane.addMouseListener(mouseListener);
         textPane.setEditable(false);
 

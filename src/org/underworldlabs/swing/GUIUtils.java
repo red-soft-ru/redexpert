@@ -446,9 +446,10 @@ public class GUIUtils {
             JDialog dialog;
             JFrame frame = null;
             if (parent == null) {
+                ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE);
                 frame = new JFrame("My dialog asks....");
                 frame.setUndecorated(true);
-                frame.setIconImage(IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE).getImage());
+                frame.setIconImage(frameIcon != null ? frameIcon.getImage() : null);
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
                 dialog = pane.createDialog(frame, title);

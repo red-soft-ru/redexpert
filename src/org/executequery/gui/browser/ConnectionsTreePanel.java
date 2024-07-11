@@ -107,6 +107,7 @@ public class ConnectionsTreePanel extends TreePanel
     private BrowserTreePopupMenu popupMenu;
     private BrowserTreeHostPopupMenu hostPopupMenu;
     private BrowserTreeFolderPopupMenu folderPopupMenu;
+    private BrowserTreeDefaultPopupMenu defaultPopupMenu;
 
     // ---
 
@@ -1229,6 +1230,12 @@ public class ConnectionsTreePanel extends TreePanel
         return folderPopupMenu;
     }
 
+    private BrowserTreeDefaultPopupMenu getBrowserTreeDefaultPopupMenu() {
+        if (defaultPopupMenu == null)
+            defaultPopupMenu = new BrowserTreeDefaultPopupMenu(this);
+        return defaultPopupMenu;
+    }
+
     public void moveToFolder(DatabaseConnection databaseConnection) {
         new MoveConnectionToFolderDialog(databaseConnection, this);
     }
@@ -1710,12 +1717,14 @@ public class ConnectionsTreePanel extends TreePanel
                 }
             }
 
-            if (treePathForLocation == null)
-                return;
-
             JPopupMenu popupMenu;
-            Object object = treePathForLocation.getLastPathComponent();
+            if (treePathForLocation == null) {
+                popupMenu = getBrowserTreeDefaultPopupMenu();
+                popupMenu.show(e.getComponent(), point.x, point.y);
+                return;
+            }
 
+            Object object = treePathForLocation.getLastPathComponent();
             if (isConnectionsFolderNode(object)) {
                 popupMenu = getBrowserTreeFolderPopupMenu();
 

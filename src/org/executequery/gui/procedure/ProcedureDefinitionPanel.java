@@ -108,13 +108,13 @@ public class ProcedureDefinitionPanel extends JPanel
         tcm.getColumn(DOMAIN_COLUMN).setPreferredWidth(130);
         tcm.getColumn(TABLE_COLUMN).setPreferredWidth(130);
         tcm.getColumn(COLUMN_COLUMN).setPreferredWidth(130);
-        tcm.getColumn(SIZE_COLUMN).setPreferredWidth(50);
-        tcm.getColumn(SCALE_COLUMN).setPreferredWidth(70);
-        tcm.getColumn(SUBTYPE_COLUMN).setPreferredWidth(70);
+        tcm.getColumn(SIZE_COLUMN).setPreferredWidth(200);
+        tcm.getColumn(SCALE_COLUMN).setPreferredWidth(100);
+        tcm.getColumn(SUBTYPE_COLUMN).setPreferredWidth(100);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DEFAULT_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(70);
-        tcm.getColumn(REQUIRED_COLUMN).setMaxWidth(70);
+        tcm.getColumn(ENCODING_COLUMN).setPreferredWidth(150);
+        tcm.getColumn(REQUIRED_COLUMN).setPreferredWidth(150);
 
         if (!editing)
             return;

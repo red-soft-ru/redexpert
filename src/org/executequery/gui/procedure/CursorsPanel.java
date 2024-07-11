@@ -99,7 +99,7 @@ public class CursorsPanel extends JPanel
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel tcm = table.getColumnModel();
         tcm.getColumn(NAME_COLUMN).setPreferredWidth(200);
-        tcm.getColumn(SCROLL_COLUMN).setMaxWidth(70);
+        tcm.getColumn(SCROLL_COLUMN).setPreferredWidth(120);
         tcm.getColumn(SELECT_OPERATOR_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
         sqlTextPanel = new SimpleSqlTextPanel();

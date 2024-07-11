@@ -56,7 +56,6 @@ public class DefaultAutoCompletePopupProvider
     private static final KeyStroke KEY_STROKE_PAGE_UP = KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0);
     private static final KeyStroke KEY_STROKE_PAGE_DOWN = KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0);
 
-    private static final String LIST_FOCUS_ACTION_KEY = "focusActionKey";
     private static final String LIST_SCROLL_ACTION_KEY_UP = "scrollActionKeyUp";
     private static final String LIST_SELECTION_ACTION_KEY = "selectionActionKey";
     private static final String LIST_SCROLL_ACTION_KEY_DOWN = "scrollActionKeyDown";
@@ -67,7 +66,6 @@ public class DefaultAutoCompletePopupProvider
     private final AutoCompleteSelectionsFactory selectionsFactory;
     private final AutoCompleteListItemComparator autoCompleteListItemComparator;
 
-    private final AbstractAction listFocusAction;
     private final AbstractAction listSelectionAction;
     private final ListScrollAction listScrollActionUp;
     private final ListScrollAction listScrollActionDown;
@@ -107,14 +105,6 @@ public class DefaultAutoCompletePopupProvider
 
         autoCompleteObjects = UserProperties.getInstance().getBooleanProperty("editor.autocomplete.objects.on");
         autoCompleteKeywords = UserProperties.getInstance().getBooleanProperty("editor.autocomplete.keywords.on");
-
-        listFocusAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!isPopupActionsBlocked())
-                    focusAndSelectList();
-            }
-        };
 
         listSelectionAction = new AbstractAction() {
             @Override
@@ -172,14 +162,9 @@ public class DefaultAutoCompletePopupProvider
         return autoCompletePopup != null && autoCompletePopup.isVisible();
     }
 
-    private void focusAndSelectList() {
-        autoCompletePopup.focusAndSelectList();
-    }
-
     private void addFocusActions() {
 
         ActionMap actionMap = sqlTextPane.getActionMap();
-        actionMap.put(LIST_FOCUS_ACTION_KEY, listFocusAction);
         actionMap.put(LIST_SCROLL_ACTION_KEY_DOWN, listScrollActionDown);
         actionMap.put(LIST_SCROLL_ACTION_KEY_UP, listScrollActionUp);
         actionMap.put(LIST_SELECTION_ACTION_KEY, listSelectionAction);
@@ -193,7 +178,7 @@ public class DefaultAutoCompletePopupProvider
         inputMap.put(KEY_STROKE_UP, LIST_SCROLL_ACTION_KEY_UP);
         inputMap.put(KEY_STROKE_PAGE_DOWN, LIST_SCROLL_ACTION_KEY_PAGE_DOWN);
         inputMap.put(KEY_STROKE_PAGE_UP, LIST_SCROLL_ACTION_KEY_PAGE_UP);
-        inputMap.put(KEY_STROKE_TAB, LIST_FOCUS_ACTION_KEY);
+        inputMap.put(KEY_STROKE_TAB, LIST_SELECTION_ACTION_KEY);
         inputMap.put(KEY_STROKE_ENTER, LIST_SELECTION_ACTION_KEY);
     }
 
@@ -224,7 +209,6 @@ public class DefaultAutoCompletePopupProvider
     private void resetEditorActions() {
 
         ActionMap actionMap = sqlTextPane.getActionMap();
-        actionMap.remove(LIST_FOCUS_ACTION_KEY);
         actionMap.remove(LIST_SELECTION_ACTION_KEY);
         actionMap.remove(LIST_SCROLL_ACTION_KEY_DOWN);
         actionMap.remove(LIST_SCROLL_ACTION_KEY_UP);

@@ -23,11 +23,11 @@ package org.executequery.gui.erd;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTablePanel;
-import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -42,7 +42,7 @@ import java.util.Vector;
 /**
  * @author Takis Diakoumis
  */
-public class ErdNewTableDialog extends ErdPrintableDialog
+public class ErdNewTableDialog extends BaseDialog
         implements ActionContainer {
 
     private final ErdViewerPanel erdViewerPanel;
@@ -56,7 +56,6 @@ public class ErdNewTableDialog extends ErdPrintableDialog
         init();
         display();
         createPanel.setFocusComponent();
-        sqlText = createPanel.getSQLTextAreal();
     }
 
     public ErdNewTableDialog(ErdViewerPanel parent, ErdTable erdTable) {
@@ -120,7 +119,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog
 
         if (erdTable == null) {
             ErdTable table = new ErdTable(tableName, columnDataArray, erdViewerPanel);
-            table.setCreateTableScript(sqlText.getSQLText());
+            table.setCreateTableScript(createPanel.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
             table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
@@ -136,7 +135,7 @@ public class ErdNewTableDialog extends ErdPrintableDialog
         } else {
             erdTable.setTableColumns(columnDataArray);
             erdTable.setTableName(tableName);
-            erdTable.setCreateTableScript(sqlText.getSQLText());
+            erdTable.setCreateTableScript(createPanel.getSQLText());
             erdTable.setNewTable(true);
             erdTable.setEditable(true);
             erdTable.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
@@ -193,6 +192,22 @@ public class ErdNewTableDialog extends ErdPrintableDialog
 
     @Override
     public void finished() {
+        dispose();
+    }
+
+    // --- BaseDialog impl ---
+
+    @Override
+    public void display() {
+        pack();
+        this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
+        setVisible(true);
+    }
+
+    @Override
+    public void dispose() {
+        GUIUtilities.removeFocusedDialog(this);
+        super.dispose();
     }
 
     // ---
@@ -213,10 +228,6 @@ public class ErdNewTableDialog extends ErdPrintableDialog
 
         public void setTableName(String tableName) {
             nameField.setText(tableName);
-        }
-
-        public SimpleSqlTextPanel getSQLTextAreal() {
-            return sqlText;
         }
 
         public List<ErdTable> getErdTables() {

@@ -124,10 +124,10 @@ public class ErdNewTableDialog extends ErdPrintableDialog
             table.setNewTable(true);
             table.setEditable(true);
             table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            table.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            table.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            table.tableColumnsChanged(true);
 
-            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
-            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
-            erdTable.tableColumnsChanged(true);
             if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;

@@ -133,9 +133,14 @@ public class CreateDatabaseUserPanel extends AbstractCreateUserPanel {
         tagPanel.add(addTagButton, gbh.nextCol().setMinWeightX().fillNone().get());
         tagPanel.add(deleteTagButton, gbh.nextCol().leftGap(5).get());
 
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setTopComponent(propertiesPanel);
+        splitPane.setBottomComponent(tagPanel);
+        splitPane.setDividerLocation(0.35);
+
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.add(propertiesPanel, new GridBagHelper().fillBoth().setInsets(5, 5, 5, 5).spanY().get());
-        mainPanel.add(tagPanel, new GridBagHelper().nextCol().setInsets(0, 5, 5, 5).fillBoth().spanX().spanY().get());
+        mainPanel.add(splitPane, new GridBagHelper().fillBoth().setInsets(5, 5, 5, 0).spanX().spanY().get());
 
         // ---
 

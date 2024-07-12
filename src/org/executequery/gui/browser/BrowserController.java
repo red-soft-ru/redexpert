@@ -198,6 +198,10 @@ public class BrowserController {
                 String name = MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName()) + ":" + type + ":" + connection.getName();
                 panel.setObjectName(name);
 
+            } else if (node.getType() == NamedObject.USER) {
+                String name = MiscUtils.trimEnd(node.getShortName()) + ":" + ((DefaultDatabaseUser) node.getDatabaseObject()).getPlugin() + ":" + type + ":" + connection.getName();
+                panel.setObjectName(name);
+
             } else
                 panel.setObjectName(MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + connection.getName());
 

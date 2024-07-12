@@ -309,10 +309,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private void createButtonsEditingIndexesPanel() {
 
         buttonsEditingIndexesPanel = new AbstractTableIndexesToolBar(
-                "Create Index",
-                "Delete Index",
-                "Refresh",
-                "Selectivity"
+                bundledString("toolbar.create.index"),
+                bundledString("toolbar.delete.index"),
+                bundledString("toolbar.Refresh"),
+                bundledString("toolbar.Selectivity")
         ) {
 
             @Override
@@ -341,9 +341,9 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingTriggersPanel() {
         buttonsEditingTriggersPanel = new AbstractTableToolBar(
-                "Create Trigger",
-                "Delete Trigger",
-                "Refresh"
+                bundledString("toolbar.create.trigger"),
+                bundledString("toolbar.delete.trigger"),
+                bundledString("toolbar.Refresh")
         ) {
             @Override
             public void insert(ActionEvent e) {
@@ -366,43 +366,55 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingColumnPanel() {
 
+        RolloverButton addColumnButton = WidgetFactory.createRolloverButton(
+                "addColumnButton",
+                bundledString("toolbar.create.column"),
+                "icon_add",
+                actionEvent -> addRow()
+        );
+
+        RolloverButton deleteColumnButton = WidgetFactory.createRolloverButton(
+                "deleteColumnButton",
+                bundledString("toolbar.delete.column"),
+                "icon_delete",
+                actionEvent -> deleteRow()
+        );
+
+        RolloverButton moveUpColumnButton = WidgetFactory.createRolloverButton(
+                "moveUpColumnButton",
+                bundledString("toolbar.MoveUp"),
+                "icon_move_up",
+                actionEvent -> moveRowUp()
+        );
+
+        RolloverButton moveDownColumnButton = WidgetFactory.createRolloverButton(
+                "moveDownColumnButton",
+                bundledString("toolbar.MoveDown"),
+                "icon_move_down",
+                actionEvent -> moveRowDown()
+        );
+
+        RolloverButton commitColumnsButton = WidgetFactory.createRolloverButton(
+                "commitColumnsButton",
+                bundledString("toolbar.Commit"),
+                "icon_commit",
+                actionEvent -> commitColumnsChanges()
+        );
+
+        RolloverButton rollbackColumnsButton = WidgetFactory.createRolloverButton(
+                "rollbackColumnsButton",
+                bundledString("toolbar.Rollback"),
+                "icon_rollback",
+                actionEvent -> refresh()
+        );
+
         PanelToolBar bar = new PanelToolBar();
-
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
-        addRolloverButton.setToolTipText("Insert column");
-        addRolloverButton.addActionListener(actionEvent -> addRow());
-        bar.add(addRolloverButton);
-
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
-        deleteRolloverButton.setToolTipText("Delete column");
-        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
-        bar.add(deleteRolloverButton);
-
-        RolloverButton moveUpButton = new RolloverButton();
-        moveUpButton.setIcon(IconManager.getIcon("icon_move_up"));
-        moveUpButton.setToolTipText("Move up");
-        moveUpButton.addActionListener(actionEvent -> moveRowUp());
-        bar.add(moveUpButton);
-
-        RolloverButton moveDownButton = new RolloverButton();
-        moveDownButton.setIcon(IconManager.getIcon("icon_move_down"));
-        moveDownButton.setToolTipText("Move down");
-        moveDownButton.addActionListener(actionEvent -> moveRowDown());
-        bar.add(moveDownButton);
-
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
-        bar.add(commitRolloverButton);
-
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
-        bar.add(rollbackRolloverButton);
+        bar.add(addColumnButton);
+        bar.add(deleteColumnButton);
+        bar.add(moveUpColumnButton);
+        bar.add(moveDownColumnButton);
+        bar.add(commitColumnsButton);
+        bar.add(rollbackColumnsButton);
 
         buttonsEditingColumnPanel = new JPanel(new GridBagLayout());
         buttonsEditingColumnPanel.add(bar, new GridBagConstraints(
@@ -416,31 +428,39 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingConstraintPanel() {
 
+        RolloverButton addConstraintButton = WidgetFactory.createRolloverButton(
+                "addConstraintButton",
+                bundledString("toolbar.create.constraint"),
+                "icon_add",
+                actionEvent -> addRow()
+        );
+
+        RolloverButton deleteConstraintButton = WidgetFactory.createRolloverButton(
+                "deleteConstraintButton",
+                bundledString("toolbar.delete.constraint"),
+                "icon_delete",
+                actionEvent -> deleteRow()
+        );
+
+        RolloverButton commitConstraintsButton = WidgetFactory.createRolloverButton(
+                "commitConstraintsButton",
+                bundledString("toolbar.Commit"),
+                "icon_commit",
+                actionEvent -> commitColumnsChanges()
+        );
+
+        RolloverButton rollbackConstraintsButton = WidgetFactory.createRolloverButton(
+                "rollbackConstraintsButton",
+                bundledString("toolbar.Rollback"),
+                "icon_rollback",
+                actionEvent -> refresh()
+        );
 
         PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
-        addRolloverButton.setToolTipText("Insert constraint");
-        addRolloverButton.addActionListener(actionEvent -> addRow());
-        bar.add(addRolloverButton);
-
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
-        deleteRolloverButton.setToolTipText("Delete constraint");
-        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
-        bar.add(deleteRolloverButton);
-
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
-        bar.add(commitRolloverButton);
-
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
-        bar.add(rollbackRolloverButton);
+        bar.add(addConstraintButton);
+        bar.add(deleteConstraintButton);
+        bar.add(commitConstraintsButton);
+        bar.add(rollbackConstraintsButton);
 
         buttonsEditingConstraintPanel = new JPanel(new GridBagLayout());
         buttonsEditingConstraintPanel.add(bar, new GridBagConstraints(

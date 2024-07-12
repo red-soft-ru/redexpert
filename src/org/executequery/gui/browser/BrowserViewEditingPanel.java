@@ -40,9 +40,9 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
         triggersLoaded = false;
 
         buttonsEditingTriggersPanel = new AbstractTableToolBar(
-                "Create Trigger",
-                "Delete Trigger",
-                "Refresh"
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.create.trigger"),
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.delete.trigger"),
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.Refresh")
         ) {
             @Override
             public void insert(ActionEvent e) {
@@ -139,7 +139,7 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
             String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), currentObjectView.getHost().getDatabaseConnection());
 
             ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
-                    "Dropping object",
+                    Bundles.get(BrowserTreePopupMenuActionListener.class, "DropObject"),
                     query,
                     currentObjectView.getHost().getDatabaseConnection(),
                     true

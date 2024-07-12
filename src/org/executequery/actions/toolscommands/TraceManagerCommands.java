@@ -12,13 +12,8 @@ public class TraceManagerCommands extends OpenFrameCommand
 
     @Override
     public void execute(ActionEvent e) {
-
-        String title = TraceManagerPanel.TITLE;
-        if (isCentralPaneOpen(title))
-            return;
-
         GUIUtilities.addCentralPane(
-                title,
+                TraceManagerPanel.TITLE,
                 TraceManagerPanel.FRAME_ICON,
                 new TraceManagerPanel(),
                 null,

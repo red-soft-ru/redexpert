@@ -40,7 +40,7 @@ import java.util.Vector;
 public class GeneratorTestDataPanel extends JPanel implements TabView {
 
     public final static String TITLE = bundles("TITLE");
-    public static final String FRAME_ICON = "icon_db_table_global";
+    public static final String FRAME_ICON = "icon_generator";
 
     private OpenConnectionsComboboxPanel comboboxPanel;
 

@@ -478,7 +478,7 @@
             name="Generator Test Data"
             mnemonic="GT"
             accel-editable="true"
-            small-icon="icon_db_table_global"
+            small-icon="icon_generator"
             description="Generator Test Data"
             execute-class="org.executequery.actions.toolscommands.GeneratorTestDataCommands"/>
 

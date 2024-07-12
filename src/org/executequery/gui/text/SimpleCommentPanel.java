@@ -7,7 +7,8 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
-import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.swing.RolloverButton;
@@ -58,14 +59,19 @@ public class SimpleCommentPanel {
         commentField = new SimpleTextArea();
         updateButtonActionListener = e -> updateComment();
 
-        updateCommentButton = new RolloverButton();
-        updateCommentButton.setIcon(IconManager.getIcon("icon_commit"));
-        updateCommentButton.addActionListener(updateButtonActionListener);
+        updateCommentButton = WidgetFactory.createRolloverButton(
+                "updateCommentButton",
+                Bundles.get("common.commit.button"),
+                "icon_commit",
+                updateButtonActionListener);
         updateCommentButton.setEnabled(currentDatabaseObject != null);
 
-        rollbackCommentButton = new RolloverButton();
-        rollbackCommentButton.setIcon(IconManager.getIcon("icon_rollback"));
-        rollbackCommentButton.addActionListener(e -> resetComment());
+        rollbackCommentButton = WidgetFactory.createRolloverButton(
+                "updateCommentButton",
+                Bundles.get("common.rollback.button"),
+                "icon_rollback",
+                e -> resetComment()
+        );
 
         GridBagHelper gridBagHelper = new GridBagHelper();
         commentPanel = new JPanel(new GridBagLayout());
@@ -76,9 +82,7 @@ public class SimpleCommentPanel {
                 gridBagHelper.nextCol().nextCol().get());
         commentPanel.add(commentField,
                 gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setWidth(3).setMaxWeightX().get());
-
     }
-
 
     private void saveComment() {
         if (currentDatabaseObject != null) {

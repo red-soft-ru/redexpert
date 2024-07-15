@@ -205,10 +205,8 @@ public class QueryEditorDelegate implements QueryDelegate {
         if (query == null)
             query = queryEditor.getEditorText();
 
-        if (StringUtils.isNotBlank(query)) {
-            query = new SqlParser(query, "").getProcessedSql();
+        if (StringUtils.isNotBlank(query))
             dispatcher.printExecutedPlan(connection, query, explained, false);
-        }
     }
 
     public void executing() {

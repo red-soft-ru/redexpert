@@ -437,9 +437,12 @@ public class QueryDispatcher {
 
                 try {
                     String query = derivedQuery.getDerivedQuery();
-                    Statement statement = querySender.getPreparedStatement(query);
+                    Statement statement = prepareStatementWithParameters(query, getVariables(query), false);
 
+                    query = query.length() > 50 ? query.substring(0, 49).trim() + "..." : query;
+                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE, "Printing plan for:", true, anyConnections);
                     setOutputMessage(dc, SqlMessages.ACTION_MESSAGE_PREFORMAT, query, true, anyConnections);
+
                     printPlan(statement, explained, anyConnections);
 
                 } catch (SQLException e) {
@@ -565,42 +568,11 @@ public class QueryDispatcher {
                 executing = true;
 
                 start = System.currentTimeMillis();
-                REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
-                CommonTokenStream tokens = new CommonTokenStream(lexer);
-                REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
-                List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
-                for (int i = 0; i < listeners.size(); i++) {
-                    if (listeners.get(i) instanceof ConsoleErrorListener)
-                        sqlparser.removeErrorListener(listeners.get(i));
-                }
-                ParseTree tree = sqlparser.execute_block_stmt();
-                ParseTreeWalker walker = new ParseTreeWalker();
-                StringBuilder variables = new StringBuilder();
-                walker.walk(new REDDATABASESqlBaseListener() {
-                    @Override
-                    public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
-                        List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
-                        for (int i = 0; i < in_pars.size(); i++) {
-                            variables.append("<").append(in_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                        }
-                        List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
-                        for (int i = 0; i < out_pars.size(); i++) {
-                            variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                        }
-                        List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
-                        for (int i = 0; i < vars.size(); i++) {
-                            variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
-                        }
-                    }
-                }, tree);
-                PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
+                PreparedStatement statement = prepareStatementWithParameters(sql, getVariables(sql));
                 SqlStatementResult result = querySender.execute(statement, true);
-                //SqlStatementResult result = querySender.execute(sql, true);
 
-                if (Thread.interrupted()) {
-
+                if (Thread.interrupted())
                     throw new InterruptedException();
-                }
 
                 if (result.isResultSet()) {
 
@@ -955,6 +927,42 @@ public class QueryDispatcher {
         return DONE;
     }
 
+    private static String getVariables(String sql) {
+
+        REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        REDDATABASESqlParser sqlParser = new REDDATABASESqlParser(tokens);
+        List<? extends ANTLRErrorListener> listeners = sqlParser.getErrorListeners();
+        for (ANTLRErrorListener listener : listeners) {
+            if (listener instanceof ConsoleErrorListener)
+                sqlParser.removeErrorListener(listener);
+        }
+
+        ParseTree tree = sqlParser.execute_block_stmt();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        StringBuilder variables = new StringBuilder();
+
+        walker.walk(new REDDATABASESqlBaseListener() {
+            @Override
+            public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
+
+                List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
+                for (REDDATABASESqlParser.Input_parameterContext inPar : in_pars)
+                    variables.append("<").append(inPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+
+                List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
+                for (REDDATABASESqlParser.Output_parameterContext outPar : out_pars)
+                    variables.append("<").append(outPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+
+                List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
+                for (REDDATABASESqlParser.Local_variableContext var : vars)
+                    variables.append("<").append(var.variable_name().getRuleContext().getText()).append(">");
+            }
+        }, tree);
+
+        return variables.toString();
+    }
+
     private Object executeScript(String script, boolean anyConnections) {
 
         IFBPerformanceInfo before, after;
@@ -1288,6 +1296,10 @@ public class QueryDispatcher {
     }
 
     PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+        return prepareStatementWithParameters(sql, variables, true);
+    }
+
+    PreparedStatement prepareStatementWithParameters(String sql, String variables, boolean showInputDialog) throws SQLException {
 
         SqlParser parser = new SqlParser(sql, variables);
         List<Parameter> params = parser.getParameters();
@@ -1302,37 +1314,40 @@ public class QueryDispatcher {
             params.get(i).setTypeName(parameterMetaData.getParameterTypeName(i + 1));
         }
 
-        // restore old params if needed
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+        if (showInputDialog) {
 
-            for (Parameter displayParam : displayParams) {
-                for (Parameter oldParam : oldParams) {
+            // restore old params if needed
+            if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+                List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
 
-                    if (displayParam.getValue() == null
-                            && oldParam.getType() == displayParam.getType()
-                            && oldParam.getName().contentEquals(displayParam.getName())) {
+                for (Parameter displayParam : displayParams) {
+                    for (Parameter oldParam : oldParams) {
 
-                        displayParam.setValue(oldParam.getValue());
-                        oldParams.remove(oldParam);
-                        break;
+                        if (displayParam.getValue() == null
+                                && oldParam.getType() == displayParam.getType()
+                                && oldParam.getName().contentEquals(displayParam.getName())) {
+
+                            displayParam.setValue(oldParam.getValue());
+                            oldParams.remove(oldParam);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        // check for input params
-        if (!displayParams.isEmpty()) {
+            // check for input params
+            if (!displayParams.isEmpty()) {
 
-            if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
-                if (displayParams.stream().anyMatch(Parameter::isNull))
+                if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
+                    if (displayParams.stream().anyMatch(Parameter::isNull))
+                        showInputParametersDialog(displayParams);
+                } else
                     showInputParametersDialog(displayParams);
-            } else
-                showInputParametersDialog(displayParams);
-        }
+            }
 
-        // remember inputted params
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+            // remember inputted params
+            QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+        }
 
         // add params to the statement
         for (int i = 0; i < params.size(); i++) {

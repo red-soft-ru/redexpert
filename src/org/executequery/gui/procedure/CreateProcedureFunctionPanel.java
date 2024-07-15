@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -13,6 +14,9 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.UserPreferenceEvent;
+import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -28,6 +32,7 @@ import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,6 +52,7 @@ import java.util.Vector;
  */
 public abstract class CreateProcedureFunctionPanel extends AbstractCreateExternalObjectPanel
         implements FocusComponentPanel,
+        UserPreferenceListener,
         ItemListener,
         TextEditorContainer {
 
@@ -60,7 +66,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected ProcedureDefinitionPanel variablesPanel;
     protected SimpleSqlTextPanel bodyTextPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
-    protected JCheckBox parseVariablesCheck;
     protected CursorsPanel cursorsPanel;
 
     // ---
@@ -77,6 +82,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedureName, Object[] params) {
         super(dc, dialog, procedureName, params);
+        EventMediator.registerListener(this);
     }
 
     @Override
@@ -84,9 +90,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         initExternal();
 
         cursorsPanel = new CursorsPanel();
-
-        parseVariablesCheck = WidgetFactory.createCheckBox("parseVariablesCheck", bundleString("parseVariables"), true);
-        parseVariablesCheck.addItemListener(e -> fillSqlBody());
 
         inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
@@ -162,7 +165,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     private void arrange() {
         centralPanel.setVisible(false);
-        topPanel.add(parseVariablesCheck, topGbh.nextRowFirstCol().leftGap(0).spanX().get());
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setPreferredSize(new Dimension(900, 500));
     }
@@ -385,7 +387,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         if (useExternalCheck.isSelected()) {
 
             tabbedPane.remove(bodyTextPanel);
-            parseVariablesCheck.setVisible(false);
 
             if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
                 tabbedPane.remove(variablesPanel);
@@ -397,7 +398,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         } else {
             tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, 0);
             bodyTextPanel.appendSQLText(getEmptySqlBody());
-            parseVariablesCheck.setVisible(true);
             tabbedPane.setSelectedIndex(0);
             fillSqlBody();
         }
@@ -549,7 +549,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void fillSqlBody() {
 
-        if (parseVariablesCheck.isSelected()) {
+        if (isParseVariables()) {
 
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
                 tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
@@ -569,6 +569,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         }
     }
 
+    protected static boolean isParseVariables() {
+        return SystemProperties.getBooleanProperty("user", "general.parse.variables");
+    }
+
     /**
      * Indicates that a [long-running] process has begun or ended
      * as specified. This may trigger the glass pane on or off
@@ -577,6 +581,16 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
      * @param inProcess <code>true|false</code>
      */
     public void setInProcess(boolean inProcess) {
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof UserPreferenceEvent;
+    }
+
+    @Override
+    public void preferencesChanged(UserPreferenceEvent event) {
+        fillSqlBody();
     }
 
     /**

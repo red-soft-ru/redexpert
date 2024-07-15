@@ -99,7 +99,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
 
     protected String generateQuery() {
 
-        if (parseVariablesCheck.isSelected()) {
+        if (isParseVariables()) {
             Vector<ColumnData> vars = new Vector<>();
             vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());

@@ -79,6 +79,14 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
+        key = "general.parse.variables";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("ParseVariables"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
         key = "recent.files.count";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,

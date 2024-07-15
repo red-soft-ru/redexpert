@@ -29,6 +29,7 @@ import org.executequery.event.*;
 import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -1032,25 +1033,14 @@ public class QueryEditor extends DefaultTabView
      */
     public void executeInProfiler(String query) {
 
-        query = getQueryToExecute(query);
-        boolean executeAsBlock = new SqlParser(query).isExecuteBlock();
-
         if (useMultipleConnections && selectedConnections.size() > 1) {
-            for (Object object : selectedConnections) {
-                DatabaseConnection connection = (DatabaseConnection) object;
-
-                preExecute(connection);
-                delegates.get(connection).executeQueryInProfiler(
-                        connection,
-                        query,
-                        executeAsBlock
-                );
-            }
-
-        } else {
-            preExecute();
-            delegate.executeQueryInProfiler(getSelectedConnection(), query, executeAsBlock);
+            GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "MultipleConnectionsNotSupported"));
+            return;
         }
+
+        query = getQueryToExecute(query);
+        preExecute();
+        delegate.executeInProfiler(getSelectedConnection(), query);
     }
 
     private String getQueryToExecute(String query) {

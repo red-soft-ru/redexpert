@@ -63,6 +63,7 @@ public class ProfilerPanel extends JPanel
 
     private int sessionId;
     private int currentState;
+    private boolean dataCollected;
     private DefaultProfilerExecutor profilerExecutor;
     private TableSelectionCombosGroup combosGroup;
     private List<ProfilerData> oldDataList;
@@ -91,6 +92,7 @@ public class ProfilerPanel extends JPanel
     }
 
     private void init() {
+        dataCollected = false;
 
         // --- attachments comboBox ---
 
@@ -379,6 +381,7 @@ public class ProfilerPanel extends JPanel
         // display tree
         updateTreeDisplay();
         oldDataList = profilerDataList;
+        dataCollected = true;
     }
 
     private void generateCompactTree(List<ProfilerData> profilerDataList) {
@@ -647,6 +650,10 @@ public class ProfilerPanel extends JPanel
         Object[] values1 = (Object[]) o1;
         Object[] values2 = (Object[]) o2;
         return Long.compare((long) values1[0], (long) values2[0]);
+    }
+
+    public boolean isDataCollected() {
+        return dataCollected;
     }
 
     private boolean isConnected() {

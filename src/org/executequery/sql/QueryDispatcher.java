@@ -314,11 +314,7 @@ public class QueryDispatcher {
 
     ProfilerPanel profilerPanel;
 
-    public void executeSQLQueryInProfiler(
-            DatabaseConnection dc, final String query, final boolean executeAsBlock) {
-
-        if (!checkBeforeExecuteQuery(query, dc, false))
-            return;
+    public void executeSQLScriptInProfiler(DatabaseConnection dc, final String script) {
 
         if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
@@ -329,21 +325,24 @@ public class QueryDispatcher {
         querySender.setTpb(tpp.getTpb(dc));
         statementCancelled = false;
 
-
-        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
+        worker = new ThreadWorker("ExecutingScriptInQueryDispatcherUsingProfiler") {
 
             @Override
             public Object construct() {
 
                 try {
-
                     DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc, null);
                     int sessionId = profilerExecutor.startSession();
 
                     if (sessionId != -1) {
-                        executeSQL(query, executeAsBlock, false);
+                        executeSQLScript(script, false);
                         profilerExecutor.finishSession();
+
                         profilerPanel = new ProfilerPanel(sessionId, dc);
+                        if (!profilerPanel.isDataCollected()) {
+                            profilerPanel = null;
+                            return null;
+                        }
 
                         GUIUtilities.addCentralPane(
                                 ProfilerPanel.TITLE,

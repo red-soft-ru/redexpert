@@ -172,8 +172,7 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     }
 
-    public void executeQueryInProfiler(
-            DatabaseConnection selectedConnection, String query, boolean executeAsBlock) {
+    public void executeInProfiler(DatabaseConnection connection, String query) {
 
         if (dispatcher.isExecuting())
             return;
@@ -182,13 +181,11 @@ public class QueryEditorDelegate implements QueryDelegate {
             query = queryEditor.getEditorText();
 
         if (StringUtils.isNotBlank(query)) {
-
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLQueryInProfiler(selectedConnection, query, executeAsBlock);
+            dispatcher.executeSQLScriptInProfiler(connection, query);
         }
-
     }
 
     public void executeScript(DatabaseConnection selectedConnection,

@@ -21,10 +21,14 @@
 package org.executequery.gui.editor;
 
 import org.executequery.Constants;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.UserPreferenceEvent;
+import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.*;
@@ -47,13 +51,16 @@ import java.awt.event.MouseListener;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener {
+public class ResultSetTablePopupMenu extends JPopupMenu
+        implements MouseListener,
+        UserPreferenceListener {
 
     private final ResultSetTable table;
     private final DatabaseTableObject tableObject;
     private final ReflectiveAction reflectiveAction;
     private final ResultSetTableContainer resultSetTableContainer;
     private final JMenuItem autoWidthForColsItem;
+    private final JCheckBoxMenuItem cellOpensDialog;
 
     private Point lastPopupPoint;
     private boolean doubleClickCellOpensDialog;
@@ -93,7 +100,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuotedWithNames"), "copySelectedCellsAsCSVQuotedWithNames"));
 
         // the cell opens checkBox menu-item
-        JCheckBoxMenuItem cellOpensDialog = MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
+        cellOpensDialog = MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
         cellOpensDialog.setText(bundleString("Double-ClickOpensItemView"));
         cellOpensDialog.setSelected(doubleClickCellOpensDialog());
         cellOpensDialog.setActionCommand("cellOpensDialog");
@@ -129,6 +136,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
         addSeparator();
 
         add(cellOpensDialog);
+        EventMediator.registerListener(this);
     }
 
     private JMenuItem create(String text, String actionCommand) {
@@ -231,7 +239,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
                 doubleClickCellOpensDialog
         );
 
-        UserPreferencesManager.fireUserPreferencesChanged();
+        UserPreferencesManager.fireUserPreferencesChanged(UserPreferenceEvent.RESULT_SET_POPUP);
     }
 
     @SuppressWarnings("unused")
@@ -387,6 +395,21 @@ public class ResultSetTablePopupMenu extends JPopupMenu implements MouseListener
             table.setColumnSelectionAllowed(true);
             table.setRowSelectionAllowed(true);
         }
+    }
+
+    // --- UserPreferenceListener impl ---
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof UserPreferenceEvent &&
+                ((UserPreferenceEvent) event).getEventType() == UserPreferenceEvent.RESULT_SET_POPUP;
+    }
+
+    @Override
+    public void preferencesChanged(UserPreferenceEvent event) {
+        doubleClickCellOpensDialog = doubleClickCellOpensDialog();
+        cellOpensDialog.setSelected(doubleClickCellOpensDialog);
+        resultSetTableModel().setCellsEditable(!doubleClickCellOpensDialog);
     }
 
     // --- mouse listener ---

@@ -378,7 +378,9 @@ public class QueryDispatcher {
                 querySender.releaseResourcesWithoutCommit();
                 tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                 executing = false;
-                profilerPanel.updateUI();
+
+                if (profilerPanel != null)
+                    profilerPanel.updateUI();
             }
 
         };

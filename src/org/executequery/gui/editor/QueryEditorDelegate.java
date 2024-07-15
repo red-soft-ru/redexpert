@@ -134,14 +134,14 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     public void executeQuery(String query, boolean anyConnections, boolean inBackground) {
 
-        executeQuery(queryEditor.getSelectedConnection(), query, false, anyConnections, inBackground);
+        executeStatement(queryEditor.getSelectedConnection(), query, false, anyConnections, inBackground);
     }
 
     public void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
 
         queryEditor.preExecute();
 
-        executeQuery(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections, inBackground);
+        executeStatement(queryEditor.getSelectedConnection(), query, executeAsBlock, anyConnections, inBackground);
     }
 
     @Override
@@ -149,27 +149,36 @@ public class QueryEditorDelegate implements QueryDelegate {
         dispatcher.setTpp(tpp);
     }
 
-    public void executeQuery(DatabaseConnection selectedConnection,
-                             String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
+    public void executeStatement(DatabaseConnection connection, String query, boolean asBlock, boolean anyConnections, boolean inBackground) {
 
-        if (dispatcher.isExecuting()) {
-
+        if (dispatcher.isExecuting())
             return;
-        }
 
-        if (query == null) {
-
+        if (query == null)
             query = queryEditor.getEditorText();
-        }
 
         if (StringUtils.isNotBlank(query)) {
-
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLQuery(selectedConnection, query, executeAsBlock, anyConnections, inBackground);
+            dispatcher.executeStatement(connection, query, asBlock, anyConnections, inBackground);
         }
+    }
 
+    public void executeScript(DatabaseConnection connection, String script, boolean anyConnections) {
+
+        if (dispatcher.isExecuting())
+            return;
+
+        if (script == null)
+            script = queryEditor.getEditorText();
+
+        if (StringUtils.isNotBlank(script)) {
+            currentStatementHistoryIndex = -1;
+            queryEditor.setHasPreviousStatement(true);
+            queryEditor.setHasNextStatement(false);
+            dispatcher.executeScript(connection, script, anyConnections);
+        }
     }
 
     public void executeInProfiler(DatabaseConnection connection, String query) {
@@ -184,31 +193,8 @@ public class QueryEditorDelegate implements QueryDelegate {
             currentStatementHistoryIndex = -1;
             queryEditor.setHasPreviousStatement(true);
             queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLScriptInProfiler(connection, query);
+            dispatcher.executeScriptInProfiler(connection, query);
         }
-    }
-
-    public void executeScript(DatabaseConnection selectedConnection,
-                              String script, boolean anyConnections) {
-
-        if (dispatcher.isExecuting()) {
-
-            return;
-        }
-
-        if (script == null) {
-
-            script = queryEditor.getEditorText();
-        }
-
-        if (StringUtils.isNotBlank(script)) {
-
-            currentStatementHistoryIndex = -1;
-            queryEditor.setHasPreviousStatement(true);
-            queryEditor.setHasNextStatement(false);
-            dispatcher.executeSQLScript(selectedConnection, script, anyConnections);
-        }
-
     }
 
     public void printExecutedPlan(DatabaseConnection connection, String query, boolean explained) {

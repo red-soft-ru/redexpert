@@ -61,7 +61,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.swing.*;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -115,6 +114,8 @@ public class QueryDispatcher {
     private boolean statementCancelled;
 
     private QueryTokenizer queryTokenizer;
+
+    private ProfilerPanel profilerPanel;
 
     private boolean waiting;
 
@@ -215,106 +216,128 @@ public class QueryDispatcher {
     }
 
     /**
-     * Executes the query(ies) as specified. The executeAsBlock flag
-     * indicates that the query should be executed in its entirety -
-     * not split up into mulitple queries (where applicable).
-     *
-     * @param query          query string
-     * @param executeAsBlock to execute in entirety, false otherwise
-     */
-    public void executeSQLQuery(String query, boolean executeAsBlock, boolean anyConnections) {
-
-        executeSQLQuery(null, query, executeAsBlock, anyConnections, true);
-    }
-
-    /**
      * Executes the query(ies) as specified on the provided database
-     * connection properties object. The executeAsBlock flag
+     * connection properties object. The asBlock flag
      * indicates that the query should be executed in its entirety -
-     * not split up into mulitple queries (where applicable).
+     * not split up into multiple queries (where applicable).
      *
-     * @param dc             connection object
-     * @param query          query string
-     * @param executeAsBlock to execute in entirety, false otherwise
+     * @param dc      connection object
+     * @param query   query string
+     * @param asBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(
-            DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
+    public void executeStatement(DatabaseConnection dc, final String query, final boolean asBlock, boolean anyConnections, boolean inBackground) {
 
         if (!checkBeforeExecuteQuery(query, dc, anyConnections))
             return;
 
-        if (querySender == null) {
-
+        if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
-        }
-
 
         statementCancelled = false;
         if (inBackground) {
             worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
+                @Override
                 public Object construct() {
-                    if (dc != null) {
 
+                    if (dc != null)
                         querySender.setDatabaseConnection(dc);
-                    }
-
                     querySender.setTpb(tpp.getTpb(dc));
 
-                    return executeSQL(query, executeAsBlock, anyConnections);
+                    return executeSQL(query, asBlock, anyConnections);
                 }
 
+                @Override
                 public void finished() {
-
                     delegate.finished(duration);
 
                     if (statementCancelled) {
-
-                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                                "Statement cancelled", anyConnections);
+                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
                         delegate.setStatusMessage(" Statement cancelled");
                     }
+
                     querySender.setCloseConnectionAfterQuery(false);
                     querySender.releaseResourcesWithoutCommit();
                     tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                     executing = false;
                 }
-
             };
         }
+
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
+        delegate.executing();
+        delegate.setStatusMessage(Constants.EMPTY);
+
+        if (inBackground) {
+            worker.start();
+            return;
+        }
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+        querySender.setTpb(tpp.getTpb(dc));
+
+        executeSQL(query, asBlock, anyConnections);
+        delegate.finished(duration);
+
+        if (statementCancelled) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
+            delegate.setStatusMessage(" Statement cancelled");
+        }
+
+        querySender.setCloseConnectionAfterQuery(false);
+        querySender.releaseResourcesWithoutCommit();
+        tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
+        executing = false;
+    }
+
+    public void executeScript(DatabaseConnection dc, final String script, boolean anyConnections) {
+
+        if (!ConnectionManager.hasConnections()) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
+            setStatusMessage(ERROR_EXECUTING);
+            return;
+        }
+
+        if (querySender == null)
+            querySender = new DefaultStatementExecutor(null, true);
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+        querySender.setTpb(tpp.getTpb(dc));
+
+        statementCancelled = false;
+        worker = new ThreadWorker("ExecutingScriptInQueryDispatcher") {
+
+            @Override
+            public Object construct() {
+                return executeScript(script, anyConnections);
+            }
+
+            @Override
+            public void finished() {
+                delegate.finished(duration);
+
+                if (statementCancelled) {
+                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
+                    delegate.setStatusMessage(" Statement cancelled");
+                }
+
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
+                executing = false;
+            }
+        };
 
         setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
-        if (inBackground)
-            worker.start();
-        else {
-            if (dc != null) {
-
-                querySender.setDatabaseConnection(dc);
-            }
-
-            querySender.setTpb(tpp.getTpb(dc));
-            executeSQL(query, executeAsBlock, anyConnections);
-            delegate.finished(duration);
-
-            if (statementCancelled) {
-
-                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                        "Statement cancelled", anyConnections);
-                delegate.setStatusMessage(" Statement cancelled");
-            }
-            querySender.setCloseConnectionAfterQuery(false);
-            querySender.releaseResourcesWithoutCommit();
-            tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
-            executing = false;
-        }
+        worker.start();
     }
 
-    ProfilerPanel profilerPanel;
-
-    public void executeSQLScriptInProfiler(DatabaseConnection dc, final String script) {
+    public void executeScriptInProfiler(DatabaseConnection dc, final String script) {
 
         if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
@@ -335,7 +358,7 @@ public class QueryDispatcher {
                     int sessionId = profilerExecutor.startSession();
 
                     if (sessionId != -1) {
-                        executeSQLScript(script, false);
+                        executeScript(script, false);
                         profilerExecutor.finishSession();
 
                         profilerPanel = new ProfilerPanel(sessionId, dc);
@@ -386,64 +409,6 @@ public class QueryDispatcher {
         };
 
         setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, false);
-
-        delegate.executing();
-        delegate.setStatusMessage(Constants.EMPTY);
-        worker.start();
-    }
-
-    public void executeSQLScript(DatabaseConnection dc,
-                                 final String script, boolean anyConnections) {
-
-        if (!ConnectionManager.hasConnections()) {
-
-            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
-            setStatusMessage(ERROR_EXECUTING);
-
-            return;
-        }
-
-        if (querySender == null) {
-
-            querySender = new DefaultStatementExecutor(null, true);
-        }
-
-        if (dc != null) {
-
-            querySender.setDatabaseConnection(dc);
-        }
-
-        querySender.setTpb(tpp.getTpb(dc));
-
-        statementCancelled = false;
-
-        worker = new ThreadWorker("ExecutingScriptInQueryDispatcher") {
-
-            public Object construct() {
-
-                return executeSQLScript(script, anyConnections);
-            }
-
-            public void finished() {
-
-                delegate.finished(duration);
-
-                if (statementCancelled) {
-
-                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                            "Statement cancelled", anyConnections);
-                    delegate.setStatusMessage(" Statement cancelled");
-                }
-
-                querySender.setCloseConnectionAfterQuery(false);
-                querySender.releaseResourcesWithoutCommit();
-                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
-                executing = false;
-            }
-
-        };
-
-        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
@@ -990,7 +955,7 @@ public class QueryDispatcher {
         return DONE;
     }
 
-    private Object executeSQLScript(String script, boolean anyConnections) {
+    private Object executeScript(String script, boolean anyConnections) {
 
         IFBPerformanceInfo before, after;
         before = null;

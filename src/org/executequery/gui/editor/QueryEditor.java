@@ -976,7 +976,7 @@ public class QueryEditor extends DefaultTabView
                 DatabaseConnection connection = (DatabaseConnection) object;
 
                 preExecute(connection);
-                delegates.get(connection).executeQuery(
+                delegates.get(connection).executeStatement(
                         connection,
                         query,
                         executeAsBlock,
@@ -987,7 +987,7 @@ public class QueryEditor extends DefaultTabView
 
         } else {
             preExecute();
-            delegate.executeQuery(
+            delegate.executeStatement(
                     getSelectedConnection(),
                     query,
                     executeAsBlock,

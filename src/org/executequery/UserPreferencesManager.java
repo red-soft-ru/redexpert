@@ -33,44 +33,40 @@ import java.awt.*;
  */
 public final class UserPreferencesManager {
 
-    private UserPreferencesManager() {
+    public static void fireUserPreferencesChanged() {
+        fireUserPreferencesChanged(UserPreferenceEvent.ALL);
     }
 
-    public static void fireUserPreferencesChanged() {
-
-        EventMediator.fireEvent(
-                new DefaultUserPreferenceEvent(
-                        UserPreferencesManager.class, null, UserPreferenceEvent.ALL));
+    public static void fireUserPreferencesChanged(int eventType) {
+        EventMediator.fireEvent(new DefaultUserPreferenceEvent(UserPreferencesManager.class, null, eventType));
     }
 
     public static Color getOutputPaneBackground() {
-
         return SystemProperties.getColourProperty(
-                Constants.USER_PROPERTIES_KEY, "editor.output.background");
+                Constants.USER_PROPERTIES_KEY,
+                "editor.output.background"
+        );
     }
 
     public static boolean isTransposingSingleRowResultSets() {
-
         return SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.single.row.transpose");
+                Constants.USER_PROPERTIES_KEY,
+                "results.table.single.row.transpose"
+        );
     }
 
     public static boolean isResultSetTabSingle() {
-
         return SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "editor.results.tabs.single");
+                Constants.USER_PROPERTIES_KEY,
+                "editor.results.tabs.single"
+        );
     }
 
     public static boolean doubleClickOpenItemView() {
-
         return SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY, "results.table.double-click.record.dialog");
+                Constants.USER_PROPERTIES_KEY,
+                "results.table.double-click.record.dialog"
+        );
     }
 
 }
-
-
-
-
-
-

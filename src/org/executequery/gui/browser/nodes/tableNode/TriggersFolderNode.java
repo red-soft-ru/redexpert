@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 
@@ -19,9 +20,9 @@ class TriggersFolderNode extends TableFolderNode {
     protected void buildObjectNodes() {
         DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[TRIGGER]);
 
-        List<DefaultDatabaseTrigger> indices = databaseTable.getTriggers();
-        indices.forEach(index -> index.setParent(metaTag));
-        buildObjectNodes(indices);
+        List<DefaultDatabaseTrigger> triggers = databaseTable.getTriggers();
+        triggers.stream().filter(Objects::nonNull).forEach(trigger -> trigger.setParent(metaTag));
+        buildObjectNodes(triggers);
     }
 
     @Override

@@ -35,17 +35,21 @@ import java.util.List;
  */
 public class DatabaseHostNode extends DatabaseObjectNode {
 
+    private final boolean tableCatalogsEnabled;
+
     private int order;
     private List<DatabaseObjectNode> visibleChildren;
     private List<DatabaseObjectNode> allChildren;
     private ConnectionsFolderNode parentFolder;
 
-    /**
-     * Creates a new instance of DatabaseHostNode
-     */
     public DatabaseHostNode(DatabaseHost host, ConnectionsFolderNode parentFolder) {
+        this(host, parentFolder, true);
+    }
+
+    public DatabaseHostNode(DatabaseHost host, ConnectionsFolderNode parentFolder, boolean tableCatalogsEnabled) {
         super(host);
         this.parentFolder = parentFolder;
+        this.tableCatalogsEnabled = tableCatalogsEnabled;
         showAll();
     }
 
@@ -138,7 +142,7 @@ public class DatabaseHostNode extends DatabaseObjectNode {
             for (int i = 0; i < count; i++) {
 
                 DatabaseMetaTag metaTag = (DatabaseMetaTag) metaObjects.get(i);
-                DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag);
+                DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag, tableCatalogsEnabled);
                 allChildren.add(metaTagNode);
                 if ((!metaTag.getMetaDataKey().contains("SYSTEM")
                         || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))

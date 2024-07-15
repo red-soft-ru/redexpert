@@ -46,14 +46,20 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
     private boolean childrenRetrieved;
     private NamedObject databaseObject;
+    private boolean tableCatalogsEnabled;
     private List<DatabaseObjectNode> childrenList;
 
     public DatabaseObjectNode() {
     }
 
     public DatabaseObjectNode(NamedObject databaseObject) {
+        this(databaseObject, true);
+    }
+
+    public DatabaseObjectNode(NamedObject databaseObject, boolean tableCatalogsEnabled) {
         super(databaseObject);
         this.databaseObject = databaseObject;
+        this.tableCatalogsEnabled = tableCatalogsEnabled;
     }
 
     public DatabaseObjectNode copy() {
@@ -256,7 +262,8 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     private boolean isTableCatalog(NamedObject databaseObject) {
-        return SystemProperties.getBooleanProperty("user", "browser.show.table.catalogs")
+        return tableCatalogsEnabled
+                && SystemProperties.getBooleanProperty("user", "browser.show.table.catalogs")
                 && databaseObject instanceof AbstractTableObject
                 && !(databaseObject instanceof DefaultDatabaseView);
     }

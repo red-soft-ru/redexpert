@@ -61,7 +61,10 @@ public class DependPanel extends TreePanel {
         this.databaseObject = databaseObject;
         setDatabaseConnection(databaseObject.getHost().getDatabaseConnection());
         DatabaseHostNode hostNode = new DatabaseHostNode(
-                new DefaultDatabaseHost(databaseConnection, treeType, databaseObject), null);
+                new DefaultDatabaseHost(databaseConnection, treeType, databaseObject),
+                null,
+                false
+        );
         hostNode.populateChildren();
 
         tree = new ConnectionTree(hostNode, this);

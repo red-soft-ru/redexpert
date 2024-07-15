@@ -1023,6 +1023,10 @@ public class QueryDispatcher {
                     }
 
                     String queryToExecute = query.getDerivedQuery();
+                    if (new SqlParser(queryToExecute).isExecuteBlock()) {
+                        executeSQL(queryToExecute, true, anyConnections);
+                        continue;
+                    }
 
                     int type = query.getQueryType();
                     if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {

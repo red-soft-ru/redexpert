@@ -211,24 +211,18 @@ public class QueryEditorDelegate implements QueryDelegate {
 
     }
 
-    public void printExecutedPlan(DatabaseConnection selectedConnection,
-                                  String query, boolean explained) {
+    public void printExecutedPlan(DatabaseConnection connection, String query, boolean explained) {
 
-        if (dispatcher.isExecuting()) {
-
+        if (dispatcher.isExecuting())
             return;
-        }
 
-        if (query == null) {
-
+        if (query == null)
             query = queryEditor.getEditorText();
-        }
 
         if (StringUtils.isNotBlank(query)) {
             query = new SqlParser(query, "").getProcessedSql();
-            dispatcher.printExecutedPlan(selectedConnection, query, explained, false);
+            dispatcher.printExecutedPlan(connection, query, explained, false);
         }
-
     }
 
     public void executing() {

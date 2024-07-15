@@ -448,34 +448,44 @@ public class QueryDispatcher {
         worker.start();
     }
 
-    public void printExecutedPlan(DatabaseConnection dc,
-                                  final String query, boolean explained, boolean anyConnections) {
+    public void printExecutedPlan(DatabaseConnection dc, final String script, boolean explained, boolean anyConnections) {
 
         if (!ConnectionManager.hasConnections()) {
-
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
             setStatusMessage(ERROR_EXECUTING);
-
             return;
         }
 
-        if (querySender == null) {
-
+        if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
-        }
 
-        if (dc != null) {
-
+        if (dc != null)
             querySender.setDatabaseConnection(dc);
-        }
 
         querySender.setTpb(tpp.getTpb(dc));
 
         try {
-            Statement statement = querySender.getPreparedStatement(query);
-            printPlan(statement, explained, anyConnections);
-        } catch (SQLException e) {
-            setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
+            List<DerivedQuery> executableQueries = getExecutableQueries(script);
+            for (DerivedQuery derivedQuery : executableQueries) {
+
+                try {
+                    String query = derivedQuery.getDerivedQuery();
+                    Statement statement = querySender.getPreparedStatement(query);
+
+                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE_PREFORMAT, query, true, anyConnections);
+                    printPlan(statement, explained, anyConnections);
+
+                } catch (SQLException e) {
+                    setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
+
+                } finally {
+                    querySender.releaseResourcesWithoutCommit();
+                }
+            }
+
+        } catch (InterruptedException e) {
+            setOutputMessage(dc, SqlMessages.WARNING_MESSAGE, "Interrupted", anyConnections);
+
         } finally {
             querySender.releaseResourcesWithoutCommit();
         }
@@ -997,25 +1007,7 @@ public class QueryDispatcher {
 
 
             executing = true;
-
-
-            QueryTokenizer queryTokenizer = new QueryTokenizer();
-            List<DerivedQuery> queries = queryTokenizer.tokenize(script);
-
-            List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
-
-            for (DerivedQuery query : queries) {
-                if (statementCancelled || Thread.interrupted()) {
-
-                    throw new InterruptedException();
-                }
-                if (query.isExecutable()) {
-
-                    executableQueries.add(query);
-                }
-
-            }
-            queries.clear();
+            List<DerivedQuery> executableQueries = getExecutableQueries(script);
 
             try {
                 DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
@@ -1516,24 +1508,40 @@ public class QueryDispatcher {
                 try {
                     statement = realST.unwrap(Statement.class);
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    Log.error(e.getMessage(), e);
                 }
+
                 try {
-                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl");
-                    String plan;
-                    if (explained)
-                        plan = db.getLastExplainExecutedPlan(statement);
-                    else plan = db.getLastExecutedPlan(statement);
+                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                            databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl"
+                    );
+
+                    String plan = explained ? db.getLastExplainExecutedPlan(statement) : db.getLastExecutedPlan(statement);
                     setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, plan, true, anyConnections);
 
                 } catch (SQLException | ClassNotFoundException e) {
-                    e.printStackTrace();
+                    Log.error(e.getMessage(), e);
                 }
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
+    }
+
+    private List<DerivedQuery> getExecutableQueries(String script) throws InterruptedException {
+
+        List<DerivedQuery> executableQueries = new ArrayList<>();
+        for (DerivedQuery query : new QueryTokenizer().tokenize(script)) {
+
+            if (statementCancelled || Thread.interrupted())
+                throw new InterruptedException();
+
+            if (query.isExecutable())
+                executableQueries.add(query);
+        }
+
+        return executableQueries;
     }
 
     private String formatDuration(long totalDuration) {

@@ -111,7 +111,7 @@ public class SelectTypePanel extends JPanel {
         collatesCombo.addItemListener(e -> collatesComboValueChanged());
 
         typesCombo = WidgetFactory.createComboBox("typesCombo", dataTypes);
-        typesCombo.addActionListener(e -> typesComboValueChanged());
+        typesCombo.addActionListener(e -> typesComboValueChanged(true));
         typesCombo.setSelectedIndex(0);
 
         if (!showTypeOf)
@@ -178,12 +178,13 @@ public class SelectTypePanel extends JPanel {
 
     // --- listeners ---
 
-    private void typesComboValueChanged() {
+    private void typesComboValueChanged(boolean updateEnabled) {
         int index = typesCombo.getSelectedIndex();
         if (index >= 0) {
             columnData.setTypeName(dataTypes[index]);
             columnData.setSQLType(intDataTypes[index]);
-            setSizeVisible(columnData.getSQLType() == Types.NUMERIC
+
+            setSizeEnabled(updateEnabled && (columnData.getSQLType() == Types.NUMERIC
                     || columnData.getSQLType() == Types.CHAR
                     || columnData.getSQLType() == Types.VARCHAR
                     || columnData.getSQLType() == Types.DECIMAL
@@ -192,25 +193,32 @@ public class SelectTypePanel extends JPanel {
                     || columnData.getSQLType() == Types.LONGVARCHAR
                     || columnData.getTypeName().equalsIgnoreCase("VARCHAR")
                     || columnData.getTypeName().equalsIgnoreCase("CHAR")
-                    || columnData.getTypeName().equalsIgnoreCase(T.DECFLOAT)
+                    || columnData.getTypeName().equalsIgnoreCase(T.DECFLOAT))
             );
-            if (columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL) {
+
+            if (columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL)
                 sizeLabel.setText(Bundles.getCommon("precision"));
-            } else sizeLabel.setText(Bundles.getCommon("size"));
-            setScaleVisible(columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL);
-            setSubtypeVisible(columnData.getSQLType() == Types.BLOB);
-            setEncodingVisible(columnData.getSQLType() == Types.CHAR || columnData.getSQLType() == Types.VARCHAR
+            else
+                sizeLabel.setText(Bundles.getCommon("size"));
+
+            setScaleEnabled(updateEnabled && (columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL));
+            setSubtypeEnabled(updateEnabled && columnData.getSQLType() == Types.BLOB);
+            setEncodingEnabled(updateEnabled && (columnData.getSQLType() == Types.CHAR || columnData.getSQLType() == Types.VARCHAR
                     || columnData.getSQLType() == Types.LONGVARCHAR || columnData.getSQLType() == Types.CLOB
                     || columnData.getTypeName().equalsIgnoreCase("VARCHAR")
-                    || columnData.getTypeName().equalsIgnoreCase("CHAR"));
+                    || columnData.getTypeName().equalsIgnoreCase("CHAR")));
+
             if (!refreshing) {
-                if (columnData.getSQLType() == Types.LONGVARBINARY || columnData.getSQLType() == Types.LONGVARCHAR || columnData.getSQLType() == Types.BLOB) {
+
+                if (columnData.getSQLType() == Types.LONGVARBINARY || columnData.getSQLType() == Types.LONGVARCHAR || columnData.getSQLType() == Types.BLOB)
                     sizeField.setText("80");
-                }
+
                 if (columnData.getSQLType() == Types.LONGVARBINARY)
                     subtypeField.setText("0");
+
                 if (columnData.getSQLType() == Types.LONGVARCHAR)
                     subtypeField.setText("1");
+
                 if (columnData.getSQLType() == Types.BLOB)
                     subtypeField.setText("0");
             }
@@ -279,42 +287,60 @@ public class SelectTypePanel extends JPanel {
 
     // ---
 
+    @Override
+    public void setEnabled(boolean enabled) {
+
+        sizeField.setEnabled(enabled);
+        scaleField.setEnabled(enabled);
+        typesCombo.setEnabled(enabled);
+        subtypeField.setEnabled(enabled);
+        collatesCombo.setEnabled(enabled);
+        useTypeOfCheck.setEnabled(enabled);
+        encodingsCombo.setEnabled(enabled);
+
+        if (enabled)
+            refresh();
+
+        typeOfTableCombo.setEnabled(enabled && useTypeOfCheck.isSelected());
+        typeOfColumnCombo.setEnabled(enabled && useTypeOfCheck.isSelected());
+    }
+
     public void refreshColumn() {
         columnData.setSize(sizeField.getValue());
         columnData.setScale(scaleField.getValue());
         columnData.setSubtype(subtypeField.getValue());
     }
 
-    private void setSizeVisible(boolean visible) {
-        sizeField.setEnabled(visible);
-        sizeField.setValue(visible ? 1 : 0);
+    private void setSizeEnabled(boolean enabled) {
+        sizeField.setEnabled(enabled);
+        sizeField.setValue(enabled ? 1 : 0);
 
         if (refreshing)
             sizeField.setValue(columnData.getSize());
         columnData.setSize(sizeField.getValue());
     }
 
-    private void setScaleVisible(boolean visible) {
-        scaleField.setEnabled(visible);
-        scaleField.setValue(visible ? 1 : 0);
+    private void setScaleEnabled(boolean enabled) {
+        scaleField.setEnabled(enabled);
+        scaleField.setValue(enabled ? 1 : 0);
 
         if (refreshing)
             scaleField.setValue(columnData.getScale());
         columnData.setScale(scaleField.getValue());
     }
 
-    private void setSubtypeVisible(boolean visible) {
-        subtypeField.setEnabled(visible);
-        subtypeField.setValue(visible ? 1 : 0);
+    private void setSubtypeEnabled(boolean enabled) {
+        subtypeField.setEnabled(enabled);
+        subtypeField.setValue(enabled ? 1 : 0);
 
         if (refreshing)
             subtypeField.setValue(columnData.getSubtype());
         columnData.setSubtype(subtypeField.getValue());
     }
 
-    private void setEncodingVisible(boolean visible) {
-        encodingsCombo.setEnabled(visible);
-        collatesCombo.setEnabled(visible && !disabledCollate);
+    private void setEncodingEnabled(boolean enabled) {
+        encodingsCombo.setEnabled(enabled);
+        collatesCombo.setEnabled(enabled && !disabledCollate);
 
         if (refreshing) {
             collatesCombo.setSelectedItem(columnData.getCollate());
@@ -375,10 +401,14 @@ public class SelectTypePanel extends JPanel {
     }
 
     public void refresh() {
+        refresh(true);
+    }
+
+    public void refresh(boolean updateEnabled) {
         refreshing = true;
         columnData.setTypeName(getStringType(columnData.getSQLType()));
         typesCombo.setSelectedItem(columnData.getTypeName());
-        typesComboValueChanged();
+        typesComboValueChanged(updateEnabled);
         refreshing = false;
     }
 

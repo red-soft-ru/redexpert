@@ -273,6 +273,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         if (selectedDomain != null)
             returnType.setDomain(selectedDomain.getName());
 
+        typePanel.refresh(false);
         generateDdlScript();
     }
 

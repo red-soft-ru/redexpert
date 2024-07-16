@@ -99,13 +99,13 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         // --- return type panel ---
 
         JPanel returnTypePanel = new JPanel(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 5).anchorNorthWest().fillBoth();
+        GridBagHelper gbh = new GridBagHelper().setInsets(0, 10, 5, 5).anchorNorthWest().fillBoth();
 
         returnTypePanel.add(deterministicCheck, gbh.setMinWeightX().setMinWeightY().get());
         returnTypePanel.add(useDomainTypeCheck, gbh.nextCol().get());
         returnTypePanel.add(domainCombo, gbh.nextCol().setMaxWeightX().leftGap(5).get());
-        returnTypePanel.add(new JSeparator(SwingConstants.HORIZONTAL), gbh.nextRowFirstCol().spanX().get());
-        returnTypePanel.add(typePanel, gbh.nextRowFirstCol().setMaxWeightY().spanY().get());
+        returnTypePanel.add(new JSeparator(SwingConstants.HORIZONTAL), gbh.nextRowFirstCol().topGap(5).spanX().get());
+        returnTypePanel.add(typePanel, gbh.nextRowFirstCol().setMaxWeightY().setInsets(0, 0, 5, 0).spanY().get());
 
         // --- tabbed pane ---
 

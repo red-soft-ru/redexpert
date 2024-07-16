@@ -31,6 +31,7 @@ import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -57,6 +58,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         TextEditorContainer {
 
     protected String procedureName;
+    protected String procedureBody;
     private Object oldSelectedTab = null;
 
     // --- GUI components ---
@@ -64,7 +66,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected ProcedureDefinitionPanel outputParamsPanel;
     protected ProcedureDefinitionPanel inputParamsPanel;
     protected ProcedureDefinitionPanel variablesPanel;
-    protected SimpleSqlTextPanel bodyTextPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
     protected CursorsPanel cursorsPanel;
 
@@ -106,20 +107,15 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
 
-        bodyTextPanel = new SimpleSqlTextPanel();
-        bodyTextPanel.appendSQLText(getEmptySqlBody());
-        bodyTextPanel.getTextPane().setDatabaseConnection(connection);
-
-        ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel = new SimpleSqlTextPanel("DDL");
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        tabbedPane.add(bundleString("Body", bundleString(getTypeObject())), bodyTextPanel);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabbedPane.add(bundleString("InputParameters"), inputParamsPanel);
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
-        tabbedPane.add(bundleString("DDL"), ddlTextPanel);
 
         tabbedPane.addChangeListener(e -> {
             fillVariablesAndParameters();
@@ -164,9 +160,36 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     private void arrange() {
-        centralPanel.setVisible(false);
+        GridBagHelper gbh;
+
+        // --- central panel ---
+
+        centralPanel.setLayout(new GridBagLayout());
+        centralPanel.add(ddlTextPanel, new GridBagHelper().fillBoth().spanX().spanY().get());
+
+        // --- split pane ---
+
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setLeftComponent(tabbedPane);
+        splitPane.setRightComponent(centralPanel);
+        splitPane.setDividerLocation(0.5);
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
+        mainPanel.add(topPanel, gbh.setMinWeightY().spanX().get());
+        mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().spanY().get());
+
+        // --- base ---
+
+        removeAll();
+        setLayout(new GridBagLayout());
+
+        add(mainPanel, gbh.fillBoth().spanX().spanY().get());
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setPreferredSize(new Dimension(900, 500));
+        setPreferredSize(new Dimension(1200, 600));
     }
 
     private void loadVariables() {
@@ -196,7 +219,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
 
                     ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
-                    bodyTextPanel.setSQLText(bodyContext.getText());
+                    procedureBody = bodyContext.getText();
 
                     List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
                     if (!vars.isEmpty()) {
@@ -348,9 +371,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
         parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
 
-        bodyTextPanel.getTextPane().setVariables(variables);
         ddlTextPanel.getTextPane().setVariables(variables);
-        bodyTextPanel.getTextPane().setParameters(parameters);
         ddlTextPanel.getTextPane().setParameters(parameters);
     }
 
@@ -381,23 +402,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     @Override
     protected void checkExternal() {
-
         super.checkExternal();
 
         if (useExternalCheck.isSelected()) {
-
-            tabbedPane.remove(bodyTextPanel);
 
             if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
                 tabbedPane.remove(variablesPanel);
                 tabbedPane.remove(cursorsPanel);
             }
 
-            bodyTextPanel.setSQLText(null);
-
         } else {
-            tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, 0);
-            bodyTextPanel.appendSQLText(getEmptySqlBody());
+            procedureBody = getEmptySqlBody();
             tabbedPane.setSelectedIndex(0);
             fillSqlBody();
         }
@@ -565,7 +580,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             }
 
             if (procedureName != null)
-                bodyTextPanel.setSQLText(getFullSourceBody());
+                procedureBody = getFullSourceBody();
         }
     }
 

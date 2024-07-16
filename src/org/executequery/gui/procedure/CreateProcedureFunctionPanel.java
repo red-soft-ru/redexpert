@@ -139,7 +139,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         variablesPanel.setDatabaseConnection(connection);
         variablesPanel.addChangesListener(changeActionListener);
 
-        ddlTextPanel = new SimpleSqlTextPanel("DDL");
+        ddlTextPanel = new SimpleSqlTextPanel(false, true, "DDL");
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -196,16 +196,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     private void arrange() {
         GridBagHelper gbh;
 
-        // --- central panel ---
-
-        centralPanel.setLayout(new GridBagLayout());
-        centralPanel.add(ddlTextPanel, new GridBagHelper().fillBoth().spanX().spanY().get());
-
         // --- split pane ---
 
         JSplitPane splitPane = new JSplitPane();
         splitPane.setLeftComponent(tabbedPane);
-        splitPane.setRightComponent(centralPanel);
+        splitPane.setRightComponent(ddlTextPanel);
         splitPane.setDividerLocation(0.5);
 
         // --- main panel ---
@@ -220,6 +215,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         removeAll();
         setLayout(new GridBagLayout());
+        centralPanel.setVisible(false);
 
         add(mainPanel, gbh.fillBoth().spanX().spanY().get());
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));

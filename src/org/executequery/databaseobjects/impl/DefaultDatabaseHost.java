@@ -557,6 +557,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public Map<Object, Object> getMetaProperties() throws DataSourceException {
 
         PooledDatabaseMetaData dmd = (PooledDatabaseMetaData) getDatabaseMetaData();
+        if (dmd == null)
+            return new HashMap<>();
+
         IFBDatabaseMetadata db;
         try {
             db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), dmd.getInner(), "FBDatabaseMetadataImpl");
@@ -648,7 +651,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         if (databaseProperties == null || databaseProperties.isEmpty()) {
             databaseProperties = getDatabaseProperties(getDatabaseConnection(), true);
             databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
-            databaseProperties.put(bundleString("Driver"), getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
+
+            Map<Object, Object> metaProperties = getMetaProperties();
+            databaseProperties.put(bundleString("Driver"), metaProperties.get("DriverName") + " " + metaProperties.get("DriverVersion"));
         }
 
         return databaseProperties;

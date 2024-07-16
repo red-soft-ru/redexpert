@@ -1,10 +1,13 @@
 package org.executequery.gui.datatype;
 
+import org.executequery.Constants;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.Types;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -16,287 +19,356 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class SelectTypePanel extends JPanel {
-    private JLabel typeLabel;
+
+    private final boolean showTypeOf;
+    private final KeyListener keyListener;
+    private final ActionListener actionListener;
+
+    // --- GUI components ---
+
     private JLabel sizeLabel;
-    private JLabel scaleLabel;
-    private JLabel subtypeLabel;
-    private JLabel encodingLabel;
-    private JLabel collateLabel;
-    private JComboBox typeBox;
-    private JComboBox encodingBox;
-    private JComboBox collateBox;
+    private JCheckBox useTypeOfCheck;
+
+    private JComboBox<String> typesCombo;
+    private JComboBox<String> collatesCombo;
+    private JComboBox<String> encodingsCombo;
+    private JComboBox<String> typeOfTableCombo;
+    private JComboBox<String> typeOfColumnCombo;
+
+    private DynamicComboBoxModel columnsComboModel;
+    private DynamicComboBoxModel collatesComboModel;
+
     private NumberTextField sizeField;
     private NumberTextField scaleField;
     private NumberTextField subtypeField;
-    private final boolean displayTypeOf;
+
+    // ---
+
+    private boolean refreshing = false;
+    private boolean disabledCollate = false;
+    private boolean refreshingCollate = false;
 
     private String[] dataTypes;
     private int[] intDataTypes;
-    private KeyListener keyListener;
-    private ColumnData cd;
-    private boolean refreshing = false;
+    private ColumnData columnData;
     private List<String> charsets;
     private Map<Integer, String> types;
-    private TypeOfPanel typeOfPanel;
-    private DynamicComboBoxModel collateModel;
-    private boolean refreshingCollate = false;
-    private boolean disabledCollate = false;
 
-    private final KeyListener changeKeyListener;
-    private final ActionListener changeActionListener;
-
-    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf) {
-        this(types, intTypes, cd, displayTypeOf, null, null);
+    public SelectTypePanel(String[] types, int[] intTypes, ColumnData columnData, boolean showTypeOf) {
+        this(types, intTypes, columnData, showTypeOf, null, null);
     }
 
-    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf, ActionListener actionListener, KeyListener keyListener) {
+    public SelectTypePanel(String[] types, int[] intTypes, ColumnData columnData, boolean showTypeOf,
+                           ActionListener actionListener, KeyListener keyListener) {
+
         this.dataTypes = types;
+        this.columnData = columnData;
+        this.showTypeOf = showTypeOf;
         this.intDataTypes = intTypes;
-        this.displayTypeOf = displayTypeOf;
-        this.changeKeyListener = keyListener;
-        this.changeActionListener = actionListener;
+        this.actionListener = actionListener;
+        this.keyListener = new KeyListenerImpl(keyListener);
 
         sortTypes();
         removeDuplicates();
-        this.cd = cd;
         loadCharsets();
+
         init();
+        arrange();
+
+        if (showTypeOf)
+            typeOfTableComboValueChanged();
     }
 
+    @SuppressWarnings("unchecked")
     private void init() {
-        typeLabel = new JLabel(Bundles.getCommon("data-type"));
+
+        columnsComboModel = new DynamicComboBoxModel();
+        collatesComboModel = new DynamicComboBoxModel();
+
         sizeLabel = new JLabel(Bundles.getCommon("size"));
-        scaleLabel = new JLabel(Bundles.getCommon("scale"));
-        subtypeLabel = new JLabel(Bundles.getCommon("subtype"));
-        encodingLabel = new JLabel(Bundles.getCommon("encoding"));
-        collateLabel = new JLabel(Bundles.getCommon("collate"));
-        typeBox = new JComboBox();
-        encodingBox = new JComboBox();
-        collateBox = new JComboBox();
-        sizeField = new NumberTextField();
-        scaleField = new NumberTextField();
-        subtypeField = new NumberTextField();
 
-        typeOfPanel = new TypeOfPanel(cd, changeActionListener);
-        typeOfPanel.setVisible(displayTypeOf);
+        // --- number text fields ---
 
-        keyListener = new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent keyEvent) {
-                if (changeKeyListener != null)
-                    changeKeyListener.keyTyped(null);
-            }
-
-            @Override
-            public void keyPressed(KeyEvent keyEvent) {
-                if (changeKeyListener != null)
-                    changeKeyListener.keyPressed(null);
-            }
-
-            @Override
-            public void keyReleased(KeyEvent keyEvent) {
-                NumberTextField field = (NumberTextField) keyEvent.getSource();
-                if (field.getValue() <= 0)
-                    field.setValue(1);
-                if (field == sizeField) {
-                    cd.setSize(field.getValue());
-                } else if (field == scaleField) {
-                    cd.setScale(field.getValue());
-                } else if (field == subtypeField) {
-                    cd.setSubtype(field.getValue());
-                }
-
-                if (changeKeyListener != null)
-                    changeKeyListener.keyReleased(null);
-            }
-        };
-
-
-        typeBox.addActionListener(actionEvent -> refreshType());
-
-        typeBox.setModel(new DefaultComboBoxModel(dataTypes));
-        typeBox.setSelectedIndex(0);
-
-        encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[0])));
-        encodingBox.addItemListener(e -> {
-
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                refreshingCollate = true;
-                cd.setCharset((String) encodingBox.getSelectedItem());
-                collateModel.setElements(loadCollates((String) encodingBox.getSelectedItem()));
-                refreshingCollate = false;
-                if (cd.getCollate() != null && collateModel.contains(cd.getCollate()))
-                    collateBox.setSelectedItem(cd.getCollate());
-                else {
-                    collateBox.setSelectedIndex(0);
-                    cd.setCollate((String) collateBox.getSelectedItem());
-                }
-            }
-
-            if (changeActionListener != null)
-                changeActionListener.actionPerformed(null);
-        });
-
-        collateModel = new DynamicComboBoxModel();
-        collateBox.setModel(collateModel);
-        collateBox.addItemListener(e -> {
-
-            if (e.getStateChange() == ItemEvent.SELECTED)
-                if (!refreshingCollate)
-                    cd.setCollate((String) collateBox.getSelectedItem());
-
-            if (changeActionListener != null)
-                changeActionListener.actionPerformed(null);
-        });
-
+        sizeField = WidgetFactory.createNumberTextField("sizeField");
         sizeField.addKeyListener(keyListener);
+
+        scaleField = WidgetFactory.createNumberTextField("scaleField");
         scaleField.addKeyListener(keyListener);
+
+        subtypeField = WidgetFactory.createNumberTextField("subtypeField");
         subtypeField.addKeyListener(keyListener);
 
-        this.setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        gbh.addLabelFieldPair(this, typeLabel, typeBox, null);
-        gbh.addLabelFieldPair(this, sizeLabel, sizeField, null);
-        gbh.addLabelFieldPair(this, scaleLabel, scaleField, null);
-        gbh.addLabelFieldPair(this, subtypeLabel, subtypeField, null);
-        gbh.addLabelFieldPair(this, encodingLabel, encodingBox, null);
-        gbh.addLabelFieldPair(this, collateLabel, collateBox, null);
-        this.add(typeOfPanel, gbh.nextRowFirstCol().fillBoth().spanX().get());
-        this.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+        // --- combo boxes ---
+
+        encodingsCombo = WidgetFactory.createComboBox("encodingsCombo", charsets.toArray(new String[0]));
+        encodingsCombo.addItemListener(e -> encodingsComboValueChanged());
+
+        collatesCombo = WidgetFactory.createComboBox("collatesCombo", collatesComboModel);
+        collatesCombo.addItemListener(e -> collatesComboValueChanged());
+
+        typesCombo = WidgetFactory.createComboBox("typesCombo", dataTypes);
+        typesCombo.addActionListener(e -> typesComboValueChanged());
+        typesCombo.setSelectedIndex(0);
+
+        if (!showTypeOf)
+            return;
+
+        typeOfTableCombo = WidgetFactory.createComboBox("typeOfTableCombo", columnData.getTableNames().toArray(new String[0]));
+        typeOfTableCombo.addActionListener(e -> typeOfTableComboValueChanged());
+        typeOfTableCombo.setEnabled(columnData.isTypeOf());
+
+        typeOfColumnCombo = WidgetFactory.createComboBox("typeOfColumnCombo", columnsComboModel);
+        typeOfColumnCombo.addActionListener(e -> typeOfColumnComboValueChanged());
+        typeOfColumnCombo.setEnabled(columnData.isTypeOf());
+
+        // --- check box ---
+
+        useTypeOfCheck = WidgetFactory.createCheckBox("useTypeOfCheck", bundleString("TypeOf"), e -> useTypeOfCheckChanged());
+        useTypeOfCheck.setSelected(columnData.isTypeOf());
+
+        // ---
+
+        if (columnData.isTypeOf()) {
+            typeOfTableCombo.setSelectedItem(columnData.getTable());
+            typeOfColumnCombo.setSelectedItem(columnData.getColumnTable());
+        }
     }
 
-    private void refreshType() {
-        int index = typeBox.getSelectedIndex();
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillHorizontally().anchorNorthWest();
+        mainPanel.add(new JLabel(Bundles.getCommon("data-type")), gbh.setWeightX(0).topGap(8).get());
+        mainPanel.add(typesCombo, gbh.nextCol().setWeightX(1).rightGap(0).spanX().get());
+        mainPanel.add(sizeLabel, gbh.nextRowFirstCol().setWeightX(0).setWidth(1).rightGap(5).topGap(3).get());
+        mainPanel.add(sizeField, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+        mainPanel.add(new JLabel(Bundles.getCommon("scale")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).topGap(3).rightGap(5).get());
+        mainPanel.add(scaleField, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+        mainPanel.add(new JLabel(Bundles.getCommon("subtype")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).topGap(3).rightGap(5).get());
+        mainPanel.add(subtypeField, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+        mainPanel.add(new JLabel(Bundles.getCommon("encoding")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).topGap(3).rightGap(5).get());
+        mainPanel.add(encodingsCombo, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+        mainPanel.add(new JLabel(Bundles.getCommon("collate")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).topGap(3).rightGap(5).get());
+        mainPanel.add(collatesCombo, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+
+        if (showTypeOf) {
+            mainPanel.add(useTypeOfCheck, gbh.nextRowFirstCol().leftGap(2).get());
+            mainPanel.add(new JLabel(bundleString("Table")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).leftGap(5).topGap(3).rightGap(5).get());
+            mainPanel.add(typeOfTableCombo, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+            mainPanel.add(new JLabel(bundleString("Column")), gbh.nextRowFirstCol().setWeightX(0).setWidth(1).topGap(3).rightGap(5).get());
+            mainPanel.add(typeOfColumnCombo, gbh.nextCol().setWeightX(1).rightGap(0).topGap(0).spanX().get());
+        }
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillBoth().spanX();
+        add(mainPanel, gbh.get());
+        add(new JPanel(), gbh.nextRow().spanY().get());
+    }
+
+    // --- listeners ---
+
+    private void typesComboValueChanged() {
+        int index = typesCombo.getSelectedIndex();
         if (index >= 0) {
-            cd.setTypeName(dataTypes[index]);
-            cd.setSQLType(intDataTypes[index]);
-            setSizeVisible(cd.getSQLType() == Types.NUMERIC
-                    || cd.getSQLType() == Types.CHAR
-                    || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.DECIMAL
-                    || cd.getSQLType() == Types.BLOB
-                    || cd.getSQLType() == Types.LONGVARBINARY
-                    || cd.getSQLType() == Types.LONGVARCHAR
-                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
-                    || cd.getTypeName().equalsIgnoreCase("CHAR")
-                    || cd.getTypeName().equalsIgnoreCase(T.DECFLOAT)
+            columnData.setTypeName(dataTypes[index]);
+            columnData.setSQLType(intDataTypes[index]);
+            setSizeVisible(columnData.getSQLType() == Types.NUMERIC
+                    || columnData.getSQLType() == Types.CHAR
+                    || columnData.getSQLType() == Types.VARCHAR
+                    || columnData.getSQLType() == Types.DECIMAL
+                    || columnData.getSQLType() == Types.BLOB
+                    || columnData.getSQLType() == Types.LONGVARBINARY
+                    || columnData.getSQLType() == Types.LONGVARCHAR
+                    || columnData.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || columnData.getTypeName().equalsIgnoreCase("CHAR")
+                    || columnData.getTypeName().equalsIgnoreCase(T.DECFLOAT)
             );
-            if (cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL) {
+            if (columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL) {
                 sizeLabel.setText(Bundles.getCommon("precision"));
             } else sizeLabel.setText(Bundles.getCommon("size"));
-            setScaleVisible(cd.getSQLType() == Types.NUMERIC || cd.getSQLType() == Types.DECIMAL);
-            setSubtypeVisible(cd.getSQLType() == Types.BLOB);
-            setEncodingVisible(cd.getSQLType() == Types.CHAR || cd.getSQLType() == Types.VARCHAR
-                    || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.CLOB
-                    || cd.getTypeName().equalsIgnoreCase("VARCHAR")
-                    || cd.getTypeName().equalsIgnoreCase("CHAR"));
+            setScaleVisible(columnData.getSQLType() == Types.NUMERIC || columnData.getSQLType() == Types.DECIMAL);
+            setSubtypeVisible(columnData.getSQLType() == Types.BLOB);
+            setEncodingVisible(columnData.getSQLType() == Types.CHAR || columnData.getSQLType() == Types.VARCHAR
+                    || columnData.getSQLType() == Types.LONGVARCHAR || columnData.getSQLType() == Types.CLOB
+                    || columnData.getTypeName().equalsIgnoreCase("VARCHAR")
+                    || columnData.getTypeName().equalsIgnoreCase("CHAR"));
             if (!refreshing) {
-                if (cd.getSQLType() == Types.LONGVARBINARY || cd.getSQLType() == Types.LONGVARCHAR || cd.getSQLType() == Types.BLOB) {
+                if (columnData.getSQLType() == Types.LONGVARBINARY || columnData.getSQLType() == Types.LONGVARCHAR || columnData.getSQLType() == Types.BLOB) {
                     sizeField.setText("80");
                 }
-                if (cd.getSQLType() == Types.LONGVARBINARY)
+                if (columnData.getSQLType() == Types.LONGVARBINARY)
                     subtypeField.setText("0");
-                if (cd.getSQLType() == Types.LONGVARCHAR)
+                if (columnData.getSQLType() == Types.LONGVARCHAR)
                     subtypeField.setText("1");
-                if (cd.getSQLType() == Types.BLOB)
+                if (columnData.getSQLType() == Types.BLOB)
                     subtypeField.setText("0");
             }
         }
 
-        if (changeActionListener != null)
-            changeActionListener.actionPerformed(null);
+        changeActionPerformed();
     }
+
+    private void collatesComboValueChanged() {
+
+        if (!refreshingCollate)
+            columnData.setCollate((String) collatesCombo.getSelectedItem());
+
+        changeActionPerformed();
+    }
+
+    private void encodingsComboValueChanged() {
+
+        refreshingCollate = true;
+        columnData.setCharset((String) encodingsCombo.getSelectedItem());
+        collatesComboModel.setElements(loadCollates((String) encodingsCombo.getSelectedItem()));
+        refreshingCollate = false;
+
+        if (columnData.getCollate() != null && collatesComboModel.contains(columnData.getCollate())) {
+            collatesCombo.setSelectedItem(columnData.getCollate());
+
+        } else {
+            collatesCombo.setSelectedIndex(0);
+            columnData.setCollate((String) collatesCombo.getSelectedItem());
+        }
+
+        changeActionPerformed();
+    }
+
+    private void useTypeOfCheckChanged() {
+        boolean useTypeOf = useTypeOfCheck.isSelected();
+
+        columnData.setTypeOf(useTypeOf);
+        typeOfTableCombo.setEnabled(useTypeOf);
+        typeOfColumnCombo.setEnabled(useTypeOf);
+
+        if (columnData.isTypeOf())
+            columnData.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+
+        changeActionPerformed();
+    }
+
+    private void typeOfTableComboValueChanged() {
+
+        columnData.setTable((String) typeOfTableCombo.getSelectedItem());
+        columnsComboModel.setElements(columnData.getColumns());
+        typeOfColumnCombo.setSelectedIndex(0);
+
+        changeActionPerformed();
+    }
+
+    private void typeOfColumnComboValueChanged() {
+        columnData.setColumnTable((String) typeOfColumnCombo.getSelectedItem());
+        changeActionPerformed();
+    }
+
+    private void changeActionPerformed() {
+        if (actionListener != null)
+            actionListener.actionPerformed(null);
+    }
+
+    // ---
 
     public void refreshColumn() {
-        cd.setSize(sizeField.getValue());
-        cd.setScale(scaleField.getValue());
-        cd.setSubtype(subtypeField.getValue());
+        columnData.setSize(sizeField.getValue());
+        columnData.setScale(scaleField.getValue());
+        columnData.setSubtype(subtypeField.getValue());
     }
 
-    private void setSizeVisible(boolean flag) {
-        sizeField.setEnabled(flag);
-        //sizeLabel.setEnabled(flag);
-        if (flag)
-            sizeField.setValue(1);
-        else sizeField.setValue(0);
+    private void setSizeVisible(boolean visible) {
+        sizeField.setEnabled(visible);
+        sizeField.setValue(visible ? 1 : 0);
+
         if (refreshing)
-            sizeField.setValue(cd.getSize());
-        cd.setSize(sizeField.getValue());
+            sizeField.setValue(columnData.getSize());
+        columnData.setSize(sizeField.getValue());
     }
 
-    private void setScaleVisible(boolean flag) {
-        scaleField.setEnabled(flag);
-        //scaleLabel.setVisible(flag);
-        if (flag) {
-            scaleField.setValue(1);
-        } else scaleField.setValue(0);
+    private void setScaleVisible(boolean visible) {
+        scaleField.setEnabled(visible);
+        scaleField.setValue(visible ? 1 : 0);
+
         if (refreshing)
-            scaleField.setValue(cd.getScale());
-        cd.setScale(scaleField.getValue());
+            scaleField.setValue(columnData.getScale());
+        columnData.setScale(scaleField.getValue());
     }
 
-    private void setSubtypeVisible(boolean flag) {
-        subtypeField.setEnabled(flag);
-        if (flag) {
-            subtypeField.setValue(1);
-        } else subtypeField.setValue(0);
+    private void setSubtypeVisible(boolean visible) {
+        subtypeField.setEnabled(visible);
+        subtypeField.setValue(visible ? 1 : 0);
+
         if (refreshing)
-            subtypeField.setValue(cd.getSubtype());
-        cd.setSubtype(subtypeField.getValue());
+            subtypeField.setValue(columnData.getSubtype());
+        columnData.setSubtype(subtypeField.getValue());
     }
 
-    private void setEncodingVisible(boolean flag) {
-        encodingBox.setEnabled(flag);
-        collateBox.setEnabled(flag && !disabledCollate);
+    private void setEncodingVisible(boolean visible) {
+        encodingsCombo.setEnabled(visible);
+        collatesCombo.setEnabled(visible && !disabledCollate);
+
         if (refreshing) {
-            encodingBox.setSelectedItem(cd.getCharset());
-            collateBox.setSelectedItem(cd.getCollate());
+            collatesCombo.setSelectedItem(columnData.getCollate());
+            encodingsCombo.setSelectedItem(columnData.getCharset());
         }
-        cd.setCharset((String) encodingBox.getSelectedItem());
-        cd.setCollate((String) collateBox.getSelectedItem());
+
+        columnData.setCollate((String) collatesCombo.getSelectedItem());
+        columnData.setCharset((String) encodingsCombo.getSelectedItem());
     }
 
     private void removeDuplicates() {
+
         if (types == null)
             types = new HashMap<>();
-        else types.clear();
-        java.util.List<String> newTypes = new ArrayList<>();
-        List<Integer> newIntTypes = new ArrayList<>();
+        types.clear();
+
         String last = "";
+        List<String> newTypes = new ArrayList<>();
+        List<Integer> newIntTypes = new ArrayList<>();
+
         for (int i = 0; i < this.dataTypes.length; i++) {
             if (!newTypes.contains(this.dataTypes[i])) {
+
                 newTypes.add(this.dataTypes[i]);
                 newIntTypes.add(this.intDataTypes[i]);
+
                 types.put(intDataTypes[i], dataTypes[i]);
                 last = dataTypes[i];
-            } else {
+
+            } else
                 types.put(intDataTypes[i], last);
-            }
         }
+
         this.dataTypes = newTypes.toArray(new String[0]);
         this.intDataTypes = newIntTypes.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void sortTypes() {
-        if (dataTypes != null) {
-            for (int i = 0; i < dataTypes.length; i++) {
-                for (int g = 0; g < dataTypes.length - 1; g++) {
-                    int compare = dataTypes[g].compareTo(dataTypes[g + 1]);
-                    if (compare > 0) {
-                        int temp1 = intDataTypes[g];
-                        String temp2 = dataTypes[g];
-                        intDataTypes[g] = intDataTypes[g + 1];
-                        dataTypes[g] = dataTypes[g + 1];
-                        intDataTypes[g + 1] = temp1;
-                        dataTypes[g + 1] = temp2;
-                    }
+
+        if (dataTypes == null)
+            return;
+
+        for (int i = 0; i < dataTypes.length; i++) {
+            for (int j = 0; j < dataTypes.length - 1; j++) {
+
+                if (dataTypes[j].compareTo(dataTypes[j + 1]) > 0) {
+                    String dataType = dataTypes[j];
+                    int intDataType = intDataTypes[j];
+
+                    dataTypes[j] = dataTypes[j + 1];
+                    intDataTypes[j] = intDataTypes[j + 1];
+
+                    dataTypes[j + 1] = dataType;
+                    intDataTypes[j + 1] = intDataType;
                 }
             }
         }
@@ -304,35 +376,37 @@ public class SelectTypePanel extends JPanel {
 
     public void refresh() {
         refreshing = true;
-        cd.setTypeName(getStringType(cd.getSQLType()));
-        typeBox.setSelectedItem(cd.getTypeName());
-        refreshType();
+        columnData.setTypeName(getStringType(columnData.getSQLType()));
+        typesCombo.setSelectedItem(columnData.getTypeName());
+        typesComboValueChanged();
         refreshing = false;
     }
 
-    private String getStringType(int x) {
+    private String getStringType(int value) {
         try {
-            return types.get(x);
+            return types.get(value);
+
         } catch (Exception e) {
-            Log.error(e.getMessage());
-            return "";
+            Log.error(e.getMessage(), e);
+            return Constants.EMPTY;
         }
     }
 
     private void loadCharsets() {
+
+        if (charsets == null)
+            charsets = new ArrayList<>();
+        charsets.clear();
+
         try {
-            if (charsets == null)
-                charsets = new ArrayList<>();
-            else
-                charsets.clear();
 
             String resource = FileUtils.loadResource("org/executequery/charsets.properties");
-            String[] strings = resource.split("\n");
-            for (String s : strings) {
-                if (!s.startsWith("#") && !s.isEmpty())
-                    charsets.add(s);
+            for (String string : resource.split("\n")) {
+                if (!string.startsWith("#") && !string.isEmpty())
+                    charsets.add(string);
             }
-            java.util.Collections.sort(charsets);
+
+            Collections.sort(charsets);
             charsets.add(0, CreateTableSQLSyntax.NONE);
             charsets.add(0, "");
 
@@ -342,37 +416,91 @@ public class SelectTypePanel extends JPanel {
     }
 
     public void setColumnData(ColumnData columnData) {
-        this.cd = columnData;
+        this.columnData = columnData;
     }
 
-    protected String[] loadCollates(String charset) {
-        DefaultStatementExecutor sender = new DefaultStatementExecutor();
-        sender.setDatabaseConnection(cd.getConnection());
-        List<String> collates = new ArrayList<>();
-        collates.add("");
-        collates.add(CreateTableSQLSyntax.NONE);
+    private String[] loadCollates(String charset) {
         String query = "SELECT RDB$COLLATION_NAME\n" +
-                "FROM RDB$COLLATIONS CO LEFT JOIN RDB$CHARACTER_SETS CS ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +
-                "WHERE CS.RDB$CHARACTER_SET_NAME='" + charset + "'";
-        try {
-            ResultSet rs = sender.getResultSet(query).getResultSet();
-            while (rs.next()) {
-                collates.add(rs.getString(1).trim());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            sender.releaseResources();
-        }
-        return collates.toArray(new String[collates.size()]);
-    }
+                "FROM RDB$COLLATIONS CO\n" +
+                "LEFT JOIN RDB$CHARACTER_SETS CS\n" +
+                "ON CO.RDB$CHARACTER_SET_ID = CS.RDB$CHARACTER_SET_ID\n" +
+                "WHERE CS.RDB$CHARACTER_SET_NAME = '" + charset + "'";
 
-    public boolean isDisabledCollate() {
-        return disabledCollate;
+        DefaultStatementExecutor executor = new DefaultStatementExecutor();
+        executor.setDatabaseConnection(columnData.getConnection());
+
+        List<String> collates = new ArrayList<>();
+        collates.add(Constants.EMPTY);
+        collates.add(CreateTableSQLSyntax.NONE);
+
+        try {
+            ResultSet rs = executor.getResultSet(query).getResultSet();
+            while (rs.next())
+                collates.add(rs.getString(1).trim());
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+
+        } finally {
+            executor.releaseResources();
+        }
+
+        return collates.toArray(new String[0]);
     }
 
     public void setDisabledCollate(boolean disabledCollate) {
         this.disabledCollate = disabledCollate;
-        collateBox.setEnabled(!disabledCollate);
+        this.collatesCombo.setEnabled(!disabledCollate);
     }
+
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(TableDefinitionPanel.class, key, args);
+    }
+
+    private class KeyListenerImpl implements KeyListener {
+        private final KeyListener aditionalKeyListener;
+
+        public KeyListenerImpl(KeyListener aditionalKeyListener) {
+            this.aditionalKeyListener = aditionalKeyListener;
+        }
+
+        @Override
+        public void keyTyped(KeyEvent keyEvent) {
+            if (aditionalKeyListener != null)
+                aditionalKeyListener.keyTyped(null);
+        }
+
+        @Override
+        public void keyPressed(KeyEvent keyEvent) {
+            if (aditionalKeyListener != null)
+                aditionalKeyListener.keyPressed(null);
+        }
+
+        @Override
+        public void keyReleased(KeyEvent keyEvent) {
+
+            Object source = keyEvent.getSource();
+            if (source instanceof NumberTextField) {
+
+                NumberTextField field = (NumberTextField) source;
+                if (field.getValue() <= 0)
+                    field.setValue(1);
+
+                if (Objects.equals(field, sizeField)) {
+                    columnData.setSize(field.getValue());
+
+                } else if (Objects.equals(field, scaleField)) {
+                    columnData.setScale(field.getValue());
+
+                } else if (Objects.equals(field, subtypeField)) {
+                    columnData.setSubtype(field.getValue());
+                }
+            }
+
+            if (aditionalKeyListener != null)
+                aditionalKeyListener.keyReleased(null);
+        }
+
+    } // KeyListenerImpl class
+
 }

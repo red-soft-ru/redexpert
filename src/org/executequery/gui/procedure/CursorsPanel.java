@@ -18,6 +18,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 public class CursorsPanel extends JPanel
@@ -318,6 +319,10 @@ public class CursorsPanel extends JPanel
         insertRow(columnDataToMove, newPosition);
         cursorsTable.setRowSelectionInterval(newPosition, newPosition);
         parameterModel.fireTableRowsUpdated(selectedRow, newPosition);
+    }
+
+    public void addChangesListener(ActionListener listener) {
+        parameterModel.addTableModelListener(e -> listener.actionPerformed(null));
     }
 
     // ---

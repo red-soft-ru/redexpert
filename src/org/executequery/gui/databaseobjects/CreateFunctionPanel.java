@@ -52,6 +52,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
     @Override
     protected void init() {
+        super.init();
 
         Vector<NamedObject> domains = new Vector<>(getDomains());
         domains.add(0, null);
@@ -59,6 +60,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         // --- return type components ---
 
         deterministicCheck = WidgetFactory.createCheckBox("deterministicCheck", bundleStaticString("deterministic"));
+        deterministicCheck.addActionListener(e -> generateDdlScript());
 
         useDomainTypeCheck = WidgetFactory.createCheckBox("useDomainTypeCheck", bundledString("useDomainTypeCheck"));
         useDomainTypeCheck.addActionListener(e -> domainCheckTriggered());
@@ -66,7 +68,15 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         domainCombo = WidgetFactory.createComboBox("domainCombo", domains);
         domainCombo.addActionListener(e -> domainChanged());
 
-        typePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), returnType, true);
+        typePanel = new SelectTypePanel(
+                connection.getDataTypesArray(),
+                connection.getIntDataTypesArray(),
+                returnType,
+                true,
+                changeActionListener,
+                changeKeyListener
+        );
+
         if (function != null && function.getReturnArgument() != null) {
 
             if (function.getReturnArgument().getDomain() != null) {
@@ -99,7 +109,6 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
         // --- tabbed pane ---
 
-        super.init();
         tabbedPane.remove(outputParamsPanel);
         tabbedPane.setTitleAt(tabbedPane.indexOfComponent(inputParamsPanel), bundledString("Arguments"));
         tabbedPane.insertTab(bundledString("ReturnsType"), null, returnTypePanel, null, 1);
@@ -263,6 +272,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         NamedObject selectedDomain = (NamedObject) domainCombo.getSelectedItem();
         if (selectedDomain != null)
             returnType.setDomain(selectedDomain.getName());
+
+        generateDdlScript();
     }
 
     private List<NamedObject> getDomains() {

@@ -7,6 +7,7 @@ import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class TypeOfPanel extends JPanel {
     private final ColumnData columnData;
@@ -16,28 +17,38 @@ public class TypeOfPanel extends JPanel {
     private DynamicComboBoxModel columnsModel;
     private JCheckBox typeOfBox;
 
-    public TypeOfPanel(ColumnData cd) {
+    public TypeOfPanel(ColumnData cd, ActionListener actionListener) {
         columnData = new ColumnData(cd.getConnection());
-        init(cd);
+        init(cd, actionListener);
     }
 
-    private void init(ColumnData cd) {
+    private void init(ColumnData cd, ActionListener actionListener) {
+
         tableModel = new DynamicComboBoxModel();
         tableModel.setElements(columnData.getTableNames());
+
         tablesBox = new JComboBox(tableModel);
         tablesBox.setEnabled(false);
         tablesBox.addActionListener(actionEvent -> {
             columnData.setTable(getTable());
             columnsModel.setElements(columnData.getColumns());
             columnBox.setSelectedIndex(0);
+            if (actionListener != null)
+                actionListener.actionPerformed(null);
         });
+
         columnsModel = new DynamicComboBoxModel();
         columnBox = new JComboBox(columnsModel);
         columnBox.setEnabled(false);
-        columnBox.addActionListener(actionEvent ->
-                columnData.setColumnTable(getColumn()));
+        columnBox.addActionListener(actionEvent -> {
+            columnData.setColumnTable(getColumn());
+            if (actionListener != null)
+                actionListener.actionPerformed(null);
+        });
+
         if (tableModel.getSize() > 0)
             tablesBox.setSelectedIndex(0);
+
         typeOfBox = new JCheckBox(bundleString("TypeOf"));
         typeOfBox.addActionListener(actionEvent -> {
             columnData.setTypeOf(typeOfBox.isSelected());
@@ -45,6 +56,9 @@ public class TypeOfPanel extends JPanel {
             columnBox.setEnabled(columnData.isTypeOf());
             if (columnData.isTypeOf())
                 columnData.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+
+            if (actionListener != null)
+                actionListener.actionPerformed(null);
         });
 
         this.setLayout(new GridBagLayout());

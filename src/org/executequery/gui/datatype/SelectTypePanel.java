@@ -14,10 +14,7 @@ import org.underworldlabs.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,10 +48,20 @@ public class SelectTypePanel extends JPanel {
     private boolean refreshingCollate = false;
     private boolean disabledCollate = false;
 
+    private final KeyListener changeKeyListener;
+    private final ActionListener changeActionListener;
+
     public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf) {
+        this(types, intTypes, cd, displayTypeOf, null, null);
+    }
+
+    public SelectTypePanel(String[] types, int[] intTypes, ColumnData cd, boolean displayTypeOf, ActionListener actionListener, KeyListener keyListener) {
         this.dataTypes = types;
         this.intDataTypes = intTypes;
         this.displayTypeOf = displayTypeOf;
+        this.changeKeyListener = keyListener;
+        this.changeActionListener = actionListener;
+
         sortTypes();
         removeDuplicates();
         this.cd = cd;
@@ -75,17 +82,21 @@ public class SelectTypePanel extends JPanel {
         sizeField = new NumberTextField();
         scaleField = new NumberTextField();
         subtypeField = new NumberTextField();
-        typeOfPanel = new TypeOfPanel(cd);
+
+        typeOfPanel = new TypeOfPanel(cd, changeActionListener);
         typeOfPanel.setVisible(displayTypeOf);
+
         keyListener = new KeyListener() {
             @Override
             public void keyTyped(KeyEvent keyEvent) {
-
+                if (changeKeyListener != null)
+                    changeKeyListener.keyTyped(null);
             }
 
             @Override
             public void keyPressed(KeyEvent keyEvent) {
-
+                if (changeKeyListener != null)
+                    changeKeyListener.keyPressed(null);
             }
 
             @Override
@@ -100,6 +111,9 @@ public class SelectTypePanel extends JPanel {
                 } else if (field == subtypeField) {
                     cd.setSubtype(field.getValue());
                 }
+
+                if (changeKeyListener != null)
+                    changeKeyListener.keyReleased(null);
             }
         };
 
@@ -109,34 +123,36 @@ public class SelectTypePanel extends JPanel {
         typeBox.setModel(new DefaultComboBoxModel(dataTypes));
         typeBox.setSelectedIndex(0);
 
-        encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[charsets.size()])));
-        encodingBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    refreshingCollate = true;
-                    cd.setCharset((String) encodingBox.getSelectedItem());
-                    collateModel.setElements(loadCollates((String) encodingBox.getSelectedItem()));
-                    refreshingCollate = false;
-                    if (cd.getCollate() != null && collateModel.contains(cd.getCollate()))
-                        collateBox.setSelectedItem(cd.getCollate());
-                    else {
-                        collateBox.setSelectedIndex(0);
-                        cd.setCollate((String) collateBox.getSelectedItem());
-                    }
+        encodingBox.setModel(new DefaultComboBoxModel(charsets.toArray(new String[0])));
+        encodingBox.addItemListener(e -> {
+
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                refreshingCollate = true;
+                cd.setCharset((String) encodingBox.getSelectedItem());
+                collateModel.setElements(loadCollates((String) encodingBox.getSelectedItem()));
+                refreshingCollate = false;
+                if (cd.getCollate() != null && collateModel.contains(cd.getCollate()))
+                    collateBox.setSelectedItem(cd.getCollate());
+                else {
+                    collateBox.setSelectedIndex(0);
+                    cd.setCollate((String) collateBox.getSelectedItem());
                 }
             }
-        }); //
+
+            if (changeActionListener != null)
+                changeActionListener.actionPerformed(null);
+        });
+
         collateModel = new DynamicComboBoxModel();
         collateBox.setModel(collateModel);
-        collateBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    if (!refreshingCollate)
-                        cd.setCollate((String) collateBox.getSelectedItem());
-                }
-            }
+        collateBox.addItemListener(e -> {
+
+            if (e.getStateChange() == ItemEvent.SELECTED)
+                if (!refreshingCollate)
+                    cd.setCollate((String) collateBox.getSelectedItem());
+
+            if (changeActionListener != null)
+                changeActionListener.actionPerformed(null);
         });
 
         sizeField.addKeyListener(keyListener);
@@ -193,6 +209,9 @@ public class SelectTypePanel extends JPanel {
                     subtypeField.setText("0");
             }
         }
+
+        if (changeActionListener != null)
+            changeActionListener.actionPerformed(null);
     }
 
     public void refreshColumn() {

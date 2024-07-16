@@ -20,10 +20,13 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -221,6 +224,10 @@ public class ProcedureDefinitionPanel extends JPanel
         domainCell.addItem(Constants.EMPTY);
         for (String domain : this.domains)
             domainCell.addItem(domain);
+    }
+
+    public void addChangesListener(ActionListener listener) {
+        tableModel.addTableModelListener(e -> listener.actionPerformed(null));
     }
 
     /**

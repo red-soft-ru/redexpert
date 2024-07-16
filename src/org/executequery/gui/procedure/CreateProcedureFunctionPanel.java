@@ -37,8 +37,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -59,7 +58,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected String procedureName;
     protected String procedureBody;
-    private Object oldSelectedTab = null;
+
+    protected KeyListener changeKeyListener;
+    protected ActionListener changeActionListener;
 
     // --- GUI components ---
 
@@ -88,24 +89,55 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     @Override
     protected void init() {
+
+        changeActionListener = e -> generateDdlScript();
+        changeKeyListener = new KeyListener() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                generateDdlScript();
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+        };
+
+        // --- external fields ---
+
         initExternal();
 
+        engineField.addKeyListener(changeKeyListener);
+        externalField.addKeyListener(changeKeyListener);
+        authidCombo.addActionListener(changeActionListener);
+        securityCombo.addActionListener(changeActionListener);
+        useExternalCheck.addActionListener(changeActionListener);
+
+        // ---
+
         cursorsPanel = new CursorsPanel();
+        cursorsPanel.addChangesListener(changeActionListener);
 
         inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParamsPanel.setDomains(getDomains());
         inputParamsPanel.setDatabaseConnection(connection);
+        inputParamsPanel.addChangesListener(changeActionListener);
 
         outputParamsPanel = new ProcedureDefinitionPanel(ColumnData.OUTPUT_PARAMETER);
         outputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         outputParamsPanel.setDomains(getDomains());
         outputParamsPanel.setDatabaseConnection(connection);
+        outputParamsPanel.addChangesListener(changeActionListener);
 
         variablesPanel = new ProcedureDefinitionPanel(ColumnData.VARIABLE);
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
+        variablesPanel.addChangesListener(changeActionListener);
 
         ddlTextPanel = new SimpleSqlTextPanel("DDL");
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
@@ -117,14 +149,17 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
 
-        tabbedPane.addChangeListener(e -> {
-            fillVariablesAndParameters();
-            generateScript();
-        });
+        nameField.addKeyListener(changeKeyListener);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
 
         arrange();
         checkExternal();
         fillSqlBody();
+
+        try {
+            generateDdlScript();
+        } catch (Exception ignored) {
+        }
     }
 
     protected void initEditing() {
@@ -155,8 +190,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         addDependenciesTab((DatabaseObject) namedObject);
 
         reset();
-        generateScript();
-        fillVariablesAndParameters();
+        generateDdlScript();
     }
 
     private void arrange() {
@@ -190,6 +224,22 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         add(mainPanel, gbh.fillBoth().spanX().spanY().get());
         setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setPreferredSize(new Dimension(1200, 600));
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    protected void generateDdlScript() {
+
+        TreeSet<String> variables = new TreeSet<>();
+        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
+        variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
+
+        TreeSet<String> parameters = new TreeSet<>();
+        parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
+        parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
+
+        ddlTextPanel.getTextPane().setVariables(variables);
+        ddlTextPanel.getTextPane().setParameters(parameters);
+        ddlTextPanel.setSQLText(generateQuery());
     }
 
     private void loadVariables() {
@@ -360,21 +410,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         }
     }
 
-    @SuppressWarnings({"ReassignedVariable", "DataFlowIssue"})
-    protected void fillVariablesAndParameters() {
-
-        TreeSet<String> variables = new TreeSet<>();
-        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
-        variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
-
-        TreeSet<String> parameters = new TreeSet<>();
-        parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
-        parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
-
-        ddlTextPanel.getTextPane().setVariables(variables);
-        ddlTextPanel.getTextPane().setParameters(parameters);
-    }
-
     private TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet, List<ColumnData> tableVector) {
 
         for (ColumnData cd : tableVector)
@@ -382,22 +417,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 treeSet.add(cd.getColumnName().toUpperCase());
 
         return treeSet;
-    }
-
-    protected void generateScript() {
-
-        if (tabbedPane.getSelectedComponent() != ddlTextPanel && oldSelectedTab == ddlTextPanel) {
-
-            String ddlText = ddlTextPanel.getSQLText();
-            if (GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange")) != JOptionPane.YES_OPTION) {
-                tabbedPane.setSelectedComponent(ddlTextPanel);
-                ddlTextPanel.setSQLText(ddlText);
-            }
-
-        } else
-            ddlTextPanel.setSQLText(generateQuery());
-
-        oldSelectedTab = tabbedPane.getSelectedComponent();
     }
 
     @Override
@@ -533,9 +552,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     public String getSQLText() {
-        if (tabbedPane.getSelectedComponent() != ddlTextPanel)
-            generateScript();
-
         return ddlTextPanel.getSQLText();
     }
 

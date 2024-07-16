@@ -235,7 +235,22 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         ddlTextPanel.getTextPane().setVariables(variables);
         ddlTextPanel.getTextPane().setParameters(parameters);
+        procedureBody = extractProcedureBody(ddlTextPanel.getSQLText());
         ddlTextPanel.setSQLText(generateQuery());
+    }
+
+    private String extractProcedureBody(String sqlText) {
+
+        if (MiscUtils.isNull(sqlText))
+            return procedureBody;
+
+        sqlText = sqlText.trim();
+        int beginIndex = sqlText.toUpperCase().indexOf("BEGIN");
+        int endIndex = sqlText.toUpperCase().lastIndexOf("END") + 3;
+
+        procedureBody = sqlText.substring(beginIndex, endIndex);
+
+        return procedureBody;
     }
 
     private void loadVariables() {

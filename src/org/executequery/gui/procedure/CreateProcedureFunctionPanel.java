@@ -342,7 +342,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         TreeSet<String> variables = new TreeSet<>();
         variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
-        variables = fillTreeSetFromTableVector(variables, cursorsPanel.tableVector);
+        variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
 
         TreeSet<String> parameters = new TreeSet<>();
         parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);

@@ -1,5 +1,6 @@
 package org.executequery.gui.procedure;
 
+import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
@@ -7,7 +8,7 @@ import org.executequery.gui.table.CreateTableToolBar;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.print.AbstractPrintableTableModel;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
 
@@ -17,414 +18,209 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.List;
 import java.util.Vector;
 
 public class CursorsPanel extends JPanel
-        implements TableModelListener, DefinitionPanel {
+        implements DefinitionPanel {
 
-    /**
-     * The table containing all column descriptions
-     */
-    protected DatabaseTable table;
+    private static final int NAME_COLUMN = 0;
+    private static final int SCROLL_COLUMN = NAME_COLUMN + 1;
+    private static final int SELECT_OPERATOR_COLUMN = SCROLL_COLUMN + 1;
+    private static final int DESCRIPTION_COLUMN = SELECT_OPERATOR_COLUMN + 1;
 
-    protected SimpleSqlTextPanel sqlTextPanel;
+    private final boolean editing;
 
-    /**
-     * The table's _model
-     */
-    protected ProcedureParameterModel _model;
+    private CreateTableToolBar toolBar;
+    private DatabaseTable cursorsTable;
+    private SimpleSqlTextPanel sqlTextPanel;
+    private ProcedureParameterModel parameterModel;
 
-    private StringBuffer sqlText;
+    private int selectedRow;
+    private DatabaseConnection connection;
+    private Vector<ColumnData> cursorsVector;
 
-    public List<String> descriptions;
-
-
-    private CreateTableToolBar tools;
-
-    /**
-     * The <code>Vector</code> of <code>ColumnData</code> objects
-     */
-    protected Vector<ColumnData> tableVector;
-
-    /**
-     * An empty String literal
-     */
-    private static final String EMPTY = " ";
-
-    protected boolean editing;
-
-    public static final int NAME_COLUMN = 0;
-    public static final int SCROLL_COLUMN = 1;
-    public static final int SELECT_OPERATOR_COLUMN = 2;
-    public static final int DESCRIPTION_COLUMN = 3;
-    /**
-     * The cell editor for the column names
-     */
-    protected StringPicker colNameEditor;
-    protected StringPicker selectEditor;
-    protected StringPicker descEditor;
-    DynamicComboBoxModel tableEditorModel;
-
-
-    DatabaseConnection dc;
+    private StringPicker descEditor;
+    private StringPicker colNameEditor;
 
     public CursorsPanel() {
         this(true);
-
     }
 
     public CursorsPanel(boolean editing) {
         super(new GridBagLayout());
         this.editing = editing;
+        this.selectedRow = -1;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
     }
 
-    public void setColumnDataArray(ColumnData[] cda) {
-        _model.setColumnDataArray(cda);
-    }
+    private void init() {
+        toolBar = new CreateTableToolBar(this);
 
-    private int selectedRow = -1;
-    private void jbInit() {
-        // set the table model to use
-        _model = new ProcedureParameterModel();
-        table = new DatabaseTable(_model);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumnModel tcm = table.getColumnModel();
+        // --- table ---
+
+        parameterModel = new ProcedureParameterModel();
+
+        cursorsTable = new DatabaseTable(parameterModel);
+        cursorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        cursorsTable.getSelectionModel().addListSelectionListener(e -> selectionChanged());
+
+        TableColumnModel tcm = cursorsTable.getColumnModel();
         tcm.getColumn(NAME_COLUMN).setPreferredWidth(200);
         tcm.getColumn(SCROLL_COLUMN).setPreferredWidth(120);
         tcm.getColumn(SELECT_OPERATOR_COLUMN).setPreferredWidth(200);
         tcm.getColumn(DESCRIPTION_COLUMN).setPreferredWidth(200);
+
+        // --- sql text panel ---
+
         sqlTextPanel = new SimpleSqlTextPanel();
-        ListSelectionModel selModel = table.getSelectionModel();
-        selModel.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (table.getSelectedRow() >= 0) {
-                    selectedRow = table.getSelectedRow();
-                    sqlTextPanel.setSQLText(_model.getTableVector().get(selectedRow).getSelectOperator());
-                }
-            }
-        });
+        sqlTextPanel.setMinimumSize(new Dimension(100, 200));
         sqlTextPanel.getTextPane().getSQLSyntaxDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-
-            }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
                 if (selectedRow >= 0)
-                    _model.setValueAt(sqlTextPanel.getSQLText(), selectedRow, SELECT_OPERATOR_COLUMN);
+                    parameterModel.setValueAt(sqlTextPanel.getSQLText(), selectedRow, SELECT_OPERATOR_COLUMN);
             }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
         });
 
-        // add the editors if editing
-        if (editing) {
-            colNameEditor = new StringPicker();
-            DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
-                public Object getCellEditorValue() {
-                    return colNameEditor.getValue();
-                }
-            };
-            selectEditor = new StringPicker();
-            DefaultCellEditor checkStrEditor = new DefaultCellEditor(selectEditor) {
-                public Object getCellEditorValue() {
-                    return selectEditor.getValue();
-                }
-            };
-            descEditor = new StringPicker();
-            DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
-                public Object getCellEditorValue() {
-                    return descEditor.getValue();
-                }
-            };
+        // --- cell editors ---
 
+        if (!editing)
+            return;
 
-            tcm.getColumn(NAME_COLUMN).setCellEditor(colStrEditor);
-            tcm.getColumn(DESCRIPTION_COLUMN).setCellEditor(descStrEditor);
+        colNameEditor = new StringPicker();
+        DefaultCellEditor colStrEditor = new DefaultCellEditor(colNameEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return colNameEditor.getValue();
+            }
+        };
 
+        descEditor = new StringPicker();
+        DefaultCellEditor descStrEditor = new DefaultCellEditor(descEditor) {
+            @Override
+            public Object getCellEditorValue() {
+                return descEditor.getValue();
+            }
+        };
 
-            // create the key listener to notify changes
-            KeyAdapter valueKeyListener = new KeyAdapter() {
-                public void keyReleased(KeyEvent e) {
-                    String value = null;
-                    Object object = e.getSource();
-                    if (object == colNameEditor) {
-                        value = colNameEditor.getValue();
-                    } else if (object == selectEditor) {
-                        value = selectEditor.getValue();
-                    } else if (object == descEditor) {
-                        value = descEditor.getValue();
-                    } else if (object instanceof JComboBox) {
-                        value = String.valueOf(((JComboBox) object).getSelectedItem());
-                    }
-                    tableChanged(table.getEditingColumn(),
-                            table.getEditingRow(),
-                            value);
-                }
-            };
-            colNameEditor.addKeyListener(valueKeyListener);
-            selectEditor.addKeyListener(valueKeyListener);
-            descEditor.addKeyListener(valueKeyListener);
+        tcm.getColumn(NAME_COLUMN).setCellEditor(colStrEditor);
+        tcm.getColumn(DESCRIPTION_COLUMN).setCellEditor(descStrEditor);
+    }
 
-            _model.addTableModelListener(this);
-        }
+    private void arrange() {
+        GridBagHelper gbh;
 
-        tools = new CreateTableToolBar(this);
+        // --- table panel ---
 
-        JPanel definitionPanel = new JPanel(new GridBagLayout());
+        JPanel tablePanel = new JPanel(new GridBagLayout());
 
-        definitionPanel.add(tools, new GridBagConstraints(
-                0, 0, 1, 1, 0, 0,
-                GridBagConstraints.CENTER,
-                GridBagConstraints.VERTICAL,
-                new Insets(2, 2, 2, 2), 0, 0));
+        gbh = new GridBagHelper().anchorNorthWest().fillVertical();
+        tablePanel.add(toolBar, gbh.setMinWeightX().rightGap(2).spanY().get());
+        tablePanel.add(new JScrollPane(cursorsTable), gbh.nextCol().bottomGap(10).setMaxWeightX().fillBoth().spanX().get());
 
-        definitionPanel.add(new JScrollPane(table), new GridBagConstraints(
-                1, 0, 0, 1, 1.0, 1.0,
-                GridBagConstraints.NORTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(2, 2, 2, 2), 0, 0));
+        // ---  split pane ---
 
         JSplitPane splitPane = new JSplitPane();
-        splitPane.setLeftComponent(definitionPanel);
-        splitPane.setRightComponent(sqlTextPanel);
+        splitPane.setTopComponent(tablePanel);
+        splitPane.setBottomComponent(sqlTextPanel);
+        splitPane.setDividerLocation(0.5);
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
-        add(splitPane, new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.NORTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(2, 2, 2, 2), 0, 0));
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setPreferredSize(new Dimension(300, 200));
+        setMinimumSize(getPreferredSize());
+
+        gbh = new GridBagHelper().setInsets(0, 0, 0, 0).fillBoth().spanX().spanY();
+        add(splitPane, gbh.get());
     }
 
-
-    public void tableChanged(TableModelEvent e) {
-        int row = table.getEditingRow();
-        if (row == -1 || tableVector.size() == row) {
-            return;
+    private void selectionChanged() {
+        if (cursorsTable.getSelectedRow() >= 0) {
+            selectedRow = cursorsTable.getSelectedRow();
+            sqlTextPanel.setSQLText(cursorsVector.get(selectedRow).getSelectOperator());
         }
-        tableChanged(table.getEditingColumn(), row, null);
     }
-
-    /**
-     * Fires that a table cell value has changed as specified.
-     *
-     * @param col   - the column index
-     * @param row   - the row index
-     * @param value - the current value
-     */
-    public void tableChanged(int col, int row, String value) {
-    }
-
-    /**
-     * <p>Adds all the column definition lines to
-     * the SQL text buffer for display.
-     *
-     * @param row current row being edited
-     */
-    public void addColumnLines(int row) {
-    }
-
 
     public void setDatabaseConnection(DatabaseConnection databaseConnection) {
-        dc = databaseConnection;
-        tableEditorModel.setElements(new ColumnData(dc).getTableNames());
-        for (ColumnData cd : tableVector) {
-            cd.setConnection(dc);
-        }
-    }
-
-    public void tableEditingStopped(ChangeEvent e) {
-        table.editingStopped(e);
-    }
-
-    public int getEditingRow() {
-        return table.getEditingRow();
-    }
-
-    public void setEditingRow(int newEditingRow) {
-        table.setEditingRow(newEditingRow);
+        connection = databaseConnection;
+        cursorsVector.forEach(columnData -> columnData.setConnection(connection));
     }
 
     public int getSelectedRow() {
-        return table.getSelectedRow();
+        return cursorsTable.getSelectedRow();
     }
 
-    public int getEditingColumn() {
-        return table.getEditingColumn();
-    }
-
-    public void addTableFocusListener(FocusListener listener) {
-        table.addFocusListener(listener);
-    }
-
-    /**
-     * <p>Propogates the call to <code>removeEditor()</code>
-     * on the table displaying the data.
-     */
-    public void removeEditor() {
-        table.removeEditor();
-    }
-
-    /**
-     * <p>Propogates the call to <code>isEditing()</code>
-     * on the table displaying the data.
-     *
-     * @return if a data edit is in progress on the table
-     */
     public boolean isEditing() {
-        return table.isEditing();
-    }
-
-    /**
-     * <p>Returns the table displaying the
-     * column data.
-     *
-     * @return the table displaying the data
-     */
-    public JTable getTable() {
-        return table;
-    }
-
-    /**
-     * <p>Moves the selected column up one row within
-     * the table moving the column above the selection
-     * below the selection.
-     */
-    @Override
-    public void moveRowUp() {
-        int selection = table.getSelectedRow();
-        if (selection == -1 || selection == 0) {
-            return;
-        }
-
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-
-        int newPostn = selection - 1;
-        ColumnData move = tableVector.elementAt(selection);
-        removeRow(selection);
-        insertRow(move, newPostn);
-        table.setRowSelectionInterval(newPostn, newPostn);
-        _model.fireTableRowsUpdated(newPostn, selection);
-        addColumnLines(-1);
-    }
-
-    /**
-     * <p>Moves the selected column down one row within
-     * the table moving the column below the selection
-     * above the selection.
-     */
-    @Override
-    public void moveRowDown() {
-        int selection = table.getSelectedRow();
-        if (selection == -1 || selection == tableVector.size() - 1) {
-            return;
-        }
-
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-
-        int newPostn = selection + 1;
-        ColumnData move = tableVector.elementAt(selection);
-        removeRow(selection);
-        insertRow(move, newPostn);
-        table.setRowSelectionInterval(newPostn, newPostn);
-        _model.fireTableRowsUpdated(selection, newPostn);
-        addColumnLines(-1);
+        return cursorsTable.isEditing();
     }
 
     public void insertRow(ColumnData cd, int position) {
-        tableVector.insertElementAt(cd, position);
-
+        cursorsVector.insertElementAt(cd, position);
     }
 
     public void addRow(ColumnData cd) {
         cd.setCursor(true);
-        tableVector.add(cd);
+        cursorsVector.add(cd);
     }
 
     public void removeRow(int position) {
-        tableVector.remove(position);
+        cursorsVector.remove(position);
     }
 
     public void clearRows() {
-        tableVector.clear();
+        cursorsVector.clear();
     }
 
     public void fireEditingStopped() {
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-    }
-
-
-    /**
-     * Adding new row
-     */
-
-
-    /**
-     * <p>Deletes the selected row from the table.
-     * This will also modify the SQL generated text.
-     */
-    public void deleteRow() {
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-
-        int selection = table.getSelectedRow();
-        if (selection == -1 || tableVector.size() == 0) {
-            return;
-        }
-
-        removeRow(selection);
-        _model.fireTableRowsDeleted(selection, selection);
-
-        if (tableVector.size() == 0) {
-            addRow(new ColumnData(true, dc));
-            _model.fireTableRowsInserted(0, 0);
-        }
-
-        addColumnLines(-1);
+        cursorsTable.editingStopped(null);
+        if (cursorsTable.isEditing())
+            cursorsTable.removeEditor();
     }
 
     public void deleteEmptyRow() {
-        table.editingStopped(null);
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
 
-        if (tableVector.size() == 0) {
+        cursorsTable.editingStopped(null);
+        if (cursorsTable.isEditing())
+            cursorsTable.removeEditor();
+
+        if (cursorsVector.isEmpty())
             return;
-        }
 
         removeRow(0);
-        _model.fireTableRowsDeleted(0, 0);
+        parameterModel.fireTableRowsDeleted(0, 0);
     }
 
-    public void addMouseListener() {
-        table.addMouseListener();
+    public void setRowSelectionInterval(int row) {
+        cursorsTable.setRowSelectionInterval(row, row);
     }
+
+    public String getSQLText() {
+        return sqlTextPanel.getSQLText();
+    }
+
+    public Vector<ColumnData> getCursorsVector() {
+        return cursorsVector;
+    }
+
+    public ProcedureParameterModel getProcedureParameterModel() {
+        return parameterModel;
+    }
+
+    // --- DefinitionPanel impl ---
 
     /**
      * <p>Inserts a new column after the selected
@@ -434,179 +230,166 @@ public class CursorsPanel extends JPanel
     public void addRow() {
         fireEditingStopped();
 
-        int lastRow = tableVector.size() - 1;
+        int lastRow = cursorsVector.size() - 1;
         int newRow = lastRow + 1;
 
-        ColumnData columnData = new ColumnData(dc);
+        ColumnData columnData = new ColumnData(connection);
         columnData.setCursor(true);
         addRow(columnData);
 
-        _model.fireTableRowsInserted(lastRow, newRow);
-        table.setRowSelectionInterval(newRow, newRow);
-        table.setColumnSelectionInterval(1, 1);
+        parameterModel.fireTableRowsInserted(lastRow, newRow);
+        cursorsTable.setRowSelectionInterval(newRow, newRow);
+        cursorsTable.setColumnSelectionInterval(1, 1);
 
-        table.setEditingRow(newRow);
-        table.setEditingColumn(NAME_COLUMN);
-        ((DefaultCellEditor) table.getCellEditor(newRow, NAME_COLUMN)).getComponent().requestFocus();
-    }
-
-    public void setEditingColumn(int col) {
-        table.setEditingColumn(col);
-    }
-
-    public void setRowSelectionInterval(int row) {
-        table.setRowSelectionInterval(row, row);
-    }
-
-    public void setColumnSelectionInterval(int col) {
-        table.setColumnSelectionInterval(col, col);
-    }
-
-    public void setTableColumnData(ColumnData[] cda) {
-        tableVector = new Vector<>(cda.length);
-        for (ColumnData aCda : cda) {
-            addRow(aCda);
-        }
-        _model.fireTableDataChanged();
-        addColumnLines(-1);
-    }
-
-    public ColumnData[] getTableColumnData() {
-        int v_size = tableVector.size();
-        ColumnData[] cda = new ColumnData[v_size];
-
-        for (int i = 0; i < v_size; i++) {
-            cda[i] = tableVector.elementAt(i);
-        }
-        return cda;
-    }
-
-    public String getSQLText() {
-        return null;
-    }
-
-    public ProcedureParameterModel getProcedureParameterModel() {
-        return _model;
-    }
-
-    public Vector<ColumnData> getTableColumnDataVector() {
-        return tableVector;
+        cursorsTable.setEditingRow(newRow);
+        cursorsTable.setEditingColumn(NAME_COLUMN);
+        ((DefaultCellEditor) cursorsTable.getCellEditor(newRow, NAME_COLUMN)).getComponent().requestFocus();
     }
 
     /**
-     * The table view display.
+     * <p>Deletes the selected row from the table.
+     * This will also modify the SQL generated text.
      */
-    private class DatabaseTable extends DefaultTable
-            implements MouseListener {
+    @Override
+    public void deleteRow() {
+
+        cursorsTable.editingStopped(null);
+        if (cursorsTable.isEditing())
+            cursorsTable.removeEditor();
+
+        int selection = cursorsTable.getSelectedRow();
+        if (selection == -1 || cursorsVector.isEmpty())
+            return;
+
+        removeRow(selection);
+        parameterModel.fireTableRowsDeleted(selection, selection);
+
+        if (cursorsVector.isEmpty()) {
+            addRow(new ColumnData(true, connection));
+            parameterModel.fireTableRowsInserted(0, 0);
+        }
+    }
+
+    /**
+     * <p>Moves the selected column up one row within
+     * the table moving the column above the selection
+     * below the selection.
+     */
+    @Override
+    public void moveRowUp() {
+
+        int selection = cursorsTable.getSelectedRow();
+        if (selection == -1 || selection == 0)
+            return;
+
+        cursorsTable.editingStopped(null);
+        if (cursorsTable.isEditing())
+            cursorsTable.removeEditor();
+
+        int newPosition = selection - 1;
+        ColumnData columnDataToMove = cursorsVector.elementAt(selection);
+
+        removeRow(selection);
+        insertRow(columnDataToMove, newPosition);
+        cursorsTable.setRowSelectionInterval(newPosition, newPosition);
+        parameterModel.fireTableRowsUpdated(newPosition, selection);
+    }
+
+    /**
+     * <p>Moves the selected column down one row within
+     * the table moving the column below the selection
+     * above the selection.
+     */
+    @Override
+    public void moveRowDown() {
+
+        int selectedRow = cursorsTable.getSelectedRow();
+        if (selectedRow == -1 || selectedRow == cursorsVector.size() - 1)
+            return;
+
+        cursorsTable.editingStopped(null);
+        if (cursorsTable.isEditing())
+            cursorsTable.removeEditor();
+
+        int newPosition = selectedRow + 1;
+        ColumnData columnDataToMove = cursorsVector.elementAt(selectedRow);
+
+        removeRow(selectedRow);
+        insertRow(columnDataToMove, newPosition);
+        cursorsTable.setRowSelectionInterval(newPosition, newPosition);
+        parameterModel.fireTableRowsUpdated(selectedRow, newPosition);
+    }
+
+    // ---
+
+    private static class DatabaseTable extends DefaultTable {
 
         public DatabaseTable(TableModel _model) {
             super(_model);
-            //setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             getTableHeader().setReorderingAllowed(false);
             setCellSelectionEnabled(true);
             setColumnSelectionAllowed(false);
             setRowSelectionAllowed(false);
             setSurrendersFocusOnKeystroke(true);
-            //setDefaultRenderer(Object.class,new BrowserTableCellRenderer());
-        }
-
-        public void addMouseListener() {
-            addMouseListener(this);
-        }
-
-        public void mouseClicked(MouseEvent e) {
-        }
-
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        public void mouseExited(MouseEvent e) {
-        }
-
-        public void mousePressed(MouseEvent e) {
-        }
-
-        public void mouseReleased(MouseEvent e) {
         }
 
         @Override
         public TableCellEditor getCellEditor(int row, int col) {
             return super.getCellEditor(row, col);
         }
-    } // class DatabaseTable
 
+    } // DatabaseTable class
 
-    /**
-     * The table's model.
-     */
-    public class ProcedureParameterModel extends AbstractPrintableTableModel {
+    private class ProcedureParameterModel extends AbstractPrintableTableModel {
 
-        protected String[] header = Bundles.get(TableDefinitionPanel.class,
-                new String[]
-                        {"Name", "Scroll", "SelectOperator", "Description"});
+        protected String[] header = Bundles.get(TableDefinitionPanel.class, new String[]{
+                "Name", "Scroll", "SelectOperator", "Description"
+        });
 
         public ProcedureParameterModel() {
-            tableVector = new Vector<>();
-            ColumnData cd = new ColumnData(dc);
+            cursorsVector = new Vector<>();
+            ColumnData cd = new ColumnData(connection);
             cd.setCursor(true);
             addRow(cd);
         }
 
-        public ProcedureParameterModel(Vector<ColumnData> data) {
-            tableVector = data;
-        }
-
-        public void setColumnDataArray(ColumnData[] cda) {
-
-            if (cda != null) {
-                if (tableVector == null) {
-                    tableVector = new Vector<>(cda.length);
-                } else {
-                    clearRows();
-                }
-
-                for (ColumnData aCda : cda) {
-                    addRow(aCda);
-                }
-            } else {
-                clearRows();
-            }
-
-            fireTableDataChanged();
-        }
-
+        @Override
         public int getColumnCount() {
             return header.length;
         }
 
+        @Override
         public int getRowCount() {
-            return tableVector.size();
+            return cursorsVector.size();
         }
 
         /**
          * Returns the printable value at the specified row and column.
          *
-         * @param row - the row index
-         * @param col - the column index
+         * @param row the row index
+         * @param col the column index
          * @return the value to print
          */
+        @Override
         public String getPrintValueAt(int row, int col) {
-            if (col >= 0) {
-                Object value = getValueAt(row, col);
-                if (value != null) {
-                    return value.toString();
-                }
-                return EMPTY;
-            } else return EMPTY;
+
+            if (col < 0)
+                return Constants.EMPTY;
+
+            Object value = getValueAt(row, col);
+            if (value != null)
+                return value.toString();
+
+            return Constants.EMPTY;
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
 
-            if (row >= tableVector.size()) {
+            if (row >= cursorsVector.size())
                 return null;
-            }
-            ColumnData cd = tableVector.elementAt(row);
 
+            ColumnData cd = cursorsVector.elementAt(row);
             switch (col) {
 
                 case NAME_COLUMN:
@@ -623,26 +406,27 @@ public class CursorsPanel extends JPanel
 
                 default:
                     return null;
-
             }
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
-            ColumnData cd = tableVector.elementAt(row);
 
-            //Log.debug("setValueAt [row: "+row+" col: "+col+" value: "+value+"]");
-
+            ColumnData cd = cursorsVector.elementAt(row);
             switch (col) {
 
                 case NAME_COLUMN:
                     cd.setColumnName((String) value);
                     break;
+
                 case SCROLL_COLUMN:
                     cd.setScroll((boolean) value);
                     break;
+
                 case SELECT_OPERATOR_COLUMN:
                     cd.setSelectOperator((String) value);
                     break;
+
                 case DESCRIPTION_COLUMN:
                     cd.setRemarks((String) value);
                     break;
@@ -651,41 +435,21 @@ public class CursorsPanel extends JPanel
             fireTableRowsUpdated(row, row);
         }
 
-
+        @Override
         public boolean isCellEditable(int row, int col) {
-            if (col == SELECT_OPERATOR_COLUMN)
-                return false;
-            return editing;
+            return col != SELECT_OPERATOR_COLUMN && editing;
         }
 
+        @Override
         public String getColumnName(int col) {
             return header[col];
         }
 
-        public Class getColumnClass(int col) {
-            if (col == SCROLL_COLUMN)
-                return Boolean.class;
-            else {
-                return String.class;
-            }
+        @Override
+        public Class<?> getColumnClass(int col) {
+            return col == SCROLL_COLUMN ? Boolean.class : String.class;
         }
 
-        public void addNewRow() {
-            ColumnData cd = tableVector.lastElement();
-            if (!cd.isNewColumn()) {
-                addRow(new ColumnData(true, dc));
-            }
-
-        }
-
-        public Vector<ColumnData> getTableVector() {
-            return tableVector;
-        }
-    } // class CreateTableModel
-
-
-    /**
-     * Called when the selction is cancelled.
-     */
+    } // CreateTableModel class
 
 }

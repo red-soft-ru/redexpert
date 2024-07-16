@@ -170,7 +170,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         if (isParseVariables()) {
             Vector<ColumnData> variables = new Vector<>();
             variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-            variables.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            variables.addAll(cursorsPanel.getCursorsVector());
 
             return SQLUtils.generateCreateFunction(
                     nameField.getText(),

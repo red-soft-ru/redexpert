@@ -874,6 +874,8 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            setEnableElements(true);
+            refresh();
         }
     }
 

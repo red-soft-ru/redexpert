@@ -114,6 +114,14 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 Boolean.valueOf(stringUserProperty(key))
         ));
 
+        key = "editor.plan.explained";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("PrintExplainedPlan"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
         key = "editor.open.on-connect";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

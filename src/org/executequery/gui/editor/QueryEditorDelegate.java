@@ -197,7 +197,7 @@ public class QueryEditorDelegate implements QueryDelegate {
         }
     }
 
-    public void printExecutedPlan(DatabaseConnection connection, String query, boolean explained) {
+    public void printExecutedPlan(DatabaseConnection connection, String query) {
 
         if (dispatcher.isExecuting())
             return;
@@ -206,7 +206,7 @@ public class QueryEditorDelegate implements QueryDelegate {
             query = queryEditor.getEditorText();
 
         if (StringUtils.isNotBlank(query))
-            dispatcher.printExecutedPlan(connection, query, explained, false);
+            dispatcher.printExecutedPlan(connection, query, false);
     }
 
     public void executing() {

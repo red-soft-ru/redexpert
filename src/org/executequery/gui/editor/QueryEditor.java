@@ -1054,9 +1054,9 @@ public class QueryEditor extends DefaultTabView
         return query;
     }
 
-    public void printExecutedPlan(boolean explained) {
+    public void printExecutedPlan() {
         preExecute();
-        delegate.printExecutedPlan(getSelectedConnection(), getQueryToExecute(null), explained);
+        delegate.printExecutedPlan(getSelectedConnection(), getQueryToExecute(null));
     }
 
     @Override

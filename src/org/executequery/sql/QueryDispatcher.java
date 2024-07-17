@@ -94,6 +94,11 @@ public class QueryDispatcher {
     private boolean verboseLogging;
 
     /**
+     * indicates should print explained plan
+     */
+    private boolean explainedPlan;
+
+    /**
      * Indicates that an execute is in progress
      */
     private boolean executing;
@@ -162,9 +167,8 @@ public class QueryDispatcher {
     }
 
     private void initialiseLogging() {
-
         verboseLogging = userProperties().getBooleanProperty("editor.logging.verbose");
-
+        explainedPlan = userProperties().getBooleanProperty("editor.plan.explained");
         newLineMatcher = Pattern.compile("\n").matcher("");
     }
 
@@ -415,7 +419,7 @@ public class QueryDispatcher {
         worker.start();
     }
 
-    public void printExecutedPlan(DatabaseConnection dc, final String script, boolean explained, boolean anyConnections) {
+    public void printExecutedPlan(DatabaseConnection dc, final String script, boolean anyConnections) {
 
         if (!ConnectionManager.hasConnections()) {
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
@@ -437,13 +441,11 @@ public class QueryDispatcher {
 
                 try {
                     String query = derivedQuery.getDerivedQuery();
-                    Statement statement = prepareStatementWithParameters(query, getVariables(query), false);
-
-                    query = query.length() > 50 ? query.substring(0, 49).trim() + "..." : query;
                     setOutputMessage(dc, SqlMessages.ACTION_MESSAGE, "Printing plan for:", true, anyConnections);
-                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE_PREFORMAT, query, true, anyConnections);
+                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE_PREFORMAT, getVerboseString(query), true, anyConnections);
 
-                    printPlan(statement, explained, anyConnections);
+                    Statement statement = prepareStatementWithParameters(query, getVariables(query), false);
+                    printPlan(dc, statement, anyConnections);
 
                 } catch (SQLException e) {
                     setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
@@ -458,6 +460,25 @@ public class QueryDispatcher {
 
         } finally {
             querySender.releaseResourcesWithoutCommit();
+        }
+    }
+
+    private void printPlan(DatabaseConnection dc, Statement statement, boolean anyConnections) {
+
+        String plan = getPlan(statement, false);
+        if (plan != null) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "PLAN:", true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, plan.replace("PLAN", "").trim(), true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "HASH:", true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, String.valueOf(plan.hashCode()), anyConnections);
+        }
+
+        if (explainedPlan) {
+            plan = getPlan(statement, true);
+            if (plan != null) {
+                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "EXPLAIN:", true, anyConnections);
+                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, plan, anyConnections);
+            }
         }
     }
 
@@ -1480,39 +1501,36 @@ public class QueryDispatcher {
         }
     }
 
-    private void printPlan(Statement st, boolean explained, boolean anyConnections) {
+    private String getPlan(Statement realStatement, boolean explained) {
+        String plan = null;
+
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-            if (driver.getClass().getName().contains("FBDriver")) {
-                Statement realST = ((PooledStatement) st).getStatement();
+            if (!driver.getClass().getName().contains("FBDriver"))
+                return null;
 
-                Statement statement = null;
-                try {
-                    statement = realST.unwrap(Statement.class);
-                } catch (SQLException e) {
-                    Log.error(e.getMessage(), e);
-                }
+            try {
+                realStatement = ((PooledStatement) realStatement).getStatement();
+                Statement statement = realStatement.unwrap(Statement.class);
+                IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                        databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl"
+                );
 
-                try {
-                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                            databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl"
-                    );
+                plan = explained ? db.getLastExplainExecutedPlan(statement) : db.getLastExecutedPlan(statement);
 
-                    String plan = explained ? db.getLastExplainExecutedPlan(statement) : db.getLastExecutedPlan(statement);
-                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, plan, true, anyConnections);
-
-                } catch (SQLException | ClassNotFoundException e) {
-                    Log.error(e.getMessage(), e);
-                }
+            } catch (SQLException | ClassNotFoundException e) {
+                Log.error(e.getMessage(), e);
             }
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
         }
+
+        return plan;
     }
 
     private List<DerivedQuery> getExecutableQueries(String script) throws InterruptedException {
@@ -1610,28 +1628,19 @@ public class QueryDispatcher {
      * @param query - the executed query
      */
     private void logExecution(String query, boolean anyConnections) {
-
         Log.info(EXECUTING + query);
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ACTION_MESSAGE_PREFORMAT, getVerboseString(query), anyConnections);
+    }
 
-        if (verboseLogging) {
+    private String getVerboseString(String sourceText) {
+        if (verboseLogging)
+            return sourceText;
 
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE_PREFORMAT, query, anyConnections);
+        int stringLength = sourceText.length();
+        int subIndex = stringLength < 50 ? (stringLength + 1) : 50;
 
-        } else {
-
-            int queryLength = query.length();
-            int subIndex = queryLength < 50 ? (queryLength + 1) : 50;
-
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE_PREFORMAT,
-                    query.substring(0, subIndex - 1).trim() + SUBSTRING, anyConnections);
-        }
-
+        return sourceText.substring(0, subIndex - 1).trim() + SUBSTRING;
     }
 
     private void processException(Throwable e, boolean anyConnections) {

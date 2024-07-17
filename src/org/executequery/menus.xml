@@ -70,6 +70,18 @@
         <menu-item id="open-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu name="Recent Files"
+              key="menu.file.recent-files"
+              class="org.executequery.gui.menu.RecentFilesMenu"
+              mnemonic="C">
+
+            <menu-item id="separator"/>
+
+            <menu-item id="clear-recent-files-command"
+                       class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
+        </menu>
+
         <menu-item id="save-as-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 

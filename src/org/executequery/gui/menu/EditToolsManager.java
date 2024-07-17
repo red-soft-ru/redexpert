@@ -40,8 +40,8 @@ public class EditToolsManager {
         boolean enable = isQueryEditorInFocus();
 
         getMenuMap().get("goto-command").setEnabled(enable);
-        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(12).setEnabled(enable); // move text commands
-        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(13).setEnabled(enable); // duplicate text commands
+        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(13).setEnabled(enable); // move text commands
+        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(14).setEnabled(enable); // duplicate text commands
     }
 
     private static boolean isTextFunctionInFocus() {

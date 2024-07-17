@@ -75,6 +75,10 @@ public class OpenCommand implements BaseCommand {
         worker.start();
     }
 
+    public void openFile(File file) {
+        loadFile(file);
+    }
+
     private SwingWorker buildWorker(File file) {
         return new SwingWorker(String.format("Loading file [%s]", file.getName())) {
 

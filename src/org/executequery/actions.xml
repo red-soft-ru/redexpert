@@ -17,6 +17,12 @@
             accel-editable="true"
             execute-class="org.executequery.actions.filecommands.OpenCommand"/>
 
+    <action id="clear-recent-files-command"
+            name="Clear recent files list"
+            accel-editable="false"
+            mnemonic="C"
+            execute-class="org.executequery.actions.filecommands.ClearRecentFilesCommand"/>
+
     <action id="save-command"
             name="Save"
             mnemonic="S"

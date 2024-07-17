@@ -289,7 +289,8 @@
 
     <action id="toggle-editor-output-command"
             name="Show/Hide Editor Output"
-            accel-editable="false"
+            accel-editable="true"
+            accel-key="control E"
             small-icon="icon_toggle_editor_output"
             execute-class="org.executequery.actions.queryeditor.ToggleEditorOutputCommand"/>
 

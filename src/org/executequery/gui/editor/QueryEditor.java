@@ -1289,7 +1289,7 @@ public class QueryEditor extends DefaultTabView
         if (saved) {
 
             GUIUtilities.setTabTitleForComponent(this, getDisplayName());
-            statusBar.setStatus(bundleString("FileSavedTo") + scriptFile.getFileName());
+            statusBar.setStatus(bundleString("FileSavedTo", scriptFile.getFileName()));
 
             isContentChanged = false;
         }
@@ -1485,8 +1485,8 @@ public class QueryEditor extends DefaultTabView
 
     }
 
-    private String bundleString(String key) {
-        return Bundles.get(this.getClass(), key);
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(QueryEditor.class, key, args);
     }
 
     // --- ListCheckListener impl ---

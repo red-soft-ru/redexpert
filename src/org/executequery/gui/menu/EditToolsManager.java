@@ -25,7 +25,7 @@ public class EditToolsManager {
         getMenuMap().get("paste-command").setEnabled(enable);
         getMenuMap().get("find-command").setEnabled(enable);
         getMenuMap().get("replace-command").setEnabled(enable);
-        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(14).setEnabled(enable); // change text case commands
+        GUIUtilities.getExecuteQueryMenu().getMenu(1).getItem(15).setEnabled(enable); // change text case commands
     }
 
     private static void enableSaveFunction() {

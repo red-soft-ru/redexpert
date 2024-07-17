@@ -21,7 +21,6 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.gui.text.SQLTextArea;
-import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.SystemProperties;
@@ -30,6 +29,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 
@@ -39,43 +42,65 @@ import java.util.Vector;
 public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         implements ListSelectionListener {
 
+    protected String fontNameKey;
+    protected String fontSizeKey;
 
-    protected JList fontList;
-    protected JList sizeList;
+    private JList<String> fontList;
+    private JList<String> sizeList;
 
-    protected DisabledField selectedFontField;
-    protected NumberTextField selectedSizeField;
-
-    SQLTextArea samplePanel;
+    private SQLTextArea sampleTextPanel;
+    private JTextField selectedFontField;
+    private NumberTextField selectedSizeField;
 
     public PropertiesEditorFonts(PropertiesPanel parent) {
         super(parent);
+
+        preInit();
         init();
+        arrange();
+        valueChanged(null);
+    }
+
+    protected void preInit() {
+        fontNameKey = "sqlsyntax.font.name";
+        fontSizeKey = "sqlsyntax.font.size";
     }
 
     private void init() {
-        selectedFontField = new DisabledField();
-        selectedSizeField = new NumberTextField();
 
         Vector<String> fontNames = GUIUtils.getSystemFonts();
         String[] fontSizes = {"8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"};
-        fontList = new JList(fontNames);
-        sizeList = new JList(fontSizes);
+
+        String newFontName = SystemProperties.getProperty("user", fontNameKey);
+        String newFontSize = SystemProperties.getProperty("user", fontSizeKey);
+
+        fontList = new JList<>(fontNames);
+        fontList.setSelectedValue(newFontName, true);
+        fontList.addListSelectionListener(this);
+
+        sizeList = new JList<>(fontSizes);
+        sizeList.setSelectedValue(newFontSize, true);
+        sizeList.addListSelectionListener(this);
+
+        selectedFontField = new JTextField();
+        selectedFontField.setText(newFontName);
+        selectedFontField.addKeyListener(new KeyListenerImpl(fontList, fontNames));
+
+        selectedSizeField = new NumberTextField();
+        selectedSizeField.setText(newFontSize);
+        selectedSizeField.addKeyListener(new KeyListenerImpl(sizeList, Arrays.asList(fontSizes)));
+
+        sampleTextPanel = new SQLTextArea();
+        sampleTextPanel.setText("Sample normal text");
+    }
+
+    private void arrange() {
 
         JScrollPane fontScroll = new JScrollPane(fontList);
+        fontScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
         JScrollPane sizeScroll = new JScrollPane(sizeList);
 
-        fontScroll.setHorizontalScrollBarPolicy(
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        String _fontName = SystemProperties.getProperty("user", "sqlsyntax.font.name");
-        String _fontSize = SystemProperties.getProperty("user", "sqlsyntax.font.size");
-
-        fontList.setSelectedValue(_fontName, true);
-        sizeList.setSelectedValue(_fontSize, true);
-
-        selectedFontField.setText(_fontName);
-        selectedSizeField.setText(_fontSize);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -110,10 +135,6 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         // setup samples
 
 
-        samplePanel = new SQLTextArea();
-        samplePanel.setText(" Sample normal text");
-        //samplePanel.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
-
         gbc.gridx = 0;
         gbc.gridy++;
         gbc.insets.top = 10;
@@ -127,63 +148,69 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         gbc.weightx = 1.0;
         gbc.insets.top = 0;
         gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(samplePanel), gbc);
+        panel.add(new JScrollPane(sampleTextPanel), gbc);
         addContent(panel);
-
-        valueChanged(null);
-        fontList.addListSelectionListener(this);
-        sizeList.addListSelectionListener(this);
     }
 
+    private void updateSampleTextPanel() {
+        sampleTextPanel.setFont(new Font(
+                selectedFontField.getText().trim(),
+                Font.PLAIN,
+                Integer.parseInt(selectedSizeField.getText().trim())
+        ));
+    }
+
+    @Override
+    public void save() {
+        SystemProperties.setProperty("user", fontNameKey, selectedFontField.getText().trim());
+        SystemProperties.setProperty("user", fontSizeKey, selectedSizeField.getStringValue());
+    }
+
+    @Override
     public void restoreDefaults() {
-        fontList.setSelectedValue(SystemProperties.
-                getProperty("defaults", "sqlsyntax.font.name"), true);
-        sizeList.setSelectedValue(SystemProperties.
-                getProperty("defaults", "sqlsyntax.font.size"), true);
+        fontList.setSelectedValue(SystemProperties.getProperty("defaults", fontNameKey), true);
+        sizeList.setSelectedValue(SystemProperties.getProperty("defaults", fontSizeKey), true);
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
 
         if (fontList.getSelectedIndex() == -1)
             return;
 
-        String fontName = (String) fontList.getSelectedValue();
-        int fontSize = Integer.parseInt((String) sizeList.getSelectedValue());
-
-        //int italicBold = Font.BOLD + Font.ITALIC;
-
-
-        /*normalSample.setFont();
-        italicSample.setFont(new Font(fontName, Font.ITALIC, fontSize));
-        boldSample.setFont(new Font(fontName, Font.BOLD, fontSize));
-        italicBoldSample.setFont(new Font(fontName, italicBold, fontSize));*/
-        samplePanel.setFont(new Font(fontName, Font.PLAIN, fontSize));
-
-        selectedFontField.setText(fontName);
-        selectedSizeField.setText(Integer.toString(fontSize));
-
+        selectedFontField.setText(fontList.getSelectedValue());
+        selectedSizeField.setText(sizeList.getSelectedValue());
+        updateSampleTextPanel();
     }
 
-    public void save() {
-        SystemProperties.setProperty("user", "sqlsyntax.font.size",
-                selectedSizeField.getStringValue());
-        SystemProperties.setProperty("user", "sqlsyntax.font.name",
-                (String) fontList.getSelectedValue());
-    }
+    private class KeyListenerImpl implements KeyListener {
+        private final JList<String> targetList;
+        private final List<String> availableValues;
+
+        public KeyListenerImpl(JList<String> targetList, List<String> availableValues) {
+            this.targetList = targetList;
+            this.availableValues = availableValues;
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            JTextField sourceField = (JTextField) e.getSource();
+            String sourceText = sourceField.getText().trim();
+
+            if (availableValues.contains(sourceText))
+                targetList.setSelectedValue(sourceText, true);
+
+            updateSampleTextPanel();
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+        }
+
+    } // KeyListenerImpl class
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -11,36 +11,21 @@ public class PropertiesConsoleFonts extends PropertiesEditorFonts {
 
     public PropertiesConsoleFonts(PropertiesPanel parent) {
         super(parent);
-        init();
     }
 
-    private void init() {
-        String _fontName = SystemProperties.getProperty("user", "console.font.name");
-        String _fontSize = SystemProperties.getProperty("user", "console.font.size");
-
-        fontList.setSelectedValue(_fontName, true);
-        sizeList.setSelectedValue(_fontSize, true);
-
-        selectedFontField.setText(_fontName);
-        selectedSizeField.setText(_fontSize);
+    @Override
+    protected void preInit() {
+        fontNameKey = "console.font.name";
+        fontSizeKey = "console.font.size";
     }
 
+    @Override
     public void save() {
-        SystemProperties.setProperty("user", "console.font.size",
-                (String) sizeList.getSelectedValue());
-        SystemProperties.setProperty("user", "console.font.name",
-                (String) fontList.getSelectedValue());
-        try {
-            ((SystemOutputPanel) GUIUtilities.getDockedTabComponent(SystemOutputPanel.PROPERTY_KEY)).reloadFont();
-        } catch (Exception e) {
-            Log.debug("error reload console font", e);
-        }
+        super.save();
+
+        JPanel tabComponent = GUIUtilities.getDockedTabComponent(SystemOutputPanel.PROPERTY_KEY);
+        if (tabComponent instanceof SystemOutputPanel)
+            ((SystemOutputPanel) tabComponent).reloadFont();
     }
 
-    public void restoreDefaults() {
-        fontList.setSelectedValue(
-                UIManager.getDefaults().getFont("TextArea.font").getFontName(), true);
-        sizeList.setSelectedValue(SystemProperties.
-                getProperty("defaults", "console.font.size"), true);
-    }
 }

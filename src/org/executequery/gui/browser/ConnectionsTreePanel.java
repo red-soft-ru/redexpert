@@ -530,8 +530,8 @@ public class ConnectionsTreePanel extends TreePanel
      *
      * @return the connection properties object
      */
-    protected DatabaseConnection getConnectionAt(Point point) {
-        return getConnectionAt(tree.getPathForLocation(point.x, point.y));
+    protected DatabaseConnection getSelectedPathConnection() {
+        return getConnectionAt(tree.getSelectionPath());
     }
 
     /**
@@ -1705,7 +1705,11 @@ public class ConnectionsTreePanel extends TreePanel
                 return;
 
             Point point = new Point(e.getX(), e.getY());
-            TreePath treePathForLocation = getTreePathForLocation(point.x, point.y);
+            boolean findClosestPath = tree.getRowCount() * tree.getRowHeight() >= point.y;
+
+            TreePath treePathForLocation = findClosestPath ?
+                    tree.getUI().getClosestPathForLocation(tree, point.x, point.y) :
+                    getTreePathForLocation(point.x, point.y);
 
             if (!checkShowActiveMenu(treePathForLocation)) {
                 try {
@@ -1730,7 +1734,7 @@ public class ConnectionsTreePanel extends TreePanel
 
             } else if (isADatabaseHostNode(object)) {
                 popupMenu = getBrowserTreeHostPopupMenu();
-                ((BrowserTreeHostPopupMenu) popupMenu).setConnection(getConnectionAt(point));
+                ((BrowserTreeHostPopupMenu) popupMenu).setConnection(getSelectedPathConnection());
                 ((BrowserTreeHostPopupMenu) popupMenu).setCurrentPath(treePathForLocation);
 
             } else {
@@ -1747,7 +1751,7 @@ public class ConnectionsTreePanel extends TreePanel
                     browserPopup.setSelectedSeveralPaths(false);
                 }
 
-                DatabaseConnection connection = getConnectionAt(point);
+                DatabaseConnection connection = getSelectedPathConnection();
                 if (connection == null)
                     return;
 

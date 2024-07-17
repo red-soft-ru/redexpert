@@ -58,7 +58,7 @@ public class ExecuteQueryFrame extends JFrame
     public ExecuteQueryFrame() {
         super(TITLE);
 
-        ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE);
+        ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE, "svg", 512, IconManager.IconFolder.BASE);
         setIconImage(frameIcon.getImage());
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 

@@ -169,6 +169,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         actionButton.setPreferredSize(null);
         actionButton.setText(Bundles.getCommon("execute"));
         actionButton.addActionListener(e -> displayExecuteDialog());
+        actionButton.setPreferredSize(new Dimension(actionButton.getPreferredSize().width, submitButton.getPreferredSize().height));
 
         NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
         DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) namedObject;
@@ -203,13 +204,24 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         splitPane.setRightComponent(ddlTextPanel);
         splitPane.setDividerLocation(0.5);
 
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally().anchorNorthEast();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(actionButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(submitButton, gbh.nextCol().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().get());
+
         // --- main panel ---
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
         gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
         mainPanel.add(topPanel, gbh.setMinWeightY().spanX().get());
-        mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().spanY().get());
+        mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().setMaxWeightY().get());
+        mainPanel.add(buttonPanel, gbh.nextRow().fillNone().anchorNorthEast().setMinWeightY().bottomGap(5).get());
 
         // --- base ---
 
@@ -218,7 +230,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         centralPanel.setVisible(false);
 
         add(mainPanel, gbh.fillBoth().spanX().spanY().get());
-        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         setPreferredSize(new Dimension(1200, 600));
     }
 

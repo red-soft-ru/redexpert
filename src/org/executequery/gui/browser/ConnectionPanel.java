@@ -1802,7 +1802,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     } // DeleteButtonRenderer
 
-    class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
+    static class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
 
         private final List<Component> componentOrder = new ArrayList<>();
 

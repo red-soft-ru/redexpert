@@ -294,7 +294,16 @@ public class CreateDatabasePanel extends ActionPanel
 
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
-        addDriverFields(mainPanel, gbh);
+        gbh.nextCol().setLabelDefault();
+        mainPanel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
+        mainPanel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
+        JButton addNewDriver = new JButton(bundledString("addNewDriver"));
+        addNewDriver.setActionCommand("addNewDriver");
+        addNewDriver.addActionListener(this);
+        addNewDriver.setMnemonic('r');
+        gbh.nextCol().setLabelDefault();
+        mainPanel.add(addNewDriver, gbh.get());
 
         JLabel authLabel = new JLabel(bundledString("Authentication"));
 
@@ -366,6 +375,34 @@ public class CreateDatabasePanel extends ActionPanel
 
         createButton = createButton(bundledString("Create"), CREATE_ACTION_COMMAND, 'T');
         mainPanel.add(createButton, gbh.nextRowFirstCol().setWidth(1).anchorNorthWest().setLabelDefault().spanY().get());
+
+        // ---
+
+        List<Component> orderList = new ArrayList<>();
+        orderList.add(nameField);
+        orderList.add(hostField);
+        orderList.add(portField);
+        orderList.add(sourceField);
+        orderList.add(saveFile);
+        orderList.add(charsetsCombo);
+        orderList.add(pageSizeCombo);
+        orderList.add(driverCombo);
+        orderList.add(addNewDriver);
+        orderList.add(authCombo);
+        orderList.add(userField);
+        orderList.add(passwordField);
+        orderList.add(savePwdCheck);
+        orderList.add(encryptPwdCheck);
+        orderList.add(showPassword);
+        orderList.add(containerPasswordField);
+        orderList.add(certificateFileField);
+        orderList.add(openCertFile);
+        orderList.add(saveContPwdCheck);
+        orderList.add(verifyServerCertCheck);
+        orderList.add(createButton);
+
+        mainPanel.setFocusTraversalPolicy(new ConnectionPanel.CustomFocusTraversalPolicy(orderList));
+        mainPanel.setFocusTraversalPolicyProvider(true);
 
         // ---------------------------------
         // create the advanced panel
@@ -1457,21 +1494,6 @@ public class CreateDatabasePanel extends ActionPanel
 
             panel.add(pair.component, gbc);
         }
-
-    }
-
-    private void addDriverFields(JPanel panel, GridBagHelper gbh) {
-
-        gbh.nextCol().setLabelDefault();
-        panel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
-        panel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
-        JButton button = new JButton(bundledString("addNewDriver"));
-        button.setActionCommand("addNewDriver");
-        button.addActionListener(this);
-        button.setMnemonic('r');
-        gbh.nextCol().setLabelDefault();
-        panel.add(button, gbh.get());
 
     }
 

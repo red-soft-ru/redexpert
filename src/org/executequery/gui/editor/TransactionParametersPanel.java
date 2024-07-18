@@ -115,6 +115,8 @@ public class TransactionParametersPanel extends JPanel {
         mainPanel.add(topPanel, gbh.get());
         mainPanel.add(bottomPanel, gbh.nextRow().topGap(5).get());
 
+        mainPanel.setMinimumSize(mainPanel.getPreferredSize());
+
         // --- base ---
 
         setLayout(new GridBagLayout());

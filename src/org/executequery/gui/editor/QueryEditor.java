@@ -271,9 +271,9 @@ public class QueryEditor extends DefaultTabView
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
         gbh = new GridBagHelper().setInsets(6, 8, 8, 0).anchorNorthWest().fillHorizontally();
-        mainPanel.add(toolBar, gbh.setMinWeightX().spanX().get());
-        mainPanel.add(transactionParametersPanel, gbh.leftGap(0).topGap(5).nextRowFirstCol().spanX().get());
-        mainPanel.add(splitPane, gbh.nextRowFirstCol().setInsets(5, 8, 5, 5).setMaxWeightY().fillBoth().spanY().get());
+        mainPanel.add(toolBar, gbh.setWeightX(0).spanX().get());
+        mainPanel.add(transactionParametersPanel, gbh.leftGap(0).topGap(5).nextRow().get());
+        mainPanel.add(splitPane, gbh.nextRow().setInsets(5, 8, 5, 5).setWeightX(1).fillBoth().spanY().get());
 
         // --- base ---
 

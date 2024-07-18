@@ -69,11 +69,6 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         setIconTextGap(10);
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-
-        if (UIUtils.isGtkLookAndFeel()) {
-            // has default black border on selection - ugly and wrong!
-            setBorderSelectionColor(null);
-        }
     }
 
     /**
@@ -169,6 +164,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             selected = true;
         }
 
+        setBorderSelectionColor(null);
         return this;
     }
 

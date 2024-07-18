@@ -20,6 +20,7 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.InterfaceLanguage;
 import org.executequery.plaf.LookAndFeelType;
@@ -29,6 +30,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -112,7 +114,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 UserPreference.ENUM_TYPE,
                 key,
                 bundledStaticString("language"),
-                InterfaceLanguage.valueOf(stringUserProperty(key)),
+                getSelectedInterfaceLanguage(),
                 languageValuePairs()
         ));
 
@@ -183,6 +185,16 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
             return null;
 
         return (LookAndFeelType) (selectedValue).getValue();
+    }
+
+    private InterfaceLanguage getSelectedInterfaceLanguage() {
+
+        String interfaceLanguage = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
+        if (Arrays.stream(InterfaceLanguage.values()).anyMatch(value -> Objects.equals(value.getKey(), interfaceLanguage)))
+            return InterfaceLanguage.valueOf(interfaceLanguage);
+
+        SystemProperties.setStringProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language", "en");
+        return InterfaceLanguage.en;
     }
 
     @Override

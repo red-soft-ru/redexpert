@@ -1107,7 +1107,7 @@ public class Comparer {
 
         } catch (java.lang.Exception e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error while comparing objects dependencies:\n" + e.getMessage(), e);
+                    "Error while comparing objects dependencies:\n" + e.getMessage(), e, this.getClass());
             Log.error(e);
         }
 

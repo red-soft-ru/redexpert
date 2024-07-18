@@ -241,7 +241,7 @@ public class TableValidationPanel extends JPanel implements TabView {
                 ConnectionMediator.getInstance().connect(selectedConnection, true);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e, this.getClass());
             return;
         }
 

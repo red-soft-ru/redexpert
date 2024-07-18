@@ -786,7 +786,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             setColumnsFromResultSet(rs);
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e, this.getClass());
 
         } finally {
             if (!someExecuteForColumns)
@@ -1094,7 +1094,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             setInfoFromResultSet(rs);
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e, this.getClass());
 
         } finally {
             if (!someExecute)

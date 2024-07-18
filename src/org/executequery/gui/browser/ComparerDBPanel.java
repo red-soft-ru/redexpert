@@ -752,7 +752,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     try {
                         compare();
                     } catch (Throwable e) {
-                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
+                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e, this.getClass());
                         Log.error("Error occurred while comparing DBs", e);
                     }
 

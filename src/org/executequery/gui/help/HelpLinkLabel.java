@@ -56,7 +56,7 @@ public class HelpLinkLabel extends JHSecondaryViewer {
 
                 GUIUtilities.displayExceptionErrorDialog(
                         "Error launching local web browser:\n" +
-                                applicationException.getMessage(), applicationException);
+                                applicationException.getMessage(), applicationException, this.getClass());
 
             }
 

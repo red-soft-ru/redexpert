@@ -220,7 +220,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             displayExecuteQueryDialog(getSQLText(), "^");
 
         } catch (Exception exc) {
-            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
+            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc, this.getClass());
         }
     }
 

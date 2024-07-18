@@ -145,7 +145,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
             try {
                 traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
             } catch (SQLException e) {
-                GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+                GUIUtilities.displayExceptionErrorDialog("Error stop session", e, this.getClass());
             } finally {
                 stopSession();
             }
@@ -356,12 +356,12 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                                 ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
                         ));
                     } catch (Exception e1) {
-                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
+                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1, this.getClass());
                     }
                 } else try {
                     traceManager.stopTraceSession(currentSessionId);
                 } catch (SQLException e1) {
-                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
+                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1, this.getClass());
                 } finally {
                     stopSession();
                 }
@@ -397,7 +397,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                                     Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
                     readFromBufferedReader(reader, true);
                 } catch (Exception e1) {
-                    GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                    GUIUtilities.displayExceptionErrorDialog("file opening error", e1, this.getClass());
                 } finally {
                     if (reader != null) {
                         try {

@@ -460,19 +460,19 @@ public class TableDataTab extends JPanel
                     SQLException sqlException = (SQLException) e.getCause();
 
                     if (sqlException.getSQLState().contentEquals("28000"))
-                        GUIUtilities.displayExceptionErrorDialog("Data access error", e);
+                        GUIUtilities.displayExceptionErrorDialog("Data access error", e, this.getClass());
                     else {
-                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                         rebuildDataFromMetadata(columnDataList);
                     }
 
                 } else {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                     rebuildDataFromMetadata(columnDataList);
                 }
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 rebuildDataFromMetadata(columnDataList);
             }
 
@@ -1130,7 +1130,7 @@ public class TableDataTab extends JPanel
                         loadDataForTable(databaseObject);
 
                 } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 }
             }
         });

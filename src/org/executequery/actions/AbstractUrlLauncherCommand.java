@@ -42,7 +42,7 @@ public abstract class AbstractUrlLauncherCommand extends AbstractBaseCommand {
 
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("error.launchBrowser") +
-                            applicationException.getMessage(), applicationException);
+                            applicationException.getMessage(), applicationException, this.getClass());
 
         }
 

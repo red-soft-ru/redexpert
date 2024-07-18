@@ -1323,13 +1323,13 @@ public final class GUIUtilities {
      * Displays the error dialog displaying the stack trace from a
      * throws/caught exception.
      *
-     * @param message the error message to display
-     * @param e       the throwable
+     * @param message     the error message to display
+     * @param e           the throwable
+     * @param sourceClass the class that call method
      */
-    public static void displayExceptionErrorDialog(final String message, final Throwable e) {
-        GUIUtils.invokeAndWait(() -> new ExceptionErrorDialog(frame, message, e));
+    public static void displayExceptionErrorDialog(final String message, final Throwable e, final Class<?> sourceClass) {
+        GUIUtils.invokeAndWait(() -> new ExceptionErrorDialog(frame, message, e, sourceClass));
     }
-
 
     // -------------------------------------------------------
     // ------ Helper methods for various option dialogs ------

@@ -84,7 +84,7 @@ public class SessionManagerPanel extends JPanel {
                             refresh();
                         }
                     } catch (SQLException e1) {
-                        GUIUtilities.displayExceptionErrorDialog("Error stop session", e1);
+                        GUIUtilities.displayExceptionErrorDialog("Error stop session", e1, this.getClass());
                     }
             }
         });
@@ -192,7 +192,7 @@ public class SessionManagerPanel extends JPanel {
         try {
             fbTraceManager.listTraceSessions();
         } catch (SQLException e1) {
-            GUIUtilities.displayExceptionErrorDialog("Error refresh", e1);
+            GUIUtilities.displayExceptionErrorDialog("Error refresh", e1, this.getClass());
         }
     }
 

@@ -150,7 +150,7 @@ public class HelpWindow {
 
             GUIUtilities.displayExceptionErrorDialog(
                     "The system could not\nfind the help files specified.\n\n" +
-                            "System Error: " + e.getMessage(), e);
+                            "System Error: " + e.getMessage(), e, this.getClass());
         }
 
     }

@@ -864,14 +864,14 @@ public class CreateDatabasePanel extends ActionPanel
                     "Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n" +
                     "Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n" +
                     linkError.getMessage();
-            GUIUtilities.displayExceptionErrorDialog(sb, linkError);
+            GUIUtilities.displayExceptionErrorDialog(sb, linkError, this.getClass());
             return;
         } catch (Exception e) {
             String sb = "The connection to the database could not be established." +
                     "\nPlease ensure all required fields have been entered " +
                     "correctly and try again.\n\nThe system returned:\n" +
                     e.getMessage();
-            GUIUtilities.displayExceptionErrorDialog(sb, e);
+            GUIUtilities.displayExceptionErrorDialog(sb, e, this.getClass());
             return;
         } finally {
             GUIUtilities.showNormalCursor();

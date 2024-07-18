@@ -190,7 +190,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.error(message);
             Log.debug(e.getMessage(), e);
             if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e);
+                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
         }
     }
 
@@ -227,7 +227,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.error(message);
             Log.debug(e.getMessage(), e);
             if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e);
+                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
 
             useReleaseHub = false;
             checkFromReddatabase();
@@ -295,7 +295,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 } catch (Exception e) {
                     restoreProgressDialog();
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                     return Constants.WORKER_FAIL;
                 }
 
@@ -377,7 +377,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Update error", e);
+            GUIUtilities.displayExceptionErrorDialog("Update error", e, this.getClass());
             GUIUtilities.getStatusBar().reset();
             updateDownloadNotifier();
         }

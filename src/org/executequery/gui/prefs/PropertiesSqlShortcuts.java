@@ -272,7 +272,7 @@ public class PropertiesSqlShortcuts extends AbstractPropertiesBasePanel
             EventMediator.fireEvent(new DefaultQueryShortcutEvent(this, QueryShortcutEvent.SHORTCUT_ADDED));
 
         } catch (RepositoryException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundledString("saveError"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundledString("saveError"), e, this.getClass());
         }
     }
 

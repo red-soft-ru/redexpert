@@ -40,7 +40,7 @@ public class TableValidationCommand extends OpenFrameCommand
 
             } catch (SQLException e) {
                 e.printStackTrace(System.out);
-                GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e);
+                GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e, this.getClass());
             }
         }
 
@@ -75,7 +75,7 @@ public class TableValidationCommand extends OpenFrameCommand
 
         } catch (ClassNotFoundException | SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBMaintenanceManager instance", e);
+                    "Unable to init IFBMaintenanceManager instance", e, this.getClass());
         }
 
         return null;

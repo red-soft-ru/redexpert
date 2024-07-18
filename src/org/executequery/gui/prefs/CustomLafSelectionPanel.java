@@ -151,7 +151,7 @@ public class CustomLafSelectionPanel extends JPanel {
 
         } catch (IOException e) {
             GUIUtilities.showWaitCursor();
-            GUIUtilities.displayExceptionErrorDialog(bundleString("AccessingFileOccurredError"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("AccessingFileOccurredError"), e, this.getClass());
             return;
 
         } finally {

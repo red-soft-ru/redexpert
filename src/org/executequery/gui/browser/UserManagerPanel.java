@@ -873,7 +873,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
                 statement.close();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
             setEnableElements(true);
             refresh();
         }

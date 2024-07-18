@@ -100,7 +100,7 @@ public class DatabaseStatisticCommand {
             } catch (SQLException e) {
                 if (handleException) {
                     Log.error(e.getMessage(), e);
-                    GUIUtilities.displayExceptionErrorDialog("Unable to get database header statistic", e);
+                    GUIUtilities.displayExceptionErrorDialog("Unable to get database header statistic", e, DatabaseStatisticCommand.class);
                 }
             }
         }
@@ -139,7 +139,7 @@ public class DatabaseStatisticCommand {
 
         } catch (ClassNotFoundException | SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBStatisticManager instance", e);
+                    "Unable to init IFBStatisticManager instance", e, DatabaseStatisticCommand.class);
         }
 
         return null;

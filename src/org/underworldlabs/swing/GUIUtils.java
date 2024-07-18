@@ -21,7 +21,6 @@
 package org.underworldlabs.swing;
 
 import org.executequery.Constants;
-import org.executequery.GUIUtilities;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
@@ -68,7 +67,7 @@ public class GUIUtils {
      * @param e       - the throwable
      */
     public static void displayExceptionErrorDialog(Frame owner, String message, Throwable e) {
-        new ExceptionErrorDialog(owner, message, e);
+        new ExceptionErrorDialog(owner, message, e, GUIUtils.class);
     }
 
     /**

@@ -41,18 +41,32 @@ public class FeedbackCommand extends AbstractBaseCommand {
     }
 
     public final void feedback() {
-        showDialog(FeedbackPanel.DEFAULT_TITLE, null);
+        showFeedbackDialog();
     }
 
-    public final void bugReport(Vector<Throwable> throwableVector) {
-        showDialog(FeedbackPanel.BUG_REPORT_TITLE, throwableVector);
+    public final void bugReport(String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        showBugReportDialog(message, throwableVector, sourceClass);
     }
 
-    private void showDialog(String title, Vector<Throwable> throwableVector) {
+    private void showFeedbackDialog() {
         GUIUtilities.showWaitCursor();
         try {
-            BaseDialog dialog = new BaseDialog(title, true, true);
-            FeedbackPanel panel = new FeedbackPanel(dialog, throwableVector);
+            BaseDialog dialog = new BaseDialog(FeedbackPanel.DEFAULT_TITLE, true, true);
+            FeedbackPanel panel = new FeedbackPanel(dialog);
+
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+    }
+
+    private void showBugReportDialog(String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        GUIUtilities.showWaitCursor();
+        try {
+            BaseDialog dialog = new BaseDialog(FeedbackPanel.BUG_REPORT_TITLE, true, true);
+            FeedbackPanel panel = new FeedbackPanel(dialog, message, throwableVector, sourceClass);
 
             dialog.addDisplayComponent(panel);
             dialog.display();

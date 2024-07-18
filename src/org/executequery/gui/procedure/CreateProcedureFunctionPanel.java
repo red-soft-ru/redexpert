@@ -544,7 +544,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 populateDataTypes(new String[0], new int[0]);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e, this.getClass());
             populateDataTypes(new String[0], new int[0]);
         }
     }

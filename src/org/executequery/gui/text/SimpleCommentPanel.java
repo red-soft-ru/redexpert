@@ -138,7 +138,7 @@ public class SimpleCommentPanel {
 
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e, this.getClass());
                 Log.error("Error updating comment on table", e);
 
             } finally {

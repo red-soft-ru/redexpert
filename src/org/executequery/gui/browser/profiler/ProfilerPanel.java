@@ -250,7 +250,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e, this.getClass());
         }
     }
 
@@ -269,7 +269,7 @@ public class ProfilerPanel extends JPanel
             generateTree(false);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e, this.getClass());
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -289,7 +289,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e, this.getClass());
         }
     }
 
@@ -311,7 +311,7 @@ public class ProfilerPanel extends JPanel
             generateTree(false);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e, this.getClass());
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -335,7 +335,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e, this.getClass());
         }
     }
 
@@ -356,7 +356,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e, this.getClass());
         }
 
     }

@@ -45,6 +45,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
     private static final int DEFAULT_WIDTH = 600;
 
     private final String message;
+    private final Class<?> sourceClass;
     private final Vector<Throwable> exceptions;
 
     // --- GUI components ---
@@ -65,8 +66,13 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
     private Throwable noMoreExceptions;
 
     public ExceptionErrorDialog(Frame owner, String message, Throwable exception) {
+        this(owner, message, exception, null);
+    }
+
+    public ExceptionErrorDialog(Frame owner, String message, Throwable exception, Class<?> sourceClass) {
         super(owner, Bundles.getCommon("error-message"), true);
         this.message = message;
+        this.sourceClass = sourceClass;
 
         exceptions = new Vector<>();
         exceptions.add(exception);
@@ -75,7 +81,6 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         init();
         arrange();
     }
-
 
     private void init() {
 
@@ -91,7 +96,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         sendReportButton = WidgetFactory.createDefaultButton(
                 "sendReportButton",
                 bundleString("sendReportButton"),
-                e -> new FeedbackCommand().bugReport(exceptions)
+                e -> new FeedbackCommand().bugReport(message, exceptions, sourceClass)
         );
 
         copyButton = WidgetFactory.createRolloverButton(

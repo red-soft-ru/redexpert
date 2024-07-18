@@ -126,7 +126,7 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
                     Long.parseLong(incrementText.getStringValue()), simpleCommentPanel.getComment(), getVersion(), editing, getDatabaseConnection());
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
             e.printStackTrace();
         }
 

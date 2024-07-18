@@ -487,7 +487,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
                     bundledString("error.retrieving", bundledString("data-types"), bundledString("selected-connection"), e.getExtendedMessage()),
-                    e);
+                    e, this.getClass());
             populateDataTypes(new String[0], new int[0]);
         }
         populateTablespaces(connection);

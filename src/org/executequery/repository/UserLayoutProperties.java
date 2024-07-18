@@ -455,7 +455,7 @@ public class UserLayoutProperties implements Serializable,
             Log.debug("Error saving layout-preferences.xml", e);
             GUIUtilities.displayExceptionErrorDialog(
                     "Error storing user layout change:\n" +
-                            e.getMessage(), e);
+                            e.getMessage(), e, this.getClass());
         } finally {
             try {
                 if (os != null) {

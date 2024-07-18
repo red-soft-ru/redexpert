@@ -643,7 +643,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         setValues(table);
 
                 } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 }
 
             } else if (source == cancelButton) {
@@ -1346,7 +1346,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 setValues(table);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
         }
     }
 

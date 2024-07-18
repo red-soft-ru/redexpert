@@ -912,7 +912,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         String sb = Bundles.getCommon("error.connection") +
                 e.getExtendedMessage();
-        GUIUtilities.displayExceptionErrorDialog(sb, e);
+        GUIUtilities.displayExceptionErrorDialog(sb, e, this.getClass());
     }
 
     private boolean valid() {

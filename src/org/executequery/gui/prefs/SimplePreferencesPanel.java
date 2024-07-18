@@ -599,7 +599,7 @@ public class SimplePreferencesPanel extends JPanel
                 rewrite(path);
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e, JavaFileProperty.class);
                 return false;
             }
 
@@ -611,7 +611,7 @@ public class SimplePreferencesPanel extends JPanel
                 delete();
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e, JavaFileProperty.class);
             }
         }
 

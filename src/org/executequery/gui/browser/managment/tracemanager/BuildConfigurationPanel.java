@@ -316,7 +316,7 @@ public class BuildConfigurationPanel extends JPanel {
             writer.flush();
             GUIUtilities.displayInformationMessage("Configuration file was built");
         } catch (IOException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error write to file", e);
+            GUIUtilities.displayExceptionErrorDialog("Error write to file", e, this.getClass());
         }
 
     }

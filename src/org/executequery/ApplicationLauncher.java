@@ -233,7 +233,7 @@ public class ApplicationLauncher {
             }
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Application launch error", e);
+            GUIUtilities.displayExceptionErrorDialog("Application launch error", e, this.getClass());
             e.printStackTrace();
             System.exit(1);
         }

@@ -153,7 +153,7 @@ public class ErdSelectionPanel extends JPanel
             GUIUtilities.displayExceptionErrorDialog(
                     "Error retrieving the tables names for the " +
                             "current connection.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e);
+                            e.getExtendedMessage(), e, this.getClass());
         }
     }
 

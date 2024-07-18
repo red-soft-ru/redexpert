@@ -163,7 +163,7 @@ public class OpenCommand implements BaseCommand {
             return true;
 
         } catch (IOException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("FileLoadError"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("FileLoadError"), e, this.getClass());
             return false;
         }
     }

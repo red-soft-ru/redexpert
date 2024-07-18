@@ -11,7 +11,6 @@ import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
@@ -667,7 +666,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             insertStatement.setEscapeProcessing(true);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
             return;
         }
 
@@ -772,7 +771,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             executor.releaseResources();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
         }
     }
 

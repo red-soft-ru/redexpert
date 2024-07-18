@@ -80,7 +80,7 @@ public class BrowserController {
             ((DatabaseHost) treePanel.getHostNode(dc).getDatabaseObject()).connect();
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(Bundles.getCommon("error.connection") + e.getExtendedMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(Bundles.getCommon("error.connection") + e.getExtendedMessage(), e, this.getClass());
         }
     }
 
@@ -519,8 +519,8 @@ public class BrowserController {
                         bundleString("error.handle.exception"),
                         isDataSourceException ? ((DataSourceException) throwable).getExtendedMessage() : throwable.getMessage()
                 ),
-                throwable
-        );
+                throwable,
+                this.getClass());
 
         if (isDataSourceException && ((DataSourceException) throwable).wasConnectionClosed())
             disconnect(treePanel.getSelectedDatabaseConnection());

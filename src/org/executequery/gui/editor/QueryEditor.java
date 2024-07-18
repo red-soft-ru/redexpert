@@ -858,7 +858,7 @@ public class QueryEditor extends DefaultTabView
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog("An error occurred when closing this editor." +
                     "\nWhile this could be nothing, sometimes it helps to check the stack trace to see if anything peculiar happened." +
-                    "\n\nThe system returned:\n" + e.getMessage(), e);
+                    "\n\nThe system returned:\n" + e.getMessage(), e, this.getClass());
         }
 
         String connectionID = (getSelectedConnection() != null) ?

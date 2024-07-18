@@ -894,7 +894,7 @@ public class ConnectionsTreePanel extends TreePanel
                 return false;
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
             return false;
         }
 
@@ -1073,7 +1073,7 @@ public class ConnectionsTreePanel extends TreePanel
                     tree.removeNode(dbObject);
 
                 } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(bundleString("error.delete-object") + e.getExtendedMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(bundleString("error.delete-object") + e.getExtendedMessage(), e, this.getClass());
 
                 } finally {
                     addTreeSelectionListener();

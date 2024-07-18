@@ -290,7 +290,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                 if (idTra == -1)
                     ConnectionManager.setTPBtoConnection(databaseConnection, conn, tpb);
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e);
+                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e, this.getClass());
             }
 
         return true;

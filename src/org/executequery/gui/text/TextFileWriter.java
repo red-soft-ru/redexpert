@@ -137,7 +137,7 @@ public class TextFileWriter {
             String message = String.format("An error occurred saving to file." +
                     "\n\nThe system returned:\n%s", e.getMessage());
 
-            GUIUtilities.displayExceptionErrorDialog(message, e);
+            GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
 
             path = null;
 

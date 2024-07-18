@@ -47,16 +47,19 @@ import java.util.Vector;
  * @author Takis Diakoumis
  */
 public class FeedbackPanel extends DefaultActionButtonsPanel
-        implements
-        FocusComponentPanel,
+        implements FocusComponentPanel,
         Interruptible {
+
+    private static final String SYSTEM_PROPERTIES = "\n------------ SYSTEM  PROPERTIES -----------";
+    private static final String USER_DESCRIPTION = "\n--------------- USER MESSAGE --------------";
+    private static final String AUTO_GENERATED_REPORT = "\n---------- AUTO GENERATED REPORT ----------";
 
     public static final String DEFAULT_TITLE = bundledString("title");
     public static final String BUG_REPORT_TITLE = bundledString("reportBug");
 
     public static final int USER_COMMENTS = 0;
-    public static final int FEATURE_REQUEST = USER_COMMENTS + 1;
-    public static final int BUG_REPORT = FEATURE_REQUEST + 1;
+    public static final int BUG_REPORT = USER_COMMENTS + 1;
+    public static final int FEATURE_REQUEST = BUG_REPORT + 1;
 
     private final Map<Integer, String> feedbackTypes;
     private final ActionContainer parent;
@@ -77,7 +80,7 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     private UserFeedbackRepository repository;
     private InterruptibleProgressDialog progressDialog;
 
-    public FeedbackPanel(ActionContainer parent, Vector<Throwable> throwableVector) {
+    public FeedbackPanel(ActionContainer parent) {
         this.parent = parent;
 
         feedbackTypes = new LinkedHashMap<>();
@@ -86,15 +89,16 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
         feedbackTypes.put(BUG_REPORT, bundledString("reportBug"));
 
         init();
-        addSystemProperties();
-
-        if (throwableVector != null && !throwableVector.isEmpty()) {
-            feedbackTypeCombo.setSelectedIndex(BUG_REPORT);
-            feedbackTypeCombo.setEnabled(false);
-            addStackTrace(throwableVector);
-        }
-
         arrange();
+        addSystemProperties();
+    }
+
+    public FeedbackPanel(ActionContainer parent, String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        this(parent);
+
+        feedbackTypeCombo.setSelectedIndex(BUG_REPORT);
+        feedbackTypeCombo.setEnabled(false);
+        createBugReport(message, throwableVector, sourceClass);
     }
 
     private void init() {
@@ -179,19 +183,44 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
     }
 
     private void addSystemProperties() {
-        commentsField.append("---------------------------------------------------------------------------------------------");
-        commentsField.append("\nVersion: " + System.getProperty("executequery.minor.version") + " [ Build " + System.getProperty("executequery.build") + " ]");
-        commentsField.append("\nJava VM: " + System.getProperty("java.runtime.version"));
-        commentsField.append("\nOperating System: " + System.getProperty("os.name") + " [ " + System.getProperty("os.version") + " ]");
-        commentsField.append("\n---------------------------------------------------------------------------------------------\n");
+        commentsField.append(SYSTEM_PROPERTIES);
+        commentsField.append(String.format(
+                "\n\nVersion: %s [ build %s ]\nJava VM: %s\nOS: %s [ %s : %s ]\n",
+                System.getProperty("executequery.minor.version"),
+                System.getProperty("executequery.build"),
+                System.getProperty("java.runtime.version"),
+                System.getProperty("os.name"),
+                System.getProperty("os.version"),
+                System.getProperty("os.arch")
+        ));
+        commentsField.append(USER_DESCRIPTION);
+        commentsField.append("\n\n");
     }
 
-    private void addStackTrace(Vector<Throwable> throwableVector) {
-        StringWriter writer = new StringWriter();
-        throwableVector.forEach(throwable -> throwable.printStackTrace(new PrintWriter(writer)));
+    private void createBugReport(String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        commentsField.setText(Constants.EMPTY);
 
-        commentsField.insert("\n\n", 0);
-        commentsField.append(writer.toString());
+        commentsField.append(AUTO_GENERATED_REPORT);
+
+        if (sourceClass != null) {
+            commentsField.append("\n\n> EXCEPTION SOURCE\n");
+            commentsField.append(sourceClass.getName() + " class");
+        }
+
+        if (message != null) {
+            commentsField.append("\n\n> SYSTEM RETURNED\n");
+            commentsField.append(message);
+        }
+
+        if (!MiscUtils.isEmpty(throwableVector)) {
+            StringWriter writer = new StringWriter();
+            throwableVector.forEach(throwable -> throwable.printStackTrace(new PrintWriter(writer)));
+
+            commentsField.append("\n\n> STACK TRACE\n");
+            commentsField.append(writer.toString());
+        }
+
+        addSystemProperties();
     }
 
     private String getUserEmail() {

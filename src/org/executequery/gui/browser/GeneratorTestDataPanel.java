@@ -338,7 +338,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                             }
                                             countError++;
                                             if (stopOnErrorBox.isSelected()) {
-                                                GUIUtilities.displayExceptionErrorDialog(result.getSqlException().getMessage(), result.getSqlException());
+                                                GUIUtilities.displayExceptionErrorDialog(result.getSqlException().getMessage(), result.getSqlException(), this.getClass());
                                                 break;
                                             }
                                         } else {
@@ -362,7 +362,7 @@ public class GeneratorTestDataPanel extends JPanel implements TabView {
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
-                                GUIUtilities.displayExceptionErrorDialog("generation error: " + ex.getMessage(), ex);
+                                GUIUtilities.displayExceptionErrorDialog("generation error: " + ex.getMessage(), ex, this.getClass());
                             } finally {
                                 executor.releaseResources();
                             }

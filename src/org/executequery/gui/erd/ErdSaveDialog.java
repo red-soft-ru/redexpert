@@ -498,7 +498,7 @@ public class ErdSaveDialog extends AbstractBaseDialog
         } catch (Exception e) {
             savedResult = SaveFunction.SAVE_FAILED;
             GUIUtilities.displayExceptionErrorDialog("An error occured saving to file:\n" +
-                    e.getMessage(), e);
+                    e.getMessage(), e, this.getClass());
             return "failed";
         } finally {
             if (fos != null) {

@@ -207,7 +207,7 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundledString("ErrorWritingConnectionsToFileTheSystemReturned") + e.getMessage(), e);
+                    bundledString("ErrorWritingConnectionsToFileTheSystemReturned") + e.getMessage(), e, this.getClass());
             return false;
         }
 

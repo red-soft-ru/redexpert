@@ -169,7 +169,7 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundleString("ExceptionErrorMessage", e.getMessage()), e);
+                    bundleString("ExceptionErrorMessage", e.getMessage()), e, this.getClass());
             return false;
         }
 

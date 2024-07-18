@@ -267,7 +267,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundleString("saveError"), e);
+                    bundleString("saveError"), e, this.getClass());
         }
     }
 

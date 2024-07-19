@@ -451,6 +451,7 @@ public class QueryDispatcher {
                     setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
 
                 } finally {
+                    querySender.setCloseConnectionAfterQuery(false);
                     querySender.releaseResourcesWithoutCommit();
                 }
             }
@@ -459,6 +460,7 @@ public class QueryDispatcher {
             setOutputMessage(dc, SqlMessages.WARNING_MESSAGE, "Interrupted", anyConnections);
 
         } finally {
+            querySender.setCloseConnectionAfterQuery(false);
             querySender.releaseResourcesWithoutCommit();
         }
     }

@@ -27,8 +27,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.log.Log;
@@ -208,15 +206,21 @@ public final class ConnectionManager {
     }
 
     public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+
+        if (connection == null)
+            return -1;
+
         DataSource dataSource = getDataSource(databaseConnection);
         if (dataSource instanceof SimpleDataSource) {
-            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
             try {
+                SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
                 return simpleDataSource.getIDTransaction(connection);
+
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.error(e.getMessage(), e);
             }
         }
+
         return -1;
     }
 

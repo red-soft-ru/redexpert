@@ -202,6 +202,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         JSplitPane splitPane = new JSplitPane();
         splitPane.setLeftComponent(tabbedPane);
         splitPane.setRightComponent(ddlTextPanel);
+        splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(0.5);
 
         // --- button panel ---

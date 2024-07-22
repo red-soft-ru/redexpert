@@ -29,6 +29,7 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -136,7 +137,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
 
         addContent(preferencesPanel);
-        lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
+        lookAndFeelCombBox().addItemListener(this::lookAndFeelChanged);
     }
 
     @SuppressWarnings("rawtypes")
@@ -144,19 +145,17 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         return (JComboBox) preferencesPanel.getComponentEditorForKey("startup.display.lookandfeel");
     }
 
-    public void itemStateChanged() {
+    private synchronized void lookAndFeelChanged(ItemEvent e) {
+
+        if (e.getStateChange() != ItemEvent.SELECTED)
+            return;
 
         LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
         AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
         lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
 
-        PropertiesEditorColours editorColours = new PropertiesEditorColours(null);
-        editorColours.restoreDefaults();
-        editorColours.save();
-
-        PropertiesResultSetTableColours resultSetColours = new PropertiesResultSetTableColours(null);
-        resultSetColours.restoreDefaults();
-        resultSetColours.save();
+        restoreAndSaveDefaults(PropertyTypes.EDITOR_COLOURS);
+        restoreAndSaveDefaults(PropertyTypes.RESULT_SET_COLOURS);
     }
 
     private Object[] lookAndFeelValuePairs() {

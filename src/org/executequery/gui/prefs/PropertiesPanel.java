@@ -245,11 +245,11 @@ public class PropertiesPanel extends JPanel
             return;
         }
 
-        JPanel panel = getPropertyPanel(nodeId);
-        if (panel == null)
+        UserPreferenceFunction propertyPanel = getPropertyPanel(nodeId);
+        if (propertyPanel == null)
             return;
 
-        currentlySelectedPanel = (UserPreferenceFunction) panel;
+        currentlySelectedPanel = propertyPanel;
         currentlySelectedPanel.addPreferenceChangeListener(this);
         panelMap.put(nodeId, currentlySelectedPanel);
 
@@ -257,11 +257,11 @@ public class PropertiesPanel extends JPanel
         for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet())
             currentlySelectedPanel.preferenceChange(event.getValue());
 
-        rightPanel.add(panel, String.valueOf(nodeId));
+        rightPanel.add((JPanel) propertyPanel, String.valueOf(nodeId));
         cardLayout.show(rightPanel, String.valueOf(nodeId));
     }
 
-    private JPanel getPropertyPanel(int nodeId) {
+    private UserPreferenceFunction getPropertyPanel(int nodeId) {
         switch (nodeId) {
 
             case PropertyTypes.GENERAL:
@@ -307,6 +307,10 @@ public class PropertiesPanel extends JPanel
             default:
                 return null;
         }
+    }
+
+    public UserPreferenceFunction getPropertyPanelFromMap(int id) {
+        return panelMap.containsKey(id) ? panelMap.get(id) : getPropertyPanel(id);
     }
 
     @Override

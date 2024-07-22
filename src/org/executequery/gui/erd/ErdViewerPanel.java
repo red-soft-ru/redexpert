@@ -180,7 +180,7 @@ public class ErdViewerPanel extends DefaultTabView
 
     public ErdViewerPanel(ErdSaveFileFormat savedErd, String absolutePath) {
         this(null, true, true, true);
-//        setSavedErd(savedErd, absolutePath);
+        setSavedErd(savedErd, absolutePath);
         fileName = savedErd.getFileName();
     }
 

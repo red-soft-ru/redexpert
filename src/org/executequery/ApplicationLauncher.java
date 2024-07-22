@@ -370,8 +370,7 @@ public class ApplicationLauncher {
 
     private void printVersionInfo() {
 
-        Log.info(bundleString("console-UsingJavaVersion") +
-                System.getProperty("java.version"));
+        Log.info(bundleString("console-UsingJavaVersion", System.getProperty("java.version")));
         Log.info(bundleString("console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
@@ -580,8 +579,8 @@ public class ApplicationLauncher {
         ApplicationLauncher.needUpdateColorsAndFonts = needUpdateColorsAndFonts;
     }
 
-    String bundleString(String key) {
-        return Bundles.get(getClass(), key);
+    String bundleString(String key, Object... args) {
+        return Bundles.get(getClass(), key, args);
     }
 
 }

@@ -85,8 +85,8 @@ public class FeedbackPanel extends DefaultActionButtonsPanel
 
         feedbackTypes = new LinkedHashMap<>();
         feedbackTypes.put(USER_COMMENTS, bundledString("userComments"));
-        feedbackTypes.put(FEATURE_REQUEST, bundledString("featureRequest"));
         feedbackTypes.put(BUG_REPORT, bundledString("reportBug"));
+        feedbackTypes.put(FEATURE_REQUEST, bundledString("featureRequest"));
 
         init();
         arrange();

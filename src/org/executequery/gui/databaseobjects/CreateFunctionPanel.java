@@ -193,7 +193,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                     simpleCommentPanel.getComment(),
                     false,
                     true,
-                    deterministicCheck.isSelected(),
+                    deterministicCheck != null && deterministicCheck.isSelected(),
                     connection
             );
         }
@@ -209,7 +209,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 simpleCommentPanel.getComment(),
                 false,
                 true,
-                deterministicCheck.isSelected(),
+                deterministicCheck != null && deterministicCheck.isSelected(),
                 connection
         );
     }

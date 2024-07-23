@@ -125,6 +125,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
         if (function != null)
             deterministicCheck.setSelected(function.isDeterministic());
+
+        ddlTextPanel.setSQLText(generateQuery());
     }
 
     @Override

@@ -34,6 +34,7 @@ import javax.swing.*;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class FlatTabbedPane extends JTabbedPane {
 
     public FlatTabbedPane() {
@@ -43,23 +44,9 @@ public class FlatTabbedPane extends JTabbedPane {
         super(tabPlacement);
     }
 
+    @Override
     public void updateUI() {
         setUI(new FlatTabbedPaneUI());
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

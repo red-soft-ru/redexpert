@@ -22,9 +22,9 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.executequery.actions.othercommands.RestoreDefaultsCommand;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DefaultButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -43,88 +43,105 @@ abstract class AbstractPropertiesBasePanel extends JPanel
         PreferenceTableModelListener {
 
     public static final int TABLE_ROW_HEIGHT = 26;
-    
-    /** common font used across props panels */
-    protected static Font panelFont;
+    private final PropertiesPanel parent;
 
-    /**
-     * common layout constraints acroos props panels
-     */
-    protected static GridBagConstraints contentPanelConstraints;
-
+    private JButton applyButton;
+    private JButton restoreButton;
     private List<PreferenceChangeListener> listeners;
 
-    static {
-        panelFont = new Font("dialog", Font.PLAIN, 12);
-        contentPanelConstraints = new GridBagConstraints(
-                1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.NORTHWEST,
-                GridBagConstraints.BOTH,
-                new Insets(5, 5, 0, 5), 0, 0);
-    }
-
-    public AbstractPropertiesBasePanel() {
-
+    public AbstractPropertiesBasePanel(PropertiesPanel parent) {
         super(new GridBagLayout());
-        listeners = new ArrayList<>();
-        setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
+        this.parent = parent;
         init();
     }
 
-    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-
-        listeners.add(listener);
-    }
-
-    @Override
-    public void preferenceChange(PreferenceChangeEvent e) {
-        PropertiesPanel.checkAndSetRestartNeed(e.getKey());
-    }
-
-    @Override
-    public void preferenceTableModelChange(PreferenceTableModelChangeEvent e) {
-
-        for (PreferenceChangeListener listener : listeners) {
-
-            listener.preferenceChange(new PreferenceChangeEvent(this, e.getKey(), e.getValue()));
-        }
-
-    }
-
-    protected void addContent(JPanel panel) {
-
-        add(panel, contentPanelConstraints);
-        if (panel instanceof SimplePreferencesPanel) {
-
-            ((SimplePreferencesPanel) panel).addPreferenceTableModelListener(this);
-        }
-
-    }
-
     private void init() {
+        listeners = new ArrayList<>();
 
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panel.add(new DefaultButton(new RestoreDefaultsCommand(this)));
-        add(panel, new GridBagConstraints(
-                1, 2, 1, 1, 0, 0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.NONE,
-                new Insets(0, 0, 5, 0), 0, 0));
+        applyButton = WidgetFactory.createDefaultButton(
+                "applyButton",
+                Bundles.get("AbstractPropertiesBasePanel.apply"),
+                e -> parent.save(true)
+        );
 
+        restoreButton = WidgetFactory.createDefaultButton(
+                "restoreButton",
+                Bundles.get("AbstractPropertiesBasePanel.restoreDefaults"),
+                e -> this.restoreDefaults()
+        );
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(applyButton);
+        bottomPanel.add(restoreButton);
+
+        setBorder(BorderFactory.createLineBorder(GUIUtilities.getDefaultBorderColour()));
+        add(bottomPanel, new GridBagHelper().anchorSouthEast().fillNone().setY(2).get());
     }
 
-    protected String stringUserProperty(String key) {
+    protected final void addContent(JPanel panel) {
+        add(panel, new GridBagHelper()
+                .setInsets(5, 5, 5, 0)
+                .setMaxWeightX()
+                .setMaxWeightY()
+                .fillBoth()
+                .get()
+        );
 
+        if (panel instanceof SimplePreferencesPanel)
+            ((SimplePreferencesPanel) panel).addPreferenceTableModelListener(this);
+    }
+
+    // ---
+
+    protected void restoreAndSaveDefaults(int panelId) {
+        UserPreferenceFunction preferenceFunction = parent.getPropertyPanelFromMap(panelId);
+        if (preferenceFunction != null) {
+            preferenceFunction.restoreDefaults();
+            preferenceFunction.save();
+        }
+    }
+
+    protected final void hideBottomButtons() {
+        applyButton.getParent().setVisible(false);
+        restoreButton.getParent().setVisible(false);
+    }
+
+    protected final String stringUserProperty(String key) {
         return SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
     }
 
-    protected String bundledString(String key) {
+    protected static Font getDefaultFont() {
+        return new Font("dialog", Font.PLAIN, 12);
+    }
+
+    protected static String bundledStaticString(String key) {
         return Bundles.get("preferences." + key);
     }
 
-    String bundleString(String key) {
+    protected String bundledString(String key) {
         return Bundles.get(getClass(), key);
     }
+
+    // --- UserPreferenceFunction impl ---
+
+    @Override
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    // --- PreferenceChangeListener impl ---
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent e) {
+        PropertiesPanel.setRestartNeed(e.getKey(), e.getSource().getClass());
+    }
+
+    // --- PreferenceTableModelListener impl ---
+
+    @Override
+    public void preferenceTableModelChange(PreferenceTableModelChangeEvent e) {
+        for (PreferenceChangeListener listener : listeners)
+            listener.preferenceChange(new PreferenceChangeEvent(this, e.getKey(), e.getValue()));
+    }
+
 }
-
-

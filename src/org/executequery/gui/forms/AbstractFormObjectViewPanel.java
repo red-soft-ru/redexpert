@@ -81,7 +81,7 @@ public abstract class AbstractFormObjectViewPanel extends JPanel
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ConnectionsTreePanel.getPanelFromBrowser().getBrowserTreePopupMenu().getListener().editObject(getDatabaseObjectNode(), getDatabaseConnection());
+                ConnectionsTreePanel.getPanelFromBrowser().getBrowserTreePopupMenu().getListener().showCreateObjectDialog(getDatabaseObjectNode(), getDatabaseConnection(), true);
             }
         });
     }

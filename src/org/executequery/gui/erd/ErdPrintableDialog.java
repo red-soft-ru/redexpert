@@ -20,11 +20,7 @@
 
 package org.executequery.gui.erd;
 
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextEditor;
@@ -42,8 +38,7 @@ import java.awt.event.FocusListener;
  * @author Takis Diakoumis
  */
 public class ErdPrintableDialog extends BaseDialog
-        implements TextEditorContainer,
-        KeywordListener {
+        implements TextEditorContainer {
 
     /**
      * The SQL text panel
@@ -53,7 +48,7 @@ public class ErdPrintableDialog extends BaseDialog
     /**
      * <p>Constructs a new instance with the specified name.
      *
-     * @param the name of this dialog
+     * @param name name of this dialog
      */
     public ErdPrintableDialog(String name) {
         super(name, false);
@@ -62,23 +57,24 @@ public class ErdPrintableDialog extends BaseDialog
         GUIUtilities.setFocusedDialog(this);
 
         this.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent e) {
                 dialogFocusChanged(true);
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 dialogFocusChanged(false);
             }
         });
-        EventMediator.registerListener(this);
     }
 
     /**
      * <p>Constructs a new instance with the specified name
      * and whether the SQL text panel should be created.
      *
-     * @param the     name of this dialog
-     * @param whether to create the SQL text panel
+     * @param name           name of this dialog
+     * @param createSQLPanel to create the SQL text panel
      */
     public ErdPrintableDialog(String name, boolean createSQLPanel) {
         super(name, false);
@@ -90,37 +86,16 @@ public class ErdPrintableDialog extends BaseDialog
         GUIUtilities.setFocusedDialog(this);
 
         this.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent e) {
                 dialogFocusChanged(true);
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 dialogFocusChanged(false);
             }
         });
-        EventMediator.registerListener(this);
-    }
-
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    public void keywordsAdded(KeywordEvent e) {
-        if (sqlText != null) {
-            sqlText.setSQLKeywords();
-        }
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    public void keywordsRemoved(KeywordEvent e) {
-        if (sqlText != null) {
-            sqlText.setSQLKeywords();
-        }
-    }
-
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof KeywordEvent);
     }
 
     /**
@@ -130,7 +105,7 @@ public class ErdPrintableDialog extends BaseDialog
      * <code>removeFocusedDialog(JDialog)</code> depending on
      * the focus parameter specified.
      *
-     * @param whether this dialog has focus
+     * @param hasFocus this dialog has focus
      */
     private void dialogFocusChanged(boolean hasFocus) {
 
@@ -144,6 +119,7 @@ public class ErdPrintableDialog extends BaseDialog
     /**
      * <p>Simple call to make this dialog visible.
      */
+    @Override
     public void display() {
         pack();
         this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
@@ -155,8 +131,8 @@ public class ErdPrintableDialog extends BaseDialog
      * controller <code>GUIUtilities</code> object before
      * a call to <code>super.dispose()</code>.
      */
+    @Override
     public void dispose() {
-        EventMediator.deregisterListener(this);
         GUIUtilities.removeFocusedDialog(this);
         super.dispose();
     }
@@ -173,19 +149,9 @@ public class ErdPrintableDialog extends BaseDialog
      * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
+    @Override
     public TextEditor getTextEditor() {
         return sqlText;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

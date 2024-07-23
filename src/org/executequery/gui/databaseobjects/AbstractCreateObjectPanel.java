@@ -3,7 +3,10 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
@@ -31,7 +34,10 @@ import javax.swing.*;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.print.Printable;
 import java.util.Vector;
 
@@ -367,12 +373,20 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     protected int getDatabaseVersion() {
         try {
-            return new DefaultDatabaseHost(connection).getDatabaseMetaData().getDatabaseMajorVersion();
+            return connection.getMajorServerVersion();
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
             return 0;
         }
+    }
+
+    public SimpleCommentPanel getSimpleCommentPanel() {
+        return simpleCommentPanel;
+    }
+
+    public void setSimpleCommentPanel(SimpleCommentPanel simpleCommentPanel) {
+        this.simpleCommentPanel = simpleCommentPanel;
     }
 
     public boolean isCommit() {

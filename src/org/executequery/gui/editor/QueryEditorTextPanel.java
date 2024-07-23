@@ -28,6 +28,7 @@ import org.executequery.gui.text.TextUtilities;
 import org.executequery.log.Log;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -141,8 +142,14 @@ public class QueryEditorTextPanel extends JPanel {
         queryEditor = null;
     }
 
-    public void showLineNumbers(boolean show) {
+    public void showLineNumbers(boolean show, Font font) {
         queryScroll.setLineNumbersEnabled(show);
+        if (show) {
+            queryScroll.getGutter().setLineNumberFont(font);
+            queryScroll.setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
+            queryScroll.getGutter().setLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.foreground.colour"));
+            queryScroll.getGutter().setCurrentLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.selection.background"));
+        }
     }
 
     protected void setTextFocus() {
@@ -260,18 +267,6 @@ public class QueryEditorTextPanel extends JPanel {
         return queryPane.getSelectionEnd();
     }
 
-    public String getCompleteWordEndingAtCursor() {
-        return queryPane.getCompleteWordEndingAtCursor();
-    }
-
-    protected QueryWithPosition getQueryAtCursor() {
-        return queryPane.getQueryAtCursor();
-    }
-
-    protected void setExecutingQuery(String query) {
-        queryPane.setExecutingQuery(query);
-    }
-
     public void goToRow(int row) {
         queryPane.goToRow(row);
     }
@@ -285,10 +280,6 @@ public class QueryEditorTextPanel extends JPanel {
      */
     public void setResultSet(ResultSet resultSet, String query, DatabaseConnection dc) throws SQLException {
         queryEditor.setResultSet(resultSet, query, dc);
-    }
-
-    public void setResult(DatabaseConnection dc, int updateCount, int type, String metaName) {
-        queryEditor.setResultText(dc, updateCount, type, metaName);
     }
 
     public String getQueryAreaText() {
@@ -414,8 +405,7 @@ public class QueryEditorTextPanel extends JPanel {
                 robot.keyRelease(KeyEvent.VK_TAB);
 
             } catch (AWTException e) {
-                if (Log.isDebugEnabled())
-                    Log.error("Error simulating tab key events", e);
+                Log.debug("Error simulating tab key events", e);
             }
         }
     }
@@ -459,8 +449,7 @@ public class QueryEditorTextPanel extends JPanel {
                 robot.keyRelease(KeyEvent.VK_SHIFT);
 
             } catch (AWTException e) {
-                if (Log.isDebugEnabled())
-                    Log.error("Error simulating tab key events", e);
+                Log.debug("Error simulating tab key events", e);
             }
         }
     }

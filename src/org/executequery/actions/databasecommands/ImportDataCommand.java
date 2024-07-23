@@ -19,15 +19,17 @@ public class ImportDataCommand extends OpenFrameCommand
     @Override
     public void execute(ActionEvent e) {
 
-        if (GUIUtilities.getCentralPane(ImportDataPanel.TITLE) == null) {
-            GUIUtilities.addCentralPane(ImportDataPanel.TITLE,
-                    ImportDataPanel.FRAME_ICON,
-                    new ImportDataPanel(),
-                    null,
-                    true
-            );
-        } else
-            GUIUtilities.setSelectedCentralPane(ImportDataPanel.TITLE);
+        String title = ImportDataPanel.TITLE;
+        if (isCentralPaneOpen(title))
+            return;
+
+        GUIUtilities.addCentralPane(
+                title,
+                ImportDataPanel.FRAME_ICON,
+                new ImportDataPanel(),
+                null,
+                true
+        );
     }
 
 }

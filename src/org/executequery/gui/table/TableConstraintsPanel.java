@@ -24,10 +24,11 @@ import org.executequery.Constants;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.erd.ErdTable;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.table.ComboBoxCellEditor;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
+import org.underworldlabs.swing.table.ComboBoxCellEditor;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -404,7 +405,6 @@ public abstract class TableConstraintsPanel extends JPanel
                     }
 
                     cc.setColumn(Constants.EMPTY);
-                    cc.setRefSchema(Constants.EMPTY);
                     cc.setRefTable(Constants.EMPTY);
                     cc.setRefColumn(Constants.EMPTY);
                     break;
@@ -417,7 +417,11 @@ public abstract class TableConstraintsPanel extends JPanel
                     columnValuesChanged(col, row, null);
                     break;
                 case REFERENCE_TABLE:
-                    String tbl = (String) value;
+                    String tbl = null;
+                    if (value instanceof ErdTable)
+                        tbl = ((ErdTable) value).getTableName();
+                    else
+                        tbl = (String) value;
                     cc.setRefColumn(Constants.EMPTY);
                     cc.setRefTable(tbl);
                     if (tbl != null) {

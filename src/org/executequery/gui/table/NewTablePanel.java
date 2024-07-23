@@ -154,7 +154,7 @@ public class NewTablePanel extends TableDefinitionPanel
     private void updateScript(int row, int col) {
         line.setLength(0);
         ColumnData cd = tableVector.get(row);
-        if (creator.getSelectedConnection().isNamesToUpperCase() && !MiscUtils.isNull(cd.getColumnName()))
+        if (creator.getSelectedConnection() != null && creator.getSelectedConnection().isNamesToUpperCase() && !MiscUtils.isNull(cd.getColumnName()))
             cd.setColumnName(cd.getColumnName().toUpperCase());
         line.setLength(0);
         line.append(NEW_LINE_2).

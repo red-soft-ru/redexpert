@@ -25,29 +25,16 @@ import org.executequery.event.AbstractApplicationEvent;
 public class DefaultToolBarEvent extends AbstractApplicationEvent
         implements ToolBarEvent {
 
-    private String key;
+    private final String key;
 
     public DefaultToolBarEvent(Object source, String method, String key) {
-
         super(source, method);
-
         this.key = key;
     }
 
+    @Override
     public String getKey() {
-
         return key;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

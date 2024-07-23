@@ -28,6 +28,7 @@ import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.gui.ActionContainer;
 import org.executequery.localization.Bundles;
+import org.executequery.toolbars.ToolBarManager;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.tree.DynamicTree;
 
@@ -37,8 +38,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.*;
 
@@ -48,13 +47,11 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class PropertiesPanel extends JPanel
-        implements ActiveComponent,
-        ActionListener,
-        PreferenceChangeListener,
+        implements PreferenceChangeListener,
         TreeSelectionListener {
 
     public static final String TITLE = Bundles.get("preferences.Preferences");
-    public static final String FRAME_ICON = "Preferences16.png";
+    public static final String FRAME_ICON = "icon_preferences";
 
     private static final List<String> PROPERTIES_KEYS_NEED_RESTART = Arrays.asList(
             // -- PropertiesGeneral --
@@ -66,61 +63,32 @@ public class PropertiesPanel extends JPanel
             "internet.proxy.port",
             "internet.proxy.user",
             "internet.proxy.password",
-            // -- PropertiesLocales --
-            "locale.country",
-            "locale.language",
-            "locale.timezone",
-            // -- PropertiesAppearance --
-            "startup.display.lookandfeel",
-            "display.aa.fonts",
-            "decorate.frame.look",
-            // -- PropertiesEditorGeneral --
-            "editor.tabs.tospaces",
-            "editor.tab.spaces",
-            // -- PropertiesOutputConsole --
             "system.log.enabled",
             "editor.logging.path",
             "editor.logging.backups",
             "system.log.out",
-            "system.log.err"
+            "system.log.err",
+            // -- PropertiesAppearance --
+            "startup.display.lookandfeel",
+            "startup.display.language",
+            "display.aa.fonts",
+            // -- PropertiesEditorGeneral --
+            "editor.tabs.tospaces",
+            "editor.tab.spaces"
     );
 
-    /**
-     * the property selection tree
-     */
     private JTree tree;
-
-    /**
-     * the right-hand property display panel
-     */
     private JPanel rightPanel;
-
-    /**
-     * the base panel layout
-     */
     private CardLayout cardLayout;
-
-    /**
-     * map of panels within the layout
-     */
+    private UserPreferenceFunction currentlySelectedPanel;
     private Map<Integer, UserPreferenceFunction> panelMap;
 
-    /**
-     * the parent container
-     */
     private final ActionContainer parent;
-
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
-    /**
-     * boolean key shows is restart needed to apply new settings
-     */
-    private static boolean restartNeed;
-
-    /**
-     * boolean key shows is it needed to update PATH env during restart
-     */
     private static boolean updateEnvNeed;
+    private static Integer lastSelectedRow;
+    private static List<Class<?>> classesNeedRestart;
 
     /**
      * Constructs a new instance.
@@ -129,26 +97,15 @@ public class PropertiesPanel extends JPanel
         this(parent, -1);
     }
 
-    /**
-     * Constructs a new instance selecting the specified node.
-     *
-     * @param parent  parent container
-     * @param openRow node to select
-     */
     public PropertiesPanel(ActionContainer parent, int openRow) {
-
         super(new BorderLayout());
+
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
-        restartNeed = false;
-        updateEnvNeed = false;
+        restoreRestartNeed();
+        restoreUpdateEnvNeed();
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
+        init();
         if (openRow != -1)
             selectOpenRow(openRow);
     }
@@ -172,65 +129,48 @@ public class PropertiesPanel extends JPanel
         // --- initialise branches ---
 
         List<PropertyNode> branches = new ArrayList<>();
-        PropertyNode node = new PropertyNode(PropertyTypes.GENERAL, bundledString("General"));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.LOCALE, bundledString("Locale"));
-        branches.add(node);
-//        node = new PropertyNode(PropertyTypes.VIEW, "View");
-//        branches.add(node);
-        node = new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display"));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.SHORTCUTS, bundledString("Shortcuts"));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.LOOK_PLUGIN, bundledString("LookFeelPlugins"));
-        branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_FILE, bundledString("FileTools")));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_EDIT, bundledString("EditTools")));
+        branches.add(new PropertyNode(PropertyTypes.GENERAL, bundledString("General")));
+        branches.add(new PropertyNode(PropertyTypes.APPEARANCE, bundledString("Display")));
+        branches.add(new PropertyNode(PropertyTypes.SHORTCUTS, bundledString("Shortcuts")));
+        branches.add(new PropertyNode(PropertyTypes.SQL_SHORTCUTS, bundledString("SqlShortcuts")));
+        branches.add(new PropertyNode(PropertyTypes.CONNECTIONS, bundledString("Connection")));
+        branches.add(new PropertyNode(PropertyTypes.EDITOR, bundledString("Editor")));
+        branches.add(new PropertyNode(PropertyTypes.RESULT_SET, bundledString("ResultSetTable")));
+
+        PropertyNode node = new PropertyNode(PropertyTypes.TOOLBAR_GENERAL, bundledString("ToolBar"));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_DATABASE, bundledString("DatabaseTools")));
-        //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_BROWSER, "Browser Tools"));
-        //node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_IMPORT_EXPORT, bundledString("ImportExportTools")));
-        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SEARCH, bundledString("SearchTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_APPLICATION, bundledString("ApplicationTools")));
         node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_SYSTEM, bundledString("SystemTools")));
+        node.addChild(new PropertyNode(PropertyTypes.TOOLBAR_QUERY_EDITOR, bundledString("QueryEditorTools")));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.EDITOR_GENERAL, bundledString("Editor"));
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, bundledString("Fonts")));
-//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_BACKGROUND, "Colours"));
-        node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, bundledString("Colours")));
-//        node.addChild(new PropertyNode(PropertyTypes.EDITOR_SYNTAX, "Syntax Colours"));
+        node = new PropertyNode(PropertyTypes.FONTS_GENERAL, bundledString("Fonts"));
+        node.addChild(new PropertyNode(PropertyTypes.EDITOR_FONTS, bundledString("EDITOR_FONTS")));
+        node.addChild(new PropertyNode(PropertyTypes.CONNECTIONS_TREE_FONTS, bundledString("TREE_CONNECTIONS_FONTS")));
+        node.addChild(new PropertyNode(PropertyTypes.CONSOLE_FONTS, bundledString("CONSOLE_FONTS")));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.TREE_CONNECTIONS_GENERAL, bundledString("TreeConnections"));
-        node.addChild(new PropertyNode(PropertyTypes.TREE_CONNECTIONS_FONTS, bundledString("Fonts")));
+        node = new PropertyNode(PropertyTypes.COLORS_GENERAL, bundledString("Colours"));
+        node.addChild(new PropertyNode(PropertyTypes.EDITOR_COLOURS, bundledString("EDITOR_COLOURS")));
+        node.addChild(new PropertyNode(PropertyTypes.RESULT_SET_COLOURS, bundledString("RESULT_SET_COLOURS")));
         branches.add(node);
 
-        node = new PropertyNode(PropertyTypes.RESULTS, bundledString("ResultSetTable"));
-        node.addChild(new PropertyNode(PropertyTypes.RESULT_SET_CELL_COLOURS, bundledString("Colours")));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.CONNECTIONS, bundledString("Connection"));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.BROWSER_GENERAL, bundledString("DatabaseBrowser"));
-        node.addChild(new PropertyNode(PropertyTypes.BROWSER_DATA_TAB, bundledString("TableDataPanel")));
-        branches.add(node);
-        node = new PropertyNode(PropertyTypes.OUTPUT_CONSOLE, bundledString("Logging"));
-        node.addChild(new PropertyNode(PropertyTypes.CONSOLE_FONTS, bundledString("Fonts")));
-        branches.add(node);
+        // --- add branches to the tree ---
 
-        DefaultMutableTreeNode root =
-                new DefaultMutableTreeNode(new PropertyNode(PropertyTypes.SYSTEM, bundledString("Preferences")));
+        node = new PropertyNode(PropertyTypes.SYSTEM, bundledString("Preferences"));
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(node);
 
         for (PropertyNode branch : branches) {
-            node = branch;
-
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node);
+            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(branch);
             root.add(treeNode);
 
-            if (node.hasChildren())
-                for (PropertyNode child : node.getChildren())
+            if (branch.hasChildren())
+                for (PropertyNode child : branch.getChildren())
                     treeNode.add(new DefaultMutableTreeNode(child));
         }
+
+        // --- add tree on panel ---
 
         tree = new DynamicTree(root);
         tree.setRowHeight(22);
@@ -254,34 +194,28 @@ public class PropertiesPanel extends JPanel
 
         mainPanel.add(splitPane, BorderLayout.CENTER);
         mainPanel.add(new BottomButtonPanel(
-                this, null, "prefs", parent.isDialog()), BorderLayout.SOUTH);
+                        e -> save(false),
+                        null,
+                        "prefs",
+                        parent.isDialog()
+                ), BorderLayout.SOUTH
+        );
 
         add(mainPanel, BorderLayout.CENTER);
         panelMap = new HashMap<>();
         tree.addTreeSelectionListener(this);
-
-        // set up the first panel
-        PropertiesRootPanel panel = new PropertiesRootPanel();
-
-        Integer id = PropertyTypes.SYSTEM;
-        panelMap.put(id, panel);
-
-        rightPanel.add(panel, String.valueOf(id));
-        cardLayout.show(rightPanel, String.valueOf(id));
-
-        tree.setSelectionRow(0);
+        cardLayout.show(rightPanel, String.valueOf(PropertyTypes.SYSTEM));
+        tree.setSelectionRow(lastSelectedRow != null ? lastSelectedRow : 0);
     }
 
     @SuppressWarnings("rawtypes")
     private void selectOpenRow(int openRow) {
 
-        DefaultMutableTreeNode node;
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
-
         Enumeration enumeration = root.depthFirstEnumeration();
         while (enumeration.hasMoreElements()) {
 
-            node = (DefaultMutableTreeNode) enumeration.nextElement();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) enumeration.nextElement();
             PropertyNode propertyNode = (PropertyNode) node.getUserObject();
 
             if (propertyNode.getNodeId() == openRow) {
@@ -299,134 +233,84 @@ public class PropertiesPanel extends JPanel
 
     private void getProperties(Object[] selection) {
 
-        DefaultMutableTreeNode n = (DefaultMutableTreeNode) selection[selection.length - 1];
-        PropertyNode node = (PropertyNode) n.getUserObject();
+        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selection[selection.length - 1];
+        PropertyNode propertyNode = (PropertyNode) treeNode.getUserObject();
 
-        JPanel panel = null;
-        Integer id = node.getNodeId();
+        int nodeId = propertyNode.getNodeId();
+        lastSelectedRow = nodeId - 1;
 
-        if (panelMap.containsKey(id)) {
-            cardLayout.show(rightPanel, String.valueOf(id));
+        if (panelMap.containsKey(nodeId)) {
+            currentlySelectedPanel = panelMap.get(nodeId);
+            cardLayout.show(rightPanel, String.valueOf(nodeId));
             return;
         }
 
-        switch (id) {
+        UserPreferenceFunction propertyPanel = getPropertyPanel(nodeId);
+        if (propertyPanel == null)
+            return;
 
-            case PropertyTypes.SYSTEM:
-                panel = new PropertiesRootPanel();
-                break;
+        currentlySelectedPanel = propertyPanel;
+        currentlySelectedPanel.addPreferenceChangeListener(this);
+        panelMap.put(nodeId, currentlySelectedPanel);
+
+        // apply all previously applied preferences that the new panel might be interested in
+        for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet())
+            currentlySelectedPanel.preferenceChange(event.getValue());
+
+        rightPanel.add((JPanel) propertyPanel, String.valueOf(nodeId));
+        cardLayout.show(rightPanel, String.valueOf(nodeId));
+    }
+
+    private UserPreferenceFunction getPropertyPanel(int nodeId) {
+        switch (nodeId) {
 
             case PropertyTypes.GENERAL:
-                panel = new PropertiesGeneral();
-                break;
-
-            case PropertyTypes.LOCALE:
-                panel = new PropertiesLocales();
-                break;
-
+                return new PropertiesGeneral(this);
             case PropertyTypes.SHORTCUTS:
-                panel = new PropertiesKeyShortcuts();
-                break;
-
+                return new PropertiesKeyShortcuts(this);
+            case PropertyTypes.SQL_SHORTCUTS:
+                return new PropertiesSqlShortcuts(this);
             case PropertyTypes.APPEARANCE:
-                panel = new PropertiesAppearance();
-                break;
+                return new PropertiesAppearance(this);
+            case PropertyTypes.CONNECTIONS:
+                return new PropertiesConnections(this);
+            case PropertyTypes.EDITOR:
+                return new PropertiesEditorGeneral(this);
+            case PropertyTypes.RESULT_SET:
+                return new PropertiesResultSetTableGeneral(this);
 
             case PropertyTypes.TOOLBAR_GENERAL:
-                panel = new PropertiesToolBarGeneral();
-                break;
-
-            case PropertyTypes.TOOLBAR_FILE:
-                panel = new PropertiesToolBar("File Tools");
-                break;
-
-            case PropertyTypes.TOOLBAR_EDIT:
-                panel = new PropertiesToolBar("Edit Tools");
-                break;
-
-            case PropertyTypes.TOOLBAR_SEARCH:
-                panel = new PropertiesToolBar("Search Tools");
-                break;
-
+                return new PropertiesToolBarGeneral(this);
             case PropertyTypes.TOOLBAR_DATABASE:
-                panel = new PropertiesToolBar("Database Tools");
-                break;
-
-            case PropertyTypes.TOOLBAR_BROWSER:
-                panel = new PropertiesToolBar("Browser Tools");
-                break;
-
-            case PropertyTypes.TOOLBAR_IMPORT_EXPORT:
-                panel = new PropertiesToolBar("Import/Export Tools");
-                break;
-
+                return new PropertiesToolBar(this, ToolBarManager.DATABASE_TOOLS);
+            case PropertyTypes.TOOLBAR_APPLICATION:
+                return new PropertiesToolBar(this, ToolBarManager.APPLICATION_TOOLS);
+            case PropertyTypes.TOOLBAR_QUERY_EDITOR:
+                return new PropertiesToolBar(this, ToolBarManager.QUERY_EDITOR_TOOLS);
             case PropertyTypes.TOOLBAR_SYSTEM:
-                panel = new PropertiesToolBar("System Tools");
-                break;
+                return new PropertiesToolBar(this, ToolBarManager.SYSTEM_TOOLS);
 
-            case PropertyTypes.LOOK_PLUGIN:
-                panel = new PropertiesLookPlugins();
-                break;
-
-            case PropertyTypes.EDITOR_GENERAL:
-                panel = new PropertiesEditorGeneral();
-                break;
-
-            case PropertyTypes.EDITOR_COLOURS:
-                panel = new PropertiesEditorColours();
-                break;
-
+            case PropertyTypes.FONTS_GENERAL:
             case PropertyTypes.EDITOR_FONTS:
-                panel = new PropertiesEditorFonts();
-                break;
-
-            case PropertyTypes.RESULTS:
-                panel = new PropertiesResultSetTableGeneral();
-                break;
-
-            case PropertyTypes.CONNECTIONS:
-                panel = new PropertiesConns();
-                break;
-
-            case PropertyTypes.BROWSER_GENERAL:
-                panel = new PropertiesBrowserGeneral();
-                break;
-
-            case PropertyTypes.BROWSER_DATA_TAB:
-                panel = new PropertiesBrowserTableData();
-                break;
-
-            case PropertyTypes.RESULT_SET_CELL_COLOURS:
-                panel = new PropertiesResultSetTableColours();
-                break;
-
-            case PropertyTypes.TREE_CONNECTIONS_FONTS:
-                panel = new PropertiesTreeConnectionsFonts();
-                break;
-
-            case PropertyTypes.TREE_CONNECTIONS_GENERAL:
-                panel = new PropertiesTreeConnectionsGeneral();
-                break;
-
-            case PropertyTypes.OUTPUT_CONSOLE:
-                panel = new PropertiesLogging();
-                break;
-
+                return new PropertiesEditorFonts(this);
+            case PropertyTypes.CONNECTIONS_TREE_FONTS:
+                return new PropertiesTreeConnectionsFonts(this);
             case PropertyTypes.CONSOLE_FONTS:
-                panel = new PropertiesConsoleFonts();
-                break;
+                return new PropertiesConsoleFonts(this);
+
+            case PropertyTypes.COLORS_GENERAL:
+            case PropertyTypes.EDITOR_COLOURS:
+                return new PropertiesEditorColours(this);
+            case PropertyTypes.RESULT_SET_COLOURS:
+                return new PropertiesResultSetTableColours(this);
+
+            default:
+                return null;
         }
+    }
 
-        UserPreferenceFunction userPreferenceFunction = (UserPreferenceFunction) panel;
-        userPreferenceFunction.addPreferenceChangeListener(this);
-        panelMap.put(id, userPreferenceFunction);
-
-        // apply all previously applied prefs that the new panel might be interested in
-        for (Map.Entry<String, PreferenceChangeEvent> event : preferenceChangeEvents.entrySet())
-            userPreferenceFunction.preferenceChange(event.getValue());
-
-        rightPanel.add(panel, String.valueOf(id));
-        cardLayout.show(rightPanel, String.valueOf(id));
+    public UserPreferenceFunction getPropertyPanelFromMap(int id) {
+        return panelMap.containsKey(id) ? panelMap.get(id) : getPropertyPanel(id);
     }
 
     @Override
@@ -436,20 +320,30 @@ public class PropertiesPanel extends JPanel
             entry.getValue().preferenceChange(e);
 
         preferenceChangeEvents.put(e.getKey(), e);
-        checkAndSetRestartNeed(e.getKey());
+        setRestartNeed(e.getKey(), e.getSource().getClass());
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    public void save(boolean isApplyAction) {
 
         try {
             GUIUtilities.showWaitCursor();
+            boolean restartNeed = isRestartNeed();
 
-            panelMap.values().forEach(UserPreferenceFunction::save);
+            if (isApplyAction) {
+                currentlySelectedPanel.save();
+                restartNeed &= isRestartNeed(currentlySelectedPanel.getClass());
+
+            } else
+                panelMap.values().forEach(UserPreferenceFunction::save);
+
             ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
-            if (isRestartNeed()) {
-                setRestartNeed(false);
+            if (restartNeed) {
+
+                restoreRestartNeed(currentlySelectedPanel.getClass());
+                if (!isApplyAction)
+                    restoreRestartNeed();
+
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
                     ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
 
@@ -460,36 +354,43 @@ public class PropertiesPanel extends JPanel
             GUIUtilities.showNormalCursor();
         }
 
-        parent.finished();
+        if (!isApplyAction)
+            parent.finished();
     }
 
     private UserPreferenceEvent createUserPreferenceEvent() {
         return new DefaultUserPreferenceEvent(this, null, UserPreferenceEvent.ALL);
     }
 
-    @Override
-    public void cleanup() {
-
-        if (panelMap.containsKey("Colours") && panelMap.get("Colours") instanceof PropertiesEditorBackground) {
-            PropertiesEditorBackground panel = (PropertiesEditorBackground) panelMap.get("Colours");
-            panel.stopCaretDisplayTimer();
-        }
+    private boolean isRestartNeed() {
+        return !classesNeedRestart.isEmpty();
     }
 
-    public boolean isRestartNeed() {
-        return restartNeed;
+    private boolean isRestartNeed(Class<?> className) {
+        return classesNeedRestart.contains(className);
     }
 
-    public static void checkAndSetRestartNeed(String key) {
-        PropertiesPanel.restartNeed = PROPERTIES_KEYS_NEED_RESTART.contains(key);
+    public static void setRestartNeed(String key, Class<?> className) {
+
+        boolean restartNeed = PROPERTIES_KEYS_NEED_RESTART.stream().anyMatch(propertyKey -> propertyKey.equals(key));
+        if (restartNeed && !classesNeedRestart.contains(className))
+            classesNeedRestart.add(className);
     }
 
-    public static void setRestartNeed(boolean restartNeed) {
-        PropertiesPanel.restartNeed = restartNeed;
+    private static void restoreRestartNeed() {
+        PropertiesPanel.classesNeedRestart = new ArrayList<>();
+    }
+
+    private static void restoreRestartNeed(Class<?> className) {
+        PropertiesPanel.classesNeedRestart.remove(className);
     }
 
     public static void setUpdateEnvNeed(boolean updateEnvNeed) {
-        PropertiesPanel.updateEnvNeed = updateEnvNeed;
+        PropertiesPanel.updateEnvNeed = PropertiesPanel.updateEnvNeed || updateEnvNeed;
+    }
+
+    private static void restoreUpdateEnvNeed() {
+        PropertiesPanel.updateEnvNeed = false;
     }
 
     private String bundledString(String key) {

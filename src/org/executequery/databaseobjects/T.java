@@ -24,4 +24,21 @@ public interface T {
     String CSTRING = "CSTRING";
     String DECFLOAT = "DECFLOAT";
     String INT128 = "INT128";
+
+    String[] DEFAULT_TYPES = {
+            NUMERIC,
+            DECIMAL,
+            SMALLINT,
+            INTEGER,
+            DOUBLE_PRECISION,
+            FLOAT,
+            CHAR,
+            VARCHAR,
+            TIME,
+            TIMESTAMP,
+            DATE,
+            BIGINT,
+            BLOB
+    };
+
 }

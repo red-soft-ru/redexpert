@@ -92,6 +92,7 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableStringConverter;
 
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 
 
 /**
@@ -776,7 +777,7 @@ public class ProfilerTable extends JTable {
             HeaderComponent corner = !hideable ? new HeaderComponent(chooser) :
                     new HeaderComponent(chooser) {
                         private final int offsetX = UIUtils.isWindowsClassicLookAndFeel() ? 0 : -1;
-                        private final Icon icon = GUIUtilities.loadIcon("org/executequery/icons/Up16.png");
+                        private final Icon icon = IconManager.getIcon("icon_move_up");
                         protected void paintComponent(Graphics g) {
                             super.paintComponent(g);
                             int x = (getWidth() - icon.getIconWidth()) / 2 + offsetX;

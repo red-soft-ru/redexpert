@@ -29,10 +29,10 @@ import java.awt.*;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class SmoothGradientButtonUI extends MetalButtonUI {
 
     private static final SmoothGradientButtonUI INSTANCE = new SmoothGradientButtonUI();
-
     private boolean borderPaintsFocus;
 
     public static ComponentUI createUI(JComponent b) {
@@ -42,37 +42,13 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
     /**
      * Installs defaults and honors the client property <code>isNarrow</code>.
      */
+    @Override
     public void installDefaults(AbstractButton b) {
         super.installDefaults(b);
-//        PolishedLookUtils.installNarrowMargin(b, getPropertyPrefix());
-        borderPaintsFocus =
-                Boolean.TRUE.equals(UIManager.get("Button.borderPaintsFocus"));
+        borderPaintsFocus = Boolean.TRUE.equals(UIManager.get("Button.borderPaintsFocus"));
     }
 
-    /**
-     * Installs an extra listener for a change of the isNarrow property.
-     */ /*
-    public void installListeners(AbstractButton b) {
-        super.installListeners(b);
-        PropertyChangeListener listener =
-            new ButtonMarginListener(getPropertyPrefix());
-        b.putClientProperty(ButtonMarginListener.CLIENT_KEY, listener);
-        b.addPropertyChangeListener(Options.IS_NARROW_KEY, listener);
-    }
-*/
-
-    /**
-     * Uninstalls the extra listener for a change of the isNarrow property.
-     */ /*
-    public void uninstallListeners(AbstractButton b) {
-        super.uninstallListeners(b);
-        PropertyChangeListener listener =
-            (PropertyChangeListener) b.getClientProperty(
-                ButtonMarginListener.CLIENT_KEY);
-        b.removePropertyChangeListener(listener);
-    }
-*/
-    // Painting ***************************************************************
+    @Override
     public void update(Graphics g, JComponent c) {
         AbstractButton b = (AbstractButton) c;
         if (c.isOpaque()) {
@@ -99,6 +75,7 @@ public class SmoothGradientButtonUI extends MetalButtonUI {
     /**
      * Paints the focus with close to the button's border.
      */
+    @Override
     protected void paintFocus(
             Graphics g,
             AbstractButton b,

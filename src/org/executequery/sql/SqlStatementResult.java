@@ -33,40 +33,29 @@ import java.sql.SQLWarning;
 public class SqlStatementResult implements Serializable {
 
     private int type;
-
     private int updateCount;
-
     private int statementCount;
 
     private String message;
-
     private String otherErrorMessage;
 
-    private ResultSet resultSet;
-
-    private SQLException sqlException;
-
-    private SQLWarning sqlWarning;
-
-    private Throwable otherException;
-
     private Object otherResult;
+    private ResultSet resultSet;
+    private SQLWarning sqlWarning;
+    private Throwable otherException;
+    private SQLException sqlException;
 
     public SqlStatementResult() {
     }
 
-    public SqlStatementResult(ResultSet resultSet,
-                              SQLException sqlException,
-                              SQLWarning sqlWarning) {
+    public SqlStatementResult(ResultSet resultSet, SQLException sqlException, SQLWarning sqlWarning) {
         this.resultSet = resultSet;
         this.sqlException = sqlException;
         this.sqlWarning = sqlWarning;
     }
 
-    public void reset(ResultSet resultSet,
-                      SQLException sqlException,
-                      SQLWarning sqlWarning) {
-        updateCount = -1;
+    public void reset(ResultSet resultSet, SQLException sqlException, SQLWarning sqlWarning) {
+        this.updateCount = -1;
         this.resultSet = resultSet;
         this.sqlException = sqlException;
         this.sqlWarning = sqlWarning;
@@ -88,69 +77,39 @@ public class SqlStatementResult implements Serializable {
 
     public String getErrorMessage() {
 
-        if (sqlException == null && otherErrorMessage == null) {
-
+        if (sqlException == null && otherErrorMessage == null)
             return message;
 
-        } else if (otherErrorMessage != null) {
-
+        if (otherErrorMessage != null)
             return otherErrorMessage;
 
-        } else if (sqlException == null && otherException != null) {
-
-            return otherException.getMessage();
-        }
-
         String text = sqlException.getMessage();
-
-        if (text != null) {
-
-            int errorCode = 0;
-
-            StringBuilder message = new StringBuilder();
-            SQLException sqlExc = sqlException;
-
-            while (true) {
-
-                if (sqlExc == null) {
-
-                    break;
-                }
-
-                String _message = sqlExc.getMessage();
-                message.append(_message);
-
-                if (!_message.endsWith("\n")) {
-
-                    message.append("\n");
-                }
-
-                errorCode = sqlException.getErrorCode();
-                if (errorCode > 0) {
-
-                    message.append("[Error Code: ").
-                            append(errorCode).
-                            append("]\n");
-                }
-
-                text = sqlException.getSQLState();
-                if (text != null) {
-
-                    message.append("[SQL State: ").
-                            append(text).
-                            append("]\n");
-                }
-
-                sqlExc = sqlExc.getNextException();
-            }
-
-            return message.toString();
-
-        } else {
-
+        if (text == null)
             return "An indeterminate error has occurred";
+
+        StringBuilder message = new StringBuilder();
+        SQLException sqlExc = sqlException;
+
+        while (sqlExc != null) {
+
+            String _message = sqlExc.getMessage();
+            message.append(_message);
+
+            if (!_message.endsWith("\n"))
+                message.append("\n");
+
+            int errorCode = sqlException.getErrorCode();
+            if (errorCode > 0)
+                message.append("[Error Code: ").append(errorCode).append("]\n");
+
+            text = sqlException.getSQLState();
+            if (text != null)
+                message.append("[SQL State: ").append(text).append("]\n");
+
+            sqlExc = sqlExc.getNextException();
         }
 
+        return message.toString();
     }
 
     public boolean isResultSet() {
@@ -218,10 +177,6 @@ public class SqlStatementResult implements Serializable {
         this.otherResult = otherResult;
     }
 
-    public String getOtherErrorMessage() {
-        return otherErrorMessage;
-    }
-
     public void setOtherErrorMessage(String otherErrorMessage) {
         this.otherErrorMessage = otherErrorMessage;
     }
@@ -243,9 +198,3 @@ public class SqlStatementResult implements Serializable {
     }
 
 }
-
-
-
-
-
-

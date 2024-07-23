@@ -34,13 +34,9 @@ import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
-import org.executequery.gui.drivers.DriversTreePanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
-import org.executequery.gui.keywords.KeywordsDockedPanel;
 import org.executequery.gui.menu.ExecuteQueryMenu;
-import org.executequery.gui.menu.MenuItem;
-import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
 import org.executequery.http.ReddatabaseAPI;
@@ -63,7 +59,6 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.BaseActionCommand;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
-import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -135,16 +130,6 @@ public final class GUIUtilities {
      * docked panel cache of non-central pane tabs
      */
     private static final Map<String, JPanel> dockedTabComponents;
-
-    /**
-     * the resource path to the image directory
-     */
-    public static final String IMAGE_PATH = "/org/executequery/images/";
-
-    /**
-     * the resource path to the icon directory
-     */
-    public static final String ICON_PATH = "/org/executequery/icons/";
 
     /**
      * System.err logger
@@ -249,37 +234,7 @@ public final class GUIUtilities {
                 }
             });
 
-            ExecuteQueryMenu menu = (ExecuteQueryMenu) frame.getJMenuBar();
-            MenuItem item = new MenuItem();
-            item.setName(Bundles.get("action.exit-from-account-command"));
-            item.setActionCommand("exit-from-account-command");
-            item.setId("exit-from-account-command");
-
-            JMenu toolsMenu = null;
-            for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
-                    toolsMenu = menu.getMenu(i);
-                    break;
-                }
-            }
-
-            if (toolsMenu != null) {
-                toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
-
-                for (int i = 0; i < toolsMenu.getItemCount(); i++) {
-
-                    JMenuItem menuItem = toolsMenu.getItem(i);
-                    if (menuItem != null) {
-                        if (Bundles.get("action.log-in-account-command").contentEquals(menuItem.getText())) {
-                            toolsMenu.remove(i);
-                            break;
-                        }
-                    }
-                }
-            }
-
         } else {
-
             while (statusBar.getLabel(4).getMouseListeners().length > 0)
                 statusBar.getLabel(4).removeMouseListener(statusBar.getLabel(4).getMouseListeners()[0]);
 
@@ -291,34 +246,6 @@ public final class GUIUtilities {
                 }
             });
 
-            ExecuteQueryMenu menu = (ExecuteQueryMenu) frame.getJMenuBar();
-            MenuItem item = new MenuItem();
-            item.setName(Bundles.get("action.log-in-account-command"));
-            item.setActionCommand("log-in-account-command");
-            item.setId("log-in-account-command");
-
-            JMenu toolsMenu = null;
-            for (int i = 0; i < menu.getMenuCount(); i++) {
-                if (menu.getMenu(i).getText().contentEquals(Bundles.get("menu.help"))) {
-                    toolsMenu = menu.getMenu(i);
-                    break;
-                }
-            }
-
-            if (toolsMenu != null) {
-                toolsMenu.add(menu.getjMenuItemFactory().createJMenuItem(toolsMenu, item));
-
-                for (int i = 0; i < toolsMenu.getItemCount(); i++) {
-
-                    JMenuItem menuItem = toolsMenu.getItem(i);
-                    if (menuItem != null) {
-                        if (Bundles.get("action.exit-from-account-command").contentEquals(menuItem.getText())) {
-                            toolsMenu.remove(i);
-                            break;
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -361,7 +288,7 @@ public final class GUIUtilities {
      * in the specified position.
      */
     public static void addCentralPane(String title, String icon, Component component, String tip, boolean selected) {
-        addDockedTab(title, loadIcon(icon, true), component, tip, SwingConstants.CENTER, selected);
+        addDockedTab(title, IconManager.getIcon(icon), component, tip, SwingConstants.CENTER, selected);
     }
 
     /**
@@ -413,14 +340,6 @@ public final class GUIUtilities {
         TabComponent tabComponent = desktopMediator.getSelectedComponent(SwingConstants.CENTER);
         if (tabComponent != null)
             closeDockedComponent(tabComponent.getTitle(), SwingConstants.CENTER);
-    }
-
-    public static void closeAllTabs() {
-        desktopMediator.closeAllTabs();
-    }
-
-    public static void closeAllTabsInSelectedContainer() {
-        desktopMediator.closeAllTabsInSelectedContainer();
     }
 
     public static void closeSelectedTab() {
@@ -477,13 +396,6 @@ public final class GUIUtilities {
      */
     public static void selectNextTab() {
         desktopMediator.selectNextTab();
-    }
-
-    /**
-     * Selects the next tab from the current selection.
-     */
-    public static void selectNextTabContainer() {
-        desktopMediator.selectNextTabContainer();
     }
 
     /**
@@ -857,6 +769,10 @@ public final class GUIUtilities {
         ThreadUtils.invokeAndWait(() -> GUIUtils.showTextCursor(frame));
     }
 
+    public static void showChangeSizeCursor(int location) {
+        ThreadUtils.invokeAndWait(() -> GUIUtils.showChangeSizeCursor(frame, location));
+    }
+
     /**
      * Sets the application cursor to the system wait cursor
      * on the specified component.
@@ -901,59 +817,6 @@ public final class GUIUtilities {
     }
 
     /**
-     * Loads and returns the specified image with the specified name.
-     * The default path to the image dir appended to the start of
-     * the name is /org/executequery/images.
-     *
-     * @param name the image file name to load
-     * @return the loaded image
-     */
-    public static ImageIcon loadImage(String name) {
-        return IconUtilities.loadImage(IMAGE_PATH + name);
-    }
-
-    /**
-     * Loads and returns the specified icon with the specified name.
-     * The default path to the icon dir appended to the start of
-     * the name is /org/executequery/icons.
-     *
-     * @param name the icon file name to load
-     * @return the loaded icon image
-     */
-    public static ImageIcon loadIcon(String name) {
-        return loadIcon(name, false);
-    }
-
-    /**
-     * Loads and returns the specified icon with the specified name.
-     * The default path to the icon dir appended to the start of
-     * the name is /org/executequery/icons.
-     *
-     * @param name  the icon file name to load
-     * @param store whether to store the icon in the icon cache
-     *              for future use after loading
-     * @return the loaded icon image
-     */
-    public static ImageIcon loadIcon(String name, boolean store) {
-        return IconUtilities.loadIcon(ICON_PATH + name, store);
-    }
-
-    public static ImageIcon loadIcon(String name, int iconSize) {
-        return IconUtilities.loadIcon(ICON_PATH + name, iconSize);
-    }
-
-    /**
-     * Returns the absolute icon resource path by appending
-     * the package icon path to the specified icon file name.
-     *
-     * @param name the icon file name
-     * @return the absolute package path of the icon
-     */
-    public static String getAbsoluteIconPath(String name) {
-        return ICON_PATH + name;
-    }
-
-    /**
      * Convenience method for consistent border colour.
      *
      * @return the system default border colour
@@ -995,28 +858,8 @@ public final class GUIUtilities {
                 panel = new ConnectionsTreePanel();
                 break;
 
-            case DriversTreePanel.PROPERTY_KEY:
-                panel = new DriversTreePanel();
-                break;
-
-            case SystemPropertiesDockedTab.PROPERTY_KEY:
-                panel = new SystemPropertiesDockedTab();
-                break;
-
-            case NotepadDockedPanel.PROPERTY_KEY:
-                panel = new NotepadDockedPanel();
-                break;
-
             case SystemOutputPanel.PROPERTY_KEY:
                 startLogger();
-                break;
-
-            case KeywordsDockedPanel.PROPERTY_KEY:
-                panel = new KeywordsDockedPanel();
-                break;
-
-            case SQLStateCodesDockedPanel.PROPERTY_KEY:
-                panel = new SQLStateCodesDockedPanel();
                 break;
         }
 
@@ -1082,6 +925,11 @@ public final class GUIUtilities {
         layoutProperties.save();
 
         SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, key, visible);
+        updatePreferencesToFile();
+    }
+
+    public static void updatePreference(String key, boolean value) {
+        SystemProperties.setBooleanProperty(Constants.USER_PROPERTIES_KEY, key, value);
         updatePreferencesToFile();
     }
 
@@ -1457,7 +1305,7 @@ public final class GUIUtilities {
 
     public static boolean saveOpenChanges(SaveFunction saveFunction) {
 
-        int result = displayConfirmCancelDialog("Do you wish to save changes to " + saveFunction.getDisplayName() + "?");
+        int result = displayConfirmCancelDialog(Bundles.getCommon("save-changes.message", saveFunction.getDisplayName()));
         if (result == JOptionPane.YES_OPTION) {
 
             boolean saveAs = false;
@@ -1475,13 +1323,13 @@ public final class GUIUtilities {
      * Displays the error dialog displaying the stack trace from a
      * throws/caught exception.
      *
-     * @param message the error message to display
-     * @param e       the throwable
+     * @param message     the error message to display
+     * @param e           the throwable
+     * @param sourceClass the class that call method
      */
-    public static void displayExceptionErrorDialog(final String message, final Throwable e) {
-        GUIUtils.invokeAndWait(() -> new ExceptionErrorDialog(frame, message, e));
+    public static void displayExceptionErrorDialog(final String message, final Throwable e, final Class<?> sourceClass) {
+        GUIUtils.invokeAndWait(() -> new ExceptionErrorDialog(frame, message, e, sourceClass));
     }
-
 
     // -------------------------------------------------------
     // ------ Helper methods for various option dialogs ------
@@ -1546,6 +1394,10 @@ public final class GUIUtilities {
         } catch (InvocationTargetException | InterruptedException e) {
             e.printStackTrace(System.out);
         }
+    }
+
+    public static ToolBarManager getToolBar() {
+        return toolBar;
     }
 
     public static String bundledString(String key) {

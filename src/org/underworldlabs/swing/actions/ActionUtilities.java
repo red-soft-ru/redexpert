@@ -20,9 +20,9 @@
 
 package org.underworldlabs.swing.actions;
 
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.DefaultToolbarButton;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -112,7 +112,7 @@ public class ActionUtilities {
                                 JButton item) {
 
         if (icon != null) {
-            item.setIcon(IconUtilities.loadIcon(icon));
+            item.setIcon(IconManager.getIcon(icon));
             item.setMargin(new Insets(1, 1, 1, 1));
         }
 
@@ -134,9 +134,8 @@ public class ActionUtilities {
         item.setToolTipText(name);
         item.setActionCommand(command);
 
-        if (icon != null) {
-            item.setIcon(IconUtilities.loadIcon(icon));
-        }
+        if (icon != null)
+            item.setIcon(IconManager.getIcon(icon));
 
         if (iconOnly) {
             item.setMargin(new Insets(1, 1, 1, 1));

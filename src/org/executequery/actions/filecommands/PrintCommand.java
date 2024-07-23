@@ -39,61 +39,31 @@ import java.awt.event.ActionEvent;
  */
 public class PrintCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        if (!hasPrintableInFocus()) {
+        if (!hasPrintableInFocus())
+            return;
+
+        PrintFunction printFunction = GUIUtilities.getPrintableInFocus();
+        if (printFunction instanceof QueryEditor) {
+
+            BaseDialog dialog = new BaseDialog(PrintSelectDialog.PRINT_TITLE, true, false);
+            dialog.addDisplayComponent(createPanel(dialog, printFunction));
+            dialog.display();
 
             return;
         }
 
-        PrintFunction printFunction = null;
-
-        try {
-
-            printFunction = GUIUtilities.getPrintableInFocus();
-
-            // if the frame in focus is a Query Editor
-            // display the print selection dialog (text or table)
-            if (printFunction instanceof QueryEditor) {
-
-                BaseDialog dialog =
-                        new BaseDialog(PrintSelectDialog.PRINT_TITLE, true, false);
-
-                dialog.addDisplayComponent(createPanel(dialog, printFunction));
-                dialog.display();
-
-                return;
-            }
-
-            new Printer().print(printFunction);
-
-        } finally {
-
-            printFunction = null;
-        }
-
+        new Printer().print(printFunction);
     }
 
     private boolean hasPrintableInFocus() {
-
         return GUIUtilities.getPrintableInFocus() != null;
     }
 
     private JPanel createPanel(BaseDialog dialog, PrintFunction printFunction) {
-
-        return new PrintSelectDialog(
-                dialog, (QueryEditor) printFunction, PrintSelectDialog.PRINT);
+        return new PrintSelectDialog(dialog, (QueryEditor) printFunction, PrintSelectDialog.PRINT);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

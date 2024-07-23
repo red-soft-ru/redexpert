@@ -28,10 +28,8 @@ package org.executequery.sql;
  */
 public class SqlMessages {
 
-    // output message types
-
     /**
-     * Indicates a executing message
+     * Indicates an executing message
      */
     public static final int ACTION_MESSAGE = 0;
 
@@ -51,7 +49,7 @@ public class SqlMessages {
     public static final int WARNING_MESSAGE = 3;
 
     /**
-     * Indicates a executing message
+     * Indicates an executing message
      */
     public static final int ACTION_MESSAGE_PREFORMAT = 4;
 
@@ -71,11 +69,6 @@ public class SqlMessages {
     public static final int WARNING_MESSAGE_PREFORMAT = 7;
 
     /**
-     * The string for block comment substitution
-     */
-    public static final String BLOCK_COMMENT_PLACER = "{block_comment}";
-
-    /**
      * The regex for block comment substitution
      */
     public static final String BLOCK_COMMENT_REGEX = "\\{block_comment\\}";
@@ -90,18 +83,4 @@ public class SqlMessages {
      */
     public static final int OVERWRITE_MODE = 1;
 
-    private SqlMessages() {
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
-

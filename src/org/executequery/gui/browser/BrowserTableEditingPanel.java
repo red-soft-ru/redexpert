@@ -20,23 +20,20 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.DefaultKeywordEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.*;
-import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.databaseobjects.*;
+import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
+import org.executequery.gui.procedure.DefinitionPanel;
 import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.table.KeyCellRenderer;
@@ -47,8 +44,8 @@ import org.executequery.gui.text.TextEditor;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.print.TablePrinter;
-import org.executequery.toolbars.AbstractToolBarForTable;
-import org.executequery.toolbars.AbstractToolBarForTableIndexes;
+import org.executequery.toolbars.AbstractTableIndexesToolBar;
+import org.executequery.toolbars.AbstractTableToolBar;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -69,6 +66,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Timer;
@@ -81,9 +79,9 @@ import java.util.stream.Collectors;
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
-        KeywordListener,
         FocusListener,
         TableConstraintFunction,
+        DefinitionPanel,
         ChangeListener,
         VetoableChangeListener {
 
@@ -310,16 +308,16 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingIndexesPanel() {
 
-        buttonsEditingIndexesPanel = new AbstractToolBarForTableIndexes(
-                "Create Index",
-                "Delete Index",
-                "Refresh",
-                "Selectivity"
+        buttonsEditingIndexesPanel = new AbstractTableIndexesToolBar(
+                bundledString("toolbar.create.index"),
+                bundledString("toolbar.delete.index"),
+                bundledString("toolbar.Refresh"),
+                bundledString("toolbar.Selectivity")
         ) {
 
             @Override
             public void insert(ActionEvent e) {
-                insertAfter();
+                addRow();
             }
 
             @Override
@@ -342,14 +340,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     private void createButtonsEditingTriggersPanel() {
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
-                "Create Trigger",
-                "Delete Trigger",
-                "Refresh"
+        buttonsEditingTriggersPanel = new AbstractTableToolBar(
+                bundledString("toolbar.create.trigger"),
+                bundledString("toolbar.delete.trigger"),
+                bundledString("toolbar.Refresh")
         ) {
             @Override
             public void insert(ActionEvent e) {
-                insertAfter();
+                addRow();
             }
 
             @Override
@@ -368,43 +366,55 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingColumnPanel() {
 
+        RolloverButton addColumnButton = WidgetFactory.createRolloverButton(
+                "addColumnButton",
+                bundledString("toolbar.create.column"),
+                "icon_add",
+                actionEvent -> addRow()
+        );
+
+        RolloverButton deleteColumnButton = WidgetFactory.createRolloverButton(
+                "deleteColumnButton",
+                bundledString("toolbar.delete.column"),
+                "icon_delete",
+                actionEvent -> deleteRow()
+        );
+
+        RolloverButton moveUpColumnButton = WidgetFactory.createRolloverButton(
+                "moveUpColumnButton",
+                bundledString("toolbar.MoveUp"),
+                "icon_move_up",
+                actionEvent -> moveRowUp()
+        );
+
+        RolloverButton moveDownColumnButton = WidgetFactory.createRolloverButton(
+                "moveDownColumnButton",
+                bundledString("toolbar.MoveDown"),
+                "icon_move_down",
+                actionEvent -> moveRowDown()
+        );
+
+        RolloverButton commitColumnsButton = WidgetFactory.createRolloverButton(
+                "commitColumnsButton",
+                bundledString("toolbar.Commit"),
+                "icon_commit",
+                actionEvent -> commitColumnsChanges()
+        );
+
+        RolloverButton rollbackColumnsButton = WidgetFactory.createRolloverButton(
+                "rollbackColumnsButton",
+                bundledString("toolbar.Rollback"),
+                "icon_rollback",
+                actionEvent -> refresh()
+        );
+
         PanelToolBar bar = new PanelToolBar();
-
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Insert column");
-        addRolloverButton.addActionListener(actionEvent -> insertAfter());
-        bar.add(addRolloverButton);
-
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete column");
-        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
-        bar.add(deleteRolloverButton);
-
-        RolloverButton moveUpButton = new RolloverButton();
-        moveUpButton.setIcon(GUIUtilities.loadIcon("Up16.png"));
-        moveUpButton.setToolTipText("Move up");
-        moveUpButton.addActionListener(actionEvent -> moveColumnUp());
-        bar.add(moveUpButton);
-
-        RolloverButton moveDownButton = new RolloverButton();
-        moveDownButton.setIcon(GUIUtilities.loadIcon("Down16.png"));
-        moveDownButton.setToolTipText("Move down");
-        moveDownButton.addActionListener(actionEvent -> moveColumnDown());
-        bar.add(moveDownButton);
-
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
-        bar.add(commitRolloverButton);
-
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
-        bar.add(rollbackRolloverButton);
+        bar.add(addColumnButton);
+        bar.add(deleteColumnButton);
+        bar.add(moveUpColumnButton);
+        bar.add(moveDownColumnButton);
+        bar.add(commitColumnsButton);
+        bar.add(rollbackColumnsButton);
 
         buttonsEditingColumnPanel = new JPanel(new GridBagLayout());
         buttonsEditingColumnPanel.add(bar, new GridBagConstraints(
@@ -418,31 +428,39 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void createButtonsEditingConstraintPanel() {
 
+        RolloverButton addConstraintButton = WidgetFactory.createRolloverButton(
+                "addConstraintButton",
+                bundledString("toolbar.create.constraint"),
+                "icon_add",
+                actionEvent -> addRow()
+        );
+
+        RolloverButton deleteConstraintButton = WidgetFactory.createRolloverButton(
+                "deleteConstraintButton",
+                bundledString("toolbar.delete.constraint"),
+                "icon_delete",
+                actionEvent -> deleteRow()
+        );
+
+        RolloverButton commitConstraintsButton = WidgetFactory.createRolloverButton(
+                "commitConstraintsButton",
+                bundledString("toolbar.Commit"),
+                "icon_commit",
+                actionEvent -> commitColumnsChanges()
+        );
+
+        RolloverButton rollbackConstraintsButton = WidgetFactory.createRolloverButton(
+                "rollbackConstraintsButton",
+                bundledString("toolbar.Rollback"),
+                "icon_rollback",
+                actionEvent -> refresh()
+        );
 
         PanelToolBar bar = new PanelToolBar();
-        RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnInsert16.png"));
-        addRolloverButton.setToolTipText("Insert constraint");
-        addRolloverButton.addActionListener(actionEvent -> insertAfter());
-        bar.add(addRolloverButton);
-
-        RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("ColumnDelete16.png"));
-        deleteRolloverButton.setToolTipText("Delete constraint");
-        deleteRolloverButton.addActionListener(actionEvent -> deleteRow());
-        bar.add(deleteRolloverButton);
-
-        RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
-        commitRolloverButton.setToolTipText("Commit");
-        commitRolloverButton.addActionListener(actionEvent -> commitColumnsChanges());
-        bar.add(commitRolloverButton);
-
-        RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
-        rollbackRolloverButton.setToolTipText("Rollback");
-        rollbackRolloverButton.addActionListener(actionEvent -> refresh());
-        bar.add(rollbackRolloverButton);
+        bar.add(addConstraintButton);
+        bar.add(deleteConstraintButton);
+        bar.add(commitConstraintsButton);
+        bar.add(rollbackConstraintsButton);
 
         buttonsEditingConstraintPanel = new JPanel(new GridBagLayout());
         buttonsEditingConstraintPanel.add(bar, new GridBagConstraints(
@@ -508,9 +526,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         // --- base ---
 
         setContentPanel(mainPanel);
-        setHeaderText(bundleString("db-table"));
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseTable24.png"));
-        EventMediator.registerListener(this);
     }
 
     private void editColumnIndex(MouseEvent e) {
@@ -609,29 +624,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             table.setModifiedSQLText(alterSqlText.getSQLText());
     }
 
-    /**
-     * Notification of a new keyword added to the list.
-     */
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        alterSqlText.setSQLKeywords();
-        createSqlText.setSQLKeywords();
-    }
-
-    /**
-     * Notification of a keyword removed from the list.
-     */
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
-        alterSqlText.setSQLKeywords();
-        createSqlText.setSQLKeywords();
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof DefaultKeywordEvent);
-    }
-
     @Override
     public void actionPerformed(ActionEvent event) {
 
@@ -651,7 +643,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                         setValues(table);
 
                 } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 }
 
             } else if (source == cancelButton) {
@@ -736,8 +728,6 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         if (referencesPanel != null)
             referencesPanel.cleanup();
-
-        EventMediator.deregisterListener(this);
     }
 
 
@@ -839,10 +829,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(
-                                constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(((DefaultDatabaseHost) table.getHost()).getColumnDataArrayFromTableName(tableName));
                     }
 
                 } else if (constraint.isForeignKey()) {
@@ -852,10 +839,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(referencedTable);
                         tableNamesAdded.add(referencedTable);
-                        columns.add(controller.getColumnData(
-                                constraint.getReferencedSchema(),
-                                referencedTable, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(((DefaultDatabaseHost) table.getHost()).getColumnDataArrayFromTableName(referencedTable));
                     }
 
                     //noinspection SuspiciousMethodCalls
@@ -863,15 +847,33 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                         tableNames.add(tableName);
                         tableNamesAdded.add(tableName);
-                        columns.add(controller.getColumnData(
-                                constraint.getSchemaName(),
-                                tableName, table.getHost().getDatabaseConnection())
-                        );
+                        columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(tableName));
                     }
                 }
             }
 
-            List<DatabaseColumn> exportedKeys = table.getExportedKeys();
+            DefaultStatementExecutor querySender = new DefaultStatementExecutor();
+            querySender.setDatabaseConnection(table.getHost().getDatabaseConnection());
+            String query = "SELECT DISTINCT RC.RDB$RELATION_NAME FROM\n" +
+                    "RDB$RELATION_CONSTRAINTS RC \n" +
+                    "LEFT JOIN RDB$INDICES I ON RC.RDB$INDEX_NAME=I.RDB$INDEX_NAME \n" +
+                    "LEFT JOIN RDB$INDICES I2 ON I.RDB$FOREIGN_KEY=I2.RDB$INDEX_NAME\n" +
+                    "WHERE RC.RDB$CONSTRAINT_TYPE='FOREIGN KEY' AND I2.RDB$RELATION_NAME = '" + table.getName() + "'";
+            try {
+                ResultSet rs = querySender.getResultSet(query).getResultSet();
+                while (rs.next()) {
+                    String tableName = rs.getString(1);
+                    tableName = MiscUtils.trimEnd(tableName);
+                    if (!tableNames.contains(tableName))
+                        tableNames.add(tableName);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                querySender.releaseResources();
+            }
+
+           /* List<DatabaseColumn> exportedKeys = table.getExportedKeys();
             for (DatabaseColumn column : exportedKeys) {
 
                 String parentsName = column.getParentsName();
@@ -879,19 +881,26 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                     tableNames.add(parentsName);
                     tableNamesAdded.add(parentsName);
-                    columns.add(controller.getColumnData(
-                            column.getSchemaName(),
-                            parentsName, table.getHost().getDatabaseConnection())
-                    );
+                    columns.add(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(parentsName));
                 }
-            }
+            }*/
 
             if (tableNames.isEmpty()) {
                 tableNames.add(table.getName());
                 columns.add(new ColumnData[0]);
             }
+            Vector<ErdTableInfo> erdTableInfos = new Vector<>();
+            for (String tableName : tableNames) {
+                ErdTableInfo etf = new ErdTableInfo();
+                etf.setName(tableName);
+                etf.setColumns(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getColumnDataArrayFromTableName(etf.getName()));
+                AbstractTableObject tableObject = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getTableFromName(etf.getName());
+                if (tableObject != null)
+                    etf.setComment(tableObject.getRemarks());
+                erdTableInfos.add(etf);
+            }
 
-            referencesPanel.setTables(tableNames, columns);
+            referencesPanel.setTables(erdTableInfos);
 
         } catch (DataSourceException e) {
             controller.handleException(e);
@@ -1184,7 +1193,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      * Inserts a row after the selected row on the currently selected table.
      */
     @Override
-    public void insertAfter() {
+    public void addRow() {
 
         BaseDialog dialog = null;
         JPanel panelForDialog = null;
@@ -1251,7 +1260,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     @Override
     public List<String> getTables() {
-        return controller.getTables(null);
+        return controller.getTables();
     }
 
     @Override
@@ -1260,17 +1269,13 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     @Override
-    public void insertBefore() {
-    }
-
-    @Override
-    public void moveColumnUp() {
+    public void moveRowUp() {
         if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveUpSelectedColumn();
     }
 
     @Override
-    public void moveColumnDown() {
+    public void moveRowDown() {
         if (tabPane.getSelectedIndex() == TABLE_COLUMNS_INDEX)
             descriptionTable.moveDownSelectedColumn();
     }
@@ -1341,7 +1346,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 setValues(table);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
         }
     }
 

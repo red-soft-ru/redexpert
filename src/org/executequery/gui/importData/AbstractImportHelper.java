@@ -86,10 +86,10 @@ abstract class AbstractImportHelper implements ImportHelper {
             );
 
         } catch (DateTimeParseException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("DateTimeFormatErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("DateTimeFormatErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
 
         } finally {
             executor.releaseResources();

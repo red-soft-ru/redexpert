@@ -149,7 +149,7 @@ public class ConnectionsMenu extends MainMenu
 
     private Action loadAction() {
 
-        return ActionBuilder.get("connect-command");
+        return ActionBuilder.get("new-connection-command");
     }
 
 }

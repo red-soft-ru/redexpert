@@ -31,7 +31,6 @@ import org.executequery.gui.resultset.ClobRecordDataItem;
 import org.executequery.gui.resultset.LobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.table.CreateTableSQLSyntax;
-import org.executequery.io.ByteArrayFileWriter;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.hexeditor.AKDockLayout;
@@ -44,9 +43,8 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -341,13 +339,16 @@ public class LobDataItemViewerPanel extends DefaultActionButtonsPanel
             return;
 
         if (fileChooser.getSelectedFile() != null) {
+            GUIUtilities.showWaitCursor();
 
-            try {
-                GUIUtilities.showWaitCursor();
-                new ByteArrayFileWriter().write(fileChooser.getSelectedFile(), recordDataItemByteArray());
+            try (
+                    OutputStream outputStream = Files.newOutputStream(fileChooser.getSelectedFile().toPath());
+                    BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)
+            ) {
+                bufferedOutputStream.write(recordDataItemByteArray());
+                bufferedOutputStream.flush();
 
             } catch (IOException e) {
-
                 if (Log.isDebugEnabled())
                     Log.debug("Error writing LOB to file", e);
 

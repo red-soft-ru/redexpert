@@ -21,13 +21,11 @@
 package org.executequery.gui.text;
 
 import org.executequery.Constants;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -37,7 +35,7 @@ import java.io.File;
 /**
  * This panel is used within those components that display
  * SQL text. Typically, this will be used within functions that
- * modify the database schema and the SQL produced as a result
+ * modify the database SQL produced as a result
  * will be displayed here with complete syntax highlighting and
  * other associated visual enhancements.<p>
  * Examples of use include within the Create Table and Browser
@@ -46,8 +44,7 @@ import java.io.File;
  *
  * @author Takis Diakoumis
  */
-public class SimpleSqlTextPanel extends DefaultTextEditorContainer
-        implements KeywordListener {
+public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
 
     private final boolean autocompleteOnlyHotKey;
 
@@ -86,8 +83,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
     private void init() {
 
         textPane = new SQLTextArea(autocompleteOnlyHotKey);
-        textPane.setFont(QueryEditorSettings.getEditorFont());
-        textPane.setDragEnabled(true);
         textComponent = textPane;
 
         queryScroll = new RTextScrollPane(textPane);
@@ -98,8 +93,33 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
         defaultBorder = queryScroll.getBorder();
         sqlBuffer = new StringBuffer();
 
+        applyUserProperties();
         add(queryScroll, BorderLayout.CENTER);
         add(textPane.getCaretPositionLabel(), BorderLayout.SOUTH);
+    }
+
+    private void applyUserProperties() {
+        Color foreground = SystemProperties.getColourProperty("user", "editor.text.foreground.colour");
+        Color background = SystemProperties.getColourProperty("user", "editor.text.background.colour");
+        Color selection = SystemProperties.getColourProperty("user", "editor.text.selection.background");
+
+        queryScroll.setLineNumbersEnabled(true);
+        queryScroll.setFoldIndicatorEnabled(true);
+        queryScroll.getGutter().setBackground(background);
+        queryScroll.getGutter().setLineNumberColor(foreground);
+        queryScroll.getGutter().setCurrentLineNumberColor(selection);
+        queryScroll.getGutter().setLineNumberFont(QueryEditorSettings.getEditorFont());
+
+        textPane.setCaretPosition(0);
+        textPane.setDragEnabled(true);
+        textPane.setForeground(foreground);
+        textPane.setBackground(background);
+        textPane.setSelectionColor(selection);
+        textPane.setUseSelectedTextColor(true);
+        textPane.setBracketMatchingEnabled(false);
+        textPane.setFont(QueryEditorSettings.getEditorFont());
+        textPane.setSelectedTextColor(SystemProperties.getColourProperty("user", "editor.text.selection.foreground"));
+        textPane.setCurrentLineHighlightColor(SystemProperties.getColourProperty("user", "editor.display.linehighlight.colour"));
     }
 
     public void setSQLText(String text) {
@@ -133,10 +153,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public JPopupMenu getPopup() {
         return popup;
-    }
-
-    public void setSQLKeywords() {
-        textPane.setSQLKeywords(true);
     }
 
     public void setDefaultBorder() {
@@ -173,21 +189,6 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer
 
     public void cleanup() {
         textPane.cleanup();
-    }
-
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        setSQLKeywords();
-    }
-
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
-        setSQLKeywords();
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return event instanceof KeywordEvent;
     }
 
     @Override

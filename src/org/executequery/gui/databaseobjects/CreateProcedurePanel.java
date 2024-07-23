@@ -99,10 +99,10 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
 
     protected String generateQuery() {
 
-        if (parseVariablesCheck.isSelected()) {
+        if (isParseVariables()) {
             Vector<ColumnData> vars = new Vector<>();
             vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-            vars.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            vars.addAll(cursorsPanel.getCursorsVector());
 
             return SQLUtils.generateCreateProcedure(
                     nameField.getText(),
@@ -113,7 +113,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
                     vars,
                     (String) securityCombo.getSelectedItem(),
                     (String) authidCombo.getSelectedItem(),
-                    bodyTextPanel.getSQLText(),
+                    procedureBody,
                     simpleCommentPanel.getComment(),
                     false,
                     true,
@@ -129,7 +129,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
                 outputParamsPanel.getProcedureParameterModel().getTableVector(),
                 (String) securityCombo.getSelectedItem(),
                 (String) authidCombo.getSelectedItem(),
-                bodyTextPanel.getSQLText(),
+                procedureBody,
                 simpleCommentPanel.getComment(),
                 false,
                 true,
@@ -162,7 +162,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
             displayExecuteQueryDialog(getSQLText(), "^");
 
         } catch (Exception exc) {
-            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
+            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc, this.getClass());
         }
     }
 

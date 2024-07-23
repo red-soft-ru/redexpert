@@ -20,164 +20,107 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.UserPreferenceEvent;
+import org.executequery.event.UserPreferenceListener;
+import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
-import org.executequery.util.ThreadUtils;
-import org.underworldlabs.swing.toolbar.PanelToolBar;
 
 import javax.swing.*;
 
 /**
  * @author Takis Diakoumis
  */
-class ConnectionsTreeToolBar extends PanelToolBar {
-
-    /**
-     * move connection up button
-     */
-    private JButton upButton;
-
-    /**
-     * move connection down button
-     */
-    private JButton downButton;
-
-    /**
-     * the reload node button
-     */
-    private JButton reloadButton;
-
-    /**
-     * new connection button
-     */
-    @SuppressWarnings("unused")
-    private JButton newConnectionButton;
-
-    /**
-     * delete connection button
-     */
-    private JButton deleteConnectionButton;
-
-    private JButton connectButton;
-    private JButton connectAllButton;
-    private JButton disconnectAllButton;
+public class ConnectionsTreeToolBar implements UserPreferenceListener {
 
     private final ConnectionsTreePanel treePanel;
+    private Boolean[] enables;
 
-    private ImageIcon connectedIcon;
+    private JButton reloadButton;
+    private JButton connectButton;
 
-    private ImageIcon disconnectedIcon;
-    private ImageIcon connectedAllIcon;
-    private ImageIcon disconnectedAllIcon;
+    private ImageIcon connectIcon;
+    private ImageIcon disconnectIcon;
 
     public ConnectionsTreeToolBar(ConnectionsTreePanel treePanel) {
-
         this.treePanel = treePanel;
 
         init();
+        EventMediator.registerListener(this);
     }
 
     private void init() {
 
+        connectIcon = IconManager.getIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE);
+        disconnectIcon = IconManager.getIcon("icon_connection_drop");
 
-        connectButton = addButton(treePanel, "connectDisconnect",
-                GUIUtilities.getAbsoluteIconPath("Connected.png"),
-                Bundles.get("action.connect-to-database-command"));
+        connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
+        if (connectButton != null) {
+            connectButton.addActionListener(e -> treePanel.connectDisconnect());
+            connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
+            connectButton.setIcon(connectIcon);
+        }
 
-        connectAllButton = addButton(treePanel, "connectAll",
-                GUIUtilities.getAbsoluteIconPath("ConnectedAll.png"),
-                bundleString("connectAll"));
+        reloadButton = GUIUtilities.getToolBar().getButton("reload-connection-tree-selection-command");
+        if (reloadButton != null)
+            reloadButton.addActionListener(e -> treePanel.reloadSelection());
 
-        disconnectAllButton = addButton(treePanel, "disconnectAll",
-                GUIUtilities.getAbsoluteIconPath("DisconnectedAll.png"),
-                bundleString("disconnectAll"));
-
-        newConnectionButton = addButton(
-                treePanel, "newConnection",
-                GUIUtilities.getAbsoluteIconPath("NewConnection16.png"),
-                Bundles.getCommon("newConnection.button"));
-
-        addButton(
-                treePanel, "newFolder",
-                GUIUtilities.getAbsoluteIconPath("NewFolder16.png"),
-                bundleString("newFolder"));
-
-        deleteConnectionButton = addButton(
-                treePanel, "deleteConnection",
-                GUIUtilities.getAbsoluteIconPath("Delete16.png"),
-                Bundles.getCommon("delete.button"));
-
-        upButton = addButton(
-                treePanel, "moveConnectionUp",
-                GUIUtilities.getAbsoluteIconPath("Up16.png"),
-                bundleString("moveConnectionUp"));
-
-        downButton = addButton(
-                treePanel, "moveConnectionDown",
-                GUIUtilities.getAbsoluteIconPath("Down16.png"),
-                bundleString("moveConnectionDown"));
-
-        reloadButton = addButton(
-                treePanel, "reloadSelection",
-//                GUIUtilities.getAbsoluteIconPath("Reload16.png"), 
-                GUIUtilities.getAbsoluteIconPath("Refresh16.png"),
-                bundleString("reloadSelection"));
-
-        addButton(
-                treePanel, "sortConnections",
-                GUIUtilities.getAbsoluteIconPath("SortAtoZ16.png"),
-                bundleString("sortConnections"));
-
-        addButton(treePanel.getTreeFindAction());
-
-        addButton(
-                treePanel, "collapseAll",
-                GUIUtilities.getAbsoluteIconPath("Collapse16.png"),
-                bundleString("collapseAll"));
-        connectedIcon = GUIUtilities.loadIcon("Connected.png");
-        disconnectedIcon = GUIUtilities.loadIcon("Disconnected.png");
-        connectedAllIcon = GUIUtilities.loadIcon("ConnectedAll.png");
-        disconnectedAllIcon = GUIUtilities.loadIcon("DisconnectedAll.png");
-
+        JButton searchButton = GUIUtilities.getToolBar().getButton("search-connection-tree-node-command");
+        if (searchButton != null) {
+            searchButton.setAction(treePanel.getTreeFindAction());
+            searchButton.setText(null);
+        }
     }
 
-    protected void enableButtons(final boolean enableUpButton,
-                                 final boolean enableDownButton,
-                                 final boolean enableReloadButton,
-                                 final boolean enableDeleteButton,
-                                 final boolean enableConnected,
-                                 final boolean databaseConnected) {
+    protected void enableButtons(boolean enableReload, boolean enableConnected, boolean databaseConnected) {
 
-        ThreadUtils.invokeLater(new Runnable() {
+        if (connectButton != null)
+            connectButton.setEnabled(enableConnected);
 
-            public void run() {
+        if (reloadButton != null)
+            reloadButton.setEnabled(enableReload);
 
-                upButton.setEnabled(enableUpButton);
-                downButton.setEnabled(enableDownButton);
-                reloadButton.setEnabled(enableReloadButton);
-                deleteConnectionButton.setEnabled(enableDeleteButton);
-                connectButton.setEnabled(enableConnected);
-                if (enableConnected) {
-                    if (databaseConnected) {
-                        connectButton.setIcon(connectedIcon);
-                        connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
-                    } else {
-                        connectButton.setIcon(disconnectedIcon);
-                        connectButton.setToolTipText(Bundles.getCommon("connect.button"));
-                    }
-                }
+        if (connectButton != null && enableConnected) {
+            if (databaseConnected) {
+                connectButton.setIcon(disconnectIcon);
+                connectButton.setToolTipText(Bundles.getCommon("disconnect.button"));
+            } else {
+                connectButton.setIcon(connectIcon);
+                connectButton.setToolTipText(Bundles.getCommon("connect.button"));
             }
+        }
 
-        });
+        enables = new Boolean[]{enableReload, enableConnected, databaseConnected};
     }
 
-    private String bundleString(String key) {
-        return Bundles.get(getClass(), key);
+    protected void reloadButtons() {
+
+        connectButton = GUIUtilities.getToolBar().getButton("connect-to-database-command");
+        if (connectButton != null)
+            connectButton.addActionListener(e -> treePanel.connectDisconnect());
+
+        reloadButton = GUIUtilities.getToolBar().getButton("reload-connection-tree-selection-command");
+        if (reloadButton != null)
+            reloadButton.addActionListener(e -> treePanel.reloadSelection());
+
+        enableButtons(enables[0], enables[1], enables[2]);
+    }
+
+    // --- UserPreferenceListener impl ---
+
+    @Override
+    public void preferencesChanged(UserPreferenceEvent event) {
+
+        int type = event.getEventType();
+        if (type == UserPreferenceEvent.TOOL_BAR || type == UserPreferenceEvent.ALL)
+            reloadButtons();
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof UserPreferenceEvent;
     }
 
 }
-
-
-
-
-

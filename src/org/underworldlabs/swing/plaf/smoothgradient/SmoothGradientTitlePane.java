@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 class SmoothGradientTitlePane extends JComponent {
 
     private static final Border handyEmptyBorder = new EmptyBorder(0, 0, 0, 0);

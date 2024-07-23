@@ -26,7 +26,7 @@ public class ForeignKeyPicker extends JPanel
         implements PopupDataPicker {
 
     private static final Color BACKGROUND_COLOR = UserProperties.getInstance()
-            .getColourProperty("editor.results.background.colour");
+            .getColourProperty("editor.output.background");
 
     private final ResultSetTableModel foreignKeyTableModel;
     private final Vector<Vector<Object>> foreignKeysItems;

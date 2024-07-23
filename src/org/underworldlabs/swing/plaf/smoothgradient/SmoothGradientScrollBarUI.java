@@ -28,6 +28,7 @@ import java.awt.*;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public final class SmoothGradientScrollBarUI extends MetalScrollBarUI {
 
     private static final String PROPERTY_PREFIX = "ScrollBar.";

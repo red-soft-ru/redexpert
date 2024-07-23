@@ -270,8 +270,8 @@ public class StatisticTablePanel extends AbstractPanel {
 
         public StatisticHeaderCellRenderer() {
             super();
-            tableIcon = IconManager.getInstance().getIconFromType(NamedObject.TABLE);
-            indexIcon = IconManager.getInstance().getIconFromType(NamedObject.INDEX);
+            tableIcon = IconManager.getIconFromType(NamedObject.TABLE);
+            indexIcon = IconManager.getIconFromType(NamedObject.INDEX);
         }
 
         @Override

@@ -30,6 +30,7 @@ import java.awt.*;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class SmoothGradientToggleButtonUI extends MetalToggleButtonUI {
 
     private static final SmoothGradientToggleButtonUI INSTANCE =

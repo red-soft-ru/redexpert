@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -13,6 +14,9 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseExecutable;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.UserPreferenceEvent;
+import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -27,17 +31,19 @@ import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
 import org.underworldlabs.procedureParser.ProcedureParserLexer;
 import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -46,20 +52,22 @@ import java.util.Vector;
  */
 public abstract class CreateProcedureFunctionPanel extends AbstractCreateExternalObjectPanel
         implements FocusComponentPanel,
+        UserPreferenceListener,
         ItemListener,
         TextEditorContainer {
 
     protected String procedureName;
-    private Object oldSelectedTab = null;
+    protected String procedureBody;
+
+    protected KeyListener changeKeyListener;
+    protected ActionListener changeActionListener;
 
     // --- GUI components ---
 
-    protected NewProcedurePanel outputParamsPanel;
-    protected NewProcedurePanel inputParamsPanel;
-    protected NewProcedurePanel variablesPanel;
-    protected SimpleSqlTextPanel bodyTextPanel;
+    protected ProcedureDefinitionPanel outputParamsPanel;
+    protected ProcedureDefinitionPanel inputParamsPanel;
+    protected ProcedureDefinitionPanel variablesPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
-    protected JCheckBox parseVariablesCheck;
     protected CursorsPanel cursorsPanel;
 
     // ---
@@ -76,55 +84,82 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     public CreateProcedureFunctionPanel(DatabaseConnection dc, ActionContainer dialog, String procedureName, Object[] params) {
         super(dc, dialog, procedureName, params);
+        EventMediator.registerListener(this);
     }
 
     @Override
     protected void init() {
+
+        changeActionListener = e -> generateDdlScript();
+        changeKeyListener = new KeyListener() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                generateDdlScript();
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+        };
+
+        // --- external fields ---
+
         initExternal();
 
+        engineField.addKeyListener(changeKeyListener);
+        externalField.addKeyListener(changeKeyListener);
+        authidCombo.addActionListener(changeActionListener);
+        securityCombo.addActionListener(changeActionListener);
+        useExternalCheck.addActionListener(changeActionListener);
+
+        // ---
+
         cursorsPanel = new CursorsPanel();
+        cursorsPanel.addChangesListener(changeActionListener);
 
-        parseVariablesCheck = WidgetFactory.createCheckBox("parseVariablesCheck", bundleString("parseVariables"), true);
-        parseVariablesCheck.addItemListener(e -> fillSqlBody());
-
-        inputParamsPanel = new NewProcedurePanel(ColumnData.INPUT_PARAMETER);
+        inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParamsPanel.setDomains(getDomains());
         inputParamsPanel.setDatabaseConnection(connection);
+        inputParamsPanel.addChangesListener(changeActionListener);
 
-        outputParamsPanel = new NewProcedurePanel(ColumnData.OUTPUT_PARAMETER);
+        outputParamsPanel = new ProcedureDefinitionPanel(ColumnData.OUTPUT_PARAMETER);
         outputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         outputParamsPanel.setDomains(getDomains());
         outputParamsPanel.setDatabaseConnection(connection);
+        outputParamsPanel.addChangesListener(changeActionListener);
 
-        variablesPanel = new NewProcedurePanel(ColumnData.VARIABLE);
+        variablesPanel = new ProcedureDefinitionPanel(ColumnData.VARIABLE);
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
+        variablesPanel.addChangesListener(changeActionListener);
 
-        bodyTextPanel = new SimpleSqlTextPanel();
-        bodyTextPanel.appendSQLText(getEmptySqlBody());
-        bodyTextPanel.getTextPane().setDatabaseConnection(connection);
-
-        ddlTextPanel = new SimpleSqlTextPanel();
+        ddlTextPanel = new SimpleSqlTextPanel(false, true, "DDL");
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
-        tabbedPane.add(bundleString("Body", bundleString(getTypeObject())), bodyTextPanel);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabbedPane.add(bundleString("InputParameters"), inputParamsPanel);
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
-        tabbedPane.add(bundleString("DDL"), ddlTextPanel);
 
-        tabbedPane.addChangeListener(e -> {
-            fillVariablesAndParameters();
-            generateScript();
-        });
+        nameField.addKeyListener(changeKeyListener);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
 
         arrange();
         checkExternal();
         fillSqlBody();
+
+        try {
+            generateDdlScript();
+        } catch (Exception ignored) {
+        }
     }
 
     protected void initEditing() {
@@ -134,6 +169,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         actionButton.setPreferredSize(null);
         actionButton.setText(Bundles.getCommon("execute"));
         actionButton.addActionListener(e -> displayExecuteDialog());
+        actionButton.setPreferredSize(new Dimension(actionButton.getPreferredSize().width, submitButton.getPreferredSize().height));
 
         NamedObject namedObject = ConnectionsTreePanel.getNamedObjectFromHost(connection, getTypeObject(), procedureName);
         DefaultDatabaseExecutable executable = (DefaultDatabaseExecutable) namedObject;
@@ -155,21 +191,86 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         addDependenciesTab((DatabaseObject) namedObject);
 
         reset();
-        generateScript();
-        fillVariablesAndParameters();
+        generateDdlScript();
     }
 
     private void arrange() {
+        GridBagHelper gbh;
+
+        // --- split pane ---
+
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setLeftComponent(tabbedPane);
+        splitPane.setRightComponent(ddlTextPanel);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setDividerLocation(0.5);
+
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally().anchorNorthEast();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(actionButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(submitButton, gbh.nextCol().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
+        mainPanel.add(topPanel, gbh.setMinWeightY().spanX().get());
+        mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().setMaxWeightY().get());
+        mainPanel.add(buttonPanel, gbh.nextRow().fillNone().anchorNorthEast().setMinWeightY().bottomGap(5).get());
+
+        // --- base ---
+
+        removeAll();
+        setLayout(new GridBagLayout());
         centralPanel.setVisible(false);
-        topPanel.add(parseVariablesCheck, topGbh.nextRowFirstCol().leftGap(0).spanX().get());
-        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setPreferredSize(new Dimension(800, 500));
+
+        add(mainPanel, gbh.fillBoth().spanX().spanY().get());
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        setPreferredSize(new Dimension(1200, 600));
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    protected void generateDdlScript() {
+
+        TreeSet<String> variables = new TreeSet<>();
+        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
+        variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
+
+        TreeSet<String> parameters = new TreeSet<>();
+        parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
+        parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
+
+        ddlTextPanel.getTextPane().setVariables(variables);
+        ddlTextPanel.getTextPane().setParameters(parameters);
+        procedureBody = extractProcedureBody(ddlTextPanel.getSQLText());
+        ddlTextPanel.setSQLText(generateQuery());
+    }
+
+    private String extractProcedureBody(String sqlText) {
+
+        if (MiscUtils.isNull(sqlText))
+            return procedureBody;
+
+        sqlText = sqlText.trim();
+        int beginIndex = sqlText.toUpperCase().indexOf("BEGIN");
+        int endIndex = sqlText.toUpperCase().lastIndexOf("END") + 3;
+
+        procedureBody = sqlText.substring(beginIndex, endIndex);
+
+        return procedureBody;
     }
 
     private void loadVariables() {
 
         // remove first empty row
         variablesPanel.clearRows();
+        cursorsPanel.clearRows();
 
         String fullProcedureBody = getFullSourceBody();
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
@@ -192,7 +293,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 public void enterDeclare_block_without_params(ProcedureParserParser.Declare_block_without_paramsContext ctx) {
 
                     ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
-                    bodyTextPanel.setSQLText(bodyContext.getText());
+                    procedureBody = bodyContext.getText();
 
                     List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
                     if (!vars.isEmpty()) {
@@ -333,23 +434,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         }
     }
 
-    @SuppressWarnings({"ReassignedVariable", "DataFlowIssue"})
-    protected void fillVariablesAndParameters() {
-
-        TreeSet<String> variables = new TreeSet<>();
-        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
-        variables = fillTreeSetFromTableVector(variables, cursorsPanel.tableVector);
-
-        TreeSet<String> parameters = new TreeSet<>();
-        parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
-        parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
-
-        bodyTextPanel.getTextPane().setVariables(variables);
-        ddlTextPanel.getTextPane().setVariables(variables);
-        bodyTextPanel.getTextPane().setParameters(parameters);
-        ddlTextPanel.getTextPane().setParameters(parameters);
-    }
-
     private TreeSet<String> fillTreeSetFromTableVector(TreeSet<String> treeSet, List<ColumnData> tableVector) {
 
         for (ColumnData cd : tableVector)
@@ -359,43 +443,19 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         return treeSet;
     }
 
-    protected void generateScript() {
-
-        if (tabbedPane.getSelectedComponent() != ddlTextPanel && oldSelectedTab == ddlTextPanel) {
-
-            String ddlText = ddlTextPanel.getSQLText();
-            if (GUIUtilities.displayConfirmDialog(bundleString("confirmTabChange")) != JOptionPane.YES_OPTION) {
-                tabbedPane.setSelectedComponent(ddlTextPanel);
-                ddlTextPanel.setSQLText(ddlText);
-            }
-
-        } else
-            ddlTextPanel.setSQLText(generateQuery());
-
-        oldSelectedTab = tabbedPane.getSelectedComponent();
-    }
-
     @Override
     protected void checkExternal() {
-
         super.checkExternal();
 
         if (useExternalCheck.isSelected()) {
-
-            tabbedPane.remove(bodyTextPanel);
-            parseVariablesCheck.setVisible(false);
 
             if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
                 tabbedPane.remove(variablesPanel);
                 tabbedPane.remove(cursorsPanel);
             }
 
-            bodyTextPanel.setSQLText(null);
-
         } else {
-            tabbedPane.insertTab(bundleString("Body", bundleString(getTypeObject())), null, bodyTextPanel, null, 0);
-            bodyTextPanel.appendSQLText(getEmptySqlBody());
-            parseVariablesCheck.setVisible(true);
+            procedureBody = getEmptySqlBody();
             tabbedPane.setSelectedIndex(0);
             fillSqlBody();
         }
@@ -411,14 +471,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     private void displayExecuteDialog() {
-
-        ExecuteProcedurePanel procedurePanel = new ExecuteProcedurePanel(
-                getTypeObject().contentEquals(NamedObject.META_TYPES[NamedObject.FUNCTION]) ? 1 : 0,
-                procedureName
-        );
-
-        BaseDialog dialog = new BaseDialog(Bundles.getCommon("execute"), true, procedurePanel);
-        dialog.display();
+        new BaseDialog(
+                bundleString(Objects.equals(getTypeObject(), NamedObject.META_TYPES[NamedObject.FUNCTION]) ?
+                        "executeFunction" :
+                        "executeProcedure"
+                ),
+                true,
+                new ExecuteProcedurePanel(
+                        getTypeObject(),
+                        procedureName,
+                        connection
+                )
+        ).display();
     }
 
     /**
@@ -481,7 +545,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                 populateDataTypes(new String[0], new int[0]);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorRetrievingDataTypes") + e.getExtendedMessage(), e, this.getClass());
             populateDataTypes(new String[0], new int[0]);
         }
     }
@@ -512,9 +576,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     public String getSQLText() {
-        if (tabbedPane.getSelectedComponent() != ddlTextPanel)
-            generateScript();
-
         return ddlTextPanel.getSQLText();
     }
 
@@ -543,7 +604,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected void fillSqlBody() {
 
-        if (parseVariablesCheck.isSelected()) {
+        if (isParseVariables()) {
 
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
                 tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
@@ -559,8 +620,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             }
 
             if (procedureName != null)
-                bodyTextPanel.setSQLText(getFullSourceBody());
+                procedureBody = getFullSourceBody();
         }
+    }
+
+    protected static boolean isParseVariables() {
+        return SystemProperties.getBooleanProperty("user", "general.parse.variables");
     }
 
     /**
@@ -571,6 +636,16 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
      * @param inProcess <code>true|false</code>
      */
     public void setInProcess(boolean inProcess) {
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event instanceof UserPreferenceEvent;
+    }
+
+    @Override
+    public void preferencesChanged(UserPreferenceEvent event) {
+        fillSqlBody();
     }
 
     /**
@@ -584,6 +659,10 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     @Override
     protected void reset() {
+
+        if (!editing)
+            return;
+
         simpleCommentPanel.resetComment();
         nameField.setText(procedureName);
         nameField.setEditable(false);

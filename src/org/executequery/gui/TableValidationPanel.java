@@ -3,20 +3,18 @@ package org.executequery.gui;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.base.TabView;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -33,7 +31,7 @@ import java.util.stream.Collectors;
 public class TableValidationPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundledString("Title");
-    public static final String FRAME_ICON = "JDBCDriver16.png";
+    public static final String FRAME_ICON = "icon_table_validation";
 
     private List<DatabaseConnection> databaseConnections;
     private DatabaseConnection selectedConnection;
@@ -240,10 +238,10 @@ public class TableValidationPanel extends JPanel implements TabView {
         selectedConnection = databaseConnections.get(connectionsComboBox.getSelectedIndex());
         try {
             if (!selectedConnection.isConnected())
-                ConnectionManager.createDataSource(selectedConnection, true);
+                ConnectionMediator.getInstance().connect(selectedConnection, true);
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e, this.getClass());
             return;
         }
 

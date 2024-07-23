@@ -21,10 +21,10 @@
 package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
@@ -133,8 +133,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
         outputTextPane = new LoggingOutputPanel();
 
-        outputTabIcon = GUIUtilities.loadIcon("SystemOutput.png", true);
-        resultSetTabIcon = GUIUtilities.loadIcon("FrameIcon16.png", true);
+        outputTabIcon = IconManager.getIcon("icon_console");
+        resultSetTabIcon = IconManager.getIcon("icon_frame");
 
         addTextOutputTab();
 
@@ -761,7 +761,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
 
             // otherwise add it
             insertTab(ResultSetMetaDataPanel.TITLE,
-                    GUIUtilities.loadIcon("RSMetaData16.png", true),
+                    IconManager.getIcon("icon_rs_metadata"),
                     metaDataPanel,
                     getToolTipTextAt(index),
                     index + 1);
@@ -888,7 +888,7 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     public void tabRollOverCancelled(TabRolloverEvent e) {
         if (queryPopup != null) {
-            queryPopup.disposeNow();
+            queryPopup.forceDispose();
         }
     }
 

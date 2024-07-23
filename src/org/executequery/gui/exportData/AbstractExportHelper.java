@@ -208,7 +208,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
     // ---
 
     protected final void displayErrorMessage(Throwable e) {
-        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile") + e.getMessage(), e);
+        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile") + e.getMessage(), e, this.getClass());
     }
 
     protected final String bundleString(String key) {

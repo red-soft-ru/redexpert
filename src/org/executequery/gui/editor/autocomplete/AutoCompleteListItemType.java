@@ -23,7 +23,6 @@ package org.executequery.gui.editor.autocomplete;
 public enum AutoCompleteListItemType {
 
     SQL92_KEYWORD,
-    USER_DEFINED_KEYWORD,
     DATABASE_DEFINED_KEYWORD,
     DATABASE_TABLE,
     DATABASE_TABLE_COLUMN,
@@ -40,10 +39,7 @@ public enum AutoCompleteListItemType {
     PARAMETER;
 
     public boolean isKeyword() {
-
-        return this == SQL92_KEYWORD
-                || this == USER_DEFINED_KEYWORD
-                || this == DATABASE_DEFINED_KEYWORD;
+        return this == SQL92_KEYWORD || this == DATABASE_DEFINED_KEYWORD;
     }
 
     public boolean isTableColumn() {

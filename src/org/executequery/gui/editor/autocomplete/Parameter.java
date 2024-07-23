@@ -36,7 +36,7 @@ public class Parameter {
             try {
                 return new FileInputStream((File) value);
             } catch (FileNotFoundException e) {
-                GUIUtilities.displayExceptionErrorDialog("Invalid file", e);
+                GUIUtilities.displayExceptionErrorDialog("Invalid file", e, this.getClass());
             }
         return value;
     }

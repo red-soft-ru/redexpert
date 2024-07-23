@@ -26,6 +26,7 @@ import org.executequery.databaseobjects.*;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.browser.tree.TreePanel;
+import org.executequery.gui.erd.ErdTable;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -47,25 +48,27 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
     protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
 
-    static final long serialVersionUID = -963831243178078154L;
+    private static final long serialVersionUID = -963831243178078154L;
 
     List<ColumnConstraint> constraints;
     TokenizingFormatter formatter;
 
-    /** the table columns exported */
-    private List<DatabaseColumn> exportedColumns;
-
-    /** the table indexed columns */
+    /**
+     * the table indexed columns
+     */
     private List<DefaultDatabaseIndex> indexes;
 
-    /** the user modified SQL text for changes */
+    /**
+     * the user modified SQL text for changes
+     */
     private String modifiedSQLText;
     private transient TableDataChangeWorker tableDataChangeExecutor;
 
-    private String externalFile;
-    private String tablespace;
-    private List<DefaultDatabaseTrigger> triggers;
+    private ErdTable erd;
     private String adapter;
+    private String tablespace;
+    private String externalFile;
+    private List<DefaultDatabaseTrigger> triggers;
 
     protected List<ColumnData> listCD;
     protected List<org.executequery.gui.browser.ColumnConstraint> listCC;
@@ -127,6 +130,48 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         }
     }
 
+    public DefaultDatabaseTable(ErdTable erd) {
+
+        this((DatabaseHost) null);
+        this.erd = erd;
+        setName(erd.getTableName());
+        typeTree = TreePanel.DEFAULT;
+        setDependObject(null);
+        listCD = new ArrayList<>();
+        listCD.addAll(erd.getTableColumnsVector());
+        listCC = new ArrayList<>();
+        columns = new ArrayList<>();
+        constraints = new ArrayList<>();
+        for (ColumnData cd : listCD) {
+
+            DatabaseTableColumn dtc = new DatabaseTableColumn(this);
+            dtc.setName(cd.getColumnName());
+            columns.add(dtc);
+            if (cd.getColumnConstraintsVector() != null) {
+                //listCC.addAll(cd.getColumnConstraintsVector());
+                for (org.executequery.gui.browser.ColumnConstraint cc : cd.getColumnConstraintsVector()) {
+                    TableColumnConstraint tcc = new TableColumnConstraint(dtc, cc.getType());
+                    tcc.setName(cc.getName());
+                    tcc.setReferencedColumn(cc.getRefColumn());
+                    if (isContainsTheSameObjectByName(cc.getName())) {
+
+                        getConstraintByName(cc.getName()).addColumnToDisplayList(dtc);
+                        if (Objects.equals(cc.getTypeName(), "FOREIGN"))
+                            getConstraintByName(cc.getName()).addReferenceColumnToDisplayList(cc.getRefColumn());
+
+                    } else {
+                        tcc.setTable(this);
+                        tcc.setReferencedTable(cc.getRefTable());
+                        constraints.add(tcc);
+                    }
+                }
+            }
+
+        }
+
+
+    }
+
     @Override
     public boolean allowsChildren() {
         return true;
@@ -139,24 +184,6 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             names.add(column.getName());
 
         return names;
-    }
-
-    @Override
-    public List<DatabaseColumn> getExportedKeys() throws DataSourceException {
-
-        if (!isMarkedForReload() && exportedColumns != null)
-            return exportedColumns;
-
-        if (exportedColumns != null) {
-            exportedColumns.clear();
-            exportedColumns = null;
-        }
-
-        DatabaseHost host = getHost();
-        if (host != null)
-            exportedColumns = host.getExportedKeys(getCatalogName(), getSchemaName(), getName());
-
-        return exportedColumns;
     }
 
     @Override
@@ -276,11 +303,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         try {
 
             DatabaseHost _host = getHost();
-            rs = _host.getDatabaseMetaData().getIndexInfo(getCatalogName(), getSchemaName(), getName(), false, true);
+            rs = _host.getDatabaseMetaData().getIndexInfo(null, null, getName(), false, true);
             TableColumnIndex lastIndex = null;
             indexes = new ArrayList<>();
-            List<TableColumnIndex> tindexes = new ArrayList<>();
 
+            List<TableColumnIndex> tableColumnIndices = new ArrayList<>();
             while (rs.next()) {
                 String name = rs.getString(6);
                 if (StringUtils.isBlank(name))
@@ -292,7 +319,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                     index.addIndexedColumn(rs.getString(9));
                     index.setMetaData(resultSetRowToMap(rs));
                     lastIndex = index;
-                    tindexes.add(index);
+                    tableColumnIndices.add(index);
 
                 } else
                     lastIndex.addIndexedColumn(rs.getString(9));
@@ -300,9 +327,9 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
             releaseResources(rs, null);
             DefaultDatabaseMetaTag metaTag =
-                    new DefaultDatabaseMetaTag(getHost(), null, null, META_TYPES[INDEX]);
+                    new DefaultDatabaseMetaTag(getHost(), META_TYPES[INDEX]);
 
-            for (TableColumnIndex index : tindexes) {
+            for (TableColumnIndex index : tableColumnIndices) {
                 DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
                 index1.getObjectInfo();
                 indexes.add(index1);
@@ -630,9 +657,10 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        updateListCD();
+        if (erd == null) {
+            updateListCD();
+        }
         updateListCC();
-
         return SQLUtils.generateCreateTable(
                 getName(),
                 listCD,
@@ -654,9 +682,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        updateListCD();
+        List<ColumnData> listCD;
+        if (erd == null) {
+            updateListCD();
+            listCD = this.getListCD();
+        } else {
+            listCD = new ArrayList<>();
+            for (ColumnData cd : this.getListCD()) {
+                ColumnData cdX = new ColumnData(null);
+                cdX.setValues(cd);
+                listCD.add(cdX);
+            }
+        }
         updateListCC();
-
         return SQLUtils.generateCreateTable(
                 getName(),
                 listCD,
@@ -683,9 +721,20 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getCompareCreateSQL() throws DataSourceException {
-        updateListCD();
-        updateListCC();
+        List<ColumnData> listCD;
+        if (erd == null) {
+            updateListCD();
+            listCD = this.getListCD();
+        } else {
+            listCD = new ArrayList<>();
+            for (ColumnData cd : this.getListCD()) {
+                ColumnData cdX = new ColumnData(null);
+                cdX.setValues(cd);
+                listCD.add(cdX);
+            }
+        }
 
+        updateListCC();
         if (Comparer.isComputedFieldsNeed())
             listCD.stream().filter(cd -> !MiscUtils.isNull(cd.getComputedBy())).forEach(cd -> cd.setComputedBy(null));
 
@@ -699,11 +748,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 false,
                 Comparer.isCommentsNeed(),
                 null,
-                getExternalFile(),
-                getAdapter(),
-                getSqlSecurity(),
-                getTablespace(),
-                getRemarks(),
+                erd != null ? null : getExternalFile(),
+                erd != null ? null : getAdapter(),
+                erd != null ? null : getSqlSecurity(),
+                erd != null ? null : getTablespace(),
+                erd != null ? null : getRemarks(),
                 ";"
         );
     }
@@ -1242,5 +1291,12 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         this.tablespace = tablespace;
     }
 
+    public List<org.executequery.gui.browser.ColumnConstraint> getListCC() {
+        return listCC;
+    }
+
+    public List<ColumnData> getListCD() {
+        return listCD;
+    }
 }
 

@@ -20,7 +20,12 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.gui.browser.ColumnData;
+
+import java.awt.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -30,33 +35,10 @@ public class ErdTableDependency implements Serializable {
     private ErdTable table_1;
     private ErdTable table_2;
 
-    /**
-     * Start x position
-     */
-    private int xPosn_1;
-    /**
-     * Middle x position
-     */
-    private int xPosn_2;
-    /**
-     * Final x position
-     */
-    private int xPosn_3;
-    /**
-     * Start y position
-     */
-    private int yPosn_1;
-    /**
-     * Middle y position
-     */
-    private int yPosn_2;
-    /**
-     * Final y position
-     */
-    private int yPosn_3;
-    /**
-     * The relative position of each table
-     */
+    private final ColumnData column1;
+    private final ColumnData column2;
+
+    List<Point> points;
     private int position;
 
     protected static final int POSITION_1 = 0;
@@ -66,19 +48,18 @@ public class ErdTableDependency implements Serializable {
     protected static final int POSITION_5 = 4;
     protected static final int POSITION_6 = 5;
 
-    public ErdTableDependency(ErdTable table_1, ErdTable table_2) {
+    public ErdTableDependency(ErdTable table_1, ErdTable table_2, ColumnData column1, ColumnData column2) {
         this.table_1 = table_1;
         this.table_2 = table_2;
+        this.column1 = column1;
+        this.column2 = column2;
         reset();
     }
 
     public void reset() {
-        xPosn_1 = -1;
-        xPosn_2 = -1;
-        xPosn_3 = -1;
-        yPosn_1 = -1;
-        yPosn_2 = -1;
-        yPosn_3 = -1;
+        if (points == null)
+            points = new ArrayList<>();
+        points.clear();
         position = -1;
     }
 
@@ -98,52 +79,8 @@ public class ErdTableDependency implements Serializable {
         return table_1;
     }
 
-    public int getXPosn_1() {
-        return xPosn_1;
-    }
-
-    public int getXPosn_2() {
-        return xPosn_2;
-    }
-
-    public int getXPosn_3() {
-        return xPosn_3;
-    }
-
-    public int getYPosn_1() {
-        return yPosn_1;
-    }
-
-    public int getYPosn_2() {
-        return yPosn_2;
-    }
-
-    public int getYPosn_3() {
-        return yPosn_3;
-    }
-
-    public void setXPosn_1(int xPosn_1) {
-        this.xPosn_1 = xPosn_1;
-    }
-
-    public void setXPosn_2(int xPosn_2) {
-        this.xPosn_2 = xPosn_2;
-    }
-
-    public void setXPosn_3(int xPosn_3) {
-        this.xPosn_3 = xPosn_3;
-    }
-
-    public void setYPosn_1(int yPosn_1) {
-        this.yPosn_1 = yPosn_1;
-    }
-
-    public void setYPosn_2(int yPosn_2) {
-        this.yPosn_2 = yPosn_2;
-    }
-
-    public void setYPosn_3(int yPosn_3) {
-        this.yPosn_3 = yPosn_3;
+    public List<Point> getPoints() {
+        return points;
     }
 
     public void clean() {
@@ -151,6 +88,13 @@ public class ErdTableDependency implements Serializable {
         table_2 = null;
     }
 
+    public ColumnData getColumn1() {
+        return column1;
+    }
+
+    public ColumnData getColumn2() {
+        return column2;
+    }
 }
 
 

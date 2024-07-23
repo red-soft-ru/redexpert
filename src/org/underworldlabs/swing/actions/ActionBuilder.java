@@ -21,6 +21,7 @@
 package org.underworldlabs.swing.actions;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -38,15 +39,12 @@ import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-// Utilitiy class to build all actions to be
-// associated with buttons, menu items and key strokes.
+import java.util.*;
 
 /**
+ * Utility class to build all actions to be
+ * associated with buttons, menu items and keystrokes.
+ *
  * @author Takis Diakoumis
  */
 public final class ActionBuilder {
@@ -58,7 +56,6 @@ public final class ActionBuilder {
     private static final String ID = "id";
     private static final String MNEMONIC = "mnemonic";
     private static final String SMALL_ICON = "small-icon";
-    //    private static final String LARGE_ICON = "large-icon";
     private static final String ACCEL_KEY = "accel-key";
     private static final String DESCRIPTION = "description";
     private static final String EXECUTE_CLASS = "execute-class";
@@ -77,18 +74,6 @@ public final class ActionBuilder {
     public static void build(ActionMap actionMap, InputMap inputMap, String path) {
         actionsMap = loadActions(path);
         build(actionMap, inputMap);
-    }
-
-    public static void setActionMaps(JComponent component, Properties shortcuts) {
-        ActionMap actionMap = component.getActionMap();
-        InputMap inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        build(actionMap, inputMap);
-
-        if (shortcuts == null) {
-            return;
-        }
-
-        buildUserKeymap(shortcuts, inputMap);
     }
 
     public static void build(ActionMap actionMap, InputMap inputMap) {
@@ -115,34 +100,24 @@ public final class ActionBuilder {
 
     private static void buildUserKeymap(Properties shortcuts, InputMap inputMap) {
 
-        String actionId = null;
-        BaseActionCommand command = null;
-
         for (Enumeration<?> i = shortcuts.keys(); i.hasMoreElements(); ) {
 
-            actionId = (String) i.nextElement();
-
-            KeyStroke keyStroke = null;
+            String actionId = (String) i.nextElement();
             String keyStrokeString = shortcuts.getProperty(actionId);
-            if (!INVALID_KEYSTROKE.equals(keyStrokeString)) {
+            KeyStroke keyStroke = INVALID_KEYSTROKE.equals(keyStrokeString) ?
+                    KeyStroke.getKeyStroke(KeyEvent.CHAR_UNDEFINED) :
+                    KeyStroke.getKeyStroke(keyStrokeString);
 
-                keyStroke = KeyStroke.getKeyStroke(keyStrokeString);
-
-            } else {
-
-                keyStroke = KeyStroke.getKeyStroke(KeyEvent.CHAR_UNDEFINED);
-            }
-
-            command = (BaseActionCommand) actionsMap.get(actionId);
-            if (command != null) {
-
+            BaseActionCommand command = (BaseActionCommand) actionsMap.get(actionId);
+            if (command != null)
                 command.putValue(Action.ACCELERATOR_KEY, keyStroke);
-            }
+
+            Arrays.stream(inputMap.allKeys())
+                    .filter(key -> Objects.equals(inputMap.get(key), actionId))
+                    .forEach(inputMap::remove);
 
             inputMap.put(keyStroke, actionId);
-
         }
-
     }
 
     /**
@@ -155,14 +130,12 @@ public final class ActionBuilder {
     /**
      * Updates the action shortcut keys based on the properties specified.
      *
-     * @param inputMap  - the input map to bind to
-     * @param shortcuts - the new shortcut keys
+     * @param inputMap  the input map to bind to
+     * @param shortcuts the new shortcut keys
      */
     public static void updateUserDefinedShortcuts(InputMap inputMap, Properties shortcuts) {
-        if (shortcuts == null) {
-
+        if (shortcuts == null)
             return;
-        }
         buildUserKeymap(shortcuts, inputMap);
     }
 
@@ -270,11 +243,11 @@ public final class ActionBuilder {
                     actionCommand.putValue(Action.MNEMONIC_KEY, Integer.valueOf(value.charAt(0)));
                 }
 
-                //value = attrs.getValue(LARGE_ICON);
                 value = attrs.getValue(SMALL_ICON);
                 if (!MiscUtils.isNull(value)) {
-
-                    actionCommand.putValue(Action.SMALL_ICON, loadIcon(value));
+                    Icon icon = IconManager.getIcon(value);
+                    if (icon != null)
+                        actionCommand.putValue(Action.SMALL_ICON, icon);
                 }
 
                 value = attrs.getValue(ACCEL_EDITABLE);

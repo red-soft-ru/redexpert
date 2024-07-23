@@ -43,9 +43,7 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class ImportConnectionsPanel extends WizardProcessPanel implements ActiveComponent, ImportProcessMonitor {
-
     public static final String TITLE = Bundles.get("ImportConnectionPanel.ImportConnections");
-    public static final String FRAME_ICON = "ImportConnections16.png";
 
     private static final String[] STEPS = {
             Bundles.get("ImportConnectionPanel.StepsOne"),
@@ -171,7 +169,7 @@ public class ImportConnectionsPanel extends WizardProcessPanel implements Active
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundleString("ExceptionErrorMessage", e.getMessage()), e);
+                    bundleString("ExceptionErrorMessage", e.getMessage()), e, this.getClass());
             return false;
         }
 

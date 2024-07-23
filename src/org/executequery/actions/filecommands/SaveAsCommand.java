@@ -34,43 +34,13 @@ import java.awt.event.ActionEvent;
  */
 public class SaveAsCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        SaveFunction saveFunction = null;
-
-        try {
-
-            saveFunction = GUIUtilities.getSaveFunctionInFocus();
-
-            if (saveFunction != null) {
-
-                saveFunction.save(true);
-                GUIUtils.scheduleGC();
-            }
-
-        } finally {
-
-            saveFunction = null;
+        SaveFunction saveFunction = GUIUtilities.getSaveFunctionInFocus();
+        if (saveFunction != null) {
+            saveFunction.save(true);
+            GUIUtils.scheduleGC();
         }
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

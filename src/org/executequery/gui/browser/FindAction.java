@@ -21,8 +21,9 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
-import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.plaf.UIUtils;
 
@@ -59,7 +60,7 @@ public abstract class FindAction<T> extends AbstractAction
         super("Incremental Search");
 
         putValue(Action.ACCELERATOR_KEY, INVOKE_KEY_STROKE);
-        putValue(Action.SMALL_ICON, GUIUtilities.loadIcon("Zoom16.png"));
+        putValue(Action.SMALL_ICON, IconManager.getIcon("icon_zoom"));
 
         init();
     }
@@ -287,10 +288,16 @@ public abstract class FindAction<T> extends AbstractAction
 
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
+
         if (e.getKeyCode() == KeyEvent.VK_ALT) {
             e.consume();
+            return;
         }
+
+        if (e.getSource() instanceof ConnectionTree)
+            searchField.setText(String.valueOf(e.getKeyChar()));
     }
 
     public void keyReleased(KeyEvent e) {

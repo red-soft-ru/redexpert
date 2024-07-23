@@ -41,6 +41,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class BumpyGradientRootPaneUI extends BasicRootPaneUI {
 
     /**

@@ -38,6 +38,7 @@ import java.awt.*;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class ThinInternalFrameBorder extends AbstractBorder implements UIResource {
     
     private static final Insets insets = new Insets(3, 3, 3, 3);

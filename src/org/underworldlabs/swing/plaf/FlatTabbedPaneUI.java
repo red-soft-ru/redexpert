@@ -48,17 +48,12 @@ import java.util.Vector;
  * This is the beginning of a larger modification - at the moment it
  * really is purpose built for the nav panel and its white content panels
  * and gray lines.
- */
-
-/**
  *
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class FlatTabbedPaneUI extends TabbedPaneUI
         implements SwingConstants {
-
-
-    // Instance variables initialized at installation
 
     protected JTabbedPane tabPane;
 
@@ -164,7 +159,6 @@ public class FlatTabbedPaneUI extends TabbedPaneUI
      * the <code>JTabbedPane</code>.
      *
      * @return a layout manager object
-     *
      * @see TabbedPaneLayout
      * @see javax.swing.JTabbedPane#getTabLayoutPolicy
      */
@@ -521,10 +515,9 @@ public class FlatTabbedPaneUI extends TabbedPaneUI
      * tab count - 1, inclusive) or -1 if no tab is currently selected.
      * The handling of invalid parameters is unspecified.
      *
-     * @param g the graphics object to use for rendering
-     * @param tabPlacement the placement for the tabs within the JTabbedPane
+     * @param g             the graphics object to use for rendering
+     * @param tabPlacement  the placement for the tabs within the JTabbedPane
      * @param selectedIndex the tab index of the selected component
-     *
      * @since 1.4
      */
     protected void paintTabArea(Graphics g, int tabPlacement, int selectedIndex) {
@@ -1209,9 +1202,8 @@ public class FlatTabbedPaneUI extends TabbedPaneUI
      * The handling of invalid parameters is unspecified.
      *
      * @param tabIndex the index of the tab
-     * @param dest the rectangle where the result should be placed
+     * @param dest     the rectangle where the result should be placed
      * @return the resulting rectangle
-     *
      * @since 1.4
      */
     protected Rectangle getTabBounds(int tabIndex, Rectangle dest) {
@@ -1393,8 +1385,7 @@ public class FlatTabbedPaneUI extends TabbedPaneUI
      *
      * @param tabIndex the index of the tab
      * @return the text view to render the tab's text or null if no
-     *         specialized rendering is required
-     *
+     * specialized rendering is required
      * @since 1.4
      */
     protected View getTextViewForTab(int tabIndex) {

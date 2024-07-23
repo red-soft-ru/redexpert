@@ -24,11 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.SystemOutputPanel;
-import org.executequery.gui.SystemPropertiesDockedTab;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.drivers.DriversTreePanel;
-import org.executequery.gui.keywords.KeywordsDockedPanel;
-import org.executequery.gui.sqlstates.SQLStateCodesDockedPanel;
 import org.executequery.repository.UserLayoutProperties;
 
 import javax.swing.*;
@@ -39,63 +35,41 @@ public class PreferencesChangesListener extends AbstractUserPreferenceListener
     private final UserLayoutProperties layoutProperties;
 
     public PreferencesChangesListener(UserLayoutProperties layoutProperties) {
-
         super();
         this.layoutProperties = layoutProperties;
     }
 
+    @Override
     public void preferencesChanged(UserPreferenceEvent event) {
 
-        if (event.getEventType() == UserPreferenceEvent.ALL) {
+        if (event.getEventType() != UserPreferenceEvent.ALL)
+            return;
 
-            for (String key : dockedPanelKeysArray()) {
-
-                layoutProperties.setDockedPaneVisible(
-                        key,
-                        systemUserBooleanProperty(key),
-                        false);
-            }
-
-            applyComponentLookAndFeel();
-
-            GUIUtilities.setDockedTabViews(true);
-
-            layoutProperties.save();
-
+        for (String key : dockedPanelKeysArray()) {
+            layoutProperties.setDockedPaneVisible(
+                    key,
+                    systemUserBooleanProperty(key),
+                    false
+            );
         }
 
+        JPanel component = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (component instanceof ConnectionsTreePanel) {
+            ConnectionsTreePanel panel = (ConnectionsTreePanel) component;
+            panel.setPropertiesPanelVisible(systemUserBooleanProperty(ConnectionsTreePanel.CONNECTION_PROPERTIES_KEY));
+            panel.reloadOpenedConnections();
+        }
+
+        GUIUtilities.setDockedTabViews(true);
+
+        layoutProperties.save();
     }
 
     private String[] dockedPanelKeysArray() {
-
         return new String[]{
                 ConnectionsTreePanel.PROPERTY_KEY,
-                DriversTreePanel.PROPERTY_KEY,
-                KeywordsDockedPanel.PROPERTY_KEY,
-                SQLStateCodesDockedPanel.PROPERTY_KEY,
-                SystemPropertiesDockedTab.PROPERTY_KEY,
-                SystemOutputPanel.PROPERTY_KEY};
-    }
-
-    private void applyComponentLookAndFeel() {
-
-        JDialog.setDefaultLookAndFeelDecorated(
-                systemUserBooleanProperty("decorate.dialog.look"));
-
-        JFrame.setDefaultLookAndFeelDecorated(
-                systemUserBooleanProperty("decorate.frame.look"));
-
+                SystemOutputPanel.PROPERTY_KEY
+        };
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

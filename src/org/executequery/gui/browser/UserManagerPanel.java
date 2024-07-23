@@ -8,9 +8,10 @@ package org.executequery.gui.browser;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.components.table.MembershipTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.databaseobjects.NamedObject;
@@ -20,6 +21,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.AbstractCreateUserPanel;
 import org.executequery.gui.databaseobjects.CreateDatabaseUserPanel;
@@ -50,11 +52,11 @@ import java.util.stream.Collectors;
 public class UserManagerPanel extends JPanel implements Runnable {
 
     public static final String TITLE = Bundles.get(UserManagerPanel.class, "UserManager");
-    public static final String FRAME_ICON = "user_manager_16.png";
+    public static final String FRAME_ICON = "icon_manager_user";
 
-    private static final Icon GRANT_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-    private static final Icon REVOKE_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-    private static final Icon GRANT_ADMIN_ROLE_ICON = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+    private static final Icon GRANT_ROLE_ICON = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
+    private static final Icon REVOKE_ROLE_ICON = IconManager.getIcon(BrowserConstants.REVOKE_IMAGE);
+    private static final Icon GRANT_ADMIN_ROLE_ICON = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
 
     private enum Action {
         REFRESH,
@@ -133,7 +135,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
         // --- tables ---
 
         membershipTable = WidgetFactory.createTable("membershipTable", new String[]{"Title 1", "Title 2", "Title 3", "Title 4"});
-        membershipTable.setDefaultRenderer(Object.class, new BrowserTableCellRenderer());
+        membershipTable.setDefaultRenderer(Object.class, new MembershipTableCellRenderer());
         membershipTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -322,7 +324,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (!getSelectedConnection().isConnected())
-            ConnectionManager.createDataSource(getSelectedConnection(), true);
+            ConnectionMediator.getInstance().connect(getSelectedConnection(), true);
 
         try {
             DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();
@@ -871,7 +873,9 @@ public class UserManagerPanel extends JPanel implements Runnable {
                 statement.close();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
+            setEnableElements(true);
+            refresh();
         }
     }
 
@@ -972,8 +976,8 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private static class MembershipListCellRenderer extends RowHeaderRenderer {
 
-        private final ImageIcon roleIcon = GUIUtilities.loadIcon("user_manager_16.png");
-        private final ImageIcon userIcon = GUIUtilities.loadIcon("User16.png");
+        private final Icon roleIcon = IconManager.getIcon("icon_db_role");
+        private final Icon userIcon = IconManager.getIcon("icon_db_user");
 
         public MembershipListCellRenderer(JTable table) {
             super(table);

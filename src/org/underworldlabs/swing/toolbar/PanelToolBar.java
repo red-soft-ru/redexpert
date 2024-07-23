@@ -20,9 +20,8 @@
 
 package org.underworldlabs.swing.toolbar;
 
-import org.underworldlabs.swing.GUIUtils;
+import org.executequery.gui.IconManager;
 import org.underworldlabs.swing.RolloverButton;
-import org.underworldlabs.swing.util.IconUtilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,10 +45,8 @@ public class PanelToolBar extends AbstractToolBarPanel {
 
         JButton button = new RolloverButton();
 
-        if (icon != null) {
-
-            button.setIcon(IconUtilities.loadIcon(icon));
-        }
+        if (icon != null)
+            button.setIcon(IconManager.getIcon(icon));
 
         button.setText(null);
         button.setToolTipText(toolTip);
@@ -101,43 +98,25 @@ public class PanelToolBar extends AbstractToolBarPanel {
         add(button);
     }
 
-    private class PanelToolBarSeparator extends JLabel {
+    public static JSeparator getSeparator() {
+        return  new PanelToolBarSeparator();
+    }
+
+    private static class PanelToolBarSeparator extends JSeparator {
 
         private static final int DEFAULT_WIDTH = 4;
-
-        private int preferredWidth;
 
         public PanelToolBarSeparator() {
             this(DEFAULT_WIDTH);
         }
 
         public PanelToolBarSeparator(int preferredWidth) {
-            this.preferredWidth = preferredWidth;
+            super();
+            setOrientation(JSeparator.VERTICAL);
+            setPreferredSize(new Dimension(preferredWidth, 16));
+            setMinimumSize(getPreferredSize());
+            setMaximumSize(getPreferredSize());
         }
-
-        public boolean isOpaque() {
-            return !GUIUtils.isDefaultLookAndFeel();
-        }
-
-        public Dimension getPreferredSize() {
-            return new Dimension(preferredWidth, 1);
-        }
-
-        public Dimension getMaximumSize() {
-            return getPreferredSize();
-        }
-
-        public Dimension getMinimumSize() {
-            return getPreferredSize();
-        }
-
     }
 
 }
-
-
-
-
-
-
-

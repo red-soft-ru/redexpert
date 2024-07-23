@@ -24,11 +24,9 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.othercommands.AbstractBaseCommand;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.FeedbackPanel;
-import org.executequery.log.Log;
 
 import java.awt.event.ActionEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Vector;
 
 /**
  * Command to open the feedback dialog.
@@ -37,60 +35,45 @@ import java.lang.reflect.Method;
  */
 public class FeedbackCommand extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        String actionCommand = e.getActionCommand();
-        try {
-
-            Method method = getClass().getMethod(
-                    actionCommand, new Class[]{ActionEvent.class});
-
-            method.invoke(this, e);
-
-        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException
-                | IllegalAccessException | InvocationTargetException e1) {
-
-            handleException(e1);
-        }
-
+        feedback();
     }
 
-    private void handleException(Throwable e) {
-
-        Log.error(bundledString("errorExecutingFeedbackCommand"), e);
+    public final void feedback() {
+        showFeedbackDialog();
     }
 
-    public void featureRequest(ActionEvent e) {
-
-        showDialog(FeedbackPanel.FEATURE_REQUEST, bundledString("featureRequest"));
+    public final void bugReport(String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        showBugReportDialog(message, throwableVector, sourceClass);
     }
 
-    public void userComments(ActionEvent e) {
-
-        showDialog(FeedbackPanel.USER_COMMENTS, bundledString("userComments"));
-    }
-
-    public void bugReport(ActionEvent e) {
-
-        showDialog(FeedbackPanel.BUG_REPORT, bundledString("reportBug"));
-    }
-
-    private void showDialog(int type, String title) {
-
+    private void showFeedbackDialog() {
         GUIUtilities.showWaitCursor();
         try {
-
-            BaseDialog dialog = new BaseDialog(title, true, true);
-            FeedbackPanel panel = new FeedbackPanel(dialog, type);
+            BaseDialog dialog = new BaseDialog(FeedbackPanel.DEFAULT_TITLE, true, true);
+            FeedbackPanel panel = new FeedbackPanel(dialog);
 
             dialog.addDisplayComponent(panel);
             dialog.display();
 
         } finally {
+            GUIUtilities.showNormalCursor();
+        }
+    }
 
+    private void showBugReportDialog(String message, Vector<Throwable> throwableVector, Class<?> sourceClass) {
+        GUIUtilities.showWaitCursor();
+        try {
+            BaseDialog dialog = new BaseDialog(FeedbackPanel.BUG_REPORT_TITLE, true, true);
+            FeedbackPanel panel = new FeedbackPanel(dialog, message, throwableVector, sourceClass);
+
+            dialog.addDisplayComponent(panel);
+            dialog.display();
+
+        } finally {
             GUIUtilities.showNormalCursor();
         }
     }
 
 }
-

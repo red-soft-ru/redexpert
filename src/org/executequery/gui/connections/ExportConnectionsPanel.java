@@ -44,9 +44,7 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class ExportConnectionsPanel extends WizardProcessPanel implements ActiveComponent {
-
     public static final String TITLE = Bundles.get("ExportConnectionsPanel.Title");
-    public static final String FRAME_ICON = "ExportConnections16.png";
 
     private static final String[] STEPS = {
             Bundles.get("ExportConnectionsPanel.Step-1"),
@@ -209,7 +207,7 @@ public class ExportConnectionsPanel extends WizardProcessPanel implements Active
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundledString("ErrorWritingConnectionsToFileTheSystemReturned") + e.getMessage(), e);
+                    bundledString("ErrorWritingConnectionsToFileTheSystemReturned") + e.getMessage(), e, this.getClass());
             return false;
         }
 

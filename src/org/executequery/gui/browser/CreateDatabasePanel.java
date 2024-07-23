@@ -15,8 +15,9 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.drivers.DialogDriverPanel;
+import org.executequery.gui.drivers.CreateDriverDialog;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -73,7 +74,7 @@ public class CreateDatabasePanel extends ActionPanel
     /**
      * This objects icon as an internal frame
      */
-    public static final String FRAME_ICON = "create_database16.png";
+    public static final String FRAME_ICON = "icon_create_db";
 
     private static final String CREATE_ACTION_COMMAND = "create";
 
@@ -293,7 +294,16 @@ public class CreateDatabasePanel extends ActionPanel
 
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
-        addDriverFields(mainPanel, gbh);
+        gbh.nextCol().setLabelDefault();
+        mainPanel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
+        mainPanel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
+        driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
+        JButton addNewDriver = new JButton(bundledString("addNewDriver"));
+        addNewDriver.setActionCommand("addNewDriver");
+        addNewDriver.addActionListener(this);
+        addNewDriver.setMnemonic('r');
+        gbh.nextCol().setLabelDefault();
+        mainPanel.add(addNewDriver, gbh.get());
 
         JLabel authLabel = new JLabel(bundledString("Authentication"));
 
@@ -365,6 +375,34 @@ public class CreateDatabasePanel extends ActionPanel
 
         createButton = createButton(bundledString("Create"), CREATE_ACTION_COMMAND, 'T');
         mainPanel.add(createButton, gbh.nextRowFirstCol().setWidth(1).anchorNorthWest().setLabelDefault().spanY().get());
+
+        // ---
+
+        List<Component> orderList = new ArrayList<>();
+        orderList.add(nameField);
+        orderList.add(hostField);
+        orderList.add(portField);
+        orderList.add(sourceField);
+        orderList.add(saveFile);
+        orderList.add(charsetsCombo);
+        orderList.add(pageSizeCombo);
+        orderList.add(driverCombo);
+        orderList.add(addNewDriver);
+        orderList.add(authCombo);
+        orderList.add(userField);
+        orderList.add(passwordField);
+        orderList.add(savePwdCheck);
+        orderList.add(encryptPwdCheck);
+        orderList.add(showPassword);
+        orderList.add(containerPasswordField);
+        orderList.add(certificateFileField);
+        orderList.add(openCertFile);
+        orderList.add(saveContPwdCheck);
+        orderList.add(verifyServerCertCheck);
+        orderList.add(createButton);
+
+        mainPanel.setFocusTraversalPolicy(new ConnectionPanel.CustomFocusTraversalPolicy(orderList));
+        mainPanel.setFocusTraversalPolicyProvider(true);
 
         // ---------------------------------
         // create the advanced panel
@@ -863,14 +901,14 @@ public class CreateDatabasePanel extends ActionPanel
                     "Example for Windows system: setx path \"%path%;C:\\Program Files (x86)\\RedDatabase\\bin\\\"\n\n" +
                     "Example for Linux system: export PATH=$PATH:/opt/RedDatabase/lib\n\n" +
                     linkError.getMessage();
-            GUIUtilities.displayExceptionErrorDialog(sb, linkError);
+            GUIUtilities.displayExceptionErrorDialog(sb, linkError, this.getClass());
             return;
         } catch (Exception e) {
             String sb = "The connection to the database could not be established." +
                     "\nPlease ensure all required fields have been entered " +
                     "correctly and try again.\n\nThe system returned:\n" +
                     e.getMessage();
-            GUIUtilities.displayExceptionErrorDialog(sb, e);
+            GUIUtilities.displayExceptionErrorDialog(sb, e, this.getClass());
             return;
         } finally {
             GUIUtilities.showNormalCursor();
@@ -1459,21 +1497,6 @@ public class CreateDatabasePanel extends ActionPanel
 
     }
 
-    private void addDriverFields(JPanel panel, GridBagHelper gbh) {
-
-        gbh.nextCol().setLabelDefault();
-        panel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
-        panel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
-        driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
-        JButton button = new JButton(bundledString("addNewDriver"));
-        button.setActionCommand("addNewDriver");
-        button.addActionListener(this);
-        button.setMnemonic('r');
-        gbh.nextCol().setLabelDefault();
-        panel.add(button, gbh.get());
-
-    }
-
     private class JdbcPropertiesTableModel extends AbstractTableModel {
 
         protected String[] header = Bundles.getCommons(new String[]{"key", "value", ""});
@@ -1525,7 +1548,7 @@ public class CreateDatabasePanel extends ActionPanel
 
     public void addNewDriver() {
 
-        new DialogDriverPanel();
+        new CreateDriverDialog();
     }
 
     public void driversUpdated(DatabaseDriverEvent databaseDriverEvent) {
@@ -1619,8 +1642,7 @@ public class CreateDatabasePanel extends ActionPanel
             setFocusPainted(false);
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
-            setIcon(GUIUtilities.loadIcon("GcDelete16.png"));
-            setPressedIcon(GUIUtilities.loadIcon("GcDeletePressed16.png"));
+            setIcon(IconManager.getIcon("icon_trash"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());

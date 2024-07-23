@@ -295,7 +295,7 @@ public class TextUtilities {
             String sb = "An error occurred opening the selected file." +
                     "\n\nThe system returned:\n" +
                     e.getMessage();
-            GUIUtilities.displayExceptionErrorDialog(sb, e);
+            GUIUtilities.displayExceptionErrorDialog(sb, e, TextUtilities.class);
         }
 
     }

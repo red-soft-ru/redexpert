@@ -22,11 +22,13 @@ package org.executequery.gui.prefs;
 
 
 import org.executequery.Constants;
-import org.executequery.localization.Bundles;
+import org.executequery.gui.resultset.ResultSetCellAlign;
+import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The properties for the editor's results panel
@@ -34,213 +36,246 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel {
-
-    public static final String[] ALIIGNS = {
-            Bundles.get("preferences.allign.right"),
-            Bundles.get("preferences.allign.left"),
-            Bundles.get("preferences.allign.center")
-    };
-
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesResultSetTableGeneral() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesResultSetTableGeneral(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
     private void init() {
 
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        String key;
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("ResultSetTable"),
-                null));
+                bundledStaticString("ResultSetTable"),
+                null
+        ));
 
-        String key = "results.table.column.resize";
+        key = "results.table.column.resize";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ColumnsResizeable"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("ColumnsResizeable"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.column.reorder";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("ColumnReordering"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("ColumnReordering"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.row.numbers";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("RowNumberHeader"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("RowNumberHeader"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.column.width";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("ColumnWidth"),
-                SystemProperties.getProperty("user", key)));
+                bundledStaticString("ColumnWidth"),
+                SystemProperties.getProperty("user", key)
+        ));
 
         key = "results.table.column.height";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 3,
                 key,
-                bundledString("ColumnHeight"),
-                SystemProperties.getProperty("user", key)));
+                bundledStaticString("ColumnHeight"),
+                SystemProperties.getProperty("user", key)
+        ));
 
         key = "results.table.column.width.save";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SaveColumnWidthStateBetweenQueries"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("SaveColumnWidthStateBetweenQueries"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.date.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("DatePatternFormat"),
-                stringUserProperty(key)));
+                bundledStaticString("DatePatternFormat"),
+                stringUserProperty(key)
+        ));
 
         key = "results.time.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimePatternFormat"),
-                stringUserProperty(key)));
+                bundledStaticString("TimePatternFormat"),
+                stringUserProperty(key)
+        ));
 
         key = "results.timestamp.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimestampPatternFormat"),
-                stringUserProperty(key)));
+                bundledStaticString("TimestampPatternFormat"),
+                stringUserProperty(key)
+        ));
 
         key = "results.time.timezone.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimeTimezonePatternFormat"),
-                stringUserProperty(key)));
+                bundledStaticString("TimeTimezonePatternFormat"),
+                stringUserProperty(key)
+        ));
 
         key = "results.timestamp.timezone.pattern";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 -1,
                 key,
-                bundledString("TimestampTimezonePatternFormat"),
-                stringUserProperty(key)));
+                bundledStaticString("TimestampTimezonePatternFormat"),
+                stringUserProperty(key)
+        ));
 
         key = "results.table.cell.null.text";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("NullValueCellText"),
-                SystemProperties.getStringProperty("user", key)));
+                bundledStaticString("NullValueCellText"),
+                SystemProperties.getStringProperty("user", key)
+        ));
 
         key = "results.table.double-click.record.dialog";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("CellDouble-clickOpensDataItemViewer"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("CellDouble-clickOpensDataItemViewer"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.single.row.transpose";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("TransposeWhenSingleRowResult"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("TransposeWhenSingleRowResult"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.align.numeric";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
-                bundledString("alignNumericValues"),
-                alignUserProperty(key),
-                ALIIGNS));
+                bundledStaticString("alignNumericValues"),
+                getAlignValueOrDefault(key),
+                alignsValuePairs()
+        ));
 
         key = "results.table.align.text";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
-                bundledString("alignTextValues"),
-                alignUserProperty(key),
-                ALIIGNS));
+                bundledStaticString("alignTextValues"),
+                getAlignValueOrDefault(key),
+                alignsValuePairs()
+        ));
 
         key = "results.table.align.bool";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
-                bundledString("alignBoolValues"),
-                alignUserProperty(key),
-                ALIIGNS));
+                bundledStaticString("alignBoolValues"),
+                getAlignValueOrDefault(key),
+                alignsValuePairs()
+        ));
 
         key = "results.table.align.null";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
-                bundledString("alignNullValues"),
-                alignUserProperty(key),
-                ALIIGNS));
+                bundledStaticString("alignNullValues"),
+                getAlignValueOrDefault(key),
+                alignsValuePairs()
+        ));
 
         key = "results.table.align.other";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.ENUM_TYPE,
                 key,
-                bundledString("alignOtherValues"),
-                alignUserProperty(key),
-                ALIIGNS));
+                bundledStaticString("alignOtherValues"),
+                getAlignValueOrDefault(key),
+                alignsValuePairs()
+        ));
 
         key = "results.table.use.form.adding.deleting";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseFormForAddingDeletingRecords"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("UseFormForAddingDeletingRecords"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.use.other.color.null";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseOtherColorForNullWhenAddingDeletingRecords"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("UseOtherColorForNullWhenAddingDeletingRecords"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "results.table.fetch.size";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("FetchSize"),
-                Integer.valueOf(stringUserProperty(key))));
+                bundledStaticString("FetchSize"),
+                Integer.valueOf(stringUserProperty(key))
+        ));
 
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        key = "browser.max.records";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                key,
+                bundledStaticString("MaximumRecordsReturned"),
+                SystemProperties.getProperty("user", key)
+        ));
+
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
         addContent(preferencesPanel);
-
     }
 
-    protected String alignUserProperty(String key) {
+    private LabelValuePair[] alignsValuePairs() {
 
-        String property = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, key);
-        if (property != null && property.contains("default-"))
-            property = Bundles.get("preferences.allign." + property.replace("default-", ""));
+        ResultSetCellAlign[] languages = ResultSetCellAlign.values();
 
-        return property;
+        LabelValuePair[] values = new LabelValuePair[languages.length];
+        for (int i = 0; i < languages.length; i++)
+            values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
+
+        return values;
+    }
+
+    private ResultSetCellAlign getAlignValueOrDefault(String key) {
+        try {
+            return ResultSetCellAlign.valueOf(stringUserProperty(key));
+
+        } catch (Exception e) {
+            ResultSetCellAlign value = ResultSetCellAlign.valueOf(SystemProperties.getProperty("defaults", key));
+            SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, key, value.name());
+
+            return value;
+        }
     }
 
     @Override

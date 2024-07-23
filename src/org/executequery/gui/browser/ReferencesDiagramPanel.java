@@ -20,19 +20,20 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.erd.ErdViewerPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.Printable;
-import java.util.List;
+import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
  */
 public class ReferencesDiagramPanel extends JPanel {
 
-    private ErdViewerPanel viewerPanel;
+    private final ErdViewerPanel viewerPanel;
 
     public ReferencesDiagramPanel() {
         super(new BorderLayout());
@@ -51,16 +52,8 @@ public class ReferencesDiagramPanel extends JPanel {
         return viewerPanel.getPrintable();
     }
 
-    @SuppressWarnings({"rawtypes"})
-    public void setTables(List tableNames, List columnData) {
-
-        viewerPanel.resetTableValues(tableNames, columnData);
+    public void setTables(Vector<ErdTableInfo> tableInfos) {
+        viewerPanel.resetTableValues(tableInfos);
     }
 
 }
-
-
-
-
-
-

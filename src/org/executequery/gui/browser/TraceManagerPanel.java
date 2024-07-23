@@ -48,6 +48,9 @@ import java.util.Vector;
 public class TraceManagerPanel extends AbstractServiceManagerPanel implements TabView {
 
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
+    public static final String FRAME_ICON = "icon_manager_trace";
+
+
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
     private AnalisePanel analisePanel;
@@ -142,7 +145,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
             try {
                 traceManager.stopTraceSession(traceManager.getSessionID(sessionField.getText()));
             } catch (SQLException e) {
-                GUIUtilities.displayExceptionErrorDialog("Error stop session", e);
+                GUIUtilities.displayExceptionErrorDialog("Error stop session", e, this.getClass());
             } finally {
                 stopSession();
             }
@@ -188,7 +191,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         gbhToolBar.setDefaultsStatic().defaults();
         gbhToolBar.setInsets(0, 0, 0, 0);
         toolBar.setFloatable(false);
-        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "Open16.png");
+        openFileLog = WidgetFactory.createRolloverButton("openLogButton", bundleString("OpenFileLog"), "icon_folder");
         toolBar.add(openFileLog, gbhToolBar.nextCol().setLabelDefault().get());
         encodeCombobox = WidgetFactory.createComboBox("encodingCombobox", Charset.availableCharsets().keySet().toArray());
         encodeCombobox.setSelectedItem(UserProperties.getInstance().getStringProperty("system.file.encoding"));
@@ -205,9 +208,9 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                 }
             }
         });
-        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().get());
+        toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().fillHorizontally().setWeightX(0.1).get());
         //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
-        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "FindAgain16.png");
+        visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "icon_find_next");
         visibleColumnsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -353,12 +356,12 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                                 ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
                         ));
                     } catch (Exception e1) {
-                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1);
+                        GUIUtilities.displayExceptionErrorDialog("Error start Trace Manager", e1, this.getClass());
                     }
                 } else try {
                     traceManager.stopTraceSession(currentSessionId);
                 } catch (SQLException e1) {
-                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1);
+                    GUIUtilities.displayExceptionErrorDialog("Error stop Trace Manager", e1, this.getClass());
                 } finally {
                     stopSession();
                 }
@@ -394,7 +397,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
                                     Files.newInputStream(Paths.get(fileChooser.getSelectedFile().getAbsolutePath())), (String) encodeCombobox.getSelectedItem()));
                     readFromBufferedReader(reader, true);
                 } catch (Exception e1) {
-                    GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                    GUIUtilities.displayExceptionErrorDialog("file opening error", e1, this.getClass());
                 } finally {
                     if (reader != null) {
                         try {

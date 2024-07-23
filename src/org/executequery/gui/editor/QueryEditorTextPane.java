@@ -27,8 +27,6 @@ import org.executequery.gui.UndoableComponent;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.EditorSQLShortcut;
 import org.executequery.repository.EditorSQLShortcuts;
-import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.SqlMessages;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.util.MiscUtils;
@@ -694,7 +692,7 @@ public class QueryEditorTextPane extends SQLTextArea
     public void goToRow(int row) {
         int goToRow = getRowPosition(row - 1);
         if (goToRow < 0) {
-            GUIUtilities.displayErrorMessage("The line number enterinsertTextAftered is invalid.");
+            GUIUtilities.displayErrorMessage("The line number is invalid.");
             return;
         }
         setCaretPosition(goToRow);
@@ -705,12 +703,6 @@ public class QueryEditorTextPane extends SQLTextArea
         super.setEditorPreferences();
         // set the pane background
         setBackground(QueryEditorSettings.getEditorBackground());
-    }
-
-
-    private KeywordRepository keywords() {
-
-        return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
     public void resetAttributeSets() {
@@ -854,78 +846,6 @@ public class QueryEditorTextPane extends SQLTextArea
         super.changedUpdate(e);
     }
 
-
-    public QueryWithPosition getQueryAtCursor() {
-
-        return getQueryAt(getCaretPosition());
-    }
-
-    public String getWordEndingAtCursor() {
-
-        return getWordEndingAt(getCaretPosition());
-    }
-
-    public String getCompleteWordEndingAtCursor() {
-
-        String text = getText();
-        if (MiscUtils.isNull(text)) {
-
-            return Constants.EMPTY;
-        }
-
-        int start = indexOfWordStartFromIndex(getCaretPosition());
-        int end = indexOfWordEndFromIndex();
-
-        if (start < 0) {
-
-            start = 0;
-        }
-
-        if (end < 0) {
-
-            end = getText().length();
-        }
-
-        return text.substring(start, end).trim();
-    }
-
-    private int indexOfWordStartFromIndex(int index) {
-
-        int start = -1;
-        int end = index;
-
-        char[] chars = getText().toCharArray();
-        for (int i = end - 1; i >= 0; i--) {
-
-            if (!Character.isLetterOrDigit(chars[i])
-                    && chars[i] != '_' && chars[i] != '.') {
-
-                start = i;
-                break;
-            }
-
-        }
-
-        return start;
-    }
-
-    private int indexOfWordEndFromIndex() {
-
-        int start = getCaretPosition();
-        char[] chars = getText().toCharArray();
-
-        for (int i = start; i < chars.length; i++) {
-
-            if (Character.isWhitespace(chars[i])) {
-
-                return i;
-            }
-
-        }
-
-        return -1;
-    }
-
     private String getWordEndingAt(int position) {
 
         String text = getText();
@@ -957,13 +877,6 @@ public class QueryEditorTextPane extends SQLTextArea
         }
 
         return text.substring(start, end).trim();
-    }
-
-    protected void setExecutingQuery(String query) {
-
-        int index = getText().indexOf(query);
-        if (query.charAt(0) == Constants.NEW_LINE_CHAR)
-            index++;
     }
 
     public String getTextAtRow(int rowNumber) {

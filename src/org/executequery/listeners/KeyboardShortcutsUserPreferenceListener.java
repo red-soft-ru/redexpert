@@ -31,28 +31,15 @@ import javax.swing.*;
 public class KeyboardShortcutsUserPreferenceListener extends AbstractUserPreferenceListener
         implements UserPreferenceListener {
 
+    @Override
     public void preferencesChanged(UserPreferenceEvent event) {
-
-        if (event.getEventType() == UserPreferenceEvent.ALL
-                || event.getEventType() == UserPreferenceEvent.KEYBOARD_SHORTCUTS) {
-
+        int type = event.getEventType();
+        if (type == UserPreferenceEvent.ALL || type == UserPreferenceEvent.KEYBOARD_SHORTCUTS) {
             ActionBuilder.updateUserDefinedShortcuts(
                     GUIUtilities.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
-                    SystemResources.getUserActionShortcuts());
-
+                    SystemResources.getUserActionShortcuts()
+            );
         }
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

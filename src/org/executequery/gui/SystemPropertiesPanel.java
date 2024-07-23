@@ -39,9 +39,7 @@ public class SystemPropertiesPanel extends JPanel {
     public SystemPropertiesPanel() {
 
         super(new GridBagLayout());
-        PropertyWrapperModel model = new PropertyWrapperModel(
-                System.getProperties(),
-                PropertyWrapperModel.SORT_BY_KEY);
+        PropertyWrapperModel model = new PropertyWrapperModel(System.getProperties());
 
         table = new SortableColumnsTable(model);
         table.getTableHeader().setReorderingAllowed(false);
@@ -68,10 +66,7 @@ public class SystemPropertiesPanel extends JPanel {
     }
 
     public void reload() {
-
-        table.setModel(new PropertyWrapperModel(
-                System.getProperties(),
-                PropertyWrapperModel.SORT_BY_KEY));
+        table.setModel(new PropertyWrapperModel(System.getProperties()));
         table.resetSorter();
     }
 

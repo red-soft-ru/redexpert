@@ -29,24 +29,10 @@ import java.awt.event.ActionEvent;
  */
 public class MoveTextDownCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
+        if (isQueryEditorTheCentralPanel())
             queryEditor().moveSelectionDown();
-        }
-
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

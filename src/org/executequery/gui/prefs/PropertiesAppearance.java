@@ -20,14 +20,20 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.localization.InterfaceLanguage;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * System preferences appearance panel.
@@ -37,91 +43,101 @@ import java.util.List;
 public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private SimplePreferencesPanel preferencesPanel;
-    private boolean lafChangeWarningShown = false;
+    private CustomLafSelectionPanel lafSelectionPanel;
 
-    public PropertiesAppearance() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesAppearance(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    /**
-     * Initializes the state of this instance.
-     */
-    private void init() throws Exception {
+    private void init() {
 
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        String key;
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
-                null));
+                bundledStaticString("General"),
+                null
+        ));
 
-        String key = "system.display.statusbar";
+        key = "startup.display.splash";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("StatusBar"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("DisplaySplashScreenAtStartup"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "startup.window.maximized";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("MaximiseWindowOnStartup"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "system.display.statusbar";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("StatusBar"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "system.display.connections";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("Connections"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("Connections"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Appearance"),
-                null));
+                bundledStaticString("Appearance"),
+                null
+        ));
 
         key = "startup.display.lookandfeel";
         list.add(new UserPreference(
                 UserPreference.ENUM_TYPE,
                 key,
-                bundledString("LookAndFeel"),
+                bundledStaticString("LookAndFeel"),
                 LookAndFeelType.valueOf(stringUserProperty(key)),
-                lookAndFeelValuePairs()));
+                lookAndFeelValuePairs()
+        ));
+
+        key = "startup.display.language";
+        list.add(new UserPreference(
+                UserPreference.ENUM_TYPE,
+                key,
+                bundledStaticString("language"),
+                getSelectedInterfaceLanguage(),
+                languageValuePairs()
+        ));
 
         key = "display.aa.fonts";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseAnti-aliasFonts"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("UseAnti-aliasFonts"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
-        key = "desktop.background.custom.colour";
-        list.add(new UserPreference(
-                UserPreference.COLOUR_TYPE,
-                key,
-                bundledString("DesktopBackground"),
-                SystemProperties.getColourProperty("user", key)));
+        lafSelectionPanel = new CustomLafSelectionPanel();
+        lafSelectionPanel.setVisible(Objects.equals(
+                LookAndFeelType.PLUGIN,
+                LookAndFeelType.valueOf(stringUserProperty("startup.display.lookandfeel"))
+        ));
 
-        key = "decorate.dialog.look";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("DecorateDialogs"),
-                Boolean.valueOf(stringUserProperty(key))));
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
 
-        key = "decorate.frame.look";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("DecorateFrame"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
-
-        lookAndFeelCombBox().addActionListener(e -> itemStateChanged());
+        lookAndFeelCombBox().addItemListener(this::lookAndFeelChanged);
     }
 
     @SuppressWarnings("rawtypes")
@@ -129,35 +145,36 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         return (JComboBox) preferencesPanel.getComponentEditorForKey("startup.display.lookandfeel");
     }
 
-    public void itemStateChanged() {
+    private synchronized void lookAndFeelChanged(ItemEvent e) {
 
-        if (!lafChangeWarningShown) {
-            GUIUtilities.displayInformationMessage(bundleString("ChangingTheme.Information"));
-            lafChangeWarningShown = true;
-        }
+        if (e.getStateChange() != ItemEvent.SELECTED)
+            return;
 
-        AbstractPropertiesColours.setSelectedLookAndFeel(getCurrentlySelectedLookAndFeel());
+        LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
+        AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
+        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
 
-        PropertiesEditorColours editorColours = new PropertiesEditorColours();
-        editorColours.restoreDefaults();
-        editorColours.save();
-
-        PropertiesResultSetTableColours resultsetColours = new PropertiesResultSetTableColours();
-        resultsetColours.restoreDefaults();
-        resultsetColours.save();
+        restoreAndSaveDefaults(PropertyTypes.EDITOR_COLOURS);
+        restoreAndSaveDefaults(PropertyTypes.RESULT_SET_COLOURS);
     }
 
     private Object[] lookAndFeelValuePairs() {
 
-        LookAndFeelType[] lookAndFeelTypes = LookAndFeelType.values();
-        LabelValuePair[] values = new LabelValuePair[lookAndFeelTypes.length];
-        for (int i = 0; i < lookAndFeelTypes.length; i++) {
+        List<LabelValuePair> values = new ArrayList<>();
+        for (LookAndFeelType lafType : LookAndFeelType.values())
+            if (lafType != LookAndFeelType.LACKEY)
+                values.add(new LabelValuePair(lafType, lafType.getDescription()));
 
-            LookAndFeelType lookAndFeelType = lookAndFeelTypes[i];
-            values[i] = new LabelValuePair(lookAndFeelType, lookAndFeelType.getDescription());
-        }
+        return values.toArray();
+    }
 
-        return values;
+    private Object[] languageValuePairs() {
+
+        List<LabelValuePair> values = new ArrayList<>();
+        for (InterfaceLanguage lafType : InterfaceLanguage.values())
+            values.add(new LabelValuePair(lafType, lafType.getLabel()));
+
+        return values.toArray();
     }
 
     private LookAndFeelType getCurrentlySelectedLookAndFeel() {
@@ -169,14 +186,26 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         return (LookAndFeelType) (selectedValue).getValue();
     }
 
+    private InterfaceLanguage getSelectedInterfaceLanguage() {
+
+        String interfaceLanguage = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
+        if (Arrays.stream(InterfaceLanguage.values()).anyMatch(value -> Objects.equals(value.getKey(), interfaceLanguage)))
+            return InterfaceLanguage.valueOf(interfaceLanguage);
+
+        SystemProperties.setStringProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language", "en");
+        return InterfaceLanguage.en;
+    }
+
     @Override
     public void restoreDefaults() {
+        lafSelectionPanel.restore();
         preferencesPanel.savePreferences();
         apply();
     }
 
     @Override
     public void save() {
+        lafSelectionPanel.save();
         preferencesPanel.savePreferences();
         apply();
     }

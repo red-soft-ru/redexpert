@@ -29,24 +29,10 @@ import java.awt.event.ActionEvent;
  */
 public class CommitCommand extends AbstractQueryEditorCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (isQueryEditorTheCentralPanel()) {
-
-            queryEditor().executeSQLQuery("commit");
-        }
-
+        if (isQueryEditorTheCentralPanel())
+            queryEditor().executeStatement("commit");
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

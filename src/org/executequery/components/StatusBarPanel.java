@@ -20,7 +20,6 @@
 
 package org.executequery.components;
 
-import org.executequery.Constants;
 import org.underworldlabs.swing.AbstractStatusBarPanel;
 
 import javax.swing.*;
@@ -38,27 +37,16 @@ public class StatusBarPanel extends AbstractStatusBarPanel {
     /**
      * <p>Creates a new instance with the specified values
      * within respective values.
-     *
-     * @param the value displayed in the left-most label
-     * @param the value displayed in the second label from the left
-     * @param the value displayed in the right-most label
      */
     public StatusBarPanel(String text1, String text2) {
-
         super(HEIGHT);
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
         setFirstLabelText(text1);
         setThirdLabelText(text2);
     }
 
-    private void init() throws Exception {
-
+    private void init() {
         setBorder(BorderFactory.createEmptyBorder(2, 3, 3, 4));
 
         addLabel(0, 70, true);
@@ -66,12 +54,32 @@ public class StatusBarPanel extends AbstractStatusBarPanel {
         addLabel(2, 50, true);
         addLabel(3, 75, true);
         addLabel(4, 150, false);
-        //addComponent(new HeapMemoryStatusSnippet(), 5, 150, false);
     }
 
-    public void setThirdLabelText(String text) {
+    public void reset() {
+        String[] labels = new String[]{
+                getLabel(0).getText(),
+                getLabel(1).getText(),
+                null,
+                getLabel(3).getText(),
+                getLabel(4).getText()
+        };
 
-        setLabelText(2, text);
+        Integer[] alignments = new Integer[]{
+                getLabel(0).getHorizontalAlignment(),
+                getLabel(1).getHorizontalAlignment(),
+                SwingConstants.CENTER,
+                getLabel(3).getHorizontalAlignment(),
+                getLabel(4).getHorizontalAlignment()
+        };
+
+        removeAll();
+        init();
+
+        for (int i = 0; i < labels.length; i++) {
+            getLabel(i).setText(labels[i]);
+            getLabel(i).setHorizontalAlignment(alignments[i]);
+        }
     }
 
     public void addComponent(JComponent component, int index) {
@@ -79,58 +87,30 @@ public class StatusBarPanel extends AbstractStatusBarPanel {
         addComponent(component, index, 150, false);
     }
 
-    public void setSecondLabelText(String text) {
-
-        setLabelText(1, text);
-    }
-
     public void setFirstLabelText(final String text) {
-
         setLabelText(0, text);
     }
 
-    public void setFifthLabelText(final String text) {
-
-        setLabelText(4, text);
+    public void setSecondLabelText(String text) {
+        setLabelText(1, text);
     }
 
-    public void resetStatusBar() {
-
-        setLabelText(0, Constants.EMPTY);
-        setLabelText(1, Constants.EMPTY);
-        setLabelText(2, Constants.EMPTY);
+    public void setThirdLabelText(String text) {
+        setLabelText(2, text);
+        getLabel(2).setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     public void setFourthLabelText(String text, int alignment) {
-
         JLabel label = getLabel(3);
-
         if (label != null) {
-
             label.setHorizontalAlignment(alignment);
             setLabelText(3, text);
         }
     }
 
+    @Override
     public JLabel getLabel(int index) {
-
         return super.getLabel(index);
     }
 
-    public void setFourthLabelText(String text) {
-
-        setLabelText(3, text);
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -31,7 +31,6 @@ import org.executequery.databaseobjects.Types;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.datasource.PooledStatement;
-import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.log.Log;
@@ -327,7 +326,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                     cancelled = false;
                     fetchAll = false;
                 } else
-                    GUIUtilities.displayExceptionErrorDialog("Error loading data", e);
+                    GUIUtilities.displayExceptionErrorDialog("Error loading data", e, this.getClass());
                 fireTableDataChanged();
             } finally {
                 fetchAll = false;
@@ -933,9 +932,10 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
                 Throwable cause = e.getCause();
                 if (cause instanceof ParseException) {
-
-                    ErrorMessagePublisher.publish(
-                            "Invalid value provided for type -\n" + e.getExtendedMessage(), cause);
+                    GUIUtilities.displayExceptionErrorDialog(
+                            "Invalid value provided for type -\n" + e.getExtendedMessage(),
+                            cause, this.getClass()
+                    );
                 }
             }
 

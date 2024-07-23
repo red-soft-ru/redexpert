@@ -236,7 +236,7 @@ public class SqlParser {
 
                 }
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error parsing query", e);
+                GUIUtilities.displayExceptionErrorDialog("Error parsing query", e, this.getClass());
             }
 
         }

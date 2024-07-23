@@ -29,23 +29,21 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.AnaliseRecompileDialog;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
-import org.executequery.gui.importexport.ImportExportDataProcess;
-import org.executequery.gui.importexport.ImportExportDelimitedPanel;
-import org.executequery.gui.importexport.ImportExportExcelPanel;
-import org.executequery.gui.importexport.ImportExportXMLPanel;
 import org.executequery.gui.table.CreateTablePanel;
+import org.executequery.gui.table.EditConstraintPanel;
+import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlStatementResult;
-import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -53,896 +51,710 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.event.ActionEvent;
 import java.sql.SQLException;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Takis Diakoumis
  */
-
-@SuppressWarnings("unused")
 public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
-
-    private StatementExecutor querySender;
     private final ConnectionsTreePanel treePanel;
 
+    private StatementExecutor querySender;
+    private DatabaseConnection currentSelection;
     private StatementToEditorWriter statementWriter;
 
-    private DatabaseConnection currentSelection;
-
     private TreePath currentPath;
-
     private TreePath[] treePaths;
 
     private boolean selectedSeveralPaths = false;
 
-    BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
+    protected BrowserTreePopupMenuActionListener(ConnectionsTreePanel treePanel) {
         this.treePanel = treePanel;
     }
 
-    protected void postActionPerformed(ActionEvent e) {
-        currentSelection = null;
-        currentPath = null;
+    // ---
+
+    @SuppressWarnings("unused")
+    public void reloadPath(ActionEvent e) {
+        if (currentPath != null)
+            treePanel.reloadPath(currentPath);
     }
 
-    public void deleteObject(ActionEvent e) {
+    @SuppressWarnings("unused")
+    public void copyName(ActionEvent e) {
 
-        if (currentPath != null && currentSelection != null) {
+        if (currentPath == null)
+            return;
 
-            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            DatabaseObject object = (DatabaseObject) node.getUserObject();
+        String name;
+        Object lastPathComponent = currentPath.getLastPathComponent();
+        if (lastPathComponent instanceof DatabaseObjectNode) {
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(node.getShortName())
-                    .append(":").append(node.getMetaDataKey())
-                    .append(":").append(object.getHost());
+            DatabaseObjectNode node = (DatabaseObjectNode) lastPathComponent;
+            name = node.getName();
 
-            if (GUIUtilities.getOpenFrame(sb.toString()) != null) {
-                GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
-                return;
-            }
+            NamedObject object = node.getDatabaseObject();
+            if (object instanceof DefaultDatabaseColumn)
+                name = object.getParent().getName() + "." + name;
 
-            String type;
-            if (node.getType() == NamedObject.GLOBAL_TEMPORARY)
-                type = NamedObject.META_TYPES[NamedObject.TABLE];
-            else if (node.getType() == NamedObject.DATABASE_TRIGGER || node.getType() == NamedObject.DDL_TRIGGER)
-                type = NamedObject.META_TYPES[NamedObject.TRIGGER];
-            else
-                type = NamedObject.META_TYPES[node.getType()];
+        } else
+            name = lastPathComponent.toString();
 
-            DatabaseObjectNode indecesNode = null;
-            if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE]))
-                indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
-                        .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                        .findFirst().orElse(null);
-
-            String query = "DROP " + type + " " + MiscUtils.getFormattedObject(node.getName(), currentSelection);
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Dropping object", query, currentSelection, true);
-            eqd.display();
-
-            if (eqd.getCommit()) {
-                treePanel.reloadPath(currentPath.getParentPath());
-                if (indecesNode != null)
-                    treePanel.reloadPath(indecesNode.getTreePath());
-            }
-        }
+        GUIUtilities.copyToClipBoard(name);
     }
 
-    public void createObject(ActionEvent e) {
-        if (currentPath != null && currentSelection != null) {
-            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            int type = node.getType();
-            if (type == NamedObject.META_TAG)
-                for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                    if (NamedObject.META_TYPES[i].equals(node.getMetaDataKey())) {
-                        type = i;
-                        break;
-                    }
-            switch (type) {
-                case NamedObject.TABLE:
-                case NamedObject.GLOBAL_TEMPORARY:
-                    if (GUIUtilities.isDialogOpen(CreateTablePanel.TITLE)) {
+    // --- BrowserTreeHostPopupMenu handlers ---
 
-                        GUIUtilities.setSelectedDialog(CreateTablePanel.TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTablePanel.TITLE, false);
-                            CreateTablePanel panel;
-                            if (type == NamedObject.GLOBAL_TEMPORARY)
-                                panel = new CreateGlobalTemporaryTable(currentSelection, dialog);
-                            else
-                                panel = new CreateTablePanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.ROLE:
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateRolePanel.TITLE, true);
-                        CreateRolePanel panel = new CreateRolePanel(currentSelection, dialog, null);
-                        showDialogCreateObject(panel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                    break;
-                case NamedObject.SEQUENCE:
-                    if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateGeneratorPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateGeneratorPanel.CREATE_TITLE, false);
-                            CreateGeneratorPanel panel = new CreateGeneratorPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.VIEW:
-                    if (GUIUtilities.isDialogOpen(CreateViewPanel.TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateViewPanel.TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateViewPanel.TITLE, false);
-                            CreateViewPanel panel = new CreateViewPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.DOMAIN:
-                    if (GUIUtilities.isDialogOpen(CreateDomainPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateDomainPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateDomainPanel.CREATE_TITLE, false);
-                            CreateDomainPanel panel = new CreateDomainPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.PROCEDURE:
-                    if (GUIUtilities.isDialogOpen(CreateProcedurePanel.TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateProcedurePanel.TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateProcedurePanel.TITLE, false);
-                            CreateProcedurePanel panel = new CreateProcedurePanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.TRIGGER:
-                case NamedObject.DATABASE_TRIGGER:
-                case NamedObject.DDL_TRIGGER:
-                    if (GUIUtilities.isDialogOpen(CreateTriggerPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTriggerPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTriggerPanel.CREATE_TITLE, false);
-                            CreateTriggerPanel panel = new CreateTriggerPanel(currentSelection, dialog,
-                                    type);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.EXCEPTION:
-                    if (GUIUtilities.isDialogOpen(CreateExceptionPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateExceptionPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateExceptionPanel.CREATE_TITLE, false);
-                            CreateExceptionPanel panel = new CreateExceptionPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.INDEX:
-                    if (GUIUtilities.isDialogOpen(CreateIndexPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateIndexPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateIndexPanel.CREATE_TITLE, false);
-                            CreateIndexPanel panel = new CreateIndexPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.FUNCTION:
-                    if (GUIUtilities.isDialogOpen(CreateFunctionPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateFunctionPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateFunctionPanel.CREATE_TITLE, false);
-                            CreateFunctionPanel panel = new CreateFunctionPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.UDF:
-                    if (GUIUtilities.isDialogOpen(CreateUDFPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateUDFPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateUDFPanel.CREATE_TITLE, false);
-                            CreateUDFPanel panel = new CreateUDFPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.PACKAGE:
-                    if (GUIUtilities.isDialogOpen(CreatePackagePanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreatePackagePanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreatePackagePanel.CREATE_TITLE, false);
-                            CreatePackagePanel panel = new CreatePackagePanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.USER:
-                    if (GUIUtilities.isDialogOpen(CreateDatabaseUserPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateDatabaseUserPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateDatabaseUserPanel.CREATE_TITLE, false);
-                            CreateDatabaseUserPanel panel = new CreateDatabaseUserPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.TABLESPACE:
-                    if (GUIUtilities.isDialogOpen(CreateTablespacePanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateTablespacePanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateTablespacePanel.CREATE_TITLE, false);
-                            CreateTablespacePanel panel = new CreateTablespacePanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                case NamedObject.JOB:
-                    if (GUIUtilities.isDialogOpen(CreateJobPanel.CREATE_TITLE)) {
-
-                        GUIUtilities.setSelectedDialog(CreateJobPanel.CREATE_TITLE);
-
-                    } else {
-                        try {
-                            GUIUtilities.showWaitCursor();
-                            BaseDialog dialog =
-                                    new BaseDialog(CreateJobPanel.CREATE_TITLE, false);
-                            CreateJobPanel panel = new CreateJobPanel(currentSelection, dialog);
-                            showDialogCreateObject(panel, dialog);
-                        } finally {
-                            GUIUtilities.showNormalCursor();
-                        }
-                    }
-                    break;
-                default:
-                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                    break;
-
-
-            }
-        }
-
+    @SuppressWarnings("unused")
+    public void connect(ActionEvent e) {
+        if (currentSelection != null)
+            treePanel.connect(currentSelection);
     }
 
-    public void editObject(ActionEvent e) {
-        if (currentPath != null && currentSelection != null) {
-            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-            editObject(node, currentSelection);
-        }
-
+    @SuppressWarnings("unused")
+    public void disconnect(ActionEvent e) {
+        if (currentSelection != null)
+            treePanel.disconnect(currentSelection);
     }
 
-    public void editObject(DatabaseObjectNode node, DatabaseConnection currentSelection) {
-        AbstractCreateObjectPanel createObjectPanel = null;
-        int type = node.getType();
-        if (type == NamedObject.META_TAG)
-            for (int i = 0; i < NamedObject.META_TYPES.length; i++)
-                if (Objects.equals(NamedObject.META_TYPES[i], node.getName())) {
-                    type = i;
-                    break;
-                }
-        switch (type) {
-            case NamedObject.TABLE:
-            case NamedObject.GLOBAL_TEMPORARY:
-            case NamedObject.ROLE:
-                treePanel.valueChanged(node, currentSelection);
-                break;
-            case NamedObject.SEQUENCE:
-                if (GUIUtilities.isDialogOpen(CreateGeneratorPanel.ALTER_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateGeneratorPanel.ALTER_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateGeneratorPanel.ALTER_TITLE, false);
-                        createObjectPanel = new CreateGeneratorPanel(currentSelection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.VIEW:
-                if (GUIUtilities.isDialogOpen(CreateViewPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateViewPanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateViewPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateViewPanel(currentSelection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.PROCEDURE:
-                if (GUIUtilities.isDialogOpen(CreateProcedurePanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateProcedurePanel.EDIT_TITLE);
-
-                } else {
-                    if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
-                        GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                        break;
-                    }
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateProcedurePanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateProcedurePanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()));
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.DOMAIN:
-                if (GUIUtilities.isDialogOpen(CreateDomainPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateDomainPanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateDomainPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateDomainPanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()));
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.TRIGGER:
-            case NamedObject.DATABASE_TRIGGER:
-            case NamedObject.DDL_TRIGGER:
-                if (GUIUtilities.isDialogOpen(CreateTriggerPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateTriggerPanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateTriggerPanel(currentSelection, dialog,
-                                (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.EXCEPTION:
-                if (GUIUtilities.isDialogOpen(CreateExceptionPanel.ALTER_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateExceptionPanel.ALTER_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateExceptionPanel.ALTER_TITLE, false);
-                        createObjectPanel = new CreateExceptionPanel(currentSelection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.INDEX:
-                if (GUIUtilities.isDialogOpen(CreateIndexPanel.ALTER_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateIndexPanel.ALTER_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-                        BaseDialog dialog =
-                                new BaseDialog(CreateIndexPanel.ALTER_TITLE, true);
-                        createObjectPanel = new CreateIndexPanel(currentSelection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.FUNCTION:
-                if (GUIUtilities.isDialogOpen(CreateFunctionPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateFunctionPanel.EDIT_TITLE);
-
-                } else {
-                    if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
-                        GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                        break;
-                    }
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateFunctionPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateFunctionPanel(currentSelection, dialog, MiscUtils.trimEnd(node.getName()), (DefaultDatabaseFunction) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.UDF:
-                if (GUIUtilities.isDialogOpen(CreateUDFPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateUDFPanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateUDFPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateUDFPanel(currentSelection, dialog, node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.PACKAGE:
-                if (GUIUtilities.isDialogOpen(CreatePackagePanel.ALTER_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreatePackagePanel.ALTER_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreatePackagePanel.ALTER_TITLE, false);
-                        createObjectPanel = new CreatePackagePanel(currentSelection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.USER:
-                if (GUIUtilities.isDialogOpen(CreateDatabaseUserPanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateDatabaseUserPanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateDatabaseUserPanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateDatabaseUserPanel(currentSelection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            case NamedObject.TABLESPACE:
-                if (GUIUtilities.isDialogOpen(CreateTablespacePanel.EDIT_TITLE)) {
-
-                    GUIUtilities.setSelectedDialog(CreateTablespacePanel.EDIT_TITLE);
-
-                } else {
-                    try {
-                        GUIUtilities.showWaitCursor();
-
-                        BaseDialog dialog = new BaseDialog(CreateTablespacePanel.EDIT_TITLE, false);
-                        createObjectPanel = new CreateTablespacePanel(currentSelection, dialog, node.getDatabaseObject());
-                        showDialogCreateObject(createObjectPanel, dialog);
-                    } finally {
-                        GUIUtilities.showNormalCursor();
-                    }
-                }
-                break;
-            default:
-                GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                break;
-        }
-
+    @SuppressWarnings("unused")
+    public void recycleConnection(ActionEvent e) {
+        treePanel.getSelectedMetaObject().recycleConnection();
     }
 
-    public void addNewConnection(ActionEvent e) {
+    @SuppressWarnings("unused")
+    public void newFolder(ActionEvent e) {
+        treePanel.newFolder();
+    }
+
+    @SuppressWarnings("unused")
+    public void newConnection(ActionEvent e) {
         treePanel.newConnection();
     }
 
-    public void getMetadata(ActionEvent e) {
+    @SuppressWarnings("unused")
+    public void extractMetadata(ActionEvent e) {
         if (currentPath != null) {
             DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
             new ComparerDBCommands().exportMetadata(node.getDatabaseConnection());
         }
     }
 
-    public void switchDefaultCatalogAndSchemaDisplay(ActionEvent e) {
-
-        JCheckBoxMenuItem check = (JCheckBoxMenuItem) e.getSource();
-
-        DatabaseHostNode node =
-                (DatabaseHostNode) currentPath.getLastPathComponent();
-        node.setDefaultCatalogsAndSchemasOnly(check.isSelected());
-
-        treePanel.nodeStructureChanged(node);
+    @SuppressWarnings("unused")
+    public void moveToFolder(ActionEvent e) {
+        if (currentSelection != null)
+            treePanel.moveToFolder(currentSelection);
     }
 
-    public void delete(ActionEvent e) {
+    @SuppressWarnings("unused")
+    public void duplicateConnection(ActionEvent e) {
+        if (currentSelection != null)
+            treePanel.newConnection(currentSelection.copy());
+    }
+
+    @SuppressWarnings("unused")
+    public void deleteConnection(ActionEvent e) {
         if (currentPath != null) {
             DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
             treePanel.deleteConnection(node);
         }
     }
 
-    public void recycle(ActionEvent e) {
-        DatabaseHost host = treePanel.getSelectedMetaObject();
-        try {
-            host.recycleConnection();
-        } catch (DataSourceException dse) {
-            handleException(dse);
-        }
-    }
-
-    public void reload(ActionEvent e) {
-        if (currentPath != null) {
-            treePanel.reloadPath(currentPath);
-        }
-    }
-
-    public void copyName(ActionEvent e) {
-        if (currentPath != null) {
-            String name;
-            if (currentPath.getLastPathComponent() instanceof DatabaseObjectNode) {
-                DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-                if (node.getDatabaseObject() instanceof DefaultDatabaseColumn)
-                    name = node.getDatabaseObject().getParent().getName() + "." + node.getName();
-                else name = node.getName();
-            } else name = currentPath.getLastPathComponent().toString();
-            GUIUtilities.copyToClipBoard(name);
-        }
-    }
-
-    public void disconnect(ActionEvent e) {
-        treePanel.disconnect(currentSelection);
-    }
-
-    private BrowserController controller;
-
-
-    public void dataBaseInformation(ActionEvent e) {
-        controller = treePanel.getController();
-        DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        DatabaseConnection connection = currentSelection;
-        controller.valueChanged(node, connection);
-
-    }
-
-    public void duplicate(ActionEvent e) {
-        if (currentSelection != null)
-            treePanel.newConnection(currentSelection.copy());
-    }
-
-    public void duplicateWithSource(ActionEvent e) {
-
+    @SuppressWarnings("unused")
+    public void showConnectionInfo(ActionEvent e) {
         if (currentSelection != null) {
-
-            String selectedSource = currentPath.getLastPathComponent().toString();
-            String name = treePanel.buildConnectionName(selectedSource);
-            DatabaseConnection dc = currentSelection.copy().withSource(selectedSource).withName(name);
-            treePanel.newConnection(dc);
-        }
-
-    }
-
-    public void exportExcel(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXCEL);
-    }
-
-    public void importXml(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.IMPORT_XML);
-    }
-
-    public void exportXml(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXPORT_XML);
-    }
-
-    public void importDelimited(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.IMPORT_DELIMITED);
-    }
-
-    public void exportDelimited(ActionEvent e) {
-        importExportDialog(ImportExportDataProcess.EXPORT_DELIMITED);
-    }
-
-    public void exportDbunit(ActionEvent e) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-
-        if (object != null && (object instanceof DatabaseTable)) {
-
-            Action action = ActionBuilder.get("export-dbunit-command");
-            action.actionPerformed(new ActionEvent(object, e.getID(), e.getActionCommand()));
-        }
-
-    }
-
-    public void exportSQL(ActionEvent e) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-
-        if (object != null && (object instanceof DatabaseTable)) {
-
-            Action action = ActionBuilder.get("export-sql-command");
-            action.actionPerformed(new ActionEvent(object, e.getID(), e.getActionCommand()));
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            treePanel.getController().valueChanged(node, currentSelection);
         }
     }
 
-    public void moveToFolder(ActionEvent e) {
-        treePanel.moveToFolder(currentSelection);
+    // --- BrowserTreePopupMenu handlers ---
+
+    @SuppressWarnings("unused")
+    public void createObject(ActionEvent e) {
+        if (currentPath != null && currentSelection != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            showCreateObjectDialog(node, currentSelection, false);
+        }
     }
 
-    public void properties(ActionEvent e) {
-        //reloadView = true;
-        treePanel.setSelectedConnection(currentSelection);
+    @SuppressWarnings("unused")
+    public void editObject(ActionEvent e) {
+        if (currentPath != null && currentSelection != null) {
+            DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+            showCreateObjectDialog(node, currentSelection, true);
+        }
     }
 
-    public void connect(ActionEvent e) {
-        treePanel.connect(currentSelection);
-    }
+    @SuppressWarnings("unused")
+    public void deleteObject(ActionEvent e) {
 
-    private void importExportDialog(int transferType) {
-
-        NamedObject object = treePanel.getSelectedNamedObject();
-        if (object == null || !(object instanceof DatabaseObject)) {
+        if (currentPath == null || currentSelection == null)
             return;
+
+        DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        String query = getDropQuery(node, node.getType());
+        if (query == null)
+            return;
+
+        DatabaseObjectNode indecesNode = null;
+        if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
+            indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
+                    .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
+                    .findFirst().orElse(null);
         }
 
-        DatabaseConnection dc = treePanel.getSelectedDatabaseConnection();
+        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(bundledString("DropObject"), query, currentSelection, true);
+        executeQueryDialog.display();
 
-        DatabaseObject _object = (DatabaseObject) object;
-        String schemaName = _object.getNamePrefix(); // _object.getSchemaName();
-        String tableName = _object.getName();
+        if (executeQueryDialog.getCommit()) {
+            treePanel.reloadPath(currentPath.getParentPath());
+            if (indecesNode != null)
+                treePanel.reloadPath(indecesNode.getTreePath());
+        }
+    }
 
-        BaseDialog dialog = null;
-        JPanel panel = null;
+    @SuppressWarnings("unused")
+    public void validateTable(ActionEvent e) {
+        new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTableObject().getName());
+    }
 
+    // --- trigger/index activity handlers ---
+
+    @SuppressWarnings("unused")
+    public void setActive(ActionEvent e) {
+        setSelectedObjectActive(true);
+    }
+
+    @SuppressWarnings("unused")
+    public void setInactive(ActionEvent e) {
+        setSelectedObjectActive(false);
+    }
+
+    // --- selection handlers ---
+
+    @SuppressWarnings("unused")
+    public void selectAllNeighbors(ActionEvent e) {
+        selectPaths(true);
+    }
+
+    @SuppressWarnings("unused")
+    public void selectAllChildren(ActionEvent e) {
+        selectPaths(false);
+    }
+
+    // --- recompile handlers ---
+
+    @SuppressWarnings("unused")
+    public void recompileAll(ActionEvent e) {
+        recompileObjects("recompile-message", false);
+    }
+
+    @SuppressWarnings("unused")
+    public void recompileInvalid(ActionEvent e) {
+        recompileObjects("recompile-invalid-message", true);
+    }
+
+    // --- refresh index statistic handlers ---
+
+    @SuppressWarnings("unused")
+    public void refreshIndexStatistic(ActionEvent e) {
+        refreshIndexStatistic(false);
+    }
+
+    @SuppressWarnings("unused")
+    public void refreshAllIndexStatistic(ActionEvent e) {
+        refreshIndexStatistic(true);
+    }
+
+    // --- query generation handlers ---
+
+    @SuppressWarnings("unused")
+    public void generateSelectStatement(ActionEvent e) {
+        getStatementWriter().writeToOpenEditor(currentSelection, getSelectedTableObject().getSelectSQLText());
+    }
+
+    @SuppressWarnings("unused")
+    public void generateInsertStatement(ActionEvent e) {
+        getStatementWriter().writeToOpenEditor(currentSelection, getSelectedTableObject().getInsertSQLText());
+    }
+
+    @SuppressWarnings("unused")
+    public void generateUpdateStatement(ActionEvent e) {
+        getStatementWriter().writeToOpenEditor(currentSelection, getSelectedTableObject().getUpdateSQLText());
+    }
+
+    @SuppressWarnings("unused")
+    public void generateCreateStatement(ActionEvent e) {
+        getStatementWriter().writeToOpenEditor(currentSelection, getSelectedTableObject().getCreateSQLText());
+    }
+
+    // --- handlers helper methods ---
+
+    public void showCreateObjectDialog(DatabaseObjectNode node, DatabaseConnection connection, boolean editing) {
         try {
             GUIUtilities.showWaitCursor();
-            switch (transferType) {
 
-                case ImportExportDataProcess.EXPORT_DELIMITED:
-                    dialog = new BaseDialog(bundledString("ExportData"), false, false);
-                    panel = new ImportExportDelimitedPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
+            BaseDialog dialog = new BaseDialog("", false);
+            AbstractCreateObjectPanel panel = editing ?
+                    getEditObjectPanel(node, dialog, connection) :
+                    getCreateObjectPanel(node, dialog, connection);
 
-                case ImportExportDataProcess.IMPORT_DELIMITED:
-                    dialog = new BaseDialog(bundledString("ImportData"), false, false);
-                    panel = new ImportExportDelimitedPanel(
-                            dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
-                    break;
+            if (panel == null)
+                return;
 
-                case ImportExportDataProcess.EXPORT_XML:
-                    dialog = new BaseDialog(bundledString("exportXml"), false, false);
-                    panel = new ImportExportXMLPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.IMPORT_XML:
-                    dialog = new BaseDialog(bundledString("importXml"), false, false);
-                    panel = new ImportExportXMLPanel(
-                            dialog, ImportExportDataProcess.IMPORT,
-                            dc, schemaName, tableName);
-                    break;
-
-                case ImportExportDataProcess.EXCEL:
-                    dialog = new BaseDialog(bundledString("exportExcel"), false, false);
-                    panel = new ImportExportExcelPanel(
-                            dialog, ImportExportDataProcess.EXPORT,
-                            dc, schemaName, tableName);
-                    break;
-
+            String title = editing ? panel.getEditTitle() : panel.getCreateTitle();
+            if (GUIUtilities.isDialogOpen(title)) {
+                GUIUtilities.setSelectedDialog(title);
+                return;
             }
 
-            if (dialog != null) {
-                dialog.addDisplayComponent(panel);
-            }
-            if (dialog != null) {
-                dialog.display();
-            }
+            panel.setTreePanel(treePanel);
+            panel.setCurrentPath(currentPath);
+
+            dialog.setTitle(title);
+            dialog.addDisplayComponentWithEmptyBorder(panel);
+            dialog.display();
+
         } finally {
             GUIUtilities.showNormalCursor();
         }
     }
 
-    private DatabaseTable getSelectedTable() {
-        return (DatabaseTable) treePanel.getSelectedNamedObject();
+    private AbstractCreateObjectPanel getCreateObjectPanel(DatabaseObjectNode node, BaseDialog
+            dialog, DatabaseConnection connection) {
+
+        int type = node.getType();
+        if (type == NamedObject.META_TAG) {
+            for (int i = 0; i < NamedObject.META_TYPES.length; i++) {
+                if (NamedObject.META_TYPES[i].equals(node.getMetaDataKey())) {
+                    type = i;
+                    break;
+                }
+            }
+        }
+
+        ColumnConstraint constraint;
+        AbstractCreateObjectPanel panel = null;
+        switch (type) {
+
+            case NamedObject.TABLE:
+                panel = new CreateTablePanel(connection, dialog);
+                break;
+
+            case NamedObject.GLOBAL_TEMPORARY:
+                panel = new CreateGlobalTemporaryTable(connection, dialog);
+                break;
+
+            case NamedObject.ROLE:
+                panel = new CreateRolePanel(connection, dialog, null);
+                break;
+
+            case NamedObject.SEQUENCE:
+                panel = new CreateGeneratorPanel(connection, dialog);
+                break;
+
+            case NamedObject.VIEW:
+                panel = new CreateViewPanel(connection, dialog);
+                break;
+
+            case NamedObject.DOMAIN:
+                panel = new CreateDomainPanel(connection, dialog);
+                break;
+
+            case NamedObject.PROCEDURE:
+                panel = new CreateProcedurePanel(connection, dialog);
+                break;
+
+            case NamedObject.TRIGGERS_FOLDER_NODE:
+                type = NamedObject.TRIGGER;
+            case NamedObject.TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
+            case NamedObject.DDL_TRIGGER:
+                panel = new CreateTriggerPanel(connection, dialog, type);
+                break;
+
+            case NamedObject.EXCEPTION:
+                panel = new CreateExceptionPanel(connection, dialog);
+                break;
+
+            case NamedObject.INDEX:
+            case NamedObject.INDEXES_FOLDER_NODE:
+                panel = new CreateIndexPanel(connection, dialog);
+                break;
+
+            case NamedObject.FUNCTION:
+                panel = new CreateFunctionPanel(connection, dialog);
+                break;
+
+            case NamedObject.UDF:
+                panel = new CreateUDFPanel(connection, dialog);
+                break;
+
+            case NamedObject.PACKAGE:
+                panel = new CreatePackagePanel(connection, dialog);
+                break;
+
+            case NamedObject.USER:
+                panel = new CreateDatabaseUserPanel(connection, dialog);
+                break;
+
+            case NamedObject.TABLESPACE:
+                panel = new CreateTablespacePanel(connection, dialog);
+                break;
+
+            case NamedObject.JOB:
+                panel = new CreateJobPanel(connection, dialog);
+                break;
+
+            case NamedObject.TABLE_COLUMN:
+                panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, false);
+                break;
+
+            case NamedObject.COLUMNS_FOLDER_NODE:
+                panel = new InsertColumnPanel((DatabaseTable) node.getDatabaseObject(), dialog);
+                break;
+
+            case NamedObject.PRIMARY_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, NamedObject.PRIMARY_KEY);
+                break;
+
+            case NamedObject.FOREIGN_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, NamedObject.FOREIGN_KEY);
+                break;
+
+            case NamedObject.PRIMARY_KEYS_FOLDER_NODE:
+                panel = new EditConstraintPanel((DatabaseTable) node.getDatabaseObject(), dialog, NamedObject.PRIMARY_KEY);
+                break;
+
+            case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
+                panel = new EditConstraintPanel((DatabaseTable) node.getDatabaseObject(), dialog, NamedObject.FOREIGN_KEY);
+                break;
+
+            default:
+                GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                break;
+        }
+
+        return panel;
     }
 
-    private DatabaseView getSelectedView() {
-        return (DatabaseView) treePanel.getSelectedNamedObject();
+    private AbstractCreateObjectPanel getEditObjectPanel(DatabaseObjectNode node, BaseDialog
+            dialog, DatabaseConnection connection) {
+
+        int type = node.getType();
+        if (type == NamedObject.META_TAG) {
+            for (int i = 0; i < NamedObject.META_TYPES.length; i++) {
+                if (NamedObject.META_TYPES[i].equals(node.getMetaDataKey())) {
+                    type = i;
+                    break;
+                }
+            }
+        }
+
+        ColumnConstraint constraint;
+        AbstractCreateObjectPanel panel = null;
+        switch (type) {
+
+            case NamedObject.TABLE:
+            case NamedObject.GLOBAL_TEMPORARY:
+            case NamedObject.ROLE:
+                treePanel.valueChanged(node, connection);
+                break;
+
+            case NamedObject.SEQUENCE:
+                panel = new CreateGeneratorPanel(connection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
+                break;
+
+            case NamedObject.VIEW:
+                panel = new CreateViewPanel(connection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
+                break;
+
+            case NamedObject.PROCEDURE:
+                if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
+                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                    break;
+                }
+                panel = new CreateProcedurePanel(connection, dialog, MiscUtils.trimEnd(node.getName()));
+                break;
+
+            case NamedObject.DOMAIN:
+                panel = new CreateDomainPanel(connection, dialog, MiscUtils.trimEnd(node.getName()));
+                break;
+
+            case NamedObject.TRIGGERS_FOLDER_NODE:
+                type = NamedObject.TRIGGER;
+            case NamedObject.TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
+            case NamedObject.DDL_TRIGGER:
+                panel = new CreateTriggerPanel(connection, dialog, (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
+                break;
+
+            case NamedObject.EXCEPTION:
+                panel = new CreateExceptionPanel(connection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
+                break;
+
+            case NamedObject.INDEX:
+            case NamedObject.INDEXES_FOLDER_NODE:
+                panel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
+                break;
+
+            case NamedObject.FUNCTION:
+                if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
+                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                    break;
+                }
+                panel = new CreateFunctionPanel(connection, dialog, MiscUtils.trimEnd(node.getName()), (DefaultDatabaseFunction) node.getDatabaseObject());
+                break;
+
+            case NamedObject.UDF:
+                panel = new CreateUDFPanel(connection, dialog, node.getDatabaseObject());
+                break;
+
+            case NamedObject.PACKAGE:
+                panel = new CreatePackagePanel(connection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
+                break;
+
+            case NamedObject.USER:
+                panel = new CreateDatabaseUserPanel(connection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
+                break;
+
+            case NamedObject.TABLESPACE:
+                panel = new CreateTablespacePanel(connection, dialog, node.getDatabaseObject());
+                break;
+
+            case NamedObject.TABLE_COLUMN:
+                panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, true);
+                break;
+
+            case NamedObject.PRIMARY_KEY:
+            case NamedObject.FOREIGN_KEY:
+                constraint = (ColumnConstraint) node.getDatabaseObject();
+                panel = new EditConstraintPanel(constraint.getTable(), dialog, constraint);
+                break;
+
+            default:
+                GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
+                break;
+        }
+
+        return panel;
+    }
+
+    private String getDropQuery(DatabaseObjectNode node, int nodeType) {
+
+        if (nodeType == NamedObject.TABLE_COLUMN) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+
+            StringBuilder tabName = new StringBuilder()
+                    .append(parent.getShortName()).append(".").append(node.getShortName())
+                    .append(":").append(NamedObject.META_TYPES[nodeType])
+                    .append(":").append(table.getHost());
+
+            if (isOpen(node, tabName.toString()))
+                return null;
+
+            return SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    false
+            );
+        }
+
+        if (nodeType >= NamedObject.PRIMARY_KEY && nodeType <= NamedObject.CHECK_KEY) {
+            DatabaseObjectNode parent = (DatabaseObjectNode) node.getParent();
+            DatabaseTable table = (DatabaseTable) parent.getDatabaseObject();
+
+            return SQLUtils.generateDefaultDropColumnQuery(
+                    node.getName(),
+                    table.getName(),
+                    table.getHost().getDatabaseConnection(),
+                    true
+            );
+        }
+
+        StringBuilder tabName = new StringBuilder()
+                .append(node.getShortName())
+                .append(":").append(node.getMetaDataKey())
+                .append(":").append(((DatabaseObject) node.getUserObject()).getHost());
+
+        if (isOpen(node, tabName.toString()))
+            return null;
+
+        String type;
+        if (nodeType == NamedObject.GLOBAL_TEMPORARY)
+            type = NamedObject.META_TYPES[NamedObject.TABLE];
+        else if (nodeType == NamedObject.DATABASE_TRIGGER || nodeType == NamedObject.DDL_TRIGGER)
+            type = NamedObject.META_TYPES[NamedObject.TRIGGER];
+        else
+            type = NamedObject.META_TYPES[nodeType];
+
+        return SQLUtils.generateDefaultDropQuery(type, node.getName(), currentSelection);
+    }
+
+    private boolean isOpen(DatabaseObjectNode node, String tabName) {
+        if (GUIUtilities.getOpenFrame(tabName) != null) {
+            GUIUtilities.displayErrorMessage(bundledString("messageInUse", node.getShortName()));
+            return true;
+        }
+        return false;
+    }
+
+    private void setSelectedObjectActive(boolean isActive) {
+
+        List<TreePath> selectedObjects = isSelectedSeveralPaths() ?
+                new ArrayList<>(Arrays.asList(treePaths)) :
+                new ArrayList<>(Collections.singletonList(currentPath));
+
+        try {
+            boolean firstErrorExists = false;
+            StringBuilder error = new StringBuilder();
+
+            for (TreePath treePath : selectedObjects) {
+                DatabaseObjectNode node = (DatabaseObjectNode) treePath.getLastPathComponent();
+                String query = SQLUtils.generateAlterActive(NamedObject.META_TYPES[node.getType()], node.getName(), isActive);
+
+                querySender = new DefaultStatementExecutor(currentSelection, false);
+                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
+                treePanel.reloadPath(treePath);
+
+                if (result.isException() && !firstErrorExists) {
+                    error.append(result.getErrorMessage());
+                    firstErrorExists = true;
+                }
+            }
+
+            querySender.execute(QueryTypes.COMMIT, "");
+            if (error.length() > 0)
+                GUIUtilities.displayErrorMessage(error.toString());
+
+        } catch (SQLException ex) {
+            GUIUtilities.displayErrorMessage(ex.getMessage());
+
+        } finally {
+            querySender.releaseResources();
+        }
+    }
+
+    private void selectPaths(boolean fromParent) {
+
+        TreePath[] selectionPaths = treePanel.getTree().getSelectionPaths();
+        if (selectionPaths == null)
+            return;
+
+        TreeNode node = (DefaultMutableTreeNode) selectionPaths[0].getLastPathComponent();
+        if (fromParent)
+            node = node.getParent();
+
+        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[node.getChildCount()];
+        for (int i = 0; i < node.getChildCount(); i++)
+            if (node.getChildAt(i) instanceof DefaultMutableTreeNode)
+                nodes[i] = (DefaultMutableTreeNode) node.getChildAt(i);
+
+        treePanel.getTree().selectNodes(nodes);
+    }
+
+    private void recompileObjects(String key, boolean onlyInvalid) {
+
+        DatabaseObjectNode objectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (objectNode != null && objectNode.getType() != NamedObject.META_TAG)
+            objectNode = (DatabaseObjectNode) objectNode.getParent();
+
+        if (objectNode == null)
+            return;
+
+        int subType = ((DefaultDatabaseMetaTag) objectNode.getDatabaseObject()).getSubType();
+        String confirmMessage = bundledString(key, Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[subType]));
+        if (GUIUtilities.displayConfirmDialog(confirmMessage) != JOptionPane.YES_OPTION)
+            return;
+
+        AnaliseRecompileDialog recompileDialog = new AnaliseRecompileDialog(
+                bundledString("Analise"),
+                true,
+                objectNode,
+                onlyInvalid
+        );
+        recompileDialog.display();
+
+        if (recompileDialog.success) {
+            new ExecuteQueryDialog(
+                    bundledString("Recompile"),
+                    recompileDialog.sb,
+                    currentSelection,
+                    true,
+                    "^",
+                    true,
+                    false
+            ).display();
+        }
+    }
+
+    private void refreshIndexStatistic(boolean allIndexes) {
+
+        DatabaseObjectNode objectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        if (objectNode != null && objectNode.getType() != NamedObject.META_TAG)
+            objectNode = (DatabaseObjectNode) objectNode.getParent();
+
+        if (objectNode == null)
+            return;
+
+        String confirmMessage = bundledString(allIndexes ? "recompute-all-message" : "recompute-message");
+        if (GUIUtilities.displayConfirmDialog(confirmMessage) != JOptionPane.YES_OPTION)
+            return;
+
+        List<Object> selectedObjects = allIndexes ?
+                new ArrayList<>(objectNode.getChildObjects()) :
+                isSelectedSeveralPaths() ?
+                        new ArrayList<>(Arrays.stream(treePaths).map(TreePath::getLastPathComponent).collect(Collectors.toList())) :
+                        new ArrayList<>(Collections.singletonList(currentPath.getLastPathComponent()));
+
+        StringBuilder sb = new StringBuilder();
+        for (Object object : selectedObjects) {
+            DatabaseObjectNode node = (DatabaseObjectNode) object;
+            sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), currentSelection)).append(";\n");
+            node.getDatabaseObject().reset();
+        }
+
+        new ExecuteQueryDialog(
+                bundledString("Recompute"),
+                sb.toString(),
+                currentSelection,
+                true,
+                ";",
+                true,
+                false
+        ).display();
+    }
+
+    // ---
+
+    private DatabaseTableObject getSelectedTableObject() {
+        return (DatabaseTableObject) treePanel.getSelectedNamedObject();
     }
 
     private StatementToEditorWriter getStatementWriter() {
-        if (statementWriter == null) {
+        if (statementWriter == null)
             statementWriter = new StatementToEditorWriter();
-        }
         return statementWriter;
     }
 
-    private void statementToEditor(DatabaseConnection databaseConnection, String statement) {
-        getStatementWriter().writeToOpenEditor(databaseConnection, statement);
-    }
-
-    public void tableSelectStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getSelectSQLText());
-    }
-
-    public void tableInsertStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getInsertSQLText());
-    }
-
-    public void tableUpdateStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getUpdateSQLText());
-    }
-
-    public void createTableStatement(ActionEvent e) {
-        try {
-            statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedTable().getCreateSQLText());
-        } catch (DataSourceException dse) {
-            handleException(dse);
-        }
-    }
-
-    public void viewSelectStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getSelectSQLText());
-    }
-
-    public void viewInsertStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getInsertSQLText());
-    }
-
-    public void viewUpdateStatement(ActionEvent e) {
-        statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getUpdateSQLText());
-    }
-
-    public void createViewStatement(ActionEvent e) {
-        try {
-            statementToEditor(treePanel.getSelectedDatabaseConnection(), getSelectedView().getCreateSQLText());
-        } catch (DataSourceException dse) {
-            handleException(dse);
-        }
-    }
-
-    private void handleException(Throwable e) {
-        treePanel.handleException(e);
+    protected void setTreePaths(TreePath[] treePaths) {
+        this.treePaths = treePaths;
+        if (treePaths.length > 0)
+            this.currentPath = treePaths[0];
     }
 
     protected Object getCurrentPathComponent() {
-        if (hasCurrentPath()) {
-            return currentPath.getLastPathComponent();
-        }
-        return null;
+        return hasCurrentPath() ? currentPath.getLastPathComponent() : null;
     }
 
     protected boolean hasCurrentPath() {
-        return (currentPath != null);
-    }
-
-    protected boolean hasCurrentSelection() {
-        return (currentSelection != null);
-    }
-
-    protected DatabaseConnection getCurrentSelection() {
-        return currentSelection;
+        return currentPath != null;
     }
 
     protected void setCurrentSelection(DatabaseConnection currentSelection) {
@@ -953,232 +765,20 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         this.currentPath = currentPath;
     }
 
-    protected void setTreePaths(TreePath[] treePaths) {
-        this.treePaths = treePaths;
-        if (treePaths.length > 0) {
-            this.currentPath = treePaths[0];
-        }
-    }
-
     protected void setSelectedSeveralPaths(boolean selectedSeveralPaths) {
         this.selectedSeveralPaths = selectedSeveralPaths;
     }
 
-    protected TreePath getCurrentPath() {
-        return currentPath;
-    }
-
-    protected TreePath[] getTreePaths() {
-        return treePaths;
-    }
-
-    protected boolean getSelectedSeveralPaths() {
+    protected boolean isSelectedSeveralPaths() {
         return selectedSeveralPaths;
     }
 
-    protected void showDialogCreateObject(AbstractCreateObjectPanel panel, BaseDialog dialog) {
-        panel.setTreePanel(treePanel);
-        panel.setCurrentPath(currentPath);
-        dialog.addDisplayComponentWithEmptyBorder(panel);
-        dialog.display();
-    }
+    // ---
 
-    public void active(ActionEvent e) throws SQLException {
-        try {
-            String query;
-            if (selectedSeveralPaths) {
-                boolean firstErrorExists = false;
-                StringBuilder error = new StringBuilder();
-
-                for (int i = 0; i < treePaths.length; i++) {
-                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                    if (splitters[1].contains("TRIGGER"))
-                        splitters[1] = "TRIGGER";
-                    query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
-                    querySender = new DefaultStatementExecutor(currentSelection, false);
-                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
-                    treePanel.reloadPath(treePaths[i]);
-                    if (result.isException() && !firstErrorExists) {
-                        error.append(result.getErrorMessage());
-                        firstErrorExists = true;
-                    }
-                }
-                querySender.execute(QueryTypes.COMMIT, "");
-                if (error.length() > 0)
-                    GUIUtilities.displayErrorMessage(error.toString());
-
-            } else {
-                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
-                if (splitters[1].contains("TRIGGER"))
-                    splitters[1] = "TRIGGER";
-                query = "ALTER " + splitters[1] + " " + splitters[0] + " ACTIVE";
-                querySender = new DefaultStatementExecutor(currentSelection, false);
-                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
-                querySender.execute(QueryTypes.COMMIT, "");
-                if (result.isException()) {
-                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
-                }
-                treePanel.reloadPath(currentPath);
-            }
-        } catch (SQLException error) {
-            GUIUtilities.displayErrorMessage(error.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
-    }
-
-
-    public void inactive(ActionEvent e) {
-        try {
-            String query;
-            boolean firstErrorExists = false;
-            if (selectedSeveralPaths) {
-                StringBuilder error = new StringBuilder();
-
-                for (int i = 0; i < treePaths.length; i++) {
-                    String[] splitters = treePaths[i].getLastPathComponent().toString().split(":");
-                    if (splitters[1].contains("TRIGGER"))
-                        splitters[1] = "TRIGGER";
-                    query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
-
-                    querySender = new DefaultStatementExecutor(currentSelection, false);
-                    SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
-                    treePanel.reloadPath(treePaths[i]);
-                    if (result.isException() && !firstErrorExists) {
-                        error.append(result.getErrorMessage());
-                        firstErrorExists = true;
-                    }
-                }
-                querySender.execute(QueryTypes.COMMIT, "");
-                if (error.length() > 0)
-                    GUIUtilities.displayErrorMessage(error.toString());
-
-            } else {
-                String[] splitters = currentPath.getLastPathComponent().toString().split(":");
-                if (splitters[1].contains("TRIGGER"))
-                    splitters[1] = "TRIGGER";
-                query = "ALTER " + splitters[1] + " " + splitters[0] + " INACTIVE";
-                querySender = new DefaultStatementExecutor(currentSelection, false);
-                SqlStatementResult result = querySender.execute(QueryTypes.ALTER_OBJECT, query);
-
-                if (result.isException()) {
-                    GUIUtilities.displayErrorMessage(result.getErrorMessage());
-                }
-                querySender.execute(QueryTypes.COMMIT, "");
-                treePanel.reloadPath(currentPath);
-            }
-
-        } catch (SQLException error) {
-            GUIUtilities.displayErrorMessage(error.getMessage());
-        } finally {
-            querySender.releaseResources();
-        }
-    }
-
-    public void selectAllChildren(ActionEvent e) {
-
-        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
-        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
-        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
-        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[node.getChildCount()];
-        for (int i = 0; i < node.getChildCount(); i++) {
-
-            if (node.getChildAt(i) instanceof DefaultMutableTreeNode) {
-                nodes[i] = (DefaultMutableTreeNode) node.getChildAt(i);
-            }
-        }
-        treePanel.getTree().selectNodes(nodes);
-    }
-
-    public void selectAll(ActionEvent e) {
-
-        TreePath currentPath = treePanel.getTree().getSelectionPaths()[0];
-        DefaultMutableTreeNode currentPathComponent = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
-        DatabaseObjectNode node = (DatabaseObjectNode) currentPathComponent;
-
-        TreeNode parent = node.getParent();
-        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[parent.getChildCount()];
-        for (int i = 0; i < parent.getChildCount(); i++) {
-
-            if (parent.getChildAt(i) instanceof DefaultMutableTreeNode) {
-                nodes[i] = (DefaultMutableTreeNode) parent.getChildAt(i);
-            }
-        }
-        treePanel.getTree().selectNodes(nodes);
-    }
-
-    private static final String DELIMITER = "<RedExpert-Delimiter>";
-
-    public void recompileAll(ActionEvent e) {
-        DatabaseConnection dc = currentSelection;
-        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        if (databaseObjectNode != null)
-            if (databaseObjectNode.getType() != NamedObject.META_TAG)
-                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
-        if (databaseObjectNode != null) {
-            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-message",
-                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
-                    == JOptionPane.YES_OPTION) {
-                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, false);
-                ard.display();
-                if (ard.success) {
-                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
-                    eqd.display();
-                }
-            }
-        }
-    }
-
-    public void recompileInvalid(ActionEvent e) {
-        DatabaseConnection dc = currentSelection;
-        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        if (databaseObjectNode != null)
-            if (databaseObjectNode.getType() != NamedObject.META_TAG)
-                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
-        if (databaseObjectNode != null) {
-            if (GUIUtilities.displayConfirmDialog(bundledString("recompile-invalid-message",
-                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[((DefaultDatabaseMetaTag) databaseObjectNode.getDatabaseObject()).getSubType()])))
-                    == JOptionPane.YES_OPTION) {
-                AnaliseRecompileDialog ard = new AnaliseRecompileDialog(bundledString("Analise"), true, databaseObjectNode, true);
-                ard.display();
-                if (ard.success) {
-                    ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompile"), ard.sb, dc, true, "^", true, false);
-                    eqd.display();
-                }
-            }
-        }
-    }
-
-    public void reselectivity(ActionEvent e) {
-        DatabaseConnection dc = currentSelection;
-        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        if (databaseObjectNode.getDatabaseObject() instanceof DefaultDatabaseIndex) {
-            String query = "SET STATISTICS INDEX " + MiscUtils.getFormattedObject(databaseObjectNode.getName(), dc) + ";";
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), query, dc, true, ";", false, false);
-            eqd.display();
-            databaseObjectNode.getDatabaseObject().reset();
-        }
-    }
-
-    public void reselectivityAll(ActionEvent e) {
-        DatabaseConnection dc = currentSelection;
-        DatabaseObjectNode databaseObjectNode = (DatabaseObjectNode) currentPath.getLastPathComponent();
-        if (databaseObjectNode != null)
-            if (databaseObjectNode.getType() != NamedObject.META_TAG)
-                databaseObjectNode = (DatabaseObjectNode) databaseObjectNode.getParent();
-        if (databaseObjectNode != null && GUIUtilities.displayConfirmDialog(bundledString("recompute-message")) == JOptionPane.YES_OPTION) {
-            StringBuilder sb = new StringBuilder();
-            for (DatabaseObjectNode node : databaseObjectNode.getChildObjects()) {
-                sb.append("SET STATISTICS INDEX ").append(MiscUtils.getFormattedObject(node.getName(), dc)).append(";\n");
-                node.getDatabaseObject().reset();
-            }
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(bundledString("Recompute"), sb.toString(), dc, true, ";", true, false);
-            eqd.display();
-        }
-    }
-
-    public void onlineTableValidation(ActionEvent e) {
-        new TableValidationCommand().validateTableAndShowResult(currentSelection, getSelectedTable().getName());
+    @Override
+    protected void postActionPerformed(ActionEvent e) {
+        currentSelection = null;
+        currentPath = null;
     }
 
 }

@@ -35,305 +35,234 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.log.Log;
-import org.executequery.repository.KeywordRepository;
-import org.executequery.repository.spi.KeywordRepositoryImpl;
 
 import java.sql.*;
 import java.util.*;
 
 public class AutoCompleteSelectionsFactory {
 
-    private static final String DATABASE_TABLE_DESCRIPTION = "Database Table";
-
-    private static final String DATABASE_FUNCTION_DESCRIPTION = "Database Function";
-
-    private static final String DATABASE_PROCEDURE_DESCRIPTION = "Database Procedure";
-    private static final String DATABASE_PACKAGE_DESCRIPTION = "Database Package";
-
-    private static final String DATABASE_TABLE_VIEW = "Database View";
-
-    private static final String DATABASE_COLUMN_DESCRIPTION = "Database Column";
-
-    private static final String VARIABLE_DESCRIPTION = "Variable";
-    private static final String PARAMETER_DESCRIPTION = "Parameter";
+    private static final String VARIABLE = "Variable";
+    private static final String PARAMETER = "Parameter";
+    private static final String DATABASE_VIEW = "Database View";
+    private static final String DATABASE_TABLE = "Database Table";
+    private static final String SYSTEM_FUNCTION = "System Function";
+    private static final String DATABASE_COLUMN = "Database Column";
+    private static final String DATABASE_PACKAGE = "Database Package";
+    private static final String DATABASE_FUNCTION = "Database Function";
+    private static final String DATABASE_PROCEDURE = "Database Procedure";
+    private static final String DATABASE_DEFINED_KEYWORD = "Database Defined Keyword";
 
     private TreeSet<String> variables;
     private TreeSet<String> parameters;
-
-    private static final String DATABASE_SYSTEM_FUNCTION_DESCRIPTION = "System Function";
-
     private final AutoCompletePopupProvider provider;
-
-    private List<AutoCompleteListItem> tables;
 
     public AutoCompleteSelectionsFactory(AutoCompletePopupProvider provider) {
         super();
         this.provider = provider;
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
-                      QueryEditor queryEditor) {
-
-        tables = new ArrayList<AutoCompleteListItem>();
-
-        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
-        if (autoCompleteKeywords) {
-
-            addToProvider(listSelections);
-        }
-
-        if (databaseHost != null && databaseHost.isConnected()) {
-
-            if (autoCompleteKeywords) {
-
-                addDatabaseDefinedKeywords(databaseHost, listSelections);
-                addFirebirdDefinedKeywords(databaseHost, listSelections);
-                addToProvider(listSelections);
-                queryEditor.updateSQLKeywords();
-            }
-
-            if (autoCompleteSchema) {
-
-                databaseTablesForHost(databaseHost);
-//                databaseColumnsForTables(databaseHost, tables);
-                databaseExecutablesForHost(databaseHost);
-            }
-
-        }
-
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, QueryEditor queryEditor) {
+        build(databaseHost, autoCompleteKeywords, autoCompleteObjects, (Object) queryEditor);
     }
 
-    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteSchema,
-                      SQLTextArea queryEditor) {
+    public void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, SQLTextArea queryEditor) {
+        build(databaseHost, autoCompleteKeywords, autoCompleteObjects, (Object) queryEditor);
+    }
 
-        tables = new ArrayList<AutoCompleteListItem>();
+    private void build(DatabaseHost databaseHost, boolean autoCompleteKeywords, boolean autoCompleteObjects, Object editor) {
 
-        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
-        if (autoCompleteKeywords) {
-
+        List<AutoCompleteListItem> listSelections = new ArrayList<>();
+        if (autoCompleteKeywords)
             addToProvider(listSelections);
-        }
 
         if (databaseHost != null && databaseHost.isConnected()) {
 
             if (autoCompleteKeywords) {
-
                 addDatabaseDefinedKeywords(databaseHost, listSelections);
                 databaseSystemFunctionsForHost(databaseHost, listSelections);
                 addFirebirdDefinedKeywords(databaseHost, listSelections);
                 addToProvider(listSelections);
-                queryEditor.setSQLKeywords(true);
+
+                if (editor instanceof SQLTextArea)
+                    ((SQLTextArea) editor).setSQLKeywords(true);
+                else if (editor instanceof QueryEditor)
+                    ((QueryEditor) editor).updateSQLKeywords();
             }
 
-            if (autoCompleteSchema) {
-
+            if (autoCompleteObjects) {
                 databaseTablesForHost(databaseHost);
-//                databaseColumnsForTables(databaseHost, tables);
                 databaseExecutablesForHost(databaseHost);
             }
+
             addParametersToProvider();
             addVariablesToProvider();
         }
-
     }
 
     private void addToProvider(List<AutoCompleteListItem> listSelections) {
-
         provider.addListItems(listSelections);
         listSelections.clear();
     }
 
     public List<AutoCompleteListItem> buildKeywords(DatabaseHost databaseHost, boolean autoCompleteKeywords) {
 
-        List<AutoCompleteListItem> listSelections = new ArrayList<AutoCompleteListItem>();
-        if (autoCompleteKeywords) {
-            addUserDefinedKeywords(listSelections);
+        if (!autoCompleteKeywords)
+            return new ArrayList<>();
 
-            if (databaseHost != null && databaseHost.isConnected()) {
-                addDatabaseDefinedKeywords(databaseHost, listSelections);
-                databaseSystemFunctionsForHost(databaseHost, listSelections);
-
-            }
-
-            Collections.sort(listSelections, new AutoCompleteListItemComparator());
+        List<AutoCompleteListItem> listSelections = new ArrayList<>();
+        if (databaseHost != null && databaseHost.isConnected()) {
+            addDatabaseDefinedKeywords(databaseHost, listSelections);
+            databaseSystemFunctionsForHost(databaseHost, listSelections);
         }
 
+        listSelections.sort(new AutoCompleteListItemComparator());
         return listSelections;
     }
 
     private void addVariablesToProvider() {
-        if(variables!=null) {
+        if (variables != null) {
             trace("Building autocomplete variables list");
-            List<String> tableNames = new ArrayList<String>();
-            tableNames.addAll(variables);
-            List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-            addTablesToProvider(VARIABLE_DESCRIPTION, AutoCompleteListItemType.VARIABLE, tableNames, list);
-        }
-    }
-    private void addParametersToProvider() {
-        if(parameters!=null) {
-            trace("Building autocomplete variables list");
-            List<String> tableNames = new ArrayList<String>();
-            tableNames.addAll(parameters);
-            List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
-            addTablesToProvider(PARAMETER_DESCRIPTION, AutoCompleteListItemType.PARAMETER, tableNames, list);
+
+            addTablesToProvider(
+                    VARIABLE,
+                    AutoCompleteListItemType.VARIABLE,
+                    new ArrayList<>(variables),
+                    new ArrayList<>()
+            );
         }
     }
 
+    private void addParametersToProvider() {
+        if (parameters != null) {
+            trace("Building autocomplete variables list");
+
+            addTablesToProvider(
+                    PARAMETER,
+                    AutoCompleteListItemType.PARAMETER,
+                    new ArrayList<>(parameters),
+                    new ArrayList<>()
+            );
+        }
+    }
 
     private void databaseExecutablesForHost(DatabaseHost databaseHost) {
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.FUNCTION], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.UDF], DATABASE_FUNCTION_DESCRIPTION, AutoCompleteListItemType.DATABASE_FUNCTION);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PROCEDURE], DATABASE_PROCEDURE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PROCEDURE);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_PACKAGE], DATABASE_PACKAGE_DESCRIPTION, AutoCompleteListItemType.DATABASE_PACKAGE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.FUNCTION], DATABASE_FUNCTION, AutoCompleteListItemType.DATABASE_FUNCTION);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.UDF], DATABASE_FUNCTION, AutoCompleteListItemType.DATABASE_FUNCTION);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PROCEDURE], DATABASE_PROCEDURE, AutoCompleteListItemType.DATABASE_PROCEDURE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.PACKAGE], DATABASE_PACKAGE, AutoCompleteListItemType.DATABASE_PACKAGE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_PACKAGE], DATABASE_PACKAGE, AutoCompleteListItemType.DATABASE_PACKAGE);
     }
 
     private void databaseTablesForHost(DatabaseHost databaseHost) {
 
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.TABLE], DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.VIEW], DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
-        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY], DATABASE_TABLE_DESCRIPTION, AutoCompleteListItemType.DATABASE_TABLE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.TABLE], DATABASE_TABLE, AutoCompleteListItemType.DATABASE_TABLE);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.VIEW], DATABASE_VIEW, AutoCompleteListItemType.DATABASE_VIEW);
+        databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY], DATABASE_TABLE, AutoCompleteListItemType.DATABASE_TABLE);
 
         DatabaseConnection databaseConnection = databaseHost.getDatabaseConnection();
         Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
         DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
         Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-        if (driver.getClass().getName().contains("FBDriver")) {
-            databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE], DATABASE_TABLE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
-        }
+        if (driver.getClass().getName().contains("FBDriver"))
+            databaseObjectsForHost(databaseHost, NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE], DATABASE_VIEW, AutoCompleteListItemType.DATABASE_TABLE);
     }
 
     private void databaseSystemFunctionsForHost(DatabaseHost databaseHost, List<AutoCompleteListItem> listSelections) {
-
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - SYSTEM_FUNCTION");
 
-        ResultSet rs = null;
         DatabaseMetaData databaseMetaData = databaseHost.getDatabaseMetaData();
         TreeSet<String> keywords = databaseHost.getDatabaseConnection().getKeywords();
 
         try {
-
-            List<String> tableNames = new ArrayList<String>();
-
+            List<String> tableNames = new ArrayList<>();
             extractNames(tableNames, databaseMetaData.getStringFunctions());
             extractNames(tableNames, databaseMetaData.getNumericFunctions());
             extractNames(tableNames, databaseMetaData.getTimeDateFunctions());
-            addKeywordsFromList(tableNames, listSelections, DATABASE_SYSTEM_FUNCTION_DESCRIPTION, AutoCompleteListItemType.SYSTEM_FUNCTION, keywords);
+
+            addKeywordsFromList(
+                    tableNames,
+                    listSelections,
+                    SYSTEM_FUNCTION,
+                    AutoCompleteListItemType.SYSTEM_FUNCTION,
+                    keywords
+            );
 
         } catch (SQLException e) {
-
             error("Values not available for type SYSTEM_FUNCTION - driver returned: " + e.getMessage());
 
         } finally {
-
-            releaseResources(rs);
             trace("Finished autocomplete object list using [ " + databaseHost.getName() + " ] for type - SYSTEM_FUNCTION");
         }
-
     }
 
     private void extractNames(List<String> tableNames, String functions) {
-
-        if (StringUtils.isNotEmpty(functions)) {
-
-            String[] names = functions.split(",");
-            Collections.addAll(tableNames, names);
-
-        }
+        if (StringUtils.isNotEmpty(functions))
+            Collections.addAll(tableNames, functions.split(","));
     }
 
-    private static final int INCREMENT = 5;
-
-    private void databaseObjectsForHost(DatabaseHost databaseHost, String type,
-                                        String databaseObjectDescription, AutoCompleteListItemType autocompleteType) {
-
+    private void databaseObjectsForHost(DatabaseHost databaseHost, String type, String description, AutoCompleteListItemType itemType) {
         trace("Building autocomplete object list using [ " + databaseHost.getName() + " ] for type - " + type);
-        List<String> tableNames = new ArrayList<String>();
-        List<AutoCompleteListItem> list = new ArrayList<AutoCompleteListItem>();
+
+        List<String> tableNames = new ArrayList<>();
+        List<AutoCompleteListItem> list = new ArrayList<>();
         DatabaseHostNode hostNode = (DatabaseHostNode) ConnectionsTreePanel.getPanelFromBrowser().getHostNode(databaseHost.getDatabaseConnection());
-        List<DatabaseObjectNode> tables = hostNode.getAllDBObjects(type);
-        for (DatabaseObjectNode table : tables) {
+
+        for (DatabaseObjectNode table : hostNode.getAllDBObjects(type))
             tableNames.add(table.getName());
-        }
-        addTablesToProvider(databaseObjectDescription, autocompleteType, tableNames, list);
 
-
+        addTablesToProvider(description, itemType, tableNames, list);
     }
 
-    private List<AutoCompleteListItem> tablesToAutoCompleteListItems(
-            List<AutoCompleteListItem> list, List<String> tables,
-            String databaseObjectDescription, AutoCompleteListItemType autoCompleteListItemType) {
+    private List<AutoCompleteListItem> tablesToAutoCompleteListItems(List<AutoCompleteListItem> list, List<String> tables,
+                                                                     String description, AutoCompleteListItemType itemType) {
 
-        for (String table : tables) {
-
-            list.add(new AutoCompleteListItem(table,
-                    table, databaseObjectDescription, autoCompleteListItemType));
-        }
+        for (String table : tables)
+            list.add(new AutoCompleteListItem(table, table, description, itemType));
 
         return list;
     }
 
 
     private void addDatabaseDefinedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list) {
+        List<String> arrayList = new ArrayList<>();
+        Collections.addAll(arrayList, databaseHost.getDatabaseKeywords());
 
-        String[] keywords = databaseHost.getDatabaseKeywords();
-        List<String> asList = new ArrayList<String>();
-
-        Collections.addAll(asList, keywords);
-
-        addKeywordsFromList(asList, list,
-                "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
+        addDatabaseDefinedKeywordsFromList(arrayList, list);
     }
 
     private void addFirebirdDefinedKeywords(DatabaseHost databaseHost, List<AutoCompleteListItem> list) {
-        List<String> keywords = new ArrayList<>();
-        keywords.addAll(databaseHost.getDatabaseConnection().getKeywords());
-        addKeywordsFromList(keywords,
-                list, "Database Defined Keyword", AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD);
+        addDatabaseDefinedKeywordsFromList(new ArrayList<>(databaseHost.getDatabaseConnection().getKeywords()), list);
     }
 
+    private void addTablesToProvider(String description, AutoCompleteListItemType itemType, List<String> tableNames, List<AutoCompleteListItem> itemList) {
 
-    private void addUserDefinedKeywords(List<AutoCompleteListItem> list) {
-
-        addKeywordsFromList(keywords().getUserDefinedSQL(),
-                list, "User Defined Keyword", AutoCompleteListItemType.USER_DEFINED_KEYWORD);
-    }
-
-    private void addTablesToProvider(String databaseObjectDescription,
-                                     AutoCompleteListItemType autocompleteType, List<String> tableNames,
-                                     List<AutoCompleteListItem> list) {
-
-        List<AutoCompleteListItem> autoCompleteListItems =
-                tablesToAutoCompleteListItems(list, tableNames, databaseObjectDescription, autocompleteType);
+        List<AutoCompleteListItem> autoCompleteListItems = tablesToAutoCompleteListItems(
+                itemList,
+                tableNames,
+                description,
+                itemType
+        );
 
         provider.addListItems(autoCompleteListItems);
-        tables.addAll(autoCompleteListItems);
     }
 
-    private void addKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list,
-                                     String description, AutoCompleteListItemType autoCompleteListItemType) {
-
-        for (String keyword : keywords) {
-            list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType));
-        }
-
+    private void addDatabaseDefinedKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list) {
+        addKeywordsFromList(keywords, list, DATABASE_DEFINED_KEYWORD, AutoCompleteListItemType.DATABASE_DEFINED_KEYWORD, new TreeSet<>());
     }
 
-    private void addKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list,
-                                     String description, AutoCompleteListItemType autoCompleteListItemType, TreeSet<String> checks) {
-        for (String keyword : keywords) {
-            if (!checks.contains(keyword)) {
-                list.add(new AutoCompleteListItem(keyword, keyword, description, autoCompleteListItemType));
-            }
-        }
+    private void addKeywordsFromList(List<String> keywords, List<AutoCompleteListItem> list, String description,
+                                     AutoCompleteListItemType itemType, TreeSet<String> checks) {
 
-    }
-
-    private KeywordRepository keywords() {
-
-        return new KeywordRepositoryImpl();
+        keywords.stream()
+                .filter(keyword -> !checks.contains(keyword))
+                .map(keyword -> new AutoCompleteListItem(
+                        keyword,
+                        keyword,
+                        description,
+                        itemType
+                ))
+                .forEach(list::add);
     }
 
     public List<AutoCompleteListItem> buildItemsForTable(DatabaseHost databaseHost, String tableString) {
@@ -364,24 +293,28 @@ public class AutoCompleteSelectionsFactory {
             return new ArrayList<>();
 
         List<AutoCompleteListItem> list = new ArrayList<>();
-        for (NamedObject col : table.getObjects()) {
+        for (NamedObject object : table.getObjects()) {
 
-            String description = DATABASE_COLUMN_DESCRIPTION;
-            AutoCompleteListItemType colType = AutoCompleteListItemType.DATABASE_TABLE_COLUMN;
+            String description;
+            AutoCompleteListItemType colType;
 
-            if (col instanceof DefaultDatabaseProcedure) {
-                description = DATABASE_PROCEDURE_DESCRIPTION;
+            if (object instanceof DefaultDatabaseProcedure) {
+                description = DATABASE_PROCEDURE;
                 colType = AutoCompleteListItemType.DATABASE_PROCEDURE;
-            }
-            if (col instanceof DefaultDatabaseFunction) {
-                description = DATABASE_FUNCTION_DESCRIPTION;
+
+            } else if (object instanceof DefaultDatabaseFunction) {
+                description = DATABASE_FUNCTION;
                 colType = AutoCompleteListItemType.DATABASE_FUNCTION;
+
+            } else {
+                description = DATABASE_COLUMN;
+                colType = AutoCompleteListItemType.DATABASE_TABLE_COLUMN;
             }
 
             list.add(new AutoCompleteListItem(
-                    col.getName(),
+                    object.getName(),
                     tableString,
-                    col.getDescription(),
+                    object.getDescription(),
                     description,
                     colType
             ));
@@ -389,29 +322,6 @@ public class AutoCompleteSelectionsFactory {
 
         return list;
     }
-
-    static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
-
-        public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
-
-            return o1.getValue().toUpperCase().compareTo(o2.getValue().toUpperCase());
-        }
-
-    }
-
-    private void releaseResources(ResultSet rs) {
-        try {
-            if (rs != null) {
-                Statement st = rs.getStatement();
-                if(st!=null)
-                    if(!st.isClosed())
-                        st.close();
-                //rs.close();
-            }
-        } catch (SQLException sqlExc) {
-        }
-    }
-
 
     public void setVariables(TreeSet<String> variables) {
         this.variables = variables;
@@ -422,22 +332,20 @@ public class AutoCompleteSelectionsFactory {
     }
 
     private void error(String message) {
-
-        Log.error(message);
-    }
-
-    @SuppressWarnings("unused")
-    private void warning(String message) {
-
         Log.error(message);
     }
 
     private void trace(String message) {
-
         Log.trace(message);
     }
 
+    private static class AutoCompleteListItemComparator implements Comparator<AutoCompleteListItem> {
+
+        @Override
+        public int compare(AutoCompleteListItem o1, AutoCompleteListItem o2) {
+            return o1.getValue().toUpperCase().compareTo(o2.getValue().toUpperCase());
+        }
+
+    } // AutoCompleteListItemComparator class
 
 }
-
-

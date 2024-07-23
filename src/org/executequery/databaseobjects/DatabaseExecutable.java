@@ -33,20 +33,6 @@ import java.util.List;
 public interface DatabaseExecutable extends DatabaseObject {
 
     /**
-     * The executable (procedure) type.
-     *
-     * @return the proc type
-     */
-    short getExecutableType();
-
-    /**
-     * Indicates whether this executable object has any parameters.
-     *
-     * @return true | false
-     */
-    boolean hasParameters();
-
-    /**
      * Adds the specified values as a single parameter to this object.
      */
     ProcedureParameter addParameter(String name, int type, int dataType, String sqlType, int size, int nullable);
@@ -61,23 +47,5 @@ public interface DatabaseExecutable extends DatabaseObject {
      */
     ProcedureParameter[] getParametersArray() throws DataSourceException;
 
-    boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException;
-
-    boolean supportCatalogInFunctionOrProcedureCalls() throws DataSourceException;
-
-    boolean supportSchemaInFunctionOrProcedureCalls() throws DataSourceException;
-
     String getSourceCode();
 }
-
-
-
-
-
-
-
-
-
-
-
-

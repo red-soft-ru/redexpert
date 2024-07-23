@@ -4,6 +4,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseException;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
@@ -157,7 +158,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         gbc.insets.top = 0;
 
         setHeaderText("DatabaseException");
-        setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.EXCEPTION_IMAGE));
         setContentPanel(base);
         cache = new HashMap();
 
@@ -191,7 +192,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(currentObjectView);
         objectNameLabel.setText(bundleString("ExceptionName"));
         setHeaderText(bundleString("DatabaseException"));
-        setHeaderIcon(GUIUtilities.loadIcon("exception16.png", true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.EXCEPTION_IMAGE));
 
         try {
             exceptionNameField.setText(exception.getName());
@@ -214,7 +215,7 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Exception Name:");
         setHeaderText(bundleString("DatabaseException"));
-        setHeaderIcon("exception16.png");
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.EXCEPTION_IMAGE));
 
         if (exception != null) {
             exceptionNameField.setText(exception.getName());
@@ -227,11 +228,6 @@ public class BrowserExceptionPanel extends AbstractFormObjectViewPanel {
             exceptionNameField.setText(metaObject.getName());
         }
 
-    }
-
-    private void setHeaderIcon(String icon) {
-
-        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
     }
 
 }

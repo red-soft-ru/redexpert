@@ -20,11 +20,11 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.actions.ActionUtilities;
-import org.underworldlabs.swing.actions.ReflectiveAction;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.toolbar.ButtonComparator;
 import org.underworldlabs.swing.toolbar.ToolBarButton;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
@@ -36,8 +36,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.Collections;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 /**
@@ -45,138 +45,101 @@ import java.util.Vector;
  */
 public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
-    private Vector selections;
+    private ToolBarWrapper toolBar;
+    private final String toolBarName;
+    private Vector<ToolBarButton> selections;
 
     private JTable table;
-
     private ToolBarButtonModel toolButtonModel;
-    private static IconCellRenderer iconRenderer;
-    private static NameCellRenderer nameRenderer;
 
     private JButton moveUpButton;
     private JButton moveDownButton;
     private JButton addSeparatorButton;
     private JButton removeSeparatorButton;
 
-    /**
-     * The tool bar name
-     */
-    private String toolBarName;
-    /**
-     * The tool bar wrapper
-     */
-    private ToolBarWrapper toolBar;
-
-    public PropertiesToolBar(String toolBarName) {
+    public PropertiesToolBar(PropertiesPanel parent, String toolBarName) {
+        super(parent);
         this.toolBarName = toolBarName;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
+        checkEnableButtons();
     }
 
-    private void jbInit() {
-        ReflectiveAction action = new ReflectiveAction(this);
+    private void init() {
 
-        moveUpButton = ActionUtilities.createButton(
-                action,
-                GUIUtilities.loadIcon("Up16.png", true),
-                null,
-                "moveUp");
+        moveUpButton = WidgetFactory.createButton(
+                "moveUpButton",
+                IconManager.getIcon("icon_move_up"),
+                e -> moveButtonUp()
+        );
 
-        moveDownButton = ActionUtilities.createButton(
-                action,
-                GUIUtilities.loadIcon("Down16.png", true),
-                null,
-                "moveDown");
+        moveDownButton = WidgetFactory.createButton(
+                "moveDownButton",
+                IconManager.getIcon("icon_move_down"),
+                e -> moveButtonDown()
+        );
 
-        moveUpButton.setMargin(Constants.EMPTY_INSETS);
-        moveDownButton.setMargin(Constants.EMPTY_INSETS);
-
-        addSeparatorButton = ActionUtilities.createButton(
-                action,
+        addSeparatorButton = WidgetFactory.createButton(
+                "addSeparatorButton",
                 bundledString("AddSeparator"),
-                "addSeparator");
-        addSeparatorButton.setToolTipText(bundleString("AddSeparatorToolTip"));
+                e -> addSeparator()
+        );
 
-        removeSeparatorButton = ActionUtilities.createButton(
-                action,
+        removeSeparatorButton = WidgetFactory.createButton(
+                "removeSeparatorButton",
                 bundledString("RemoveSeparator"),
-                "removeSeparator");
-        removeSeparatorButton.setToolTipText(bundleString("RemoveSeparatorToolTip"));
+                e -> removeSeparator()
+        );
 
-        ToolBarWrapper _toolBar = ToolBarProperties.getToolBar(toolBarName);
-        toolBar = (ToolBarWrapper) _toolBar.clone();
-        selections = toolBar.getButtonsVector();
-        setInitialValues();
-
-        iconRenderer = new IconCellRenderer();
-        nameRenderer = new NameCellRenderer();
+        ToolBarWrapper originalToolBar = ToolBarProperties.getToolBar(toolBarName);
+        if (originalToolBar != null) {
+            toolBar = (ToolBarWrapper) originalToolBar.clone();
+            selections = toolBar.getButtonsVector();
+            selections.sort(new ButtonComparator());
+        }
 
         toolButtonModel = new ToolBarButtonModel();
         table = new JTable(toolButtonModel);
         setTableProperties();
+    }
 
-        JScrollPane scroller = new JScrollPane(table);
-        scroller.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroller.getViewport().setBackground(table.getBackground());
+    private void arrange() {
+        GridBagHelper gbh;
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridy = 0;
-        gbc.gridx = 0;
-        gbc.weightx = 1.0;
-        gbc.insets.bottom = 5;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(bundleString(toolBarName.replace(" ", ""))), gbc);
-        gbc.gridy++;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(scroller, gbc);
-        gbc.gridy++;
-        gbc.weighty = 0;
-        gbc.insets.bottom = 10;
-        gbc.insets.right = 10;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(addSeparatorButton, gbc);
-        gbc.gridx++;
-        gbc.insets.right = 0;
-        panel.add(removeSeparatorButton, gbc);
+        // --- scroll pane ---
 
-        JPanel movePanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc2 = new GridBagConstraints();
-        gbc2.gridy = 0;
-        gbc2.insets.bottom = 10;
-        gbc2.anchor = GridBagConstraints.CENTER;
-        movePanel.add(moveUpButton, gbc2);
-        gbc2.gridy++;
-        gbc2.insets.bottom = 5;
-        gbc2.insets.top = 5;
-        movePanel.add(new JLabel(Bundles.getCommon("move")), gbc2);
-        gbc2.gridy++;
-        gbc2.insets.bottom = 10;
-        movePanel.add(moveDownButton, gbc2);
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getViewport().setBackground(table.getBackground());
 
-        gbc.gridx++;
-        gbc.gridy = 0;
-        gbc.weighty = 1.0;
-        gbc.weightx = 0;
-        gbc.insets.left = 5;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        gbc.fill = GridBagConstraints.NONE;
-        panel.add(movePanel, gbc);
+        // --- tools panel ---
 
-        addContent(panel);
+        JPanel toolsPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().bottomGap(5).fillHorizontally();
+        toolsPanel.add(moveUpButton, gbh.get());
+        toolsPanel.add(new JLabel(Bundles.getCommon("move"), null, SwingConstants.CENTER), gbh.nextRow().get());
+        toolsPanel.add(moveDownButton, gbh.nextRow().bottomGap(30).get());
+        toolsPanel.add(addSeparatorButton, gbh.nextRow().bottomGap(5).get());
+        toolsPanel.add(new JLabel(bundledString("Separator"), null, SwingConstants.CENTER), gbh.nextRow().get());
+        toolsPanel.add(removeSeparatorButton, gbh.nextRow().bottomGap(0).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillHorizontally().anchorNorthWest().setMaxWeightY();
+        mainPanel.add(scrollPane, gbh.setMaxWeightX().fillBoth().get());
+        mainPanel.add(toolsPanel, gbh.nextCol().setMinWeightX().leftGap(5).get());
+
+        // --- base ---
+
+        addContent(mainPanel);
     }
 
     private void setTableProperties() {
+
         table.setTableHeader(null);
         table.setColumnSelectionAllowed(false);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
@@ -186,234 +149,228 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         table.setRowHeight(28);
         table.doLayout();
 
-        TableColumnModel tcm = table.getColumnModel();
-        tcm.getColumn(0).setPreferredWidth(30);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                checkEnableButtons();
+            }
+        });
 
-        TableColumn col = tcm.getColumn(1);
-        col.setPreferredWidth(40);
-        col.setCellRenderer(iconRenderer);
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(30);
 
-        col = tcm.getColumn(2);
-        col.setPreferredWidth(251);
-        col.setCellRenderer(nameRenderer);
+        TableColumn column = columnModel.getColumn(1);
+        column.setPreferredWidth(40);
+        column.setCellRenderer(new IconCellRenderer());
+
+        column = columnModel.getColumn(2);
+        column.setPreferredWidth(251);
+        column.setCellRenderer(new NameCellRenderer());
     }
 
-    private void setInitialValues() {
-        Collections.sort(selections, new ButtonComparator());
-    }
+    private void checkEnableButtons() {
 
-    public void restoreDefaults() {
-        ToolBarWrapper _toolBar = ToolBarProperties.getDefaultToolBar(toolBarName);
-        toolBar = (ToolBarWrapper) _toolBar.clone();
-
-        selections = toolBar.getButtonsVector();
-        Collections.sort(selections, new ButtonComparator());
-        toolButtonModel.fireTableRowsUpdated(0, selections.size() - 1);
-    }
-
-    public void save() {
-        int size = selections.size();
-        Vector buttons = new Vector(selections.size());
-
-        // update the buttons
-        for (int i = 0; i < size; i++) {
-            ToolBarButton tb = (ToolBarButton) selections.elementAt(i);
-
-            if (tb.isVisible())
-                tb.setOrder(i);
-            else
-                tb.setOrder(1000);
-
-            buttons.add(tb);
-
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            enableButtons(false, false);
+            return;
         }
 
-        toolBar.setButtonsVector(buttons);
-        ToolBarProperties.resetToolBar(toolBarName, toolBar);
+        ToolBarButton selectedButton = selections.elementAt(selectedRow);
+        enableButtons(true, selectedButton.isSeparator());
     }
 
-    public void addSeparator(ActionEvent e) {
+    private void enableButtons(boolean enableMove, boolean enableSeparator) {
+        moveUpButton.setEnabled(enableMove);
+        moveDownButton.setEnabled(enableMove);
+        addSeparatorButton.setEnabled(enableMove);
+        removeSeparatorButton.setEnabled(enableMove && enableSeparator);
+    }
+
+    // --- button handlers ---
+
+    private void moveButtonUp() {
+
         int selection = table.getSelectedRow();
-        if (selection == -1) {
+        if (selection <= 0)
             return;
-        }
 
-        ToolBarButton tb = new ToolBarButton(ToolBarButton.SEPARATOR_ID);
-        tb.setOrder(selection);
-        tb.setVisible(true);
-
-        selections.insertElementAt(tb, selection);
-        toolButtonModel.fireTableRowsInserted(selection == 0 ? 0 : selection - 1,
-                selection == 0 ? 1 : selection);
+        int newPosition = selection - 1;
+        ToolBarButton toolBarButton = selections.elementAt(selection);
+        selections.removeElementAt(selection);
+        selections.add(newPosition, toolBarButton);
+        table.setRowSelectionInterval(newPosition, newPosition);
+        toolButtonModel.fireTableRowsUpdated(newPosition, selection);
     }
 
-    public void removeSeparator(ActionEvent e) {
-        int selection = table.getSelectedRow();
-        if (selection == -1) {
-            return;
-        }
+    private void moveButtonDown() {
 
-        ToolBarButton remove = (ToolBarButton) selections.elementAt(selection);
-        if (!remove.isSeparator()) {
+        int selection = table.getSelectedRow();
+        if (selection == -1 || selection == selections.size() - 1)
             return;
-        }
+
+        int newPosition = selection + 1;
+        ToolBarButton toolBarButton = selections.elementAt(selection);
+        selections.removeElementAt(selection);
+        selections.add(newPosition, toolBarButton);
+        table.setRowSelectionInterval(newPosition, newPosition);
+        toolButtonModel.fireTableRowsUpdated(selection, newPosition);
+    }
+
+    private void addSeparator() {
+
+        int selection = table.getSelectedRow();
+        if (selection == -1)
+            return;
+
+        ToolBarButton toolBarButton = new ToolBarButton(ToolBarButton.SEPARATOR_ID);
+        toolBarButton.setOrder(selection);
+        toolBarButton.setVisible(true);
+
+        selections.insertElementAt(toolBarButton, selection);
+        toolButtonModel.fireTableRowsInserted(
+                selection == 0 ? 0 : selection - 1,
+                selection == 0 ? 1 : selection
+        );
+
+        table.setRowSelectionInterval(selection, selection);
+        checkEnableButtons();
+    }
+
+    private void removeSeparator() {
+
+        int selection = table.getSelectedRow();
+        if (selection == -1)
+            return;
+
+        ToolBarButton remove = selections.elementAt(selection);
+        if (!remove.isSeparator())
+            return;
 
         selections.removeElementAt(selection);
         toolButtonModel.fireTableRowsDeleted(selection, selection);
+
+        table.setRowSelectionInterval(selection, selection);
+        checkEnableButtons();
     }
 
-    public void moveUp(ActionEvent e) {
-        int selection = table.getSelectedRow();
-        if (selection <= 0) {
-            return;
+    // --- UserPreferenceFunction impl ---
+
+    @Override
+    public void save() {
+
+        for (int i = 0; i < selections.size(); i++) {
+            ToolBarButton toolBarButton = selections.elementAt(i);
+            toolBarButton.setOrder(i);
         }
 
-        int newPostn = selection - 1;
-        ToolBarButton move = (ToolBarButton) selections.elementAt(selection);
-        selections.removeElementAt(selection);
-        selections.add(newPostn, move);
-        table.setRowSelectionInterval(newPostn, newPostn);
-        toolButtonModel.fireTableRowsUpdated(newPostn, selection);
-
+        toolBar.setButtonsVector(selections);
+        ToolBarProperties.resetToolBar(toolBarName, toolBar);
     }
 
-    public void moveDown(ActionEvent e) {
-        int selection = table.getSelectedRow();
-        if (selection == -1 || selection == selections.size() - 1) {
+    @Override
+    public void restoreDefaults() {
+
+        ToolBarWrapper originalToolBar = ToolBarProperties.getToolBar(toolBarName);
+        if (originalToolBar == null)
             return;
-        }
 
-        int newPostn = selection + 1;
-        ToolBarButton move = (ToolBarButton) selections.elementAt(selection);
-        selections.removeElementAt(selection);
-        selections.add(newPostn, move);
-        table.setRowSelectionInterval(newPostn, newPostn);
-        toolButtonModel.fireTableRowsUpdated(selection, newPostn);
+        toolBar = (ToolBarWrapper) originalToolBar.clone();
+        selections = toolBar.getButtonsVector();
+        selections.sort(new ButtonComparator());
+        toolButtonModel.fireTableRowsUpdated(0, selections.size() - 1);
     }
+
+    // ---
 
     private class ToolBarButtonModel extends AbstractTableModel {
 
-        public ToolBarButtonModel() {
-        }
-
+        @Override
         public int getColumnCount() {
             return 3;
         }
 
+        @Override
         public int getRowCount() {
             return selections.size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
-            ToolBarButton tbb = (ToolBarButton) selections.elementAt(row);
+            ToolBarButton toolBarButton = selections.elementAt(row);
 
             switch (col) {
                 case 0:
-                    return new Boolean(tbb.isVisible());
+                    return toolBarButton.isVisible();
                 case 1:
-                    return tbb.getIcon();
+                    return toolBarButton.getIcon();
                 case 2:
-                    return tbb.getName();
+                    return toolBarButton.getName();
                 default:
                     return null;
             }
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
-            ToolBarButton tbb = (ToolBarButton) selections.elementAt(row);
-
             if (col == 0)
-                tbb.setVisible(((Boolean) value).booleanValue());
-
+                selections.elementAt(row).setVisible((Boolean) value);
             fireTableRowsUpdated(row, row);
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
             return col == 0;
         }
 
-        public Class getColumnClass(int col) {
-            if (col == 0)
-                return Boolean.class;
-            else
-                return String.class;
-        }
-
-        public void addNewRow() {
-
+        @Override
+        public Class<?> getColumnClass(int col) {
+            return col == 0 ? Boolean.class : String.class;
         }
 
     } // CreateTableModel
 
-    public class NameCellRenderer extends JLabel
+    private static class NameCellRenderer extends JLabel
             implements TableCellRenderer {
 
         public NameCellRenderer() {
-            //setFont(panelFont);
             setOpaque(true);
         }
 
-        public Component getTableCellRendererComponent(JTable table,
-                                                       Object value,
-                                                       boolean isSelected,
-                                                       boolean hasFocus,
-                                                       int row,
-                                                       int column) {
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-            setBackground(isSelected ? table.getSelectionBackground() :
-                    table.getBackground());
-
-            setForeground(isSelected ? table.getSelectionForeground() :
-                    table.getForeground());
-
+            setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+            setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
             setText(value.toString());
             setBorder(null);
 
             return this;
         }
 
-    } // class NameCellRenderer
+    } // NameCellRenderer class
 
 
-    public class IconCellRenderer extends JLabel
+    private static class IconCellRenderer extends JLabel
             implements TableCellRenderer {
 
         public IconCellRenderer() {
             setOpaque(true);
         }
 
-        public Component getTableCellRendererComponent(JTable table,
-                                                       Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-            setBackground(isSelected ? table.getSelectionBackground() :
-                    table.getBackground());
-
-            setForeground(isSelected ? table.getSelectionForeground() :
-                    table.getForeground());
-
+            setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+            setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
             setHorizontalAlignment(JLabel.CENTER);
-
             setIcon((ImageIcon) value);
 
             return this;
         }
 
-    } // class IconCellRenderer
+    } // IconCellRenderer class
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

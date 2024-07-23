@@ -10,7 +10,7 @@ import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.databaseobjects.CreateTriggerPanel;
 import org.executequery.gui.databaseobjects.TableTriggersTableModel;
 import org.executequery.localization.Bundles;
-import org.executequery.toolbars.AbstractToolBarForTable;
+import org.executequery.toolbars.AbstractTableToolBar;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
@@ -39,10 +39,10 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
 
         triggersLoaded = false;
 
-        buttonsEditingTriggersPanel = new AbstractToolBarForTable(
-                "Create Trigger",
-                "Delete Trigger",
-                "Refresh"
+        buttonsEditingTriggersPanel = new AbstractTableToolBar(
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.create.trigger"),
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.delete.trigger"),
+                Bundles.get(BrowserTableEditingPanel.class, "toolbar.Refresh")
         ) {
             @Override
             public void insert(ActionEvent e) {
@@ -139,7 +139,7 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
             String query = "DROP TRIGGER " + MiscUtils.getFormattedObject(trigger.getName(), currentObjectView.getHost().getDatabaseConnection());
 
             ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(
-                    "Dropping object",
+                    Bundles.get(BrowserTreePopupMenuActionListener.class, "DropObject"),
                     query,
                     currentObjectView.getHost().getDatabaseConnection(),
                     true

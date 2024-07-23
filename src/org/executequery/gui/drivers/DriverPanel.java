@@ -27,7 +27,7 @@ public interface DriverPanel {
 
     String TITLE = Bundles.getCommon("driver");
 
-    String FRAME_ICON = "DatabaseDrivers16.png";
+    String FRAME_ICON = "icon_db_driver";
 
     boolean saveDrivers();
 

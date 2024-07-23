@@ -7,7 +7,7 @@ import org.executequery.actions.searchcommands.ReplaceAction;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.TreeFindAction;
-import org.executequery.gui.browser.tree.SchemaTree;
+import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.editor.QueryEditorSettings;
 import org.executequery.gui.editor.autocomplete.DefaultAutoCompletePopupProvider;
 import org.executequery.gui.text.syntax.SQLSyntaxDocument;
@@ -77,7 +77,10 @@ public class SQLTextArea extends RSyntaxTextArea
 
     protected void setEditorPreferences() {
 
+        setUseSelectedTextColor(true);
+        setPaintMatchedBracketPair(true);
         setSelectionColor(QueryEditorSettings.getSelectionColour());
+        setSelectedTextColor(QueryEditorSettings.getSelectedTextColour());
         setBackground(QueryEditorSettings.getEditorBackground());
         setCurrentLineHighlightColor(QueryEditorSettings.isDisplayLineHighlight() ?
                 QueryEditorSettings.getLineHighlightColour() :
@@ -275,7 +278,7 @@ public class SQLTextArea extends RSyntaxTextArea
         registerCommentAction();
         ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
         if (treePanel != null) {
-            SchemaTree tree = treePanel.getTree();
+            ConnectionTree tree = treePanel.getTree();
             if (tree != null) {
                 treeModelListener = new TreeModelListener() {
                     @Override
@@ -436,8 +439,8 @@ public class SQLTextArea extends RSyntaxTextArea
         maker.setParameters(parameters);
         autoCompletePopup.setParameters(parameters);
     }
-    private KeywordRepository keywords() {
 
+    private KeywordRepository keywords() {
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }
 
@@ -701,7 +704,7 @@ public class SQLTextArea extends RSyntaxTextArea
     public void cleanup() {
         ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
         if (treePanel != null) {
-            SchemaTree tree = treePanel.getTree();
+            ConnectionTree tree = treePanel.getTree();
             if (tree != null) {
                 if (treeModelListener != null)
                     tree.getModel().removeTreeModelListener(treeModelListener);

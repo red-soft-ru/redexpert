@@ -23,56 +23,37 @@ package org.executequery.gui.erd;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
-import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTablePanel;
-import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
  */
-public class ErdNewTableDialog extends ErdPrintableDialog implements ActionContainer {
+public class ErdNewTableDialog extends BaseDialog
+        implements ActionContainer {
 
-    /**
-     * The ERD parent panel
-     */
     private final ErdViewerPanel erdViewerPanel;
-
-    /**
-     * The <code>ErdTable</code> representing this dialog
-     */
-    private ErdTable erdTable;
-
-    /**
-     * The common create table panel
-     */
     private CreateTableERDPanel createPanel;
-
-    /**
-     * A new line character
-     */
-    private static final char NEW_LINE_CHAR = '\n';
+    private ErdTable erdTable;
 
     public ErdNewTableDialog(ErdViewerPanel parent) {
         super(bundleString("title"), false);
         this.erdViewerPanel = parent;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        sqlText = createPanel.getSQLTextAreal();
+        init();
         display();
         createPanel.setFocusComponent();
     }
@@ -82,120 +63,126 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         this.setTitle(bundleString("editableTitle") + erdTable.getTableName());
         this.erdTable = erdTable;
 
+        ColumnData[] tableColumns = erdTable.getTableColumns();
+
         createPanel.setTableName(erdTable.getTableName());
-
-        ColumnData[] cda = erdTable.getTableColumns();
-        createPanel.setTableColumnData(cda);
-        Vector ccv = new Vector();
-
-        if (cda != null) {
-            for (int i = 0; i < cda.length; i++) {
-
-                Vector _ccv = cda[i].getColumnConstraintsVector();
-
-                if (_ccv == null)
-                    continue;
-
-                for (int j = 0, k = _ccv.size(); j < k; j++) {
-                    ccv.add(_ccv.elementAt(j));
-                }
-
-            }
-        }
-
-        createPanel.setColumnConstraintVector(ccv);
+        createPanel.getSimpleCommentPanel().setComment(erdTable.getDescriptionTable());
+        createPanel.setColumnDataArray(tableColumns);
+        createPanel.setColumnConstraintVector(getColumnConstraints(tableColumns));
         createPanel.resetSQLText();
         createPanel.setSQLTextCaretPosition(0);
     }
 
-    private void jbInit() throws Exception {
-        Container c = this.getContentPane();
-        c.setLayout(new BorderLayout());
+    private void init() {
 
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-        cancelButton.setActionCommand("Cancel");
-        JButton okButton = new DefaultPanelButton(Bundles.get("common.create.button"));
-        okButton.setActionCommand("Create");
+        JButton cancelButton = WidgetFactory.createButton(
+                "cancelButton",
+                Bundles.get("common.cancel.button"),
+                e -> dispose()
+        );
 
-        ActionListener btnListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                buttons_actionPerformed(e);
-            }
-        };
+        JButton createButton = WidgetFactory.createButton(
+                "createButton",
+                Bundles.get("common.create.button"),
+                e -> createTable()
+        );
 
-        cancelButton.addActionListener(btnListener);
-        okButton.addActionListener(btnListener);
+        JPanel buttonsPanel = new JPanel(new GridBagLayout());
+        GridBagHelper gbh = new GridBagHelper().setInsets(5, 5, 0, 5).anchorEast();
+        buttonsPanel.add(new JPanel(), gbh.setMaxWeightX().fillHorizontally().get());
+        buttonsPanel.add(createButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonsPanel.add(cancelButton, gbh.nextCol().rightGap(5).get());
 
-        JPanel btnPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets.top = 5;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.weightx = 1.0;
-        btnPanel.add(okButton, gbc);
-        gbc.weightx = 0;
-        gbc.gridx = 1;
-        gbc.insets.left = 7;
-        btnPanel.add(cancelButton, gbc);
-
-        createPanel = new CreateTableERDPanel(null, this);
-        createPanel.addButtonsPanel(btnPanel);
+        createPanel = new CreateTableERDPanel(erdViewerPanel.getDatabaseConnection(), this);
+        createPanel.addButtonsPanel(buttonsPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
-        c.add(createPanel, BorderLayout.CENTER);
 
+        add(createPanel, BorderLayout.CENTER);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     }
 
-    private void buttons_actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        if (command.equals("Cancel")) {
-            dispose();
-        } else if (command.equals("Create")) {
-            if (MiscUtils.isNull(createPanel.getTableName())) {
-                GUIUtilities.displayErrorMessage(bundleString("TableNameEmptyError"));
-            } else {
-                createTable();
-                //dispose();
-            }
-        }
-    }
-
     public void createTable() {
-        createPanel.fireEditingStopped();
 
         String tableName = createPanel.getTableName();
-        ColumnData[] cda = createPanel.getTableColumnDataAndConstraints();
-
-        for (int i = 0; i < cda.length; i++) {
-            cda[i].setTableName(tableName);
-            cda[i].setNamesToUpper();
+        if (MiscUtils.isNull(tableName)) {
+            GUIUtilities.displayErrorMessage(bundleString("TableNameEmptyError"));
+            return;
         }
 
+        createPanel.fireEditingStopped();
+
+        ColumnData[] columnDataArray = createPanel.getTableColumnDataAndConstraints();
+        for (ColumnData columnData : columnDataArray) {
+            columnData.setTableName(tableName);
+            columnData.setNamesToUpper();
+        }
 
         if (erdTable == null) {
-            ErdTable table = new ErdTable(tableName, cda, erdViewerPanel);
-            table.setCreateTableScript(sqlText.getSQLText());
+            ErdTable table = new ErdTable(tableName, columnDataArray, erdViewerPanel);
+            table.setCreateTableScript(createPanel.getSQLText());
             table.setNewTable(true);
             table.setEditable(true);
-            if (!erdViewerPanel.addNewTable(table)) {
+            table.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            table.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            table.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            table.tableColumnsChanged(true);
+
+            if (!erdViewerPanel.addNewTable(table, true)) {
                 GUIUtilities.displayErrorMessage(bundleString("TableExistsError"));
                 return;
             }
+
         } else {
-            erdTable.setTableColumns(cda);
+            erdTable.setTableColumns(columnDataArray);
             erdTable.setTableName(tableName);
-            erdTable.setCreateTableScript(sqlText.getSQLText());
+            erdTable.setCreateTableScript(createPanel.getSQLText());
             erdTable.setNewTable(true);
             erdTable.setEditable(true);
-            erdTable.tableColumnsChanged();
+            erdTable.setDescriptionTable(createPanel.getSimpleCommentPanel().getComment());
+            erdTable.setShowCommentOnTable(createPanel.isShowCommentOnTable());
+            erdTable.setShowCommentOnFields(createPanel.isShowCommentOnFields());
+            erdTable.tableColumnsChanged(true);
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                erdViewerPanel.updateTableRelationships();
-            }
+        SwingUtilities.invokeLater(erdViewerPanel::updateTableRelationships);
+        dispose();
+    }
+
+    private static Vector<ColumnConstraint> getColumnConstraints(ColumnData[] columnDataArray) {
+
+        if (columnDataArray == null)
+            return new Vector<>();
+
+        Vector<ColumnConstraint> columnConstraintVector = new Vector<>();
+        for (ColumnData columnData : columnDataArray) {
+            Vector<ColumnConstraint> tempConstraintsVector = columnData.getColumnConstraintsVector();
+            if (tempConstraintsVector != null)
+                columnConstraintVector.addAll(tempConstraintsVector);
+        }
+
+        return columnConstraintVector;
+    }
+
+    // --- ActionContainer impl ---
+
+    @Override
+    public void block() {
+        GUIUtils.invokeLater(() -> {
+            if (!getRootPane().getGlassPane().isVisible())
+                getRootPane().getGlassPane().setVisible(true);
         });
 
-        dispose();
+        GUIUtilities.showWaitCursor();
+    }
+
+    @Override
+    public void unblock() {
+        GUIUtils.invokeLater(() -> {
+            if (getRootPane().getGlassPane().isVisible())
+                getRootPane().getGlassPane().setVisible(false);
+        });
+
+        GUIUtilities.showNormalCursor();
     }
 
     @Override
@@ -203,100 +190,82 @@ public class ErdNewTableDialog extends ErdPrintableDialog implements ActionConta
         return true;
     }
 
-    public void block() {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                if (getRootPane().getGlassPane().isVisible()) {
-                    return;
-                }
-                getRootPane().getGlassPane().setVisible(true);
-            }
-        });
-        updateCursor(true);
+    @Override
+    public void finished() {
+        dispose();
     }
 
-    /**
-     * Indicates that a [long-running] process has ended.
-     * This triggers the glass pane off and sets the cursor appropriately.
-     */
-    public void unblock() {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                if (!getRootPane().getGlassPane().isVisible()) {
-                    return;
-                }
-                getRootPane().getGlassPane().setVisible(false);
-            }
-        });
-        updateCursor(false);
-    }
+    // --- BaseDialog impl ---
 
-    private void updateCursor(boolean inProcess) {
-        if (inProcess) {
-            GUIUtilities.showWaitCursor();
-        } else {
-            GUIUtilities.showNormalCursor();
-        }
+    @Override
+    public void display() {
+        pack();
+        this.setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
+        setVisible(true);
     }
 
     @Override
-    public void finished() {
-
+    public void dispose() {
+        GUIUtilities.removeFocusedDialog(this);
+        super.dispose();
     }
 
-    class CreateTableERDPanel extends CreateTablePanel {
+    // ---
 
+    private static String bundleString(String key) {
+        return Bundles.get(ErdNewTableDialog.class, key);
+    }
 
-        /**
-         * <p> Constructs a new instance.
-         *
-         * @param dc
-         * @param dialog
-         */
+    public class CreateTableERDPanel extends CreateTablePanel {
+
         public CreateTableERDPanel(DatabaseConnection dc, ActionContainer dialog) {
             super(dc, dialog);
         }
 
-        public void addButtonsPanel(JPanel buttonsPanel) {
-            super.addButtonsPanel(buttonsPanel);
-        }
-
-        public void setFocusComponent() {
-            super.setFocusComponent();
-        }
-
-        public void fireEditingStopped() {
-            super.fireEditingStopped();
-        }
-
-        public void setColumnConstraintVector(Vector ccv) {
+        public void setColumnConstraintVector(Vector<ColumnConstraint> ccv) {
             super.setColumnConstraintVector(ccv, true);
-        }
-
-        public void setTableColumnData(ColumnData[] cda) {
-            super.setColumnDataArray(cda);
         }
 
         public void setTableName(String tableName) {
             nameField.setText(tableName);
         }
 
-        public void resetSQLText() {
-            super.resetSQLText();
+        public List<ErdTable> getErdTables() {
+            return erdViewerPanel.getAllTablesVector();
         }
 
-        public void setSQLText() {
-            super.setSQLText();
+        public boolean isShowCommentOnTable() {
+            return showCommentOnTableBox.isSelected();
         }
 
-        public SimpleSqlTextPanel getSQLTextAreal() {
-            return sqlText;
+        public boolean isShowCommentOnFields() {
+            return showCommentOnFieldsBox.isSelected();
         }
 
-    }
+        @Override
+        protected void addButtonsPanel(JPanel buttonsPanel) {
+            super.addButtonsPanel(buttonsPanel);
+        }
 
-    private static String bundleString(String key) {
-        return Bundles.get(ErdNewTableDialog.class, key);
-    }
+        @Override
+        public List<String> getColumns(String table) {
+
+            List<ErdTable> erdTables = getErdTables();
+            if (erdTables == null)
+                return new ArrayList<>();
+
+            List<String> columns = new ArrayList<>();
+            for (ErdTable erd : erdTables) {
+                if (erd.getTableName() != null && erd.getTableName().contentEquals(table)) {
+                    for (ColumnData cd : erd.getTableColumns()) {
+                        columns.add(cd.getColumnName());
+                    }
+                }
+            }
+
+            return columns;
+        }
+
+    } // CreateTableERDPanel class
 
 }

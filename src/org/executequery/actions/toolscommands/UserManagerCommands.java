@@ -8,21 +8,25 @@ import org.underworldlabs.swing.actions.BaseCommand;
 import java.awt.event.ActionEvent;
 
 /**
- * Created by mikhan808 on 09.02.2017.
+ * Created by Mikhail Kalyashin on 09.02.2017
  */
-public class UserManagerCommands extends OpenFrameCommand implements BaseCommand {
+public class UserManagerCommands extends OpenFrameCommand
+        implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
-        if (GUIUtilities.getCentralPane(UserManagerPanel.TITLE) == null)
-            GUIUtilities.addCentralPane(UserManagerPanel.TITLE,
-                    UserManagerPanel.FRAME_ICON,
-                    new UserManagerPanel(),
-                    null,
-                    true);
-        else GUIUtilities.setSelectedCentralPane(UserManagerPanel.TITLE);
+        String title = UserManagerPanel.TITLE;
+        if (!isConnected() || isCentralPaneOpen(title))
+            return;
+
+        GUIUtilities.addCentralPane(
+                title,
+                UserManagerPanel.FRAME_ICON,
+                new UserManagerPanel(),
+                null,
+                true
+        );
     }
+
 }
-
-
-

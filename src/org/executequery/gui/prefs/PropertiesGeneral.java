@@ -21,6 +21,7 @@
 package org.executequery.gui.prefs;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.Constants;
 import org.executequery.gui.text.LineSeparator;
 import org.underworldlabs.util.SystemProperties;
 
@@ -35,175 +36,235 @@ import java.util.SortedMap;
  * @author Takis Diakoumis
  */
 public class PropertiesGeneral extends AbstractPropertiesBasePanel {
-
     private SimplePreferencesPanel preferencesPanel;
 
-    public PropertiesGeneral() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesGeneral(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    private void init() throws Exception {
+    private void init() {
 
+        String key;
         List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("General"),
-                null));
+                bundledStaticString("General"),
+                null
+        ));
 
-        String key = "startup.display.splash";
+        key = "startup.version.check";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("DisplaySplashScreenAtStartup"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("CheckForUpdateOnStartup"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
-        key = "startup.window.maximized";
+        key = "startup.unstableversions.load";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("MaximiseWindowOnStartup"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("LoadUnstableVersions"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "general.save.prompt";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("PromptToSaveOpenDocuments"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "general.parse.variables";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("ParseVariables"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "recent.files.count";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 1,
                 key,
-                bundledString("RecentFilesToStore"),
-                stringUserProperty(key)));
+                bundledStaticString("RecentFilesToStore"),
+                stringUserProperty(key)
+        ));
 
         key = "general.line.separator";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("LineSeparator"),
+                bundledStaticString("LineSeparator"),
                 SystemProperties.getProperty("user", key),
-                new String[]{LineSeparator.DOS.label,
+                new String[]{
+                        LineSeparator.DOS.label,
                         LineSeparator.WINDOWS.label,
-                        LineSeparator.MAC_OS.label}));
-
-        key = "general.save.prompt";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("PromptToSaveOpenDocuments"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "startup.version.check";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("CheckForUpdateOnStartup"),
-                Boolean.valueOf(stringUserProperty(key))));
-
-        key = "startup.unstableversions.load";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("LoadUnstableVersions"),
-                Boolean.valueOf(stringUserProperty(key))));
+                        LineSeparator.MAC_OS.label
+                }
+        ));
 
         key = "system.file.encoding";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("DefaultFileEncoding"),
+                bundledStaticString("DefaultFileEncoding"),
                 encodingValue(),
-                availableCharsets()));
+                availableCharsets()
+        ));
 
         key = "startup.java.path";
         list.add(new UserPreference(
                 UserPreference.FILE_TYPE,
                 key,
-                bundledString("JavaPath"),
-                stringUserProperty(key)));
+                bundledStaticString("JavaPath"),
+                stringUserProperty(key)
+        ));
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("InternetProxySettings"),
-                null));
+                bundledStaticString("Logging"),
+                null
+        ));
+
+        key = "system.display.console";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("SystemConsole"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "system.log.enabled";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("LogOutputToFile"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "system.log.out";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("LogOutToConsole"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "system.log.err";
+        list.add(new UserPreference(
+                UserPreference.BOOLEAN_TYPE,
+                key,
+                bundledStaticString("LogErrToConsole"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
+
+        key = "editor.logging.backups";
+        list.add(new UserPreference(
+                UserPreference.INTEGER_TYPE,
+                1,
+                key,
+                bundledStaticString("MaximumRollingLogBackups"),
+                stringUserProperty(key)
+        ));
+
+        key = "system.log.level";
+        list.add(new UserPreference(
+                UserPreference.STRING_TYPE,
+                key,
+                bundledStaticString("OutputLogLevel"),
+                stringUserProperty(key),
+                Constants.LOG_LEVELS
+        ));
+
+        key = "editor.logging.path";
+        list.add(new UserPreference(
+                UserPreference.DIR_TYPE,
+                key,
+                bundledStaticString("OutputLogFilePath"),
+                stringUserProperty(key)
+        ));
+
+        list.add(new UserPreference(
+                UserPreference.CATEGORY_TYPE,
+                null,
+                bundledStaticString("InternetProxySettings"),
+                null
+        ));
 
         key = "internet.proxy.set";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("UseProxyServer"),
-                Boolean.valueOf(stringUserProperty(key))));
+                bundledStaticString("UseProxyServer"),
+                Boolean.valueOf(stringUserProperty(key))
+        ));
 
         key = "internet.proxy.host";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ProxyHost"),
-                stringUserProperty(key)));
+                bundledStaticString("ProxyHost"),
+                stringUserProperty(key)
+        ));
 
         key = "internet.proxy.port";
         list.add(new UserPreference(
                 UserPreference.INTEGER_TYPE,
                 key,
-                bundledString("ProxyPort"),
-                stringUserProperty(key)));
+                bundledStaticString("ProxyPort"),
+                stringUserProperty(key)
+        ));
 
         key = "internet.proxy.user";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
-                bundledString("ProxyUser"),
-                stringUserProperty(key)));
+                bundledStaticString("ProxyUser"),
+                stringUserProperty(key)
+        ));
 
         key = "internet.proxy.password";
         list.add(new UserPreference(
                 UserPreference.PASSWORD_TYPE,
                 key,
-                bundledString("ProxyPassword"),
-                stringUserProperty(key)));
+                bundledStaticString("ProxyPassword"),
+                stringUserProperty(key)
+        ));
 
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
         addContent(preferencesPanel);
     }
 
     private String[] availableCharsets() {
 
-        List<String> available = new ArrayList<String>();
+        List<String> available = new ArrayList<>();
         SortedMap<String, Charset> charsets = Charset.availableCharsets();
-        for (Charset charset : charsets.values()) {
-
+        for (Charset charset : charsets.values())
             available.add(charset.name());
-        }
 
-        return available.toArray(new String[available.size()]);
+        return available.toArray(new String[0]);
     }
 
     private String encodingValue() {
-
         String encoding = stringUserProperty("system.file.encoding");
-        if (StringUtils.isBlank(encoding)) {
-
-            return System.getProperty("file.encoding");
-        }
-        return encoding;
+        return StringUtils.isBlank(encoding) ? Charset.defaultCharset().displayName() : encoding;
     }
 
+    @Override
     public void restoreDefaults() {
-
         preferencesPanel.restoreDefaults();
     }
 
+    @Override
     public void save() {
-
         preferencesPanel.savePreferences();
     }
 
 }
-
-
-

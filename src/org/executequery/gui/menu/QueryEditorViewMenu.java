@@ -35,62 +35,39 @@ import java.util.Map;
 public class QueryEditorViewMenu extends AbstractOptionsMenu
         implements UserPreferenceListener {
 
-    private QueryEditorViewOptionsCommand menuItemListener;
+    private final QueryEditorViewOptionsCommand viewOptionsCommand;
+    private final Map<String, String> commandsMap;
 
     public QueryEditorViewMenu() {
 
-        menuItemListener = new QueryEditorViewOptionsCommand();
+        viewOptionsCommand = new QueryEditorViewOptionsCommand();
 
-        createCommandToPropertiesMap();
+        commandsMap = new HashMap<>();
+        commandsMap.put("viewEditorStatusBar", "editor.display.statusbar");
+        commandsMap.put("viewEditorTools", "editor.display.toolsPanel");
+        commandsMap.put("viewEditorLineNumbers", "editor.display.linenums");
+        commandsMap.put("viewEditorLineHighlight", "editor.display.linehighlight");
+        commandsMap.put("viewEditorWrapLines", "editor.wrap.lines");
+        commandsMap.put("viewEditorTransactionParams", "editor.display.transaction.params");
 
         EventMediator.registerListener(this);
     }
 
+    @Override
     protected void addActionForMenuItem(JCheckBoxMenuItem menuItem) {
-
-        menuItem.addActionListener(menuItemListener);
+        menuItem.addActionListener(viewOptionsCommand);
     }
 
+    @Override
     protected void setMenuItemValue(JCheckBoxMenuItem menuItem) {
-
-        String actionCommand = menuItem.getActionCommand();
-
-        if (actionCommand != null &&
-                actionCommandsToPropertiesMap.containsKey(actionCommand)) {
-
-            menuItem.setSelected(booleanValueForKey(
-                    actionCommandsToPropertiesMap.get(actionCommand)));
-
-        }
-
+        String command = menuItem.getActionCommand();
+        if (command != null && commandsMap.containsKey(command))
+            menuItem.setSelected(booleanValueForKey(commandsMap.get(command)));
     }
 
+    @Override
     protected boolean listeningForEvent(UserPreferenceEvent event) {
-
-        return (event.getEventType() == UserPreferenceEvent.QUERY_EDITOR
-                || event.getEventType() == UserPreferenceEvent.ALL);
+        int type = event.getEventType();
+        return type == UserPreferenceEvent.QUERY_EDITOR || type == UserPreferenceEvent.ALL;
     }
-
-    private Map<String, String> actionCommandsToPropertiesMap;
-
-    private void createCommandToPropertiesMap() {
-
-        actionCommandsToPropertiesMap = new HashMap<String, String>();
-
-        actionCommandsToPropertiesMap.put("viewEditorStatusBar", "editor.display.statusbar");
-        actionCommandsToPropertiesMap.put("viewEditorLineNumbers", "editor.display.linenums");
-
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
-

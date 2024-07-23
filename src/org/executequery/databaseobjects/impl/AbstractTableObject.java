@@ -1,6 +1,7 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.*;
+import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
@@ -570,5 +571,16 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject
     public void reset() {
         super.reset();
         setMarkedForReloadCols(true);
+    }
+
+    public List<ColumnData> getColumnDataList() {
+        List<ColumnData> list = new ArrayList<>();
+        if (getColumns() != null) {
+            for (DatabaseColumn col : getColumns()) {
+                ColumnData cd = new ColumnData(getHost().getDatabaseConnection(), col, false);
+                list.add(cd);
+            }
+        }
+        return list;
     }
 }

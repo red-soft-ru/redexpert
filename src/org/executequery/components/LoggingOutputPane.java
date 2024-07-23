@@ -23,7 +23,7 @@ package org.executequery.components;
 import org.executequery.Constants;
 import org.executequery.sql.SqlMessages;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -39,6 +39,7 @@ public class LoggingOutputPane extends JTextPane {
     public LoggingOutputPane() {
         document = new OutputPaneDocument();
         setDocument(document);
+        setBackground(SystemProperties.getColourProperty("user", "editor.output.background"));
     }
 
     public void append(String text) {
@@ -136,18 +137,23 @@ public class LoggingOutputPane extends JTextPane {
         }
 
         protected void initStyles() {
-            // normal font styles
+            Color color;
+
             plain = new SimpleAttributeSet();
-            StyleConstants.setForeground(plain, UIUtils.getColour("executequery.LoggingOutputPanel.plain", Color.BLACK));
+            color = SystemProperties.getColourProperty("user", "editor.output.plain.color");
+            StyleConstants.setForeground(plain, color);
 
             error = new SimpleAttributeSet();
-            StyleConstants.setForeground(error, UIUtils.getColour("executequery.LoggingOutputPanel.error", Color.RED.darker()));
+            color = SystemProperties.getColourProperty("user", "editor.output.error.color");
+            StyleConstants.setForeground(error, color);
 
             warning = new SimpleAttributeSet();
-            StyleConstants.setForeground(warning, UIUtils.getColour("executequery.LoggingOutputPanel.warning", new Color(222, 136, 8)));
+            color = SystemProperties.getColourProperty("user", "editor.output.warning.color");
+            StyleConstants.setForeground(warning, color);
 
             action = new SimpleAttributeSet();
-            StyleConstants.setForeground(action, UIUtils.getColour("executequery.LoggingOutputPanel.action", Color.BLUE.darker()));
+            color = SystemProperties.getColourProperty("user", "editor.output.action.color");
+            StyleConstants.setForeground(action, color);
 
             // fixed width font styles
             String fixedWidthFontName = "monospaced";

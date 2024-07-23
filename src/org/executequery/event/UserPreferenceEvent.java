@@ -25,33 +25,23 @@ package org.executequery.event;
  */
 public interface UserPreferenceEvent extends ApplicationEvent {
 
-    int ALL = 0;
-
-    int QUERY_EDITOR = 1;
-
-    int TOOL_BAR = 2;
-
-    int LOG = 3;
-
-    int PROXY = 4;
-
-    int KEYBOARD_SHORTCUTS = 5;
-
-    int LAYOUT_VIEW = 7;
-
-    int DOCKED_COMPONENT_CLOSED = 8;
-
-    int DOCKED_COMPONENT_OPENED = 9;
-
     /**
      * Method name for preferences changed event
      */
     String PREFERENCES_CHANGED = "preferencesChanged";
+
+    int ALL = 0;
+    int QUERY_EDITOR = ALL + 1;
+    int TOOL_BAR = QUERY_EDITOR + 1;
+    int LOG = TOOL_BAR + 1;
+    int PROXY = LOG + 1;
+    int KEYBOARD_SHORTCUTS = PROXY + 1;
+    int DOCKED_COMPONENT_CLOSED = KEYBOARD_SHORTCUTS + 1;
+    int DOCKED_COMPONENT_OPENED = DOCKED_COMPONENT_CLOSED + 1;
+    int RESULT_SET_POPUP = DOCKED_COMPONENT_OPENED + 1;
 
     int getEventType();
 
     String getKey();
 
 }
-
-

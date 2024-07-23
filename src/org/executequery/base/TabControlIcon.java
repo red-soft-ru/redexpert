@@ -20,7 +20,9 @@
 
 package org.executequery.base;
 
+import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,21 +32,18 @@ import java.awt.*;
  */
 public interface TabControlIcon extends Icon {
 
-    /**
-     * the icon width
-     */
-    public static final int ICON_WIDTH = 7;
+    static int iconWidth() {
+        return GUIUtilities.getLookAndFeel().isDefaultTheme() ? 16 : 7;
+    }
 
-    /**
-     * the icon height
-     */
-    public static final int ICON_HEIGHT = 7;
+    static int iconHeight() {
+        return iconWidth();
+    }
 
-    /**
-     * The icon image colour
-     */
-    public static final Color ICON_COLOR =
-            UIUtils.getColour("executequery.TabbedPane.icon", UIManager.getColor("controlShadow").darker().darker());
+    static Color iconColor() {
+        return GUIUtilities.getLookAndFeel().isDefaultTheme() ?
+                SystemProperties.getColourProperty("user", "editor.text.selection.background") :
+                UIUtils.getColour("executequery.TabbedPane.icon", UIManager.getColor("controlShadow").darker().darker());
+    }
 
 }
-

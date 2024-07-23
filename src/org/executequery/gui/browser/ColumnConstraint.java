@@ -20,6 +20,8 @@
 
 package org.executequery.gui.browser;
 
+import org.underworldlabs.util.MiscUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +53,6 @@ public class ColumnConstraint implements Serializable {
     /** The name of this constraint */
     private String name;
 
-    /** The schema of this constraint */
-    private String schema;
-
     /** The table name of this constraint */
     private String table;
 
@@ -71,7 +70,6 @@ public class ColumnConstraint implements Serializable {
 
     /** The referenced column display list of this constraint */
     private List<String> refColumnDisplayList;
-
 
     /**
      * The type of constraint
@@ -103,10 +101,6 @@ public class ColumnConstraint implements Serializable {
     private String sorting;
     private String tablespace;
 
-    /*public static final int PRIMARY_KEY = 0;
-    public static final int FOREIGN_KEY = 1;
-    public static final int UNIQUE_KEY = 2;*/
-
     public static final String EMPTY = "";
     public static final String PRIMARY = "PRIMARY";
     public static final String FOREIGN = "FOREIGN";
@@ -122,7 +116,6 @@ public class ColumnConstraint implements Serializable {
         type = -1;
         if (newConstraint) {
             name = EMPTY;
-            schema = EMPTY;
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
@@ -138,7 +131,6 @@ public class ColumnConstraint implements Serializable {
         type = -1;
         if (newConstraint) {
             name = EMPTY;
-            schema = EMPTY;
             refTable = EMPTY;
             column = EMPTY;
             refColumn = EMPTY;
@@ -166,6 +158,10 @@ public class ColumnConstraint implements Serializable {
         return type == PRIMARY_KEY;
     }
 
+    public boolean isUniqueKey() {
+        return type == UNIQUE_KEY;
+    }
+
     public boolean isNewConstraint() {
         return newConstraint;
     }
@@ -174,18 +170,22 @@ public class ColumnConstraint implements Serializable {
         this.newConstraint = newConstraint;
     }
 
-    public boolean hasSchema() {
-        return schema != null && schema.length() > 0;
-    }
-
     public void setValues(ColumnConstraint cc) {
         name = cc.getName();
-        schema = cc.getRefSchema();
         table = cc.getTable();
         refTable = cc.getRefTable();
         column = cc.getColumn();
         refColumn = cc.getRefColumn();
         type = cc.getType();
+    }
+
+    public void setValues(org.executequery.databaseobjects.impl.ColumnConstraint cc) {
+        name = MiscUtils.trimEnd(cc.getName());
+        table = MiscUtils.trimEnd(cc.getTable().getName());
+        refTable = MiscUtils.trimEnd(cc.getReferencedTable());
+        column = MiscUtils.trimEnd(cc.getColumnName());
+        refColumn = MiscUtils.trimEnd(cc.getReferencedColumn());
+        type = cc.getKeyType();
     }
 
     public String getTypeName() {
@@ -235,14 +235,6 @@ public class ColumnConstraint implements Serializable {
         return table;
     }
 
-    public void setRefSchema(String schema) {
-        this.schema = schema;
-    }
-
-    public String getRefSchema() {
-        return schema == null ? EMPTY : schema;
-    }
-
     public void setName(String name) {
         if (!Objects.equals(this.name, name)) {
             generatedName = false;
@@ -264,10 +256,6 @@ public class ColumnConstraint implements Serializable {
 
     public boolean isMarkedDeleted() {
         return markedDeleted;
-    }
-
-    public void setMarkedDeleted(boolean markedDeleted) {
-        this.markedDeleted = markedDeleted;
     }
 
     public String getCheck() {

@@ -27,6 +27,7 @@ import org.executequery.event.DefaultQueryBookmarkEvent;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.DefaultActionButtonsPanel;
 import org.executequery.gui.DefaultPanelButton;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarks;
@@ -54,7 +55,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         implements ListSelectionListener {
 
     public static final String TITLE = "Manage Query Bookmark";
-    public static final String FRAME_ICON = "Bookmarks16.png";
+    public static final String FRAME_ICON = "icon_bookmarks";
 
     private static final String SAVE_COMMAND_NAME = "save";
     private static final String CANCEL_COMMAND_NAME = "cancel";
@@ -266,7 +267,7 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
         } catch (RepositoryException e) {
 
             GUIUtilities.displayExceptionErrorDialog(
-                    bundleString("saveError"), e);
+                    bundleString("saveError"), e, this.getClass());
         }
     }
 
@@ -461,26 +462,26 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
         JButton upButton = ActionUtilities.createToolbarButton(
                 this,
-                "Up16.png",
-                "Move selection up",
-                "moveUp");
+                "moveUp",
+                IconManager.getIcon("icon_move_up"),
+                "Move selection up");
 
         JButton downButton = ActionUtilities.createToolbarButton(
                 this,
-                "Down16.png",
-                "Move selection down",
-                "moveDown");
+                "moveDown",
+                IconManager.getIcon("icon_move_down"),
+                "Move selection down");
 
         JButton addButton = ActionUtilities.createToolbarButton(
                 this,
                 "addBookmark",
-                GUIUtilities.loadIcon("AddBookmark16.png"),
+                IconManager.getIcon("icon_add"),
                 "Add bookmark");
 
         JButton deleteButton = ActionUtilities.createToolbarButton(
                 this,
                 "deleteBookmark",
-                GUIUtilities.loadIcon("DeleteBookmark16.png"),
+                IconManager.getIcon("icon_delete"),
                 "Delete bookmark");
 
         GridBagConstraints gbc = new GridBagConstraints();

@@ -12,6 +12,7 @@ import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.dbstatistic.CompareStatPanel;
@@ -39,7 +40,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
+
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
+    public static final String FRAME_ICON = "icon_db_statistic";
+
     private IFBStatisticManager statisticManager;
     protected RolloverButton fileStatButton;
     protected RolloverButton compareButton;
@@ -82,9 +86,9 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         statDatabaseList = new ArrayList<>();
         toolBar = WidgetFactory.createToolBar("toolBar");
         toolBar.setFloatable(false);
-        fileStatButton = WidgetFactory.createRolloverButton("fileStatButton", bundleString("OpenFileLog"), "Open16.png");
+        fileStatButton = WidgetFactory.createRolloverButton("fileStatButton", bundleString("OpenFileLog"), "icon_folder");
         toolBar.add(fileStatButton);
-        compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "ComparerDB_16.png");
+        compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "icon_compare_db");
         toolBar.add(compareButton);
         fileStatButton.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
@@ -235,7 +239,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                     statisticManager.getDatabaseStatistics(options);
                                 }
                             } catch (SQLException ex) {
-                                GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex);
+                                GUIUtilities.displayExceptionErrorDialog(ex.getMessage(), ex, this.getClass());
                             } finally {
                                 try {
                                     statisticManager.getLogger().close();
@@ -267,7 +271,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                             ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) databaseBox.getSelectedItem()
                     ));
                 } catch (Exception e1) {
-                    GUIUtilities.displayExceptionErrorDialog("Error get database statistics", e1);
+                    GUIUtilities.displayExceptionErrorDialog("Error get database statistics", e1, this.getClass());
                 }
             }
         });
@@ -373,7 +377,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                                         Files.newInputStream(Paths.get(fullPath)), UserProperties.getInstance().getStringProperty("system.file.encoding")));
                         readFromBufferedReader(reader, fileChooser.getSelectedFile().getName(), fullPath);
                     } catch (Exception e1) {
-                        GUIUtilities.displayExceptionErrorDialog("file opening error", e1);
+                        GUIUtilities.displayExceptionErrorDialog("file opening error", e1, this.getClass());
                     } finally {
                         if (reader != null) {
                             try {
@@ -724,8 +728,14 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                         closeStat(db, panel);
                 }
             });
+            lbl.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    tabPane.setSelectedComponent(panel);
+                }
+            });
             //lbl.setToolTipText(tooltip);
-            JLabel icon = new JLabel(GUIUtilities.loadIcon("CloseDockable.png"));
+            JLabel icon = new JLabel(IconManager.getIcon("icon_close"));
 
             icon.addMouseListener(new MouseAdapter() {
                 @Override

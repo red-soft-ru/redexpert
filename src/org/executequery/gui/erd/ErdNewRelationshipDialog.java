@@ -133,7 +133,7 @@ public class ErdNewRelationshipDialog extends ErdPrintableDialog {
             }
         });
 
-        ErdTable[] tables = parent.getAllComponentsArray();
+        ErdTable[] tables = parent.getAllTablesArray();
         referencingTableCombo = WidgetFactory.createComboBox("referencingTableCombo", tables);
         referencedTableCombo = WidgetFactory.createComboBox("referencedTableCombo", tables);
 

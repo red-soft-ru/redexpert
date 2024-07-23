@@ -61,7 +61,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import javax.swing.*;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -95,6 +94,11 @@ public class QueryDispatcher {
     private boolean verboseLogging;
 
     /**
+     * indicates should print explained plan
+     */
+    private boolean explainedPlan;
+
+    /**
      * Indicates that an execute is in progress
      */
     private boolean executing;
@@ -115,6 +119,8 @@ public class QueryDispatcher {
     private boolean statementCancelled;
 
     private QueryTokenizer queryTokenizer;
+
+    private ProfilerPanel profilerPanel;
 
     private boolean waiting;
 
@@ -161,9 +167,8 @@ public class QueryDispatcher {
     }
 
     private void initialiseLogging() {
-
         verboseLogging = userProperties().getBooleanProperty("editor.logging.verbose");
-
+        explainedPlan = userProperties().getBooleanProperty("editor.plan.explained");
         newLineMatcher = Pattern.compile("\n").matcher("");
     }
 
@@ -215,107 +220,128 @@ public class QueryDispatcher {
     }
 
     /**
-     * Executes the query(ies) as specified. The executeAsBlock flag
-     * indicates that the query should be executed in its entirety -
-     * not split up into mulitple queries (where applicable).
-     *
-     * @param query          query string
-     * @param executeAsBlock to execute in entirety, false otherwise
-     */
-    public void executeSQLQuery(String query, boolean executeAsBlock, boolean anyConnections) {
-
-        executeSQLQuery(null, query, executeAsBlock, anyConnections, true);
-    }
-
-    /**
      * Executes the query(ies) as specified on the provided database
-     * connection properties object. The executeAsBlock flag
+     * connection properties object. The asBlock flag
      * indicates that the query should be executed in its entirety -
-     * not split up into mulitple queries (where applicable).
+     * not split up into multiple queries (where applicable).
      *
-     * @param dc             connection object
-     * @param query          query string
-     * @param executeAsBlock to execute in entirety, false otherwise
+     * @param dc      connection object
+     * @param query   query string
+     * @param asBlock to execute in entirety, false otherwise
      */
-    public void executeSQLQuery(
-            DatabaseConnection dc, final String query, final boolean executeAsBlock, boolean anyConnections, boolean inBackground) {
+    public void executeStatement(DatabaseConnection dc, final String query, final boolean asBlock, boolean anyConnections, boolean inBackground) {
 
         if (!checkBeforeExecuteQuery(query, dc, anyConnections))
             return;
 
-        if (querySender == null) {
-
+        if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
-        }
-
-
 
         statementCancelled = false;
         if (inBackground) {
             worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
 
+                @Override
                 public Object construct() {
-                    if (dc != null) {
 
+                    if (dc != null)
                         querySender.setDatabaseConnection(dc);
-                    }
-
                     querySender.setTpb(tpp.getTpb(dc));
 
-                    return executeSQL(query, executeAsBlock, anyConnections);
+                    return executeSQL(query, asBlock, anyConnections);
                 }
 
+                @Override
                 public void finished() {
-
                     delegate.finished(duration);
 
                     if (statementCancelled) {
-
-                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                                "Statement cancelled", anyConnections);
+                        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
                         delegate.setStatusMessage(" Statement cancelled");
                     }
+
                     querySender.setCloseConnectionAfterQuery(false);
                     querySender.releaseResourcesWithoutCommit();
+                    tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                     executing = false;
                 }
-
             };
         }
+
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
+        delegate.executing();
+        delegate.setStatusMessage(Constants.EMPTY);
+
+        if (inBackground) {
+            worker.start();
+            return;
+        }
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+        querySender.setTpb(tpp.getTpb(dc));
+
+        executeSQL(query, asBlock, anyConnections);
+        delegate.finished(duration);
+
+        if (statementCancelled) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
+            delegate.setStatusMessage(" Statement cancelled");
+        }
+
+        querySender.setCloseConnectionAfterQuery(false);
+        querySender.releaseResourcesWithoutCommit();
+        tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
+        executing = false;
+    }
+
+    public void executeScript(DatabaseConnection dc, final String script, boolean anyConnections) {
+
+        if (!ConnectionManager.hasConnections()) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
+            setStatusMessage(ERROR_EXECUTING);
+            return;
+        }
+
+        if (querySender == null)
+            querySender = new DefaultStatementExecutor(null, true);
+
+        if (dc != null)
+            querySender.setDatabaseConnection(dc);
+        querySender.setTpb(tpp.getTpb(dc));
+
+        statementCancelled = false;
+        worker = new ThreadWorker("ExecutingScriptInQueryDispatcher") {
+
+            @Override
+            public Object construct() {
+                return executeScript(script, anyConnections);
+            }
+
+            @Override
+            public void finished() {
+                delegate.finished(duration);
+
+                if (statementCancelled) {
+                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Statement cancelled", anyConnections);
+                    delegate.setStatusMessage(" Statement cancelled");
+                }
+
+                querySender.setCloseConnectionAfterQuery(false);
+                querySender.releaseResourcesWithoutCommit();
+                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
+                executing = false;
+            }
+        };
 
         setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
 
         delegate.executing();
         delegate.setStatusMessage(Constants.EMPTY);
-        if (inBackground)
-            worker.start();
-        else {
-            if (dc != null) {
-
-                querySender.setDatabaseConnection(dc);
-            }
-
-            querySender.setTpb(tpp.getTpb(dc));
-            executeSQL(query, executeAsBlock, anyConnections);
-            delegate.finished(duration);
-
-            if (statementCancelled) {
-
-                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                        "Statement cancelled", anyConnections);
-                delegate.setStatusMessage(" Statement cancelled");
-            }
-            querySender.setCloseConnectionAfterQuery(false);
-            querySender.releaseResourcesWithoutCommit();
-            executing = false;
-        }
+        worker.start();
     }
-    ProfilerPanel profilerPanel;
-    public void executeSQLQueryInProfiler(
-            DatabaseConnection dc, final String query, final boolean executeAsBlock) {
 
-        if (!checkBeforeExecuteQuery(query, dc, false))
-            return;
+    public void executeScriptInProfiler(DatabaseConnection dc, final String script) {
 
         if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
@@ -326,23 +352,32 @@ public class QueryDispatcher {
         querySender.setTpb(tpp.getTpb(dc));
         statementCancelled = false;
 
-
-        worker = new ThreadWorker("ExecutingQueryInQueryDispatcher") {
+        worker = new ThreadWorker("ExecutingScriptInQueryDispatcherUsingProfiler") {
 
             @Override
             public Object construct() {
 
                 try {
-
                     DefaultProfilerExecutor profilerExecutor = new DefaultProfilerExecutor(dc, null);
                     int sessionId = profilerExecutor.startSession();
 
                     if (sessionId != -1) {
-                        executeSQL(query, executeAsBlock, false);
+                        executeScript(script, false);
                         profilerExecutor.finishSession();
+
                         profilerPanel = new ProfilerPanel(sessionId, dc);
-                        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
-                                (Icon) null, profilerPanel, null, true);
+                        if (!profilerPanel.isDataCollected()) {
+                            profilerPanel = null;
+                            return null;
+                        }
+
+                        GUIUtilities.addCentralPane(
+                                ProfilerPanel.TITLE,
+                                ProfilerPanel.FRAME_ICON,
+                                profilerPanel,
+                                null,
+                                true
+                        );
 
                     } else {
                         GUIUtilities.displayWarningMessage(Bundles.get(ProfilerPanel.class, "VersionNotSupported"));
@@ -368,8 +403,11 @@ public class QueryDispatcher {
 
                 querySender.setCloseConnectionAfterQuery(false);
                 querySender.releaseResourcesWithoutCommit();
+                tpp.setCurrentTransaction(querySender.getCurrentSnapshotTransaction());
                 executing = false;
-                profilerPanel.updateUI();
+
+                if (profilerPanel != null)
+                    profilerPanel.updateUI();
             }
 
         };
@@ -381,92 +419,68 @@ public class QueryDispatcher {
         worker.start();
     }
 
-    public void executeSQLScript(DatabaseConnection dc,
-                                 final String script, boolean anyConnections) {
+    public void printExecutedPlan(DatabaseConnection dc, final String script, boolean anyConnections) {
 
         if (!ConnectionManager.hasConnections()) {
-
-            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
-            setStatusMessage(ERROR_EXECUTING);
-
-            return;
-        }
-
-        if (querySender == null) {
-
-            querySender = new DefaultStatementExecutor(null, true);
-        }
-
-        if (dc != null) {
-
-            querySender.setDatabaseConnection(dc);
-        }
-
-        querySender.setTpb(tpp.getTpb(dc));
-
-        statementCancelled = false;
-
-        worker = new ThreadWorker("ExecutingScriptInQueryDispatcher") {
-
-            public Object construct() {
-
-                return executeSQLScript(script, anyConnections);
-            }
-
-            public void finished() {
-
-                delegate.finished(duration);
-
-                if (statementCancelled) {
-
-                    setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE,
-                            "Statement cancelled", anyConnections);
-                    delegate.setStatusMessage(" Statement cancelled");
-                }
-
-                querySender.releaseResources();
-                executing = false;
-            }
-
-        };
-
-        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "---\nUsing connection: " + dc, anyConnections);
-
-        delegate.executing();
-        delegate.setStatusMessage(Constants.EMPTY);
-        worker.start();
-    }
-
-    public void printExecutedPlan(DatabaseConnection dc,
-                                  final String query, boolean explained, boolean anyConnections) {
-
-        if (!ConnectionManager.hasConnections()) {
-
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
             setStatusMessage(ERROR_EXECUTING);
-
             return;
         }
 
-        if (querySender == null) {
-
+        if (querySender == null)
             querySender = new DefaultStatementExecutor(null, true);
-        }
 
-        if (dc != null) {
-
+        if (dc != null)
             querySender.setDatabaseConnection(dc);
-        }
 
         querySender.setTpb(tpp.getTpb(dc));
 
         try {
-            Statement statement = querySender.getPreparedStatement(query);
-            printPlan(statement, explained, anyConnections);
-        } catch (SQLException e) {
-            setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
+            List<DerivedQuery> executableQueries = getExecutableQueries(script);
+            for (DerivedQuery derivedQuery : executableQueries) {
+
+                try {
+                    String query = derivedQuery.getDerivedQuery();
+                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE, "Printing plan for:", true, anyConnections);
+                    setOutputMessage(dc, SqlMessages.ACTION_MESSAGE_PREFORMAT, getVerboseString(query), true, anyConnections);
+
+                    Statement statement = prepareStatementWithParameters(query, getVariables(query), false);
+                    printPlan(dc, statement, anyConnections);
+
+                } catch (SQLException e) {
+                    setOutputMessage(dc, SqlMessages.ERROR_MESSAGE, e.getMessage(), anyConnections);
+
+                } finally {
+                    querySender.setCloseConnectionAfterQuery(false);
+                    querySender.releaseResourcesWithoutCommit();
+                }
+            }
+
+        } catch (InterruptedException e) {
+            setOutputMessage(dc, SqlMessages.WARNING_MESSAGE, "Interrupted", anyConnections);
+
         } finally {
-            querySender.releaseResources();
+            querySender.setCloseConnectionAfterQuery(false);
+            querySender.releaseResourcesWithoutCommit();
+        }
+    }
+
+    private void printPlan(DatabaseConnection dc, Statement statement, boolean anyConnections) {
+
+        String plan = getPlan(statement, false);
+        if (plan != null) {
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "PLAN:", true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, plan.replace("PLAN", "").trim(), true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "HASH:", true, anyConnections);
+            setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, String.valueOf(plan.hashCode()), anyConnections);
+        }
+
+        if (explainedPlan) {
+            plan = getPlan(statement, true);
+            if (plan != null) {
+                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "EXPLAIN:", true, anyConnections);
+                setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE_PREFORMAT, plan, anyConnections);
+            }
         }
     }
 
@@ -577,42 +591,11 @@ public class QueryDispatcher {
                 executing = true;
 
                 start = System.currentTimeMillis();
-                REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
-                CommonTokenStream tokens = new CommonTokenStream(lexer);
-                REDDATABASESqlParser sqlparser = new REDDATABASESqlParser(tokens);
-                List<? extends ANTLRErrorListener> listeners = sqlparser.getErrorListeners();
-                for (int i = 0; i < listeners.size(); i++) {
-                    if (listeners.get(i) instanceof ConsoleErrorListener)
-                        sqlparser.removeErrorListener(listeners.get(i));
-                }
-                ParseTree tree = sqlparser.execute_block_stmt();
-                ParseTreeWalker walker = new ParseTreeWalker();
-                StringBuilder variables = new StringBuilder();
-                walker.walk(new REDDATABASESqlBaseListener() {
-                    @Override
-                    public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
-                        List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
-                        for (int i = 0; i < in_pars.size(); i++) {
-                            variables.append("<").append(in_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                        }
-                        List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
-                        for (int i = 0; i < out_pars.size(); i++) {
-                            variables.append("<").append(out_pars.get(i).desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
-                        }
-                        List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
-                        for (int i = 0; i < vars.size(); i++) {
-                            variables.append("<").append(vars.get(i).variable_name().getRuleContext().getText()).append(">");
-                        }
-                    }
-                }, tree);
-                PreparedStatement statement = prepareStatementWithParameters(sql, variables.toString());
+                PreparedStatement statement = prepareStatementWithParameters(sql, getVariables(sql));
                 SqlStatementResult result = querySender.execute(statement, true);
-                //SqlStatementResult result = querySender.execute(sql, true);
 
-                if (Thread.interrupted()) {
-
+                if (Thread.interrupted())
                     throw new InterruptedException();
-                }
 
                 if (result.isResultSet()) {
 
@@ -967,7 +950,43 @@ public class QueryDispatcher {
         return DONE;
     }
 
-    private Object executeSQLScript(String script, boolean anyConnections) {
+    private static String getVariables(String sql) {
+
+        REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        REDDATABASESqlParser sqlParser = new REDDATABASESqlParser(tokens);
+        List<? extends ANTLRErrorListener> listeners = sqlParser.getErrorListeners();
+        for (ANTLRErrorListener listener : listeners) {
+            if (listener instanceof ConsoleErrorListener)
+                sqlParser.removeErrorListener(listener);
+        }
+
+        ParseTree tree = sqlParser.execute_block_stmt();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        StringBuilder variables = new StringBuilder();
+
+        walker.walk(new REDDATABASESqlBaseListener() {
+            @Override
+            public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
+
+                List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
+                for (REDDATABASESqlParser.Input_parameterContext inPar : in_pars)
+                    variables.append("<").append(inPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+
+                List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
+                for (REDDATABASESqlParser.Output_parameterContext outPar : out_pars)
+                    variables.append("<").append(outPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
+
+                List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
+                for (REDDATABASESqlParser.Local_variableContext var : vars)
+                    variables.append("<").append(var.variable_name().getRuleContext().getText()).append(">");
+            }
+        }, tree);
+
+        return variables.toString();
+    }
+
+    private Object executeScript(String script, boolean anyConnections) {
 
         IFBPerformanceInfo before, after;
         before = null;
@@ -986,25 +1005,7 @@ public class QueryDispatcher {
 
 
             executing = true;
-
-
-            QueryTokenizer queryTokenizer = new QueryTokenizer();
-            List<DerivedQuery> queries = queryTokenizer.tokenize(script);
-
-            List<DerivedQuery> executableQueries = new ArrayList<DerivedQuery>();
-
-            for (DerivedQuery query : queries) {
-                if (statementCancelled || Thread.interrupted()) {
-
-                    throw new InterruptedException();
-                }
-                if (query.isExecutable()) {
-
-                    executableQueries.add(query);
-                }
-
-            }
-            queries.clear();
+            List<DerivedQuery> executableQueries = getExecutableQueries(script);
 
             try {
                 DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
@@ -1053,6 +1054,10 @@ public class QueryDispatcher {
                     }
 
                     String queryToExecute = query.getDerivedQuery();
+                    if (new SqlParser(queryToExecute).isExecuteBlock()) {
+                        executeSQL(queryToExecute, true, anyConnections);
+                        continue;
+                    }
 
                     int type = query.getQueryType();
                     if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
@@ -1088,7 +1093,7 @@ public class QueryDispatcher {
                     else if (query.getQueryType() == QueryTypes.INSERT)
                         statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
                     else
-                        statement = querySender.getPreparedStatement(queryToExecute);
+                        statement = prepareStatementWithParameters(queryToExecute, "");
 
                     SqlStatementResult result = querySender.execute(type, statement);
 
@@ -1228,15 +1233,14 @@ public class QueryDispatcher {
 
 
                 } catch (SQLException e) {
-
                     processException(e, anyConnections);
-                    return "SQLException";
+                    if (stopOnError)
+                        return "SQLException";
 
                 } catch (InterruptedException e) {
-
-                    //Log.debug("InterruptedException");
                     statementCancelled = true; // make sure its set
-                    return "Interrupted";
+                    if (stopOnError)
+                        return "Interrupted";
 
                 } catch (OutOfMemoryError e) {
 
@@ -1247,28 +1251,20 @@ public class QueryDispatcher {
                     setStatusMessage(ERROR_EXECUTING);
 
                 } catch (Exception e) {
-
                     if (!statementCancelled) {
-
-
-                        e.printStackTrace();
-
-
+                        Log.error(e.getMessage(), e);
                         processException(e, anyConnections);
                     }
 
                 } finally {
-
-                    querySender.releaseResources();
+                    querySender.releaseResourcesWithoutCommit();
                     if (error && stopOnError)
                         break;
                 }
-
             }
-            if (end == 0) {
 
+            if (end == 0)
                 end = System.currentTimeMillis();
-            }
 
             long timeTaken = end - start;
             totalDuration += timeTaken;
@@ -1323,6 +1319,10 @@ public class QueryDispatcher {
     }
 
     PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+        return prepareStatementWithParameters(sql, variables, true);
+    }
+
+    PreparedStatement prepareStatementWithParameters(String sql, String variables, boolean showInputDialog) throws SQLException {
 
         SqlParser parser = new SqlParser(sql, variables);
         List<Parameter> params = parser.getParameters();
@@ -1337,37 +1337,40 @@ public class QueryDispatcher {
             params.get(i).setTypeName(parameterMetaData.getParameterTypeName(i + 1));
         }
 
-        // restore old params if needed
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+        if (showInputDialog) {
 
-            for (Parameter displayParam : displayParams) {
-                for (Parameter oldParam : oldParams) {
+            // restore old params if needed
+            if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+                List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
 
-                    if (displayParam.getValue() == null
-                            && oldParam.getType() == displayParam.getType()
-                            && oldParam.getName().contentEquals(displayParam.getName())) {
+                for (Parameter displayParam : displayParams) {
+                    for (Parameter oldParam : oldParams) {
 
-                        displayParam.setValue(oldParam.getValue());
-                        oldParams.remove(oldParam);
-                        break;
+                        if (displayParam.getValue() == null
+                                && oldParam.getType() == displayParam.getType()
+                                && oldParam.getName().contentEquals(displayParam.getName())) {
+
+                            displayParam.setValue(oldParam.getValue());
+                            oldParams.remove(oldParam);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        // check for input params
-        if (!displayParams.isEmpty()) {
+            // check for input params
+            if (!displayParams.isEmpty()) {
 
-            if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
-                if (displayParams.stream().anyMatch(Parameter::isNull))
+                if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
+                    if (displayParams.stream().anyMatch(Parameter::isNull))
+                        showInputParametersDialog(displayParams);
+                } else
                     showInputParametersDialog(displayParams);
-            } else
-                showInputParametersDialog(displayParams);
-        }
+            }
 
-        // remember inputted params
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+            // remember inputted params
+            QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+        }
 
         // add params to the statement
         for (int i = 0; i < params.size(); i++) {
@@ -1500,38 +1503,51 @@ public class QueryDispatcher {
         }
     }
 
-    private void printPlan(Statement st, boolean explained, boolean anyConnections) {
+    private String getPlan(Statement realStatement, boolean explained) {
+        String plan = null;
+
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
             Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
             DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
             Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
-            if (driver.getClass().getName().contains("FBDriver")) {
-                Statement realST = ((PooledStatement) st).getStatement();
+            if (!driver.getClass().getName().contains("FBDriver"))
+                return null;
 
-                Statement statement = null;
-                try {
-                    statement = realST.unwrap(Statement.class);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl");
-                    String plan;
-                    if (explained)
-                        plan = db.getLastExplainExecutedPlan(statement);
-                    else plan = db.getLastExecutedPlan(statement);
-                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, plan, true, anyConnections);
+            try {
+                realStatement = ((PooledStatement) realStatement).getStatement();
+                Statement statement = realStatement.unwrap(Statement.class);
+                IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                        databaseConnection.getDriverMajorVersion(), statement, "FBDatabasePerformanceImpl"
+                );
 
-                } catch (SQLException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
+                plan = explained ? db.getLastExplainExecutedPlan(statement) : db.getLastExecutedPlan(statement);
+
+            } catch (SQLException | ClassNotFoundException e) {
+                Log.error(e.getMessage(), e);
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
+
+        return plan;
+    }
+
+    private List<DerivedQuery> getExecutableQueries(String script) throws InterruptedException {
+
+        List<DerivedQuery> executableQueries = new ArrayList<>();
+        for (DerivedQuery query : new QueryTokenizer().tokenize(script)) {
+
+            if (statementCancelled || Thread.interrupted())
+                throw new InterruptedException();
+
+            if (query.isExecutable())
+                executableQueries.add(query);
+        }
+
+        return executableQueries;
     }
 
     private String formatDuration(long totalDuration) {
@@ -1614,28 +1630,19 @@ public class QueryDispatcher {
      * @param query - the executed query
      */
     private void logExecution(String query, boolean anyConnections) {
-
         Log.info(EXECUTING + query);
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
+        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ACTION_MESSAGE_PREFORMAT, getVerboseString(query), anyConnections);
+    }
 
-        if (verboseLogging) {
+    private String getVerboseString(String sourceText) {
+        if (verboseLogging)
+            return sourceText;
 
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE_PREFORMAT, query, anyConnections);
+        int stringLength = sourceText.length();
+        int subIndex = stringLength < 50 ? (stringLength + 1) : 50;
 
-        } else {
-
-            int queryLength = query.length();
-            int subIndex = queryLength < 50 ? (queryLength + 1) : 50;
-
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE, EXECUTING, anyConnections);
-            setOutputMessage(querySender.getDatabaseConnection(),
-                    SqlMessages.ACTION_MESSAGE_PREFORMAT,
-                    query.substring(0, subIndex - 1).trim() + SUBSTRING, anyConnections);
-        }
-
+        return sourceText.substring(0, subIndex - 1).trim() + SUBSTRING;
     }
 
     private void processException(Throwable e, boolean anyConnections) {
@@ -1871,16 +1878,14 @@ public class QueryDispatcher {
 
         String checkUpdatesToLog = "Checking for updates from the release hub is ";
         if (query.toLowerCase().trim().startsWith("releasehub on")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "true");
+            SystemProperties.setProperty("user", "update.use.releasehub", "true");
             checkUpdatesToLog += "enabled";
             Log.info(checkUpdatesToLog);
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);
             return false;
         }
         if (query.toLowerCase().trim().startsWith("releasehub off")) {
-            SystemProperties.setProperty("user", "releasehub",
-                    "false");
+            SystemProperties.setProperty("user", "update.use.releasehub", "false");
             checkUpdatesToLog += "disabled";
             Log.info(checkUpdatesToLog);
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, checkUpdatesToLog, anyConnections);

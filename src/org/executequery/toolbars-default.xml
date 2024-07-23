@@ -1,29 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-    =======================================================================
-    File:         toolbars-default.xml
-    Author:       Takis Diakoumis
-    Description:  Toolbar buttons and layout defaults file
-    =======================================================================
--->
-
-<!-- 
-
-    separator definition:
-    
-    <button id="29">
-        <visible>false</visible>
-        <order>3</order>
-    </button>
-
- -->
-
-<!-- next id = 48 -->
-
 <system-toolbars>
 
-    <toolbar name="File Tools" visible="true">
+    <toolbar name="Database Tools" visible="true">
 
         <constraints>
 
@@ -39,57 +17,73 @@
 
         <buttons>
 
-            <button id="0" action-id="new-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="1" action-id="open-command">
+            <button id="101" action-id="connect-to-database-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="2" action-id="save-command">
-                <visible>true</visible>
+            <button id="102" action-id="connect-to-all-databases-command">
+                <visible>false</visible>
                 <order>2</order>
             </button>
 
-            <button id="29">
-                <visible>true</visible>
+            <button id="103" action-id="disconnect-from-all-database-command">
+                <visible>false</visible>
                 <order>3</order>
             </button>
 
-            <button id="3" action-id="print-command">
+            <button id="104" action-id="reload-connection-tree-selection-command">
                 <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="4" action-id="print-preview-command">
+            <button id="105" action-id="search-connection-tree-node-command">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-            <button id="20" action-id="save-as-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="-1">
+                <!-- separator -->
+                <visible>true</visible>
+                <order>6</order>
             </button>
 
-            <button id="18" action-id="page-setup-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="106" action-id="new-connection-command">
+                <visible>true</visible>
+                <order>7</order>
+            </button>
+
+            <button id="107" action-id="create-database-command">
+                <visible>true</visible>
+                <order>8</order>
+            </button>
+
+            <button id="108" action-id="execute-sql-script-command">
+                <visible>true</visible>
+                <order>9</order>
+            </button>
+
+            <button id="109" action-id="comparerDB-command">
+                <visible>true</visible>
+                <order>10</order>
+            </button>
+
+            <button id="110" action-id="extract-metadata-command">
+                <visible>true</visible>
+                <order>11</order>
             </button>
 
         </buttons>
 
     </toolbar>
 
-    <toolbar name="Edit Tools" visible="true">
+    <toolbar name="Application Tools" visible="true">
 
         <constraints>
 
             <row>0</row>
             <position>1</position>
-            <loc-x>-1</loc-x>
+            <loc-x>0</loc-x>
             <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
@@ -99,229 +93,63 @@
 
         <buttons>
 
-            <button id="5" action-id="cut-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="11" action-id="copy-command">
+            <button id="201" action-id="editor-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="6" action-id="paste-command">
+            <button id="202" action-id="erd-command">
                 <visible>true</visible>
                 <order>2</order>
             </button>
 
-            <button id="29">
+            <button id="-1">
+                <!-- separator -->
                 <visible>true</visible>
                 <order>3</order>
             </button>
 
-            <button id="7" action-id="undo-command">
+            <button id="203" action-id="database-statistic-command">
                 <visible>true</visible>
                 <order>4</order>
             </button>
 
-            <button id="8" action-id="redo-command">
+            <button id="204" action-id="trace-manager-command">
                 <visible>true</visible>
                 <order>5</order>
             </button>
 
-        </buttons>
-
-    </toolbar>
-
-    <toolbar name="Search Tools" visible="false">
-
-        <constraints>
-
-            <row>-1</row>
-            <position>-1</position>
-            <loc-x>-1</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="17" action-id="find-command">
-                <visible>true</visible>
-                <order>0</order>
-            </button>
-
-            <button id="30" action-id="find-next-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="19" action-id="replace-command">
-                <visible>true</visible>
-                <order>2</order>
-            </button>
-
-            <button id="28" action-id="goto-command">
-                <visible>true</visible>
-                <order>3</order>
-            </button>
-
-            <button id="35" action-id="find-in-files">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-        </buttons>
-
-    </toolbar>
-
-    <toolbar name="Database Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>2</position>
-            <loc-x>-1</loc-x>
-            <resize-offset-x>-1</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <buttons>
-
-            <button id="9" action-id="connect-command">
-                <visible>false</visible>
-                <order>0</order>
-            </button>
-
-            <button id="12" action-id="editor-command">
-                <visible>true</visible>
-                <order>1</order>
-            </button>
-
-            <button id="20" action-id="create-database-command">
-                <visible>true</visible>
-                <order>2</order>
-
-            </button>
-
-            <button id="24" action-id="user-manager-command">
-                <visible>true</visible>
-                <order>8</order>
-            </button>
-
-            <button id="46" action-id="grant-manager-command">
-                <visible>true</visible>
-                <order>9</order>
-            </button>
-
-            <!--<button id="47" action-id="comparerDB-command">
-                <visible>true</visible>
-                <order>9</order>
-            </button>-->
-
-            <button id="48" action-id="execute-sql-script-command">
+            <button id="205" action-id="user-manager-command">
                 <visible>true</visible>
                 <order>6</order>
             </button>
 
-            <button id="22" action-id="generate-scripts-command">
-                <visible>true</visible>
-                <order>5</order>
-            </button>
-
-            <button id="41" action-id="execute-object">
+            <button id="206" action-id="grant-manager-command">
                 <visible>true</visible>
                 <order>7</order>
             </button>
 
-            <button id="42" action-id="compare-data-types">
+            <button id="207" action-id="profiler-command">
                 <visible>false</visible>
-                <order>1000</order>
+                <order>8</order>
             </button>
 
-            <button id="31" action-id="user-keywords-command">
+            <button id="208" action-id="table-validation-command">
                 <visible>false</visible>
-                <order>1000</order>
+                <order>9</order>
             </button>
 
-            <button id="34" action-id="console-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="209" action-id="import-data-from-file-command">
+                <visible>true</visible>
+                <order>10</order>
+            </button>
+
+            <button id="210" action-id="generator-test-data-command">
+                <visible>true</visible>
+                <order>11</order>
             </button>
 
         </buttons>
-
-    </toolbar>
-
-    <toolbar name="Import/Export Tools" visible="true">
-
-        <constraints>
-
-            <row>0</row>
-            <position>6</position>
-            <loc-x>346</loc-x>
-            <resize-offset-x>341</resize-offset-x>
-            <minimum-width>-1</minimum-width>
-            <preferred-width>-1</preferred-width>
-            <current-width>0</current-width>
-
-        </constraints>
-
-        <!--<buttons>
-
-            <button id="45" action-id="export-sql-command">
-                >
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="24" action-id="import-delimited-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="26" action-id="export-delimited-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="25" action-id="import-xml-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="27" action-id="export-xml-command">
-                <visible>true</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="36" action-id="export-excel-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="29">
-                <visible>false</visible>
-                <order>3</order>
-            </button>
-
-            <button id="46" action-id="export-connections-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-            <button id="47" action-id="import-connections-from-file-command">
-                <visible>false</visible>
-                <order>1000</order>
-            </button>
-
-        </buttons>-->
 
     </toolbar>
 
@@ -330,9 +158,9 @@
         <constraints>
 
             <row>0</row>
-            <position>3</position>
-            <loc-x>489</loc-x>
-            <resize-offset-x>477</resize-offset-x>
+            <position>2</position>
+            <loc-x>0</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
             <minimum-width>-1</minimum-width>
             <preferred-width>-1</preferred-width>
             <current-width>0</current-width>
@@ -341,29 +169,174 @@
 
         <buttons>
 
-            <button id="14" action-id="preferences-command">
+            <button id="301" action-id="console-command">
+                <visible>false</visible>
+                <order>1</order>
+            </button>
+
+            <button id="302" action-id="application-logs-command">
+                <visible>false</visible>
+                <order>2</order>
+            </button>
+
+            <button id="303" action-id="preferences-command">
+                <visible>true</visible>
+                <order>3</order>
+            </button>
+
+            <button id="304" action-id="help-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
+
+        </buttons>
+
+    </toolbar>
+
+    <toolbar name="Query Editor Tools" visible="true">
+
+        <constraints>
+
+            <row>0</row>
+            <position>0</position>
+            <loc-x>0</loc-x>
+            <resize-offset-x>-1</resize-offset-x>
+            <minimum-width>-1</minimum-width>
+            <preferred-width>-1</preferred-width>
+            <current-width>0</current-width>
+
+        </constraints>
+
+        <buttons>
+
+            <button id="400" action-id="connection-combo-template">
                 <visible>true</visible>
                 <order>0</order>
             </button>
 
-            <button id="15" action-id="help-command">
+            <button id="401" action-id="execute-script-command">
                 <visible>true</visible>
                 <order>1</order>
             </button>
 
-            <button id="16" action-id="about-command">
-                <visible>true</visible>
+            <button id="402" action-id="execute-statement-command">
+                <visible>false</visible>
                 <order>2</order>
             </button>
 
-            <button id="44" action-id="visit-eq-command">
-                <visible>false</visible>
-                <order>1000</order>
+            <button id="403" action-id="execute-in-profiler-command">
+                <visible>true</visible>
+                <order>3</order>
             </button>
 
-            <button id="32" action-id="heap-memory-command">
+            <button id="404" action-id="stop-execution-command">
+                <visible>true</visible>
+                <order>4</order>
+            </button>
+
+            <button id="-1">
+                <visible>true</visible>
+                <order>5</order>
+            </button>
+
+            <button id="405" action-id="commit-command">
+                <visible>true</visible>
+                <order>6</order>
+            </button>
+
+            <button id="406" action-id="rollback-command">
+                <visible>true</visible>
+                <order>7</order>
+            </button>
+
+            <button id="407" action-id="toggle-autocommit-command">
+                <visible>true</visible>
+                <order>8</order>
+            </button>
+
+            <button id="408" action-id="editor-stop-on-error-command">
+                <visible>true</visible>
+                <order>9</order>
+            </button>
+
+            <button id="409" action-id="editor-execute-to-file-command">
+                <visible>true</visible>
+                <order>10</order>
+            </button>
+
+            <button id="410" action-id="toggle-rs-limit-command">
+                <visible>true</visible>
+                <order>11</order>
+            </button>
+
+            <button id="-1">
+                <visible>true</visible>
+                <order>12</order>
+            </button>
+
+            <button id="411" action-id="manage-bookmarks-command">
                 <visible>false</visible>
-                <order>1000</order>
+                <order>13</order>
+            </button>
+
+            <button id="412" action-id="sql-history-command">
+                <visible>true</visible>
+                <order>14</order>
+            </button>
+
+            <button id="413" action-id="editor-previous-command">
+                <visible>true</visible>
+                <order>15</order>
+            </button>
+
+            <button id="414" action-id="editor-next-command">
+                <visible>true</visible>
+                <order>16</order>
+            </button>
+
+            <button id="-1">
+                <visible>true</visible>
+                <order>17</order>
+            </button>
+
+            <button id="415" action-id="editor-export-command">
+                <visible>true</visible>
+                <order>18</order>
+            </button>
+
+            <button id="416" action-id="editor-rs-metadata-command">
+                <visible>false</visible>
+                <order>19</order>
+            </button>
+
+            <button id="417" action-id="editor-result-set-filter-command">
+                <visible>true</visible>
+                <order>20</order>
+            </button>
+
+            <button id="418" action-id="print-plan-command">
+                <visible>true</visible>
+                <order>21</order>
+            </button>
+
+            <button id="-1">
+                <visible>false</visible>
+                <order>22</order>
+            </button>
+
+            <button id="419" action-id="toggle-editor-transaction-params-command">
+                <visible>false</visible>
+                <order>23</order>
+            </button>
+
+            <button id="420" action-id="toggle-editor-output-command">
+                <visible>false</visible>
+                <order>24</order>
+            </button>
+
+            <button id="421" action-id="change-split-orientation-command">
+                <visible>false</visible>
+                <order>25</order>
             </button>
 
         </buttons>

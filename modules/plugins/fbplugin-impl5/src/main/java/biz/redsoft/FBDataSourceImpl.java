@@ -1,8 +1,10 @@
 package biz.redsoft;
 
 
+import org.firebirdsql.gds.JaybirdErrorCodes;
 import org.firebirdsql.gds.TransactionParameterBuffer;
 import org.firebirdsql.gds.impl.GDSType;
+import org.firebirdsql.gds.ng.FbExceptionBuilder;
 import org.firebirdsql.gds.ng.FbTransaction;
 import org.firebirdsql.jaybird.xca.FBSADataSource;
 import org.firebirdsql.jdbc.FBConnection;
@@ -11,9 +13,12 @@ import javax.resource.ResourceException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static org.firebirdsql.gds.VaxEncoding.iscVaxInteger2;
+import static org.firebirdsql.gds.VaxEncoding.iscVaxLong;
+
 
 public class FBDataSourceImpl implements IFBDataSource {
-    private FBSADataSource fbDataSource;
+    private final FBSADataSource fbDataSource;
 
     public FBDataSourceImpl() {
         fbDataSource = new FBSADataSource(GDSType.getType("PURE_JAVA"));
@@ -87,6 +92,24 @@ public class FBDataSourceImpl implements IFBDataSource {
         if (transaction != null)
             return transaction.getTransactionId();
         else return -1;
+    }
+
+    @Override
+    public long getSnapshotTransaction(Connection con) throws SQLException {
+        FbTransaction transaction = ((FBConnection) con).getGDSHelper().getCurrentTransaction();
+        if (transaction != null) {
+            return transaction.getTransactionInfo(new byte[]{ITPBConstants.fb_info_tra_snapshot_number}, 16, infoResponse -> {
+                if (infoResponse[0] != ITPBConstants.fb_info_tra_snapshot_number) {
+                    throw FbExceptionBuilder.forException(JaybirdErrorCodes.jb_unexpectedInfoResponse)
+                            .messageParameter(
+                                    "transaction", "fb_info_tra_snapshot_number", ITPBConstants.fb_info_tra_snapshot_number, infoResponse[0])
+                            .toSQLException();
+                }
+                int length = iscVaxInteger2(infoResponse, 1);
+                return iscVaxLong(infoResponse, 3, length);
+            });
+        } else return -1;
+
     }
 }
 

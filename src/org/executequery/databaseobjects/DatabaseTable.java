@@ -38,8 +38,6 @@ public interface DatabaseTable extends DatabaseTableObject {
      */
     List<NamedObject> getObjects() throws DataSourceException;
 
-    List<DatabaseColumn> getExportedKeys() throws DataSourceException;
-
     DatabaseColumn getColumn(String name) throws DataSourceException;
 
     /**
@@ -163,12 +161,6 @@ public interface DatabaseTable extends DatabaseTableObject {
     void setModifiedSQLText(String modifiedSQLText);
 
     String getDropSQLText(boolean cascadeConstraints);
-
-    String getInsertSQLText();
-
-    String getUpdateSQLText();
-
-    String getSelectSQLText();
 
     boolean hasReferenceTo(DatabaseTable anotherTable);
 

@@ -40,7 +40,7 @@ public class TableValidationCommand extends OpenFrameCommand
 
             } catch (SQLException e) {
                 e.printStackTrace(System.out);
-                GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e);
+                GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e, this.getClass());
             }
         }
 
@@ -75,7 +75,7 @@ public class TableValidationCommand extends OpenFrameCommand
 
         } catch (ClassNotFoundException | SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBMaintenanceManager instance", e);
+                    "Unable to init IFBMaintenanceManager instance", e, this.getClass());
         }
 
         return null;
@@ -83,31 +83,29 @@ public class TableValidationCommand extends OpenFrameCommand
 
     private void showPanel(TableValidationPanel tableValidationPanel) {
 
-        if (isActionableDialogOpen()) {
-            GUIUtilities.actionableDialogToFront();
+        String title = TableValidationPanel.TITLE;
+        if (isCentralPaneOpen(title))
             return;
+
+        try {
+            GUIUtilities.showWaitCursor();
+
+            GUIUtilities.addCentralPane(
+                    title,
+                    TableValidationPanel.FRAME_ICON,
+                    tableValidationPanel,
+                    null, true
+            );
+
+        } finally {
+            GUIUtilities.showNormalCursor();
         }
-
-        if (!isDialogOpen(TableValidationPanel.TITLE)) {
-            try {
-
-                GUIUtilities.showWaitCursor();
-
-                GUIUtilities.addCentralPane(TableValidationPanel.TITLE,
-                        TableValidationPanel.FRAME_ICON,
-                        tableValidationPanel,
-                        null, true);
-
-            } finally {
-                GUIUtilities.showNormalCursor();
-            }
-        }
-
     }
 
     @Override
     public void execute(ActionEvent e) {
-        showPanel(new TableValidationPanel());
+        if (isConnected())
+            showPanel(new TableValidationPanel());
     }
 
 }

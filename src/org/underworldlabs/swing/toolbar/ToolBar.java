@@ -32,6 +32,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
@@ -107,7 +108,7 @@ public class ToolBar extends AbstractToolBarPanel
     /**
      * The tool buttons added
      */
-    protected List toolButtons;
+    protected List<Object> toolButtons;
 
     /**
      * Dummy object for separator
@@ -570,11 +571,11 @@ public class ToolBar extends AbstractToolBarPanel
 
     } // ToolBarSelectionWidget
 
+    public RolloverButton getButton(String actionId) {
+        return (RolloverButton) toolButtons.stream()
+                .filter(button -> button instanceof RolloverButton)
+                .filter(button -> Objects.equals(button.toString(), actionId))
+                .findFirst().orElse(null);
+    }
+
 }
-
-
-
-
-
-
-

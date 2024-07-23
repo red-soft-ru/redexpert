@@ -22,20 +22,6 @@ package org.executequery.event;
 
 public interface RecentOpenFileEvent extends ApplicationEvent {
 
-    /**
-     * Method name for recent files updated
-     */
     String RECENT_FILES_UPDATED = "recentFilesUpdated";
 
 }
-
-
-
-
-
-
-
-
-
-
-

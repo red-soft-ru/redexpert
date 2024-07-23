@@ -33,6 +33,7 @@ import java.beans.PropertyChangeListener;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public final class SmoothGradientComboBoxUI extends MetalComboBoxUI {
 
     public static ComponentUI createUI(JComponent b) {

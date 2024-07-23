@@ -34,17 +34,13 @@ import java.awt.event.ActionEvent;
  */
 public class GotoCommand extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
         JPanel panel = GUIUtilities.getSelectedCentralPane();
         if (panel instanceof QueryEditor) {
             QueryEditor queryEditor = (QueryEditor) panel;
-            try {
-                queryEditor.goToRow(Integer.parseInt(
-                        GUIUtilities.displayInputMessage(bundledString("goTo"), bundledString("lineNumber"))));
-            } catch (NumberFormatException numExc) {}
+            queryEditor.goToRow(Integer.parseInt(GUIUtilities.displayInputMessage(bundledString("goTo"), bundledString("lineNumber"))));
         }
-        panel = null;
     }
 
 }
-

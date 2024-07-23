@@ -42,6 +42,11 @@ public class QueryEditorSettings {
     private static Color selectionColour;
 
     /**
+     * Selected text colour
+     */
+    private static Color selectedTextColour;
+
+    /**
      * The line highlight colour
      */
     private static Color lineHighlightColour;
@@ -79,6 +84,8 @@ public class QueryEditorSettings {
 
         selectionColour = SystemProperties.getColourProperty(
                 "user", "editor.text.selection.background");
+        selectedTextColour = SystemProperties.getColourProperty(
+                "user", "editor.text.selection.foreground");
         editorBackground = SystemProperties.getColourProperty(
                 "user", "editor.text.background.colour");
         lineHighlightColour = SystemProperties.getColourProperty(
@@ -104,6 +111,10 @@ public class QueryEditorSettings {
 
     public static Color getSelectionColour() {
         return selectionColour;
+    }
+
+    public static Color getSelectedTextColour() {
+        return selectedTextColour;
     }
 
     public static Color getLineHighlightColour() {

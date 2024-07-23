@@ -26,6 +26,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.SplitPaneFactory;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.text.SimpleSqlTextPanel;
@@ -66,7 +67,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
         ExecutionController {
 
     public static final String TITLE = Bundles.get(ExecuteSqlScriptPanel.class, "title");
-    public static final String FRAME_ICON = "ExecuteSqlScript16.png";
+    public static final String FRAME_ICON = "icon_execute_script";
 
     public static final int MAX_LENGTH_TEXT_PANE = 1000000;
     private static final int STATUS_BAR_HEIGHT = 26;
@@ -393,7 +394,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
                 connection = getSelectedConnection();
                 if (connection != null && !connection.isConnected()) {
                     outputPanel.appendAction("Connecting to the DB...");
-                    ConnectionManager.createDataSource(connection, true);
+                    ConnectionMediator.getInstance().connect(connection, true);
                 }
             }
 
@@ -498,11 +499,6 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     @Override
     public void queryMessage(final String message) {
         ThreadUtils.invokeAndWait(() -> outputPanel.appendActionFixedWidth(message));
-    }
-
-    @Override
-    public void warningMessage(final String message) {
-        ThreadUtils.invokeAndWait(() -> outputPanel.appendWarning(message));
     }
 
     // ---

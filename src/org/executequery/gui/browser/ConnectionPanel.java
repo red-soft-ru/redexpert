@@ -24,18 +24,19 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.*;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.components.TextFieldPanel;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
-import org.executequery.databaseobjects.ConnectionTester;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
 import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.drivers.DialogDriverPanel;
-import org.executequery.gui.editor.TransactionIsolationCombobox;
+import org.executequery.gui.drivers.CreateDriverDialog;
+import org.executequery.gui.editor.TransactionIsolationComboBox;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -113,7 +114,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JLabel statusLabel;
 
-    private TransactionIsolationCombobox txCombo;
+    private TransactionIsolationComboBox txCombo;
     private JButton txApplyButton;
     private Border redBorder;
     private Border blackBorder;
@@ -497,7 +498,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
-        txCombo = new TransactionIsolationCombobox();
+        txCombo = new TransactionIsolationComboBox();
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));
@@ -890,37 +891,28 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void test() {
 
-        if (!valid()) {
-
+        if (!valid())
             return;
-        }
 
         populateAndSave();
-
         try {
-
             GUIUtilities.showWaitCursor();
-            if (new ConnectionTester().test(databaseConnection)) {
-
+            if (ConnectionMediator.getInstance().test(databaseConnection))
                 GUIUtilities.displayInformationMessage(bundleString("test.success"));
-            }
 
         } catch (DataSourceException e) {
-
             connectionError(e);
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
-
     }
 
     private void connectionError(DataSourceException e) {
 
         String sb = Bundles.getCommon("error.connection") +
                 e.getExtendedMessage();
-        GUIUtilities.displayExceptionErrorDialog(sb, e);
+        GUIUtilities.displayExceptionErrorDialog(sb, e, this.getClass());
     }
 
     private boolean valid() {
@@ -1717,7 +1709,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     public void addNewDriver() {
 
-        new DialogDriverPanel();
+        new CreateDriverDialog();
     }
 
     @Override
@@ -1792,8 +1784,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             setFocusPainted(false);
             setBorderPainted(false);
             setMargin(Constants.EMPTY_INSETS);
-            setIcon(GUIUtilities.loadIcon("GcDelete16.png"));
-            setPressedIcon(GUIUtilities.loadIcon("GcDeletePressed16.png"));
+            setIcon(IconManager.getIcon("icon_trash"));
 
             try {
                 setUI(new javax.swing.plaf.basic.BasicButtonUI());
@@ -1811,7 +1802,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     } // DeleteButtonRenderer
 
-    class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
+    static class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
 
         private final List<Component> componentOrder = new ArrayList<>();
 

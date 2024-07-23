@@ -28,16 +28,8 @@ public interface ExecutionController {
 
     void errorMessage(String message);
 
-    void warningMessage(String message);
-
     void message(String message);
 
     boolean logOutput();
 
 }
-
-
-
-
-
-

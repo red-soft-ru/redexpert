@@ -109,11 +109,6 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
     private DatabaseConnection databaseConnection;
 
     /**
-     * the transaction isolation level from connection
-     */
-    private int connectionIsolationLevel;
-
-    /**
      * the isolation level for transaction
      */
     private int transactionIsolation;
@@ -181,53 +176,14 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
              */
 
             String name = tableName;
-            String catalog = null;
-            String schema = null;
-
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(databaseConnection);
 
-            int nameDelim = tableName.indexOf('.');
-            if (nameDelim != -1) {
-
-                name = tableName.substring(nameDelim + 1);
-                String value = tableName.substring(0, nameDelim);
-                DatabaseMetaData databaseMetaData = host.getDatabaseMetaData();
-
-                if (host.supportsCatalogsInTableDefinitions()) {
-
-                    ResultSet resultSet = databaseMetaData.getCatalogs();
-                    while (resultSet.next()) {
-
-                        String _catalog = resultSet.getString(1);
-                        if (value.equalsIgnoreCase(_catalog)) {
-
-                            catalog = _catalog;
-                            break;
-                        }
-                    }
-
-                    resultSet.close();
-
-                } else if (host.supportsSchemasInTableDefinitions()) {
-
-                    ResultSet resultSet = databaseMetaData.getCatalogs();
-                    while (resultSet.next()) {
-
-                        String _schema = resultSet.getString(1);
-                        if (value.equalsIgnoreCase(_schema)) {
-
-                            schema = _schema;
-                            break;
-                        }
-                    }
-
-                    resultSet.close();
-                }
-
-            }
+            int nameDelimiter = tableName.indexOf('.');
+            if (nameDelimiter != -1)
+                name = tableName.substring(nameDelimiter + 1);
 
             DatabaseMetaData databaseMetaData = host.getDatabaseMetaData();
-            ResultSet resultSet = databaseMetaData.getTables(catalog, schema, null, null);
+            ResultSet resultSet = databaseMetaData.getTables(null, null, null, null);
 
             String nameToSearchOn = null;
             while (resultSet.next()) {
@@ -245,7 +201,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             if (StringUtils.isNotBlank(nameToSearchOn)) {
 
                 databaseMetaData = conn.getMetaData();
-                resultSet = databaseMetaData.getColumns(catalog, schema, nameToSearchOn, null);
+                resultSet = databaseMetaData.getColumns(null, null, nameToSearchOn, null);
                 statementResult.setResultSet(resultSet);
 
             } else {
@@ -334,7 +290,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                 if (idTra == -1)
                     ConnectionManager.setTPBtoConnection(databaseConnection, conn, tpb);
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e);
+                GUIUtilities.displayExceptionErrorDialog("Error transaction parameters", e, this.getClass());
             }
 
         return true;
@@ -342,6 +298,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
     public long getIDTransaction() {
         return ConnectionManager.getIDTransaction(databaseConnection, conn);
+    }
+
+    public long getCurrentSnapshotTransaction() {
+        return ConnectionManager.getCurrentSnapshotTransaction(databaseConnection, conn);
     }
 
     /**
@@ -517,29 +477,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
                 sb.append(" = ");
             }
             sb.append(" call ");
-
-            if (databaseExecutable.supportCatalogOrSchemaInFunctionOrProcedureCalls()) {
-
-                String namePrefix = null;
-                if (databaseExecutable.supportCatalogInFunctionOrProcedureCalls()) {
-
-                    namePrefix = databaseExecutable.getCatalogName();
-
-                }
-                if (databaseExecutable.supportSchemaInFunctionOrProcedureCalls()) {
-
-                    namePrefix = databaseExecutable.getSchemaName();
-
-                }
-
-                if (namePrefix != null) {
-
-                    sb.append(namePrefix).append('.');
-                }
-            }
-
-            sb.append(databaseExecutable.getName()).
-                    append("( ");
+            sb.append(databaseExecutable.getName()).append("( ");
 
             // build the ins params place holders
             for (int i = 0, n = ins.size(); i < n; i++) {
@@ -557,14 +495,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("{ call ");
-
-            if (databaseExecutable.getSchemaName() != null) {
-                sb.append(databaseExecutable.getSchemaName()).
-                        append('.');
-            }
-
-            sb.append(databaseExecutable.getName()).
-                    append("( ) }");
+            sb.append(databaseExecutable.getName()).append("( ) }");
 
             procQuery = sb.toString();
         }
@@ -1159,24 +1090,8 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
 
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(databaseConnection);
 
-            DatabaseSource defaultCatalog = host.getDefaultCatalog();
-            DatabaseSource defaultSchema = host.getDefaultSchema();
-
-            String catalog = null;
-            String schema = null;
-
-            if (defaultCatalog != null) {
-
-                catalog = defaultCatalog.getName();
-            }
-
-            if (defaultSchema != null) {
-
-                schema = defaultSchema.getName();
-            }
-
             DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet resultSet = metaData.getTables(catalog, schema, null, new String[]{"TABLE"});
+            ResultSet resultSet = metaData.getTables(null, null, null, new String[]{"TABLE"});
             statementResult.setResultSet(resultSet);
 
         } catch (SQLException e) {

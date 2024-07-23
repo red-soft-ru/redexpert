@@ -41,25 +41,18 @@ public interface QueryDelegate {
 
     /**
      * Notifies the runner that a query is executing.
-     *
-     * @param a message
      */
     void executing();
 
     /**
      * Sets the result text within the designated
      * statement results area to the specified values.
-     *
-     * @param the result of the executed query (update)
-     * @param the type of statement executed
      */
     void setResult(DatabaseConnection dc, int result, int type, String metaName);
 
     /**
      * Sets the text within status bar's left-hand
      * message area to the specified value.
-     *
-     * @param the text to display
      */
     void setStatusMessage(String text);
 
@@ -68,8 +61,6 @@ public interface QueryDelegate {
      * designated area to the specified value. This
      * will usually send <code>SQLException</code>
      * messages or dumps.
-     *
-     * @param the error message to display
      */
     void setOutputMessage(DatabaseConnection dc, int type, String text);
 
@@ -77,8 +68,6 @@ public interface QueryDelegate {
      * Sets the error message text within the
      * designated area to the specified value and selects
      * the output pane as specified.
-     *
-     * @param the error message to display
      */
     void setOutputMessage(DatabaseConnection dc, int type, String text, boolean selectTab);
 
@@ -90,17 +79,12 @@ public interface QueryDelegate {
     /**
      * Sets the table results to the specified
      * <code>ResultSet</code> object for display.
-     *
-     * @param the table results to display
-     * @param the executed query of the result set
      */
     void setResultSet(ResultSet rs, String query, DatabaseConnection dc) throws SQLException;
 
     /**
      * Adds the specified SQL statement to the statement
      * history list if available.
-     *
-     * @param the statement to add
      */
     void statementExecuted(String statement);
 
@@ -116,8 +100,6 @@ public interface QueryDelegate {
 
     /**
      * Logs the specified message.
-     *
-     * @param message
      */
     void log(String message);
 
@@ -127,22 +109,17 @@ public interface QueryDelegate {
     void commit(boolean anyConnections);
 
     /**
-     * Attempts to rollback any currently open transaction.
+     * Attempts to roll back any currently open transaction.
      */
     void rollback(boolean anyConnections);
 
     /**
      * Executes the specified query.
-     *
-     * @param query - the query
      */
     void executeQuery(String query, boolean anyConnections, boolean inBackground);
 
     /**
      * Executes the specified query as a 'block' if specified.
-     *
-     * @param the     query
-     * @param whether to execute ALL query text as one statement
      */
     void executeQuery(String query, boolean executeAsBlock, boolean anyConnections, boolean inBackground);
 
@@ -151,14 +128,4 @@ public interface QueryDelegate {
      */
     void setTPP(TransactionParametersPanel tpp);
 
-    TransactionParametersPanel getTPP();
 }
-
-
-
-
-
-
-
-
-

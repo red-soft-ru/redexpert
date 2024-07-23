@@ -11,43 +11,25 @@ import javax.swing.*;
 
 public class PropertiesTreeConnectionsFonts extends PropertiesEditorFonts {
 
-    public PropertiesTreeConnectionsFonts() {
-        super();
-        try {
-            initValues();
-        } catch (Exception e) {
-            Log.error("Error init Class PropertiesTreeConnectionFonts:", e);
-        }
+    public PropertiesTreeConnectionsFonts(PropertiesPanel parent) {
+        super(parent);
     }
 
-    private void initValues() {
-        String _fontName = SystemProperties.getProperty("user", "treeconnection.font.name");
-        String _fontSize = SystemProperties.getProperty("user", "treeconnection.font.size");
-
-        fontList.setSelectedValue(_fontName, true);
-        sizeList.setSelectedValue(_fontSize, true);
-
-        selectedFontField.setText(_fontName);
-        selectedSizeField.setText(_fontSize);
+    @Override
+    protected void preInit() {
+        fontNameKey = "treeconnection.font.name";
+        fontSizeKey = "treeconnection.font.size";
     }
 
+    @Override
     public void save() {
-        SystemProperties.setProperty("user", "treeconnection.font.size",
-                (String) sizeList.getSelectedValue());
-        SystemProperties.setProperty("user", "treeconnection.font.name",
-                (String) fontList.getSelectedValue());
-        try {
-            BrowserTreeCellRenderer renderer = (BrowserTreeCellRenderer) ((ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY)).getTree().getCellRenderer();
+        super.save();
+
+        JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (tabComponent instanceof ConnectionsTreePanel) {
+            BrowserTreeCellRenderer renderer = (BrowserTreeCellRenderer) ((ConnectionsTreePanel) tabComponent).getTree().getCellRenderer();
             renderer.reloadFont();
-        } catch (Exception e) {
-            Log.debug("error reload font", e);
         }
     }
 
-    public void restoreDefaults() {
-        fontList.setSelectedValue(
-                UIManager.getDefaults().getFont("Tree.font").getFontName(), true);
-        sizeList.setSelectedValue(SystemProperties.
-                getProperty("defaults", "treeconnection.font.size"), true);
-    }
 }

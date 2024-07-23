@@ -12,12 +12,14 @@ import java.awt.event.ActionEvent;
  */
 public class CreateDatabaseCommand extends OpenFrameCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        GUIUtilities.addCentralPane(CreateDatabasePanel.TITLE,
+        GUIUtilities.addCentralPane(
+                CreateDatabasePanel.TITLE,
                 CreateDatabasePanel.FRAME_ICON,
                 new CreateDatabasePanel(null),
                 null,
-                true);
+                true
+        );
     }
 }

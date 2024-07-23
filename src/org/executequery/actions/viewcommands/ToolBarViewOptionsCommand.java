@@ -32,62 +32,25 @@ import java.awt.event.ActionEvent;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class ToolBarViewOptionsCommand extends AbstractViewOptionsCommand {
 
-    public void viewBrowserTools(ActionEvent e) {
-
-        setToolBarVisible(ToolBarManager.BROWSER_TOOLS, selectionFromEvent(e));
-    }
-
-    public void viewFileTools(ActionEvent e) {
-
-        setToolBarVisible(ToolBarManager.FILE_TOOLS, selectionFromEvent(e));
-    }
-
-    public void viewEditTools(ActionEvent e) {
-
-        setToolBarVisible(ToolBarManager.EDIT_TOOLS, selectionFromEvent(e));
-    }
-
-    public void viewSearchTools(ActionEvent e) {
-
-        setToolBarVisible(ToolBarManager.SEARCH_TOOLS, selectionFromEvent(e));
-    }
-
     public void viewDatabaseTools(ActionEvent e) {
-
         setToolBarVisible(ToolBarManager.DATABASE_TOOLS, selectionFromEvent(e));
     }
 
-    public void viewImportExportTools(ActionEvent e) {
-
-        setToolBarVisible(ToolBarManager.IMPORT_EXPORT_TOOLS, selectionFromEvent(e));
+    public void viewApplicationTools(ActionEvent e) {
+        setToolBarVisible(ToolBarManager.APPLICATION_TOOLS, selectionFromEvent(e));
     }
 
     public void viewSystemTools(ActionEvent e) {
-
         setToolBarVisible(ToolBarManager.SYSTEM_TOOLS, selectionFromEvent(e));
     }
 
     private void setToolBarVisible(String name, boolean visible) {
-
         ToolBarProperties.setToolBarVisible(name, visible);
         GUIUtilities.resetToolBar();
-
-        EventMediator.fireEvent(
-                new DefaultUserPreferenceEvent(
-                        this, name, UserPreferenceEvent.TOOL_BAR));
+        EventMediator.fireEvent(new DefaultUserPreferenceEvent(this, name, UserPreferenceEvent.TOOL_BAR));
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

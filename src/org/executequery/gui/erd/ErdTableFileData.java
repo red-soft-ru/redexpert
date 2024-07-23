@@ -77,6 +77,10 @@ public class ErdTableFileData implements Serializable {
      */
     private Color tableBackground;
 
+    private boolean showCommentOnTable;
+    private boolean showCommentsOnfields;
+    private String tableDescription;
+
     public ErdTableFileData() {
     }
 
@@ -152,7 +156,29 @@ public class ErdTableFileData implements Serializable {
         this.tableBackground = tableBackground;
     }
 
+    public boolean isShowCommentOnTable() {
+        return showCommentOnTable;
+    }
 
+    public void setShowCommentOnTable(boolean showCommentOnTable) {
+        this.showCommentOnTable = showCommentOnTable;
+    }
+
+    public boolean isShowCommentsOnfields() {
+        return showCommentsOnfields;
+    }
+
+    public void setShowCommentsOnfields(boolean showCommentsOnfields) {
+        this.showCommentsOnfields = showCommentsOnfields;
+    }
+
+    public String getTableDescription() {
+        return tableDescription;
+    }
+
+    public void setTableDescription(String tableDescription) {
+        this.tableDescription = tableDescription;
+    }
 }
 
 

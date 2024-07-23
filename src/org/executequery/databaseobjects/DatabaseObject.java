@@ -43,37 +43,7 @@ public interface DatabaseObject extends NamedObject {
     DatabaseHost getHost();
 
     /**
-     * Returns the catalog name parent to this database object.
-     *
-     * @return the catalog name
-     */
-    String getCatalogName();
-
-    /**
-     * Sets the parent catalog name to that specified.
-     *
-     * @param catalog the catalog name
-     */
-    void setCatalogName(String catalog);
-
-    /**
-     * Returns the schema name parent to this database object.
-     *
-     * @return the schema name
-     */
-    String getSchemaName();
-
-    /**
-     * Sets the parent schema name to that specified.
-     *
-     * @param schema the schema name
-     */
-    void setSchemaName(String schema);
-
-    /**
-     * Returns the name prefix [ schema or catalog ] for this object
-     *
-     * @return schema if not null, otherwise the catalog (may be null)
+     * Returns the name prefix for this object
      */
     String getNamePrefix();
 
@@ -105,8 +75,6 @@ public interface DatabaseObject extends NamedObject {
 
     /**
      * Sets the parent object to that specified.
-     *
-     * @param the parent named object
      */
     void setParent(NamedObject parent);
 
@@ -144,9 +112,3 @@ public interface DatabaseObject extends NamedObject {
     String getSource();
 
 }
-
-
-
-
-
-

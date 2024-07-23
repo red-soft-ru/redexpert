@@ -20,162 +20,91 @@
 
 package org.executequery.gui.table;
 
-import org.executequery.GUIUtilities;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.procedure.DefinitionPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the
- *           release of version 3.0.0beta1 has meant a
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
 
 /**
  * @author Takis Diakoumis
  */
-public class CreateTableToolBar extends JPanel implements ActionListener {
+public class CreateTableToolBar extends JPanel {
 
-    /**
-     * The parent panel where this toolbar will be attached
-     */
-    private final TableFunction parent;
-
-    /**
-     * Whether the move buttons are available
-     */
     private final boolean canMove;
+    private final DefinitionPanel parent;
 
-    /**
-     * The insert row (column) after button
-     */
-    private JButton insertAfterButton;
-
-    /**
-     * The insert row (column) before button
-     */
-    private JButton insertBeforeButton;
-
-    /**
-     * The delete row (column) button
-     */
-    private JButton deleteRowButton;
-
-    /**
-     * The move row (column) up button
-     */
     private JButton moveUpButton;
-
-    /**
-     * The move row (column) down button
-     */
     private JButton moveDownButton;
+    private JButton deleteRowButton;
+    private JButton addRowButton;
 
-    public CreateTableToolBar(TableFunction parent) {
+    public CreateTableToolBar(DefinitionPanel parent) {
         this(parent, true);
     }
 
-    public CreateTableToolBar(TableFunction parent, boolean canMove) {
+    public CreateTableToolBar(DefinitionPanel parent, boolean canMove) {
         super();
-        setLayout(new GridBagLayout());
         this.parent = parent;
         this.canMove = canMove;
-        initialiseButtons();
+
+        init();
+        arrange();
     }
 
-    /**
-     * <p>Creates the toolbar buttons and associates
-     * these with the relevant listener.
-     */
-    private void initialiseButtons() {
+    private void init() {
 
-        insertAfterButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertAfter16.png"),
-                bundleString("InsertAfter"),
-                null
+        addRowButton = WidgetFactory.createRolloverButton(
+                "addRowButton",
+                bundleString("AddRow"),
+                "icon_add",
+                e -> parent.addRow()
         );
 
-        insertBeforeButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("ColumnInsertBefore16.png"),
-                bundleString("InsertBefore"),
-                null
-        );
-
-        deleteRowButton = ActionUtilities.createToolbarButton(
-                this,
-                GUIUtilities.getAbsoluteIconPath("ColumnDelete16.png"),
+        deleteRowButton = WidgetFactory.createRolloverButton(
+                "deleteRowButton",
                 bundleString("DeleteSelection"),
-                null
+                "icon_delete",
+                e -> parent.deleteRow()
         );
 
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.anchorNorth().setInsets(0, 0, 0, 1);
+        moveUpButton = WidgetFactory.createRolloverButton(
+                "moveUpButton",
+                bundleString("MoveUp"),
+                "icon_move_up",
+                e -> parent.moveRowUp()
+        );
 
-        add(insertAfterButton, gbh.get());
-        add(insertBeforeButton, gbh.nextRowFirstCol().get());
-        add(deleteRowButton, gbh.nextRowFirstCol().get());
-
-        if (canMove) {
-
-            moveUpButton = ActionUtilities.createToolbarButton(
-                    this,
-                    "Up16.png",
-                    bundleString("MoveUp"),
-                    null
-            );
-
-            moveDownButton = ActionUtilities.createToolbarButton(
-                    this,
-                    "Down16.png",
-                    bundleString("MoveDown"),
-                    null
-            );
-
-            add(moveUpButton, gbh.nextRowFirstCol().get());
-            add(moveDownButton, gbh.nextRowFirstCol().get());
-        }
+        moveDownButton = WidgetFactory.createRolloverButton(
+                "moveDownButton",
+                bundleString("MoveDown"),
+                "icon_move_down",
+                e -> parent.moveRowDown()
+        );
 
     }
 
-    /**
-     * <p>Enables/disables as specified the buttons
-     * insert before, move up and move down.
-     *
-     * @param enable <code>true</code> to enable these button or <code>false</code> to disable
-     */
+    private void arrange() {
+        setLayout(new GridBagLayout());
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorth().setInsets(5, 5, 5, 5);
+        add(addRowButton, gbh.get());
+        add(deleteRowButton, gbh.nextRow().topGap(0).get());
+        if (canMove) {
+            add(moveUpButton, gbh.nextRow().get());
+            add(moveDownButton, gbh.nextRow().get());
+        }
+
+        add(new JPanel(), gbh.nextRow().setMaxWeightY().fillVertical().spanY().get());
+    }
+
     public void enableButtons(boolean enable) {
-
-        insertBeforeButton.setEnabled(enable);
-        if (canMove) {
-            moveUpButton.setEnabled(enable);
-            moveDownButton.setEnabled(enable);
-        }
-    }
-
-    /**
-     * <p>Determines which button was selected and
-     * calls the relevant method to execute that action.
-     *
-     * @param e the event initiating this action
-     */
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        Object button = e.getSource();
-        if (button.equals(insertAfterButton)) parent.insertAfter();
-        else if (button.equals(insertBeforeButton)) parent.insertBefore();
-        else if (button.equals(deleteRowButton)) parent.deleteRow();
-        else if (button.equals(moveUpButton)) parent.moveColumnUp();
-        else if (button.equals(moveDownButton)) parent.moveColumnDown();
-
+        moveUpButton.setEnabled(enable);
+        moveDownButton.setEnabled(enable);
+        deleteRowButton.setEnabled(enable);
+        addRowButton.setEnabled(enable);
     }
 
     public static String bundleString(String key) {

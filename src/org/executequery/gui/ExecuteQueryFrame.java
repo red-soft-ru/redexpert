@@ -22,6 +22,7 @@ package org.executequery.gui;
 
 import org.executequery.Application;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
@@ -45,8 +46,6 @@ public class ExecuteQueryFrame extends JFrame
 
     public static final String TITLE = "Red Expert";
 
-    private static final String APPLICATION_ICON = "ApplicationIcon48.png";
-
     private static final String WINDOW_POSITION_KEY = "window.position";
 
     private static final long serialVersionUID = 1L;
@@ -57,29 +56,10 @@ public class ExecuteQueryFrame extends JFrame
     private int lastHeight;
 
     public ExecuteQueryFrame() {
-
         super(TITLE);
-/*
-        String[] icons = {
-                "ApplicationIcon256.png",
-                "ApplicationIcon128.png",
-                "ApplicationIcon48.png",
-                "ApplicationIcon32.png",
-                "ApplicationIcon24.png",
-                "ApplicationIcon16.png"
-        };
-            
-        List<Image> images = new ArrayList<Image>();
-        for (String icon : icons) {
-            
-            images.add(GUIUtilities.loadIcon(icon).getImage());
-        }
-        setIconImages(images);
-*/
 
-        ImageIcon frameIcon = GUIUtilities.loadIcon(APPLICATION_ICON);
+        ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE, "svg", 512, IconManager.IconFolder.BASE);
         setIconImage(frameIcon.getImage());
-
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {

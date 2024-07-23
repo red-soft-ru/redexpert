@@ -3,7 +3,6 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.datasource.ConnectionManager;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
@@ -106,7 +105,7 @@ public class DefaultDatabaseSequence extends AbstractDatabaseObject {
             );
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
             Log.error(e.getMessage(), e);
         }
 

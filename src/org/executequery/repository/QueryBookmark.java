@@ -28,23 +28,20 @@ import org.underworldlabs.util.MiscUtils;
 public final class QueryBookmark {
 
     private String id;
-
     private int order;
-
     private String name;
-
     private String query;
 
     public String getName() {
         return name;
     }
 
-    public String getQuery() {
-        return query;
-    }
-
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getQuery() {
+        return query;
     }
 
     public void setQuery(String query) {
@@ -59,10 +56,6 @@ public final class QueryBookmark {
         this.order = order;
     }
 
-    public String toString() {
-        return getName();
-    }
-
     public String getId() {
         return id;
     }
@@ -75,15 +68,9 @@ public final class QueryBookmark {
         return (MiscUtils.isNull(getId()));
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-

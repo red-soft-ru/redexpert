@@ -22,20 +22,15 @@ package org.underworldlabs.util;
 
 /**
  * @author Takis Diakoumis
- * @version $Revision$
- * @date $Date$
  */
 public class LabelValuePair implements java.io.Serializable {
 
-    private String label;
-    private Object value;
-
-    public LabelValuePair() {
-    }
+    private final Object value;
+    private final String label;
 
     public LabelValuePair(Object value, String label) {
-        this.label = label;
         this.value = value;
+        this.label = label;
     }
 
     public Object getValue() {
@@ -48,10 +43,7 @@ public class LabelValuePair implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return label;
+        return getLabel();
     }
 
-
 }
-
-

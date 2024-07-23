@@ -52,6 +52,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
     @Override
     protected void init() {
+        super.init();
 
         Vector<NamedObject> domains = new Vector<>(getDomains());
         domains.add(0, null);
@@ -59,6 +60,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         // --- return type components ---
 
         deterministicCheck = WidgetFactory.createCheckBox("deterministicCheck", bundleStaticString("deterministic"));
+        deterministicCheck.addActionListener(e -> generateDdlScript());
 
         useDomainTypeCheck = WidgetFactory.createCheckBox("useDomainTypeCheck", bundledString("useDomainTypeCheck"));
         useDomainTypeCheck.addActionListener(e -> domainCheckTriggered());
@@ -66,7 +68,15 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         domainCombo = WidgetFactory.createComboBox("domainCombo", domains);
         domainCombo.addActionListener(e -> domainChanged());
 
-        typePanel = new SelectTypePanel(connection.getDataTypesArray(), connection.getIntDataTypesArray(), returnType, true);
+        typePanel = new SelectTypePanel(
+                connection.getDataTypesArray(),
+                connection.getIntDataTypesArray(),
+                returnType,
+                true,
+                changeActionListener,
+                changeKeyListener
+        );
+
         if (function != null && function.getReturnArgument() != null) {
 
             if (function.getReturnArgument().getDomain() != null) {
@@ -89,17 +99,16 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         // --- return type panel ---
 
         JPanel returnTypePanel = new JPanel(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 5).anchorNorthWest().fillBoth();
+        GridBagHelper gbh = new GridBagHelper().setInsets(0, 10, 5, 5).anchorNorthWest().fillBoth();
 
         returnTypePanel.add(deterministicCheck, gbh.setMinWeightX().setMinWeightY().get());
         returnTypePanel.add(useDomainTypeCheck, gbh.nextCol().get());
         returnTypePanel.add(domainCombo, gbh.nextCol().setMaxWeightX().leftGap(5).get());
-        returnTypePanel.add(new JSeparator(SwingConstants.HORIZONTAL), gbh.nextRowFirstCol().spanX().get());
-        returnTypePanel.add(typePanel, gbh.nextRowFirstCol().setMaxWeightY().spanY().get());
+        returnTypePanel.add(new JSeparator(SwingConstants.HORIZONTAL), gbh.nextRowFirstCol().topGap(5).spanX().get());
+        returnTypePanel.add(typePanel, gbh.nextRowFirstCol().setMaxWeightY().setInsets(0, 0, 5, 0).spanY().get());
 
         // --- tabbed pane ---
 
-        super.init();
         tabbedPane.remove(outputParamsPanel);
         tabbedPane.setTitleAt(tabbedPane.indexOfComponent(inputParamsPanel), bundledString("Arguments"));
         tabbedPane.insertTab(bundledString("ReturnsType"), null, returnTypePanel, null, 1);
@@ -116,6 +125,8 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
 
         if (function != null)
             deterministicCheck.setSelected(function.isDeterministic());
+
+        ddlTextPanel.setSQLText(generateQuery());
     }
 
     @Override
@@ -167,24 +178,24 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     @Override
     protected String generateQuery() {
 
-        if (parseVariablesCheck.isSelected()) {
+        if (isParseVariables()) {
             Vector<ColumnData> variables = new Vector<>();
             variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
-            variables.addAll(cursorsPanel.getProcedureParameterModel().getTableVector());
+            variables.addAll(cursorsPanel.getCursorsVector());
 
             return SQLUtils.generateCreateFunction(
                     nameField.getText(),
                     inputParamsPanel.getProcedureParameterModel().getTableVector(),
                     variables,
                     returnType,
-                    bodyTextPanel.getSQLText(),
+                    procedureBody,
                     externalField.getText(),
                     engineField.getText(),
                     (String) securityCombo.getSelectedItem(),
                     simpleCommentPanel.getComment(),
                     false,
                     true,
-                    deterministicCheck.isSelected(),
+                    deterministicCheck != null && deterministicCheck.isSelected(),
                     connection
             );
         }
@@ -193,14 +204,14 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
                 nameField.getText(),
                 inputParamsPanel.getProcedureParameterModel().getTableVector(),
                 returnType,
-                bodyTextPanel.getSQLText(),
+                procedureBody,
                 externalField.getText(),
                 engineField.getText(),
                 (String) securityCombo.getSelectedItem(),
                 simpleCommentPanel.getComment(),
                 false,
                 true,
-                deterministicCheck.isSelected(),
+                deterministicCheck != null && deterministicCheck.isSelected(),
                 connection
         );
     }
@@ -211,7 +222,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             displayExecuteQueryDialog(getSQLText(), "^");
 
         } catch (Exception exc) {
-            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc);
+            GUIUtilities.displayExceptionErrorDialog("Error:\n" + exc.getMessage(), exc, this.getClass());
         }
     }
 
@@ -263,6 +274,9 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         NamedObject selectedDomain = (NamedObject) domainCombo.getSelectedItem();
         if (selectedDomain != null)
             returnType.setDomain(selectedDomain.getName());
+
+        typePanel.refresh(false);
+        generateDdlScript();
     }
 
     private List<NamedObject> getDomains() {

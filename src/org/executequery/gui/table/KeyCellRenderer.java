@@ -20,7 +20,7 @@
 
 package org.executequery.gui.table;
 
-import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ColumnData;
 
 import javax.swing.*;
@@ -44,11 +44,11 @@ public class KeyCellRenderer extends JLabel
 //    private static final String PRIMARY_AND_FOREIGN = "PKFK";
 
     static {
-        deleteImage = GUIUtilities.loadIcon("MarkDeleted16.png", true);
-        newImage = GUIUtilities.loadIcon("MarkNew16.png", true);
-        fkImage = GUIUtilities.loadIcon("ForeignKeyImage.png", true);
-        pkImage = GUIUtilities.loadIcon("PrimaryKeyImage.png", true);
-        pkfkImage = GUIUtilities.loadIcon("PrimaryForeignKeyImage.png", true);
+        deleteImage = IconManager.getIcon("icon_mark_delete");
+        newImage = IconManager.getIcon("icon_mark_new");
+        fkImage = IconManager.getIcon("icon_key_foreign");
+        pkImage = IconManager.getIcon("icon_key_primary");
+        pkfkImage = IconManager.getIcon("icon_key_mixed");
     }
 
     public KeyCellRenderer() {

@@ -21,12 +21,9 @@
 package org.executequery.repository.spi;
 
 import org.executequery.ApplicationException;
-import org.executequery.ApplicationVersion;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.http.RemoteHttpClient;
-import org.executequery.http.RemoteHttpClientException;
-import org.executequery.http.RemoteHttpResponse;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.log.Log;
 import org.executequery.repository.LatestVersionRepository;
@@ -34,8 +31,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Takis Diakoumis
@@ -48,60 +43,6 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
     public String getId() {
 
         return REPOSITORY_ID;
-    }
-
-    public String getBinaryZipUrl() {
-        return binaryZipUrl;
-    }
-
-    public ApplicationVersion getLatestVersion() {
-
-        if (siteAvailable()) {
-
-            try {
-
-                String version = null;
-
-                RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse response = httpClient.httpGetRequest("api.github.com", versionUrl().getPath() +
-                        "?access_token=145758a9d7895bc57a631694c145864df19fe6d9");
-
-                String responseTextLines = response.getResponse();
-                Pattern p = Pattern.compile("\"tag_name\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
-
-                Matcher m = p.matcher(responseTextLines);
-
-                if (m.find()) {
-                    version = m.group(1);//responseTextLines.substring(m.start(), m.end()).trim();
-                }
-
-                if (!version.isEmpty()) {
-                    if (version.substring(0, 1).equals("v"))
-                        version = version.substring(1, version.length());
-                }
-
-                p = Pattern.compile("\"browser_download_url\":\"(.*?)\"", Pattern.CASE_INSENSITIVE);
-
-                m = p.matcher(responseTextLines);
-
-                if (m.find()) {
-                    binaryZipUrl = m.group(1);//responseTextLines.substring(m.start(), m.end()).trim();
-                }
-
-                return new ApplicationVersion(version);
-
-            } catch (MalformedURLException e) {
-
-                handleException(e);
-
-            } catch (RemoteHttpClientException e) {
-
-                logError(e);
-            }
-
-        }
-
-        throw new ApplicationException(ioErrorMessage());
     }
 
     private RemoteHttpClient remoteHttpClient() {
@@ -163,34 +104,6 @@ public class LatestVersionRepositoryImpl implements LatestVersionRepository {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public String getReleaseNotes() {
-
-        if (siteAvailable()) {
-
-            Log.info("Downloading latest release notes from https://github.com/redsoftbiz/executequery/releases/latest");
-
-            try {
-
-                RemoteHttpClient httpClient = remoteHttpClient();
-                RemoteHttpResponse response = httpClient.httpGetRequest(ADDRESS, releaseNotesUrl().getPath() +
-                        "?access_token=145758a9d7895bc57a631694c145864df19fe6d9");
-
-                return response.getResponse();
-
-            } catch (MalformedURLException e) {
-
-                handleException(e);
-
-            } catch (RemoteHttpClientException e) {
-
-                logError(e);
-            }
-
-        }
-
-        throw new ApplicationException(ioErrorMessage());
     }
 
     private URL releaseNotesUrl() throws MalformedURLException {

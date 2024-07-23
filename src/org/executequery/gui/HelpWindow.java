@@ -22,7 +22,6 @@ package org.executequery.gui;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -151,7 +150,7 @@ public class HelpWindow {
 
             GUIUtilities.displayExceptionErrorDialog(
                     "The system could not\nfind the help files specified.\n\n" +
-                            "System Error: " + e.getMessage(), e);
+                            "System Error: " + e.getMessage(), e, this.getClass());
         }
 
     }
@@ -200,10 +199,7 @@ public class HelpWindow {
     private JFrame createFrame() {
 
         JFrame frame = new JFrame("Red Expert Help");
-
-        ImageIcon frameIcon = IconUtilities.loadIcon(
-                "/org/executequery/icons/Help16.png");
-
+        ImageIcon frameIcon = (ImageIcon) IconManager.getIcon("icon_help");
         frame.setIconImage(frameIcon.getImage());
 
         frame.setSize(900, 700);

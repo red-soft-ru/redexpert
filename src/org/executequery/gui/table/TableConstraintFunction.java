@@ -29,7 +29,7 @@ import java.util.Vector;
 /**
  * @author Takis Diakoumis
  */
-public interface TableConstraintFunction extends TableFunction {
+public interface TableConstraintFunction extends TableModifier {
 
     List<String> getTables();
 
@@ -42,21 +42,3 @@ public interface TableConstraintFunction extends TableFunction {
     DatabaseConnection getSelectedConnection();
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

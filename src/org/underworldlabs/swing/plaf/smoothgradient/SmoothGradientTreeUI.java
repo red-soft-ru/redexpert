@@ -30,6 +30,7 @@ import java.beans.PropertyChangeListener;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public final class SmoothGradientTreeUI extends BasicTreeUI {
 
     private boolean linesEnabled = true;

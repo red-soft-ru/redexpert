@@ -5,16 +5,25 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.browser.DatabaseStatisticPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class DatabaseStatisticCommands extends OpenFrameCommand implements BaseCommand {
+public class DatabaseStatisticCommands extends OpenFrameCommand
+        implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-        GUIUtilities.addCentralPane(DatabaseStatisticPanel.TITLE,
-                (Icon) null,
+
+        String title = DatabaseStatisticPanel.TITLE;
+        if (isCentralPaneOpen(title))
+            return;
+
+        GUIUtilities.addCentralPane(
+                title,
+                DatabaseStatisticPanel.FRAME_ICON,
                 new DatabaseStatisticPanel(),
                 null,
-                true);
+                true
+        );
     }
+
 }

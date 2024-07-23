@@ -98,7 +98,7 @@ public class ResultSetPanel extends JPanel {
     private void init() {
 
         Color bg = SystemProperties.getColourProperty("user",
-                "editor.results.background.colour");
+                "editor.output.background");
         table = new ResultSetTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -248,7 +248,7 @@ public class ResultSetPanel extends JPanel {
         if (rowNumberHeader == null) {
             rowNumberHeader = new RowNumberHeader(table);
             rowNumberHeader.setBackground(SystemProperties.getColourProperty(
-                    "user", "editor.results.background.colour"));
+                    "user", "editor.output.background"));
         } else {
             rowNumberHeader.setTable(table);
         }

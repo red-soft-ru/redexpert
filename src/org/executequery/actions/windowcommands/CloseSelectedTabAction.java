@@ -30,20 +30,9 @@ import java.awt.event.ActionEvent;
  */
 public class CloseSelectedTabAction extends AbstractBaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
         GUIUtilities.closeSelectedTab();
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

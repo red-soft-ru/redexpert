@@ -26,6 +26,7 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import java.awt.*;
 
+@SuppressWarnings("unused")
 public class PlainMetalTheme extends DefaultMetalTheme {
 
     // ---------------------------------

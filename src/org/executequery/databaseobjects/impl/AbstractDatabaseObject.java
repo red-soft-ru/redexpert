@@ -52,16 +52,6 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     private DatabaseHost host;
 
     /**
-     * the catalog name
-     */
-    private String catalogName;
-
-    /**
-     * the schema name
-     */
-    private String schemaName;
-
-    /**
      * the object's remarks
      */
     protected String remarks;
@@ -142,55 +132,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         setName(name);
     }
 
-    /**
-     * Returns the catalog name parent to this database object.
-     *
-     * @return the catalog name
-     */
-    @Override
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    /**
-     * Sets the parent catalog name to that specified.
-     *
-     * @param catalog the catalog name
-     */
-    @Override
-    public void setCatalogName(String catalog) {
-        this.catalogName = catalog;
-    }
-
-    /**
-     * Returns the schema name parent to this database object.
-     *
-     * @return the schema name
-     */
-    @Override
-    public String getSchemaName() {
-        return schemaName;
-    }
-
-    /**
-     * Sets the parent schema name to that specified.
-     *
-     * @param schema the schema name
-     */
-    @Override
-    public void setSchemaName(String schema) {
-        this.schemaName = schema;
-    }
-
     @Override
     public String getNamePrefix() {
-
-        String _schema = getSchemaName();
-
-        if (StringUtils.isNotBlank(_schema))
-            return _schema;
-
-        return getCatalogName(); // may still be null
+        return null;
     }
 
     /**
@@ -247,6 +191,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected Condition buildNameCondition(Field field) {
         return Condition.createCondition(field, "=", "?");
     }
+
     protected PooledStatement statementForLoadInfoForColumns;
     protected boolean someExecuteForColumns = false;
     DefaultDatabaseColumn previousColumn = null;
@@ -260,7 +205,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     @Override
     public List<TablePrivilege> getPrivileges() throws DataSourceException {
         DatabaseHost host = getHost();
-        return (host != null) ? host.getPrivileges(getCatalogName(), getSchemaName(), getName()) : null;
+        return host != null ? host.getPrivileges(getName()) : null;
     }
 
     /**
@@ -338,9 +283,6 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 break;
             case SEQUENCE:
                 queryStart = "DROP SEQUENCE ";
-                break;
-            case SYNONYM:
-                queryStart = "DROP SYNONYM ";
                 break;
             case SYSTEM_TABLE:
             case TABLE:
@@ -454,13 +396,9 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     @Override
     public ResultSet getMetaData() throws DataSourceException {
         try {
-
             DatabaseHost databaseHost = getHost();
-            String _catalog = null;     //databaseHost.getCatalogNameForQueries(getCatalogName());
-            String _schema = null;      //databaseHost.getSchemaNameForQueries(getSchemaName());
-
             DatabaseMetaData dmd = databaseHost.getDatabaseMetaData();
-            return dmd.getColumns(_catalog, _schema, getName(), null);
+            return dmd.getColumns(null, null, getName(), null);
 
         } catch (SQLException e) {
             throw new DataSourceException(e);
@@ -558,23 +496,12 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
 
     @Override
     public final String getNameForQuery() {
-
-        String name = getName();
-
-        /*if (name.contains(" ") // eg. access db allows this
-                || (isLowerCase(name) && host.storesLowerCaseQuotedIdentifiers())
-                || (isUpperCase(name) && host.storesUpperCaseQuotedIdentifiers())
-                || (isMixedCase(name) && (host.storesMixedCaseQuotedIdentifiers()
-                || host.supportsMixedCaseQuotedIdentifiers()))) {
-        }
-        return name;*/
-
-        return quotedDatabaseObjectName(name);
+        return quotedDatabaseObjectName(getName());
     }
 
     private String quotedDatabaseObjectName(String name) {
         String quoteString = getIdentifierQuoteString();
-        return quoteString + name.replace(quoteString,quoteString+quoteString) + quoteString;
+        return quoteString + name.replace(quoteString, quoteString + quoteString) + quoteString;
     }
 
     protected boolean isMixedCase(String value) {
@@ -634,6 +561,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendCondition(buildNameCondition(getObjectField()));
         return sb.getSQLQuery();
     }
+
     Semaphore mutex = new Semaphore(1);
     private boolean markedForReloadCols = true;
 
@@ -858,7 +786,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             setColumnsFromResultSet(rs);
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e, this.getClass());
 
         } finally {
             if (!someExecuteForColumns)
@@ -1043,7 +971,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 collate = collate.trim();
             column.setCharset(charset);
             column.setCollate(collate);
-            String domain = rs.getString(FIELD_SOURCE);
+            String domain = MiscUtils.trimEnd(rs.getString(FIELD_SOURCE));
             if (domain != null && !domain.isEmpty()) {
                 column.setDomain(domain);
             }
@@ -1072,21 +1000,21 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                 case "PRIMARY KEY":
                     previousColumn.setPrimaryKey(true);
                     TableColumnConstraint constraint = new TableColumnConstraint(null, ColumnConstraint.PRIMARY_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "UNIQUE":
                     previousColumn.setUnique(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.UNIQUE_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "FOREIGN KEY":
                     previousColumn.setForeignKey(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.FOREIGN_KEY);
-                    constraint.setName(rs.getString(CONSTRAINT_NAME));
-                    constraint.setReferencedTable(rs.getString(REF_TABLE));
-                    constraint.setReferencedColumn(rs.getString(REF_COLUMN));
+                    constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
+                    constraint.setReferencedTable(MiscUtils.trimEnd(rs.getString(REF_TABLE)));
+                    constraint.setReferencedColumn(MiscUtils.trimEnd(rs.getString(REF_COLUMN)));
                     String rule = rs.getString(UPDATE_RULE);
                     if (rule != null)
                         constraint.setUpdateRule(rule.trim());
@@ -1100,6 +1028,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             }
         }
     }
+
     protected PooledStatement statementForLoadInfo;
 
     public void finishLoadColumns() {
@@ -1165,7 +1094,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
             setInfoFromResultSet(rs);
 
         } catch (SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e);
+            GUIUtilities.displayExceptionErrorDialog("Error get info about " + getName(), e, this.getClass());
 
         } finally {
             if (!someExecute)

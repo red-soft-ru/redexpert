@@ -21,7 +21,7 @@
 package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
-import org.apache.commons.lang.StringUtils;
+import org.executequery.Constants;
 import org.executequery.actions.databasecommands.DatabaseStatisticCommand;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -32,7 +32,8 @@ import org.executequery.databaseobjects.*;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledDatabaseMetaData;
-import org.executequery.datasource.PooledStatement;
+import org.executequery.gui.browser.ColumnData;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -40,6 +41,7 @@ import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.Named;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -48,8 +50,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static org.executequery.actions.databasecommands.DatabaseStatisticCommand.getHeaderValue;
 
 /**
  * Default database host object implementation.
@@ -58,8 +60,6 @@ import java.util.regex.Pattern;
  */
 public class DefaultDatabaseHost extends AbstractNamedObject
         implements DatabaseHost {
-
-    private int countFinishedMetaTags;
 
     private final int typeTree;
 
@@ -78,15 +78,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     private transient DatabaseMetaData databaseMetaData;
 
-    /**
-     * the catalogs of this host
-     */
-    private List<DatabaseCatalog> catalogs;
-
-    /**
-     * the schemas of this host
-     */
-    private List<DatabaseSchema> schemas;
+    private List<DatabaseMetaTag> metaTags;
     private DatabaseObject dependObject;
     private boolean pauseLoadingTreeForSearch = false;
 
@@ -103,7 +95,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     public DefaultDatabaseHost(DatabaseConnection databaseConnection, int typeTree) {
         this.databaseConnection = databaseConnection;
-        countFinishedMetaTags = 0;
         this.typeTree = typeTree;
     }
 
@@ -118,7 +109,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      */
     public boolean connect() throws DataSourceException {
         if (!isConnected()) {
-            countFinishedMetaTags = 0;
 
             boolean connected = connectionMediator().connect(getDatabaseConnection());
 
@@ -196,22 +186,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return ConnectionManager.getTemporaryConnection(getDatabaseConnection());
     }
 
-    @Override
-    public int countFinishedMetaTags() {
-        return countFinishedMetaTags;
-    }
-
-    public void resetCountFinishedMetaTags() {
-        countFinishedMetaTags = 0;
-    }
-
-    @Override
-    public void incCountFinishedMetaTags() {
-        countFinishedMetaTags++;
-    }
-
     /**
-     * Returns the database meta data for this host.
+     * Returns the database metadata for this host.
      *
      * @return the database meta data
      */
@@ -256,228 +232,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     /**
-     * Returns the catalogs hosted by this host.
-     *
-     * @return the hosted catalogs
-     */
-    public List<DatabaseCatalog> getCatalogs() throws DataSourceException {
-
-        if (!isMarkedForReload() && catalogs != null) {
-
-            return catalogs;
-        }
-
-        ResultSet rs = null;
-        try {
-
-            catalogs = new ArrayList<DatabaseCatalog>();
-            rs = getDatabaseMetaData().getCatalogs();
-            while (rs.next()) {
-
-                catalogs.add(new DefaultDatabaseCatalog(this, rs.getString(1)));
-            }
-
-            return catalogs;
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        } finally {
-
-            releaseResources(rs, null);
-            setMarkedForReload(false);
-        }
-    }
-
-    /**
-     * Returns the schemas hosted by this host.
-     *
-     * @return the hosted schemas
-     */
-    public List<DatabaseSchema> getSchemas() throws DataSourceException {
-
-        if (!isMarkedForReload() && schemas != null) {
-
-            return schemas;
-        }
-
-        ResultSet rs = null;
-        try {
-
-            schemas = new ArrayList<DatabaseSchema>();
-
-            rs = getDatabaseMetaData().getSchemas();
-            if (rs != null) {
-
-                while (rs.next()) {
-
-                    schemas.add(new DefaultDatabaseSchema(this, rs.getString(1)));
-                }
-
-            }
-
-            return schemas;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-
-        } finally {
-
-            releaseResources(rs, null);
-            setMarkedForReload(false);
-        }
-    }
-
-    @SuppressWarnings("resource")
-    public boolean hasTablesForType(String catalog, String schema, String type) {
-
-        ResultSet rs = null;
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            rs = dmd.getTables(_catalog, _schema, null, new String[]{type});
-            while (rs.next()) {
-
-                if (StringUtils.equalsIgnoreCase(type, rs.getString(4))) {
-
-                    return true;
-                }
-
-            }
-
-            return false;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Tables not available for type "
-                        + type + " - driver returned: " + e.getMessage());
-            }
-
-            return false;
-
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
-    private DatabaseSchema getSchema(String name) throws DataSourceException {
-
-        if (name != null) {
-
-            name = name.toUpperCase();
-
-            List<DatabaseSchema> _schemas = getSchemas();
-            for (DatabaseSchema schema : _schemas) {
-
-                if (name.equals(schema.getName().toUpperCase())) {
-
-                    return schema;
-                }
-
-            }
-
-        } else if (getSchemas().size() == 1) {
-
-            return getSchemas().get(0);
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the exported keys columns of the specified database object.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
-     * @return the exported keys
-     */
-    public List<DatabaseColumn> getExportedKeys(String catalog, String schema, String table)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-        try {
-
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            List<DatabaseColumn> columns = new ArrayList<DatabaseColumn>();
-
-            String tableTagName = "TABLE";
-
-            // retrieve the base column info
-            rs = dmd.getExportedKeys(_catalog, _schema, table);
-            while (rs.next()) {
-
-                String fkSchema = rs.getString(6);
-                DatabaseSchema databaseSchema = getSchema(fkSchema);
-
-                if (databaseSchema != null) {
-
-                    String fkTable = rs.getString(7);
-                    String fkColumn = rs.getString(8);
-
-                    DatabaseMetaTag metaTag = databaseSchema.getDatabaseMetaTag(tableTagName);
-
-                    DatabaseTable databaseTable = (DatabaseTable) metaTag.getNamedObject(fkTable);
-                    columns.add(databaseTable.getColumn(fkColumn));
-                }
-
-            }
-
-            return columns;
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
-    public String getCatalogNameForQueries(String catalogName) {
-
-        DatabaseMetaData dmd = getDatabaseMetaData();
-        try {
-            if (!dmd.supportsCatalogsInTableDefinitions()) {
-
-                return null;
-            }
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        return catalogName;
-    }
-
-    public String getSchemaNameForQueries(String schemaName) {
-
-        DatabaseMetaData dmd = getDatabaseMetaData();
-        try {
-            if (!dmd.supportsSchemasInTableDefinitions()) {
-
-                return null;
-            }
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-
-        return schemaName;
-    }
-
-    /**
-     * Returns the table names hosted by this host of the specified type and
-     * belonging to the specified catalog and schema.
+     * Returns the table names hosted by this host.
      */
     public List<String> getTableNames()
             throws DataSourceException {
@@ -504,7 +259,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     /**
      * Returns the column names of the specified database object.
      *
-     * @param table   the database object name
+     * @param table the database object name
      * @return the column names
      */
     public List<String> getColumnNames(String table)
@@ -521,88 +276,20 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return columns;
     }
 
-    private final transient ColumnInformationFactory columnInformationFactory = new ColumnInformationFactory();
-
-    /**
-     * Returns the column names of the specified database object.
-     *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
-     * @return the column names
-     */
-    public List<ColumnInformation> getColumnInformation(String catalog, String schema, String table)
-            throws DataSourceException {
-
-        ResultSet rs = null;
-        List<ColumnInformation> columns = new ArrayList<ColumnInformation>();
-
-        try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
-
-            if (!isConnected()) {
-
-                return new ArrayList<ColumnInformation>(0);
-            }
-
-            // retrieve the base column info
-            rs = dmd.getColumns(_catalog, _schema, table, null);
-            while (rs.next()) {
-
-                String name = rs.getString(4);
-                columns.add(columnInformationFactory.build(
-                        table,
-                        name,
-                        rs.getString(6),
-                        rs.getInt(5),
-                        rs.getInt(7),
-                        rs.getInt(9),
-                        rs.getInt(11) == DatabaseMetaData.columnNoNulls));
-            }
-
-            return columns;
-
-        } catch (SQLException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.error("Error retrieving column data for table " + table
-                        + " using connection " + getDatabaseConnection(), e);
-            }
-
-            return columns;
-
-        } finally {
-
-            releaseResources(rs, null);
-        }
-
-    }
-
-
-    private PooledStatement statementForColumns;
-
-    public void releaseStatementForColumns()
-    {
-        if(querySender!=null)
+    public void releaseStatementForColumns() {
+        if (querySender != null)
             querySender.releaseResources();
-        releaseResources(statementForColumns);
     }
+
+    DefaultStatementExecutor querySender;
 
     /**
      * Returns the columns of the specified database object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
+     * @param table the database object name
      * @return the columns
      */
-
-    DefaultStatementExecutor querySender;
-
-
+    @Override
     public synchronized List<DatabaseColumn> getColumns(String table) {
         for (NamedObject namedObject : getTables()) {
             if (namedObject.getName().contentEquals(table))
@@ -630,25 +317,25 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     static final int SUBTYPE_NUMERIC = 1;
     static final int SUBTYPE_DECIMAL = 2;
 
-    final static int SQL_TEXT      = 452;
-    final static int SQL_VARYING   = 448;
-    final static int SQL_SHORT     = 500;
-    final static int SQL_LONG      = 496;
-    final static int SQL_FLOAT     = 482;
-    final static int SQL_DOUBLE    = 480;
-    final static int SQL_D_FLOAT   = 530;
+    final static int SQL_TEXT = 452;
+    final static int SQL_VARYING = 448;
+    final static int SQL_SHORT = 500;
+    final static int SQL_LONG = 496;
+    final static int SQL_FLOAT = 482;
+    final static int SQL_DOUBLE = 480;
+    final static int SQL_D_FLOAT = 530;
     final static int SQL_TIMESTAMP = 510;
-    final static int SQL_BLOB      = 520;
-    final static int SQL_ARRAY     = 540;
-    final static int SQL_QUAD      = 550;
+    final static int SQL_BLOB = 520;
+    final static int SQL_ARRAY = 540;
+    final static int SQL_QUAD = 550;
     final static int SQL_TYPE_TIME = 560;
     final static int SQL_TYPE_DATE = 570;
-    final static int SQL_INT64     = 580;
-    final static int SQL_BOOLEAN   = 32764;
-    final static int SQL_NULL      = 32766;
+    final static int SQL_INT64 = 580;
+    final static int SQL_BOOLEAN = 32764;
+    final static int SQL_NULL = 32766;
 
-    final static int CS_NONE    = 0; /* No Character Set */
-    final static int CS_BINARY  = 1; /* BINARY BYTES */
+    final static int CS_NONE = 0; /* No Character Set */
+    final static int CS_BINARY = 1; /* BINARY BYTES */
     final static int CS_dynamic = 127; // Pseudo number for runtime charset (see intl\charsets.h and references to it in Firebird)
 
     public static int getDataType(int fieldType, int fieldSubType, int fieldScale, int characterSetId) {
@@ -674,179 +361,66 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
 
-    public boolean supportCatalogOrSchemaInFunctionOrProcedureCalls() throws DataSourceException {
-
-        try {
-
-            DatabaseMetaData dmd = getDatabaseMetaData();
-            return dmd.supportsCatalogsInProcedureCalls() || dmd.supportsSchemasInProcedureCalls();
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
     /**
-     * Returns the priviliges of the specified object.
+     * Returns the privileges of the specified object.
      *
-     * @param catalog the table catalog name
-     * @param schema  the table schema name
-     * @param table   the database object name
+     * @param table the database object name
      */
-    public List<TablePrivilege> getPrivileges(String catalog, String schema, String table)
+    @Override
+    public List<TablePrivilege> getPrivileges(String table)
             throws DataSourceException {
 
         ResultSet rs = null;
         try {
-            String _catalog = getCatalogNameForQueries(catalog);
-            String _schema = getSchemaNameForQueries(schema);
-            DatabaseMetaData dmd = getDatabaseMetaData();
+            List<TablePrivilege> privileges = new ArrayList<>();
 
-            List<TablePrivilege> privs = new ArrayList<TablePrivilege>();
-            rs = dmd.getTablePrivileges(_catalog, _schema, table);
+            DatabaseMetaData dmd = getDatabaseMetaData();
+            rs = dmd.getTablePrivileges(null, null, table);
             while (rs.next()) {
-                privs.add(new TablePrivilege(rs.getString(4),
+                privileges.add(new TablePrivilege(rs.getString(4),
                         rs.getString(5),
                         rs.getString(6),
                         rs.getString(7)));
             }
-            return privs;
+            return privileges;
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
+
         } finally {
             releaseResources(rs, connection);
         }
-
     }
 
     /**
      * Returns the default prefix name value for objects from this host.
-     * ie. default catalog or schema name - with schema taking precedence.
      *
      * @return the default database object prefix
      */
     public String getDefaultNamePrefix() {
-
-        DatabaseSource source = getDefaultDatabaseSource();
-        if (source != null) {
-
-            return source.getName();
-        }
-
         return null;
     }
 
     /**
-     * Returns the database source with the name specified scanning schema
-     * sources first, then catalogs.
+     * Returns the database source with the specified name.
      *
      * @param name name
      * @return the database source object
      */
     public DatabaseSource getDatabaseSource(String name) {
-
-        if (name == null) {
-
+        if (name == null)
             return getDatabaseSource(getDefaultNamePrefix());
-        }
-
-        DatabaseSource source = findByName(getSchemas(), name);
-        if (source == null) {
-
-            source = findByName(getCatalogs(), name);
-        }
-
-        return source;
-    }
-
-    private DatabaseSource findByName(List<?> sources, String name) {
-
-        if (sources != null) {
-
-            String _name = name.toUpperCase();
-            for (int i = 0, n = sources.size(); i < n; i++) {
-
-                DatabaseSource source = (DatabaseSource) sources.get(i);
-                if (source.getName().toUpperCase().equals(_name)) {
-
-                    return source;
-                }
-
-            }
-
-        }
-
         return null;
     }
 
     /**
-     * Returns the default database source object - schema or catalog with
-     * schema taking precedence.
-     *
-     * @return the default database object prefix
-     */
-    public DatabaseSource getDefaultDatabaseSource() {
-
-        DatabaseSource source = getDefaultSchema();
-        if (source == null) {
-
-            source = getDefaultCatalog();
-        }
-
-        return source;
-    }
-
-    /**
-     * Returns the default connected to catalog or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default catalog
-     */
-    public DatabaseSource getDefaultCatalog() {
-
-        for (DatabaseCatalog databaseCatalog : getCatalogs()) {
-
-            if (databaseCatalog.isDefault()) {
-
-                return databaseCatalog;
-            }
-
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the default connected to schema or null if there isn't one
-     * or it can not be determined.
-     *
-     * @return the default schema
-     */
-    public DatabaseSource getDefaultSchema() {
-
-        for (DatabaseSchema databaseSchema : getSchemas()) {
-
-            if (databaseSchema.isDefault()) {
-
-                return databaseSchema;
-            }
-
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the meta type objects from the specified schema and catalog.
+     * Returns the meta type objects.
      *
      * @return the meta type objects
      */
-    List<DatabaseMetaTag> metaTags;
-
     public List<DatabaseMetaTag> getMetaObjects() throws DataSourceException {
         if (metaTags == null)
-            metaTags = getMetaObjects(null, null);
+            metaTags = loadMetaObjects();
         return metaTags;
     }
 
@@ -855,18 +429,12 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         metaTags = null;
     }
 
-    /**
-     * Returns the meta type objects from the specified schema and catalog.
-     *
-     * @return the meta type objects
-     */
-    public List<DatabaseMetaTag> getMetaObjects(DatabaseCatalog catalog,
-                                                DatabaseSchema schema) throws DataSourceException {
+    public List<DatabaseMetaTag> loadMetaObjects() throws DataSourceException {
 
-        List<DatabaseMetaTag> metaObjects = new ArrayList<DatabaseMetaTag>();
+        List<DatabaseMetaTag> metaObjects = new ArrayList<>();
 
         try {
-            createDefaultMetaObjects(catalog, schema, metaObjects);
+            createDefaultMetaObjects(metaObjects);
         } catch (Exception e) {
             throw new DataSourceException(e);
         }
@@ -880,49 +448,49 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
                 String type = rs.getString(1);
                 if (!MiscUtils.containsValue(META_TYPES, type)) {
-
-                    DatabaseMetaTag metaTag =
-                            createDatabaseMetaTag(catalog, schema, type);
+                    DatabaseMetaTag metaTag = createDatabaseMetaTag(type);
                     metaObjects.add(metaTag);
-
-
                 }
-
             }
 
             return metaObjects;
+
         } catch (SQLException e) {
             throw new DataSourceException(e);
+
         } finally {
             releaseResources(rs, connection);
             setMarkedForReload(false);
         }
-
     }
 
-    private void createDefaultMetaObjects(DatabaseCatalog catalog,
-                                          DatabaseSchema schema, List<DatabaseMetaTag> metaObjects)
-            throws Exception {
+    public List<ColumnData> getColumnDataListFromTableName(String tableName) {
+
+        DefaultDatabaseTable table = (DefaultDatabaseTable) getDatabaseObjectFromTypeAndName(NamedObject.TABLE, tableName);
+        if (table == null)
+            table = (DefaultDatabaseTable) ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectFromTypeAndName(NamedObject.GLOBAL_TEMPORARY, tableName);
+        if (table != null)
+            return table.getColumnDataList();
+        else return null;
+    }
+
+    public ColumnData[] getColumnDataArrayFromTableName(String tableName) {
+        List<ColumnData> list = getColumnDataListFromTableName(tableName);
+        if (list != null)
+            return list.toArray(new ColumnData[0]);
+        else return new ColumnData[0];
+    }
+
+    private void createDefaultMetaObjects(List<DatabaseMetaTag> metaObjects) throws Exception {
 
         for (int i = 0; i < META_TYPES.length; i++) {
 
-            DefaultDatabaseMetaTag metaTag =
-                    createDatabaseMetaTag(catalog, schema, META_TYPES[i]);
-
-            metaTag.setCatalog(catalog);
-            metaTag.setSchema(schema);
-            if (supportedObject(i)) {
+            DefaultDatabaseMetaTag metaTag = createDatabaseMetaTag(META_TYPES[i]);
+            if (supportedObject(i))
                 metaObjects.add(metaTag);
-                //!NamedObject.META_TYPES[type].contains("SYSTEM") || SystemProperties.getBooleanProperty("user", "browser.show.system.objects");
-            }
-            if (SystemProperties.getBooleanProperty("user", "treeconnection.alphabet.sorting"))
-                metaObjects.sort(new Comparator<DatabaseMetaTag>() {
-                    @Override
-                    public int compare(DatabaseMetaTag o1, DatabaseMetaTag o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
 
+            if (SystemProperties.getBooleanProperty("user", "treeconnection.alphabet.sorting"))
+                metaObjects.sort(Comparator.comparing(Named::getName));
         }
     }
 
@@ -941,7 +509,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             // TODO check after the 5 version is released
             if (getDatabaseMajorVersion() == 2) {
                 switch (type) {
-                    case NamedObject.SYNONYM:
                     case NamedObject.FUNCTION:
                     case NamedObject.SYSTEM_VIEW:
                     case NamedObject.PACKAGE:
@@ -956,7 +523,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 }
             }
             switch (type) {
-                case NamedObject.SYNONYM:
                 case NamedObject.SYSTEM_VIEW:
                 case NamedObject.SYSTEM_DATE_TIME_FUNCTIONS:
                 case NamedObject.SYSTEM_NUMERIC_FUNCTIONS:
@@ -975,18 +541,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return getDatabaseProductName().toLowerCase().contains("reddatabase");
     }
 
-    private DefaultDatabaseMetaTag createDatabaseMetaTag(
-            DatabaseCatalog catalog, DatabaseSchema schema, String type) {
-        DefaultDatabaseMetaTag tag = null;
-        if (typeTree != TreePanel.DEFAULT) {
-            tag = new DefaultDatabaseMetaTag(this, catalog, schema, type, typeTree, dependObject);
-        } else tag = new DefaultDatabaseMetaTag(this, catalog, schema, type);
-        return tag;
+    private DefaultDatabaseMetaTag createDatabaseMetaTag(String type) {
+        return typeTree != TreePanel.DEFAULT ?
+                new DefaultDatabaseMetaTag(this, type, typeTree, dependObject) :
+                new DefaultDatabaseMetaTag(this, type);
     }
 
     /**
      * Retrieves key/value type pairs using the <code>Reflection</code>
-     * API to call and retrieve values from the connection's meta data
+     * API to call and retrieve values from the connection's metadata
      * object's methods and variables.
      *
      * @return the database properties as key/value pairs
@@ -994,6 +557,9 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     public Map<Object, Object> getMetaProperties() throws DataSourceException {
 
         PooledDatabaseMetaData dmd = (PooledDatabaseMetaData) getDatabaseMetaData();
+        if (dmd == null)
+            return new HashMap<>();
+
         IFBDatabaseMetadata db;
         try {
             db = (IFBDatabaseMetadata) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), dmd.getInner(), "FBDatabaseMetadataImpl");
@@ -1075,39 +641,42 @@ public class DefaultDatabaseHost extends AbstractNamedObject
      * Closes the connection associated with this host.
      */
     public void close() {
-        schemas = null;
-        catalogs = null;
         databaseMetaData = null;
         connection = null;
         databaseProperties = null;
     }
 
     @Override
-    public Map<Object, Object> getDatabaseProperties() throws DataSourceException {
+    public Map<Object, Object> getDatabaseProperties() {
+        if (databaseProperties == null || databaseProperties.isEmpty()) {
+            databaseProperties = getDatabaseProperties(getDatabaseConnection(), true);
+            databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
 
-        boolean isFirebird3 = getDatabaseConnection().getMajorServerVersion() >= 3;
-        boolean isFirebird4 = getDatabaseConnection().getMajorServerVersion() >= 4;
-        boolean isRedDatabase5 = getDatabaseConnection().getMajorServerVersion() >= 5 && new DefaultDatabaseHost(getDatabaseConnection()).getDatabaseProductName().toLowerCase().contains("reddatabase");
+            Map<Object, Object> metaProperties = getMetaProperties();
+            databaseProperties.put(bundleString("Driver"), metaProperties.get("DriverName") + " " + metaProperties.get("DriverVersion"));
+        }
+
+        return databaseProperties;
+    }
+
+    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection, boolean handleException) {
+        boolean isFirebird3 = connection.getMajorServerVersion() >= 3;
+        boolean isFirebird4 = connection.getMajorServerVersion() >= 4;
+        boolean isRedDatabase5 = connection.getMajorServerVersion() >= 5
+                && !MiscUtils.isNull(new DefaultDatabaseHost(connection).getDatabaseProductName())
+                && new DefaultDatabaseHost(connection).getDatabaseProductName().toLowerCase().contains("reddatabase");
 
         Table databaseTable = Table.createTable("MON$DATABASE", "D");
-        SelectBuilder sb = new SelectBuilder(getDatabaseConnection());
+        SelectBuilder sb = new SelectBuilder(connection);
         sb.appendTable(databaseTable);
         sb.appendField(Field.createField(databaseTable, "MON$DATABASE_NAME", "DATABASE_NAME"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGE_SIZE", "PAGE_SIZE"));
-        sb.appendField(Field.createField(databaseTable, "MON$ODS_MAJOR", "ODS_MAJOR"));
-        sb.appendField(Field.createField(databaseTable, "MON$ODS_MINOR", "ODS_MINOR"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_TRANSACTION", "OLDEST_TRANSACTION"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_ACTIVE", "OLDEST_ACTIVE"));
-        sb.appendField(Field.createField(databaseTable, "MON$OLDEST_SNAPSHOT", "OLDEST_SNAPSHOT"));
-        sb.appendField(Field.createField(databaseTable, "MON$NEXT_TRANSACTION", "NEXT_TRANSACTION"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGE_BUFFERS", "PAGE_BUFFERS"));
-        sb.appendField(Field.createField(databaseTable, "MON$SQL_DIALECT", "SQL_DIALECT"));
         sb.appendField(Field.createField(databaseTable, "MON$SHUTDOWN_MODE", "SHUTDOWN_MODE"));
         sb.appendField(Field.createField(databaseTable, "MON$SWEEP_INTERVAL", "SWEEP_INTERVAL"));
         sb.appendField(Field.createField(databaseTable, "MON$READ_ONLY", "READ_ONLY"));
         sb.appendField(Field.createField(databaseTable, "MON$FORCED_WRITES", "FORCED_WRITES"));
         sb.appendField(Field.createField(databaseTable, "MON$RESERVE_SPACE", "RESERVE_SPACE"));
-        sb.appendField(Field.createField(databaseTable, "MON$CREATION_DATE", "CREATION_DATE").setStatement("CAST(MON$CREATION_DATE AS TIMESTAMP)"));
         sb.appendField(Field.createField(databaseTable, "MON$PAGES", "PAGES"));
         sb.appendField(Field.createField(databaseTable, "MON$STAT_ID", "STAT_ID"));
         sb.appendField(Field.createField(databaseTable, "MON$BACKUP_STATE", "BACKUP_STATE"));
@@ -1125,14 +694,10 @@ public class DefaultDatabaseHost extends AbstractNamedObject
             sb.appendField(Field.createField(databaseTable, "MON$CRYPT_STATE", "CRYPT_STATE"));
         }
 
-        if (databaseProperties != null)
-            return databaseProperties;
+        Map<Object, Object> databaseProperties = new HashMap<>();
+        databaseProperties.put(bundleString("Driver"), connection.getDriverName());
 
-        databaseProperties = new HashMap<>();
-        databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
-        databaseProperties.put(bundleString("Driver"), getMetaProperties().get("DriverName") + " " + getMetaProperties().get("DriverVersion"));
-
-        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(getDatabaseConnection());
+        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
         databaseProperties.put(bundleString("GUID"), getHeaderValue(DatabaseStatisticCommand.GUID, databaseHeader));
         databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATACHMENT, databaseHeader));
         databaseProperties.put(bundleString("GENERATION"), getHeaderValue(DatabaseStatisticCommand.GENERATION, databaseHeader));
@@ -1141,9 +706,18 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         databaseProperties.put(bundleString("IMPLEMENTATION"), getHeaderValue(DatabaseStatisticCommand.IMPLEMENTATION, databaseHeader));
         databaseProperties.put(bundleString("SHADOW_COUNT"), getHeaderValue(DatabaseStatisticCommand.SHADOW_COUNT, databaseHeader));
         databaseProperties.put(bundleString("SCN"), getHeaderValue(DatabaseStatisticCommand.SCN, databaseHeader));
+        databaseProperties.put(bundleString("CREATION_DATE"), getHeaderValue(DatabaseStatisticCommand.CREATION_DATE, databaseHeader));
+        databaseProperties.put(bundleString("SQL_DIALECT"), getHeaderValue(DatabaseStatisticCommand.DIALECT, databaseHeader));
+        databaseProperties.put(bundleString("NEXT_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.NEXT_TRANSACTION, databaseHeader));
+        databaseProperties.put(bundleString("PAGE_SIZE"), getHeaderValue(DatabaseStatisticCommand.PAGE_SIZE, databaseHeader));
+        databaseProperties.put(bundleString("ODS_VERSION"), getHeaderValue(DatabaseStatisticCommand.ODS, databaseHeader));
+        databaseProperties.put(bundleString("ServerVersion"), (getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader) + " " + connection.getMajorServerVersion()).trim());
+        databaseProperties.put(bundleString("OLDEST_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.OIT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_ACTIVE"), getHeaderValue(DatabaseStatisticCommand.OAT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), getHeaderValue(DatabaseStatisticCommand.OST, databaseHeader));
 
         Object value = getHeaderValue(DatabaseStatisticCommand.PAGE_BUFF, databaseHeader);
-        if (value != null) {
+        if (value != null && !MiscUtils.isNull(value.toString())) {
             int intVal = Integer.parseInt(value.toString());
             value = Objects.equals(intVal, 0) ? Bundles.getCommon("default") : value;
         }
@@ -1151,13 +725,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
         try {
 
-            ResultSet rs = new DefaultStatementExecutor(getDatabaseConnection()).getResultSet(sb.getSQLQuery()).getResultSet();
+            ResultSet rs = new DefaultStatementExecutor(connection).getResultSet(sb.getSQLQuery()).getResultSet();
             if (rs != null && rs.next()) {
-
-                // --- ods version ---
-
-                value = rs.getInt("ODS_MAJOR") + "." + rs.getInt("ODS_MINOR");
-                databaseProperties.put(bundleString("ODS_VERSION"), value);
 
                 // --- shutdown mode ---
 
@@ -1208,7 +777,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 long pageSize = rs.getLong("PAGE_SIZE");    // db pages size
                 long pagesCount = rs.getLong("PAGES");      // db pages count
 
-                databaseProperties.put(bundleString("PAGE_SIZE"), pageSize);
                 databaseProperties.put(bundleString("PAGES"), pagesCount);
                 databaseProperties.put(bundleString("dbFileSize"), pageSize * pagesCount);
 
@@ -1260,14 +828,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 // --- others ---
 
                 databaseProperties.put(bundleString("DATABASE_NAME"), rs.getString("DATABASE_NAME"));           //  db file name
-                databaseProperties.put(bundleString("OLDEST_TRANSACTION"), rs.getInt("OLDEST_TRANSACTION"));    // oldest transaction number
-                databaseProperties.put(bundleString("OLDEST_ACTIVE"), rs.getInt("OLDEST_ACTIVE"));              // oldest active transaction number
-                databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), rs.getInt("OLDEST_SNAPSHOT"));          // snapshot transaction number
-                databaseProperties.put(bundleString("NEXT_TRANSACTION"), rs.getInt("NEXT_TRANSACTION"));        // next transaction number
                 databaseProperties.put(bundleString("PAGE_BUFFERS"), rs.getInt("PAGE_BUFFERS"));                // cached pages count
-                databaseProperties.put(bundleString("SQL_DIALECT"), rs.getInt("SQL_DIALECT"));                  // SQL dialect
                 databaseProperties.put(bundleString("SWEEP_INTERVAL"), rs.getInt("SWEEP_INTERVAL"));            // sweep interval
-                databaseProperties.put(bundleString("CREATION_DATE"), rs.getTimestamp("CREATION_DATE"));        // db creation date
                 databaseProperties.put(bundleString("STAT_ID"), rs.getInt("STAT_ID"));                          // statistics index
                 if (isFirebird3) {
                     databaseProperties.put(bundleString("CRYPT_PAGE"), rs.getInt("CRYPT_PAGE"));                // now encrypted db pages
@@ -1279,54 +841,16 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 }
 
             } else {
-                Log.error("Warning about loading database properties: the resultSet is null or empty");
+                Log.warning("Warning about loading database properties: the resultSet is null or empty");
             }
 
         } catch (SQLException e) {
             Log.error("Error occurred loading database properties", e);
         }
 
+        databaseProperties.values().removeAll(Collections.singleton(Constants.EMPTY));
         databaseProperties.values().removeAll(Collections.singleton(null));
         return databaseProperties;
-    }
-
-    private String getHeaderValue(String key, String databaseHeader) {
-
-        int index = StringUtils.indexOfIgnoreCase(databaseHeader, key);
-        if (index < 0)
-            return null;
-
-        String value = databaseHeader.substring(index + key.length()).trim();
-
-        Matcher matcher = Pattern.compile("\n").matcher(value);
-        if (matcher.find())
-            value = value.substring(0, matcher.start());
-
-        return value;
-    }
-
-    public boolean supportsCatalogsInTableDefinitions() {
-
-        try {
-
-            return getDatabaseMetaData().supportsCatalogsInTableDefinitions();
-
-        } catch (SQLException e) {
-
-            return false;
-        }
-    }
-
-    public boolean supportsSchemasInTableDefinitions() {
-
-        try {
-
-            return getDatabaseMetaData().supportsSchemasInTableDefinitions();
-
-        } catch (SQLException e) {
-
-            return false;
-        }
     }
 
     /**
@@ -1354,11 +878,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public int getDatabaseMajorVersion() throws SQLException {
         return getDatabaseMetaData().getDatabaseMajorVersion();
-    }
-
-    @Override
-    public int getDatabaseMinorVersion() throws SQLException {
-        return getDatabaseMetaData().getDatabaseMinorVersion();
     }
 
     public boolean isConnected() {
@@ -1457,69 +976,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
 
     private static final long serialVersionUID = 1L;
 
-    public boolean storesLowerCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesLowerCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean storesUpperCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesUpperCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean storesMixedCaseQuotedIdentifiers() {
-
-        try {
-
-            return getDatabaseMetaData().storesMixedCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
-    public boolean supportsMixedCaseQuotedIdentifiers() {
-        try {
-
-            return getDatabaseMetaData().supportsMixedCaseQuotedIdentifiers();
-
-        } catch (DataSourceException e) {
-
-            throw e;
-
-        } catch (SQLException e) {
-
-            throw new DataSourceException(e);
-        }
-    }
-
     public List<NamedObject> getDatabaseObjectsForMetaTag(String metadatakey) {
         for (DatabaseMetaTag metaTag : getMetaObjects()) {
             if (metadatakey.equals(metaTag.getMetaDataKey()))
@@ -1535,6 +991,15 @@ public class DefaultDatabaseHost extends AbstractNamedObject
                 return;
             }
         }
+    }
+
+    public AbstractTableObject getTableFromName(String name) {
+        NamedObject namedObject = getDatabaseObjectFromTypeAndName(TABLE, name);
+        if (namedObject == null)
+            namedObject = getDatabaseObjectFromTypeAndName(GLOBAL_TEMPORARY, name);
+        if (namedObject == null)
+            namedObject = getDatabaseObjectFromTypeAndName(VIEW, name);
+        return (AbstractTableObject) namedObject;
     }
 
     public List<String> getDatabaseObjectNamesForMetaTag(String metadatakey) {
@@ -1568,7 +1033,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         this.pauseLoadingTreeForSearch = pauseLoadingTreeForSearch;
     }
 
-    public String bundleString(String key) {
+    public static String bundleString(String key) {
         return Bundles.get(DefaultDatabaseHost.class, key);
     }
 

@@ -5,12 +5,12 @@ import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
@@ -53,7 +53,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         implements NamedView {
 
     public static final String TITLE = Bundles.get(ImportDataPanel.class, "Title");
-    public static final String FRAME_ICON = "ImportDelimited16.png";
+    public static final String FRAME_ICON = "icon_import_file";
 
     private static final int PREVIEW_ROWS_COUNT = 50;
     private static final int MIN_COLUMN_WIDTH = 100;
@@ -666,7 +666,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             insertStatement.setEscapeProcessing(true);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
             return;
         }
 
@@ -771,7 +771,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             executor.releaseResources();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("EraseDatabaseErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
         }
     }
 
@@ -788,7 +788,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         targetHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
         if (!targetHost.isConnected())
-            ConnectionManager.createDataSource(targetHost.getDatabaseConnection(), true);
+            ConnectionMediator.getInstance().connect(targetHost.getDatabaseConnection(), true);
 
         targetTablesList.clear();
         targetTablesList.add(bundleString("SelectTable"));
@@ -816,7 +816,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         DefaultDatabaseHost host = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
         if (!host.isConnected())
-            ConnectionManager.createDataSource(host.getDatabaseConnection(), true);
+            ConnectionMediator.getInstance().connect(host.getDatabaseConnection(), true);
 
         sourceTablesList.clear();
         sourceTablesList.add(bundleString("SelectTable"));

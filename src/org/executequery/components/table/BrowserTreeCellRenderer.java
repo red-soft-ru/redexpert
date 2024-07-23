@@ -69,18 +69,13 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
         setIconTextGap(10);
         setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-
-        if (UIUtils.isGtkLookAndFeel()) {
-            // has default black border on selection - ugly and wrong!
-            setBorderSelectionColor(null);
-        }
     }
 
     /**
      * Sets the value of the current tree cell to value. If
      * selected is true, the cell will be drawn as if selected.
      * If expanded is true the node is currently expanded and if
-     * leaf is true the node represets a leaf and if hasFocus
+     * leaf is true the node represents a leaf and if hasFocus
      * is true the node currently has focus. tree is the JTree
      * the receiver is being configured for. Returns the Component
      * that the renderer uses to draw the value.
@@ -106,7 +101,8 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
         String label = node.getDisplayName();
 
         setBackgroundSelectionColor(selectedBackground);
-        setIcon(IconManager.getInstance().getIconFromNode(node));
+        setIcon(IconManager.getIconFromNode(node, isSelected && hasFocus));
+
         setText(label);
 
         int type = node.getType();
@@ -116,7 +112,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
                 setToolTipText(buildToolTip(connection));
 
             } catch (Exception e) {
-                Log.error("Error genarating connection tooltip", e);
+                Log.error("Error generating connection tooltip", e);
                 setToolTipText(label);
             }
 
@@ -131,33 +127,24 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
 
             if (databaseObject != null) {
 
-                if (node.isSystem()) {
-                    setForeground(Color.RED);
+                if (databaseObject instanceof DefaultDatabaseTrigger) {
+                    DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
+                    if (!trigger.isTriggerActive())
+                        setForeground(disabledTextForeground);
+                }
 
-                } else {
-                    if (databaseObject instanceof DefaultDatabaseTrigger) {
-                        DefaultDatabaseTrigger trigger = (DefaultDatabaseTrigger) databaseObject;
-                        if (!trigger.isTriggerActive())
-                            setForeground(disabledTextForeground);
-                    }
-
-                    if (databaseObject instanceof DefaultDatabaseIndex) {
-                        DefaultDatabaseIndex index = (DefaultDatabaseIndex) databaseObject;
-                        if (!index.isActive())
-                            setForeground(disabledTextForeground);
-                    }
+                if (databaseObject instanceof DefaultDatabaseIndex) {
+                    DefaultDatabaseIndex index = (DefaultDatabaseIndex) databaseObject;
+                    if (!index.isActive())
+                        setForeground(disabledTextForeground);
                 }
             }
 
-        } else {
+        } else
+            setForeground(selectedTextForeground);
 
-            if (databaseObject != null && node.isSystem())
-                setForeground(Color.RED);
-            else
-                setForeground(selectedTextForeground);
-        }
-
-        if (type == NamedObject.META_TAG && !node.getDatabaseObject().getObjects().isEmpty())
+        boolean useBoldFont = type == NamedObject.META_TAG || NamedObject.isTableFolder(type);
+        if (useBoldFont && !node.isLeaf())
             setFont(treeFont.deriveFont(Font.BOLD));
         else
             setFont(treeFont);
@@ -177,6 +164,7 @@ public class BrowserTreeCellRenderer extends AbstractTreeCellRenderer {
             selected = true;
         }
 
+        setBorderSelectionColor(null);
         return this;
     }
 

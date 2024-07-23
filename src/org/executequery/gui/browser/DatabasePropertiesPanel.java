@@ -21,10 +21,15 @@
 package org.executequery.gui.browser;
 
 import org.executequery.gui.SortableColumnsTable;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.PropertyWrapperModel;
 
 import javax.swing.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,49 +39,47 @@ import java.util.Map;
  */
 public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
 
-    /**
-     * table model
-     */
     private PropertyWrapperModel model;
-
-    /**
-     * the table
-     */
     private JTable table;
 
     public DatabasePropertiesPanel() {
-
         super(new GridBagLayout());
         init();
     }
 
     private void init() {
 
-        model = new PropertyWrapperModel(PropertyWrapperModel.SORT_BY_KEY);
+        model = new PropertyWrapperModel();
 
         table = new SortableColumnsTable(model);
         setTableProperties(table);
 
-        GridBagConstraints gbc = new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST,
-                GridBagConstraints.BOTH,
-                new Insets(5, 5, 5, 5), 0, 0);
-
-        add(new JScrollPane(table), gbc);
+        add(new JScrollPane(table), new GridBagHelper().fillBoth().spanX().spanY().get());
     }
 
     public void setDatabaseProperties(Map<Object, Object> properties) {
-        model.setValues(properties, true);
+        setDatabaseProperties(properties, true);
+    }
+
+    public void setDatabaseProperties(Map<Object, Object> properties, boolean sort) {
+        model.setValues(properties, sort);
     }
 
     public JTable getTable() {
-
         return table;
     }
 
+    public void setHeaders(List<String> headers) {
+        JTableHeader tableHeader = table.getTableHeader();
+        TableColumnModel columnModel = tableHeader.getColumnModel();
+        for (int col = 0; col < headers.size() && col < columnModel.getColumnCount(); col++)
+            columnModel.getColumn(col).setHeaderValue(headers.get(col));
+
+        tableHeader.repaint();
+    }
+
+    public void restoreHeaders() {
+        setHeaders(Arrays.asList(PropertyWrapperModel.DEFAULT_HEADERS));
+    }
+
 }
-
-
-
-
-

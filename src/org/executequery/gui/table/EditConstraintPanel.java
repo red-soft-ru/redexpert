@@ -3,6 +3,7 @@ package org.executequery.gui.table;
 import org.apache.commons.lang.math.NumberUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTable;
+import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.AbstractTableObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
@@ -66,7 +67,21 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
         super(table.getHost().getDatabaseConnection(), dialog, null, new Object[]{table});
     }
 
+    public EditConstraintPanel(DatabaseTable table, ActionContainer dialog, int type) {
+        super(table.getHost().getDatabaseConnection(), dialog, null, new Object[]{table});
+        setConstraintType(type);
+    }
+
+    public EditConstraintPanel(DatabaseTableObject table, ActionContainer dialog, int type) {
+        super(table.getHost().getDatabaseConnection(), dialog, null, new Object[]{table});
+        setConstraintType(type);
+    }
+
     public EditConstraintPanel(DatabaseTable table, ActionContainer dialog, ColumnConstraint columnConstraint) {
+        super(table.getHost().getDatabaseConnection(), dialog, columnConstraint, new Object[]{table});
+    }
+
+    public EditConstraintPanel(DatabaseTableObject table, ActionContainer dialog, ColumnConstraint columnConstraint) {
         super(table.getHost().getDatabaseConnection(), dialog, columnConstraint, new Object[]{table});
     }
 
@@ -236,6 +251,24 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel
             nameField.setText(generateName());
 
         updateUI();
+    }
+
+    private void setConstraintType(int type) {
+        switch (type) {
+            case NamedObject.PRIMARY_KEY:
+                typeBox.setSelectedItem(ColumnConstraint.PRIMARY);
+                break;
+            case NamedObject.FOREIGN_KEY:
+                typeBox.setSelectedItem(ColumnConstraint.FOREIGN);
+                break;
+            case NamedObject.UNIQUE_KEY:
+                typeBox.setSelectedItem(ColumnConstraint.UNIQUE);
+                break;
+            case NamedObject.CHECK_KEY:
+                typeBox.setSelectedItem(ColumnConstraint.CHECK);
+                break;
+        }
+        typeBox.setEnabled(false);
     }
 
     @Override

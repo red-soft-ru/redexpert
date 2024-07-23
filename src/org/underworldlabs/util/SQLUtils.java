@@ -366,7 +366,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         for (ColumnData cd : cols) {
-            String name = format(relationName, cd.getConnection()) + "." + cd.getColumnName();
+            String name = format(relationName, cd.getConnection()) + "." + cd.getFormattedColumnName();
             sb.append(generateComment(name, metaTag, cd.getRemarks(), delimiter, true, cd.getConnection()));
         }
 
@@ -687,11 +687,9 @@ public final class SQLUtils {
                     sb.append("(").append(cd.getSelectOperator()).append(")");
 
                 } else {
-
                     if (!variable)
                         sb.append("\t");
-                    sb.append(formattedParameter(cd));
-
+                    sb.append(formattedParameter(cd, variable));
                 }
 
                 if (variable) {
@@ -718,15 +716,11 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String formattedParameter(ColumnData cd) {
-        return formattedParameter(cd, true);
-    }
-
-    public static String formattedParameter(ColumnData cd, boolean appendName) {
+    public static String formattedParameter(ColumnData cd, boolean variable) {
         StringBuilder sb = new StringBuilder();
 
-        if (appendName)
-            sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : cd.getColumnName()).append(SPACE);
+        String formattedName = variable ? cd.getColumnName() : format(cd.getColumnName(), cd.getConnection());
+        sb.append(cd.getColumnName() == null ? CreateTableSQLSyntax.EMPTY : formattedName).append(SPACE);
 
         if (MiscUtils.isNull(cd.getComputedBy())) {
 
@@ -902,6 +896,10 @@ public final class SQLUtils {
 
     public static String generateDefaultDropQuery(String metaTag, String name, String plugin, DatabaseConnection dc) {
         return "DROP " + metaTag + " " + format(name, dc) + " USING PLUGIN " + plugin + ";\n";
+    }
+
+    public static String generateDefaultDropColumnQuery(String name, String tableName, DatabaseConnection dc, boolean isConstraint) {
+        return "ALTER TABLE " + format(tableName, dc) + " DROP " + (isConstraint ? "CONSTRAINT " : "") + format(name, dc) + ";\n";
     }
 
     public static String generateCreateDomain(
@@ -1979,6 +1977,10 @@ public final class SQLUtils {
         return sb.append("^\nSET TERM ;^\n").toString();
     }
 
+    public static String generateAlterActive(String type, String name, boolean isActive) {
+        return "ALTER " + type + " " + name + (isActive ? " ACTIVE" : " INACTIVE");
+    }
+
     private static String format(String object, DatabaseConnection dc) {
         return MiscUtils.getFormattedObject(object, dc);
     }
@@ -1994,6 +1996,5 @@ public final class SQLUtils {
     private static String format(ColumnData.DefaultValue value, ColumnData cd) {
         return MiscUtils.formattedDefaultValue(value, cd.getSQLType(), cd.getConnection()).trim();
     }
-
 }
 

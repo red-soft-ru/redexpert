@@ -22,6 +22,7 @@ package org.executequery.gui.connections;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.repository.ConnectionFoldersRepository;
@@ -38,9 +39,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ExportConnectionsPanelOne extends ActionPanel {
 
@@ -157,12 +156,11 @@ public class ExportConnectionsPanelOne extends ActionPanel {
     }
 
 
-    static class ImportExportConnectionsTreeCellRenderer extends AbstractTreeCellRenderer {
+    private static class ImportExportConnectionsTreeCellRenderer extends AbstractTreeCellRenderer {
 
-        private Map<String, Icon> icons;
-        private Color textForeground;
-        private Color selectedTextForeground;
-        private Color selectedBackground;
+        private final Color textForeground;
+        private final Color selectedTextForeground;
+        private final Color selectedBackground;
 
         public ImportExportConnectionsTreeCellRenderer() {
 
@@ -173,53 +171,30 @@ public class ExportConnectionsPanelOne extends ActionPanel {
             setIconTextGap(10);
             setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-            if (UIUtils.isGtkLookAndFeel()) {
-
+            if (UIUtils.isGtkLookAndFeel())
                 setBorderSelectionColor(null);
-            }
-
-            icons = new HashMap<String, Icon>();
-            for (int i = 0; i < BrowserConstants.NODE_ICONS.length; i++) {
-
-                icons.put(BrowserConstants.NODE_ICONS[i], GUIUtilities.loadIcon(BrowserConstants.NODE_ICONS[i], true));
-            }
-
         }
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean isSelected, boolean isExpanded,
                                                       boolean isLeaf, int row, boolean hasFocus) {
-
             this.hasFocus = hasFocus;
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) value;
+            this.selected = isSelected;
 
-            Object userObject = child.getUserObject();
+            Object userObject = ((DefaultMutableTreeNode) value).getUserObject();
             if (userObject instanceof ConnectionsFolder) {
+                setIcon(IconManager.getIcon(BrowserConstants.FOLDER_IMAGE));
 
-                setIcon(icons.get(BrowserConstants.CONNECTIONS_FOLDER_IMAGE));
-
-            } else if (userObject instanceof DatabaseConnection) {
-
-                setIcon(icons.get(BrowserConstants.HOST_NOT_CONNECTED_IMAGE));
-            }
+            } else if (userObject instanceof DatabaseConnection)
+                setIcon(IconManager.getIcon(BrowserConstants.HOST_NOT_CONNECTED_IMAGE));
 
             setText(userObject.toString());
             setBackgroundSelectionColor(selectedBackground);
-
-            this.selected = isSelected;
-            if (!selected) {
-
-                setForeground(textForeground);
-
-            } else {
-
-                setForeground(selectedTextForeground);
-            }
+            setForeground(selected ? selectedTextForeground : textForeground);
 
             return this;
         }
 
-    }
+    } // ImportExportConnectionsTreeCellRenderer class
 
 }
-

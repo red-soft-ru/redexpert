@@ -24,9 +24,11 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
+import org.executequery.gui.prefs.*;
 import org.executequery.localization.Bundles;
 import org.executequery.localization.LocaleManager;
 import org.executequery.log.Log;
@@ -54,6 +56,8 @@ import java.util.*;
  * @author Takis Diakoumis
  */
 public class ApplicationLauncher {
+
+    private static boolean needUpdateColorsAndFonts = false;
 
     // agent.jar
     // http://blog.dutchworks.nl/2011/01/09/make-intellij-idea-behave-properly-in-linux-docks/
@@ -104,20 +108,12 @@ public class ApplicationLauncher {
             applyKeyboardFocusManager();
 
 
-            if (hasLocaleSettings()) {
-
-                setSystemLocaleProperties();
-
-            } else {
-
-                if (Log.isDebugEnabled()) {
-
-                    Log.debug("User locale settings not available - resetting");
-                }
-
+            if (!hasLocaleSettings()) {
+                Log.debug("User locale settings not available - resetting");
                 storeSystemLocaleProperties();
 
-            }
+            } else
+                setSystemLocaleProperties();
 
             advanceSplash(splash);
 
@@ -131,8 +127,10 @@ public class ApplicationLauncher {
 
             advanceSplash(splash);
 
-            GUIUtilities.startLogger();
+            IconManager.loadIcons();
+            advanceSplash(splash);
 
+            GUIUtilities.startLogger();
             advanceSplash(splash);
 
             // initialise the frame
@@ -141,9 +139,11 @@ public class ApplicationLauncher {
             GUIUtilities.initDesktop(frame);
 
             // initialise the actions from actions.xml
-            ActionBuilder.build(GUIUtilities.getActionMap(),
+            ActionBuilder.build(
+                    GUIUtilities.getActionMap(),
                     GUIUtilities.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
-                    Constants.ACTION_CONF_PATH);
+                    Constants.ACTION_CONF_PATH
+            );
 
             advanceSplash(splash);
 
@@ -172,7 +172,10 @@ public class ApplicationLauncher {
             // set proxy server settings
             initProxySettings();
 
-            ActionBuilder.setActionMaps(frame.getRootPane(), SystemResources.getUserActionShortcuts());
+            ActionBuilder.updateUserDefinedShortcuts(
+                    GUIUtilities.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW),
+                    SystemResources.getUserActionShortcuts()
+            );
 
             GUIUtilities.initPanels();
 
@@ -230,7 +233,7 @@ public class ApplicationLauncher {
             }
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Application launch error", e);
+            GUIUtilities.displayExceptionErrorDialog("Application launch error", e, this.getClass());
             e.printStackTrace();
             System.exit(1);
         }
@@ -264,56 +267,48 @@ public class ApplicationLauncher {
     }
 
     private boolean hasLocaleSettings() {
-
-        String language = userProperties().getStringProperty("locale.language");
-//        String country = userProperties().getStringProperty("locale.country");
-//        String timezone = userProperties().getStringProperty("locale.timezone");
-
-        /*
-        return !(MiscUtils.isNull(language))
-                && !(MiscUtils.isNull(country))
-                && !(MiscUtils.isNull(timezone));
-        */
-
+        String language = userProperties().getStringProperty("startup.display.language");
         return StringUtils.isNotBlank(language);
     }
 
     private void loadLookAndFeel(LookAndFeelLoader loader) {
-
-        String lookAndFeel = userProperties().getStringProperty("startup.display.lookandfeel");
         try {
 
+            String lookAndFeel = userProperties().getStringProperty("startup.display.lookandfeel");
             LookAndFeelType lookAndFeelType = loader.loadLookAndFeel(lookAndFeel);
             userProperties().setStringProperty("startup.display.lookandfeel", lookAndFeelType.name());
 
-        } catch (ApplicationException e) {
+            if (needUpdateColorsAndFonts) {
+                needUpdateColorsAndFonts = false;
 
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Error loading look and feel", e);
+                Arrays.stream(new UserPreferenceFunction[]{
+                                new PropertiesEditorFonts(null),
+                                new PropertiesConsoleFonts(null),
+                                new PropertiesEditorColours(null),
+                                new PropertiesTreeConnectionsFonts(null),
+                                new PropertiesResultSetTableColours(null),
+                        })
+                        .forEach(userPreferenceFunction -> {
+                            userPreferenceFunction.restoreDefaults();
+                            userPreferenceFunction.save();
+                        });
             }
+
+        } catch (ApplicationException e) {
+            Log.debug("Error loading look and feel", e);
             loadDefaultLookAndFeel(loader);
         }
-
     }
 
     private void loadDefaultLookAndFeel(LookAndFeelLoader loader) {
-
         try {
-
-            loader.loadLookAndFeel(LookAndFeelType.EXECUTE_QUERY);
-            userProperties().setStringProperty(
-                    "startup.display.lookandfeel", LookAndFeelType.EXECUTE_QUERY.name());
+            loader.loadLookAndFeel(LookAndFeelType.DEFAULT_LIGHT);
+            userProperties().setStringProperty("startup.display.lookandfeel", LookAndFeelType.DEFAULT_LIGHT.name());
 
         } catch (ApplicationException e) {
-
-            if (Log.isDebugEnabled()) {
-
-                Log.debug("Error loading default EQ look and feel", e);
-            }
+            Log.debug("Error loading default EQ look and feel", e);
             loader.loadCrossPlatformLookAndFeel();
         }
-
     }
 
     private void applySystemProperties() {
@@ -360,30 +355,22 @@ public class ApplicationLauncher {
     }
 
     private void storeSystemLocaleProperties() {
-
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.country",
-                System.getProperty("user.country"));
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.language",
-                System.getProperty("user.language"));
-        SystemProperties.setProperty(Constants.USER_PROPERTIES_KEY, "locale.timezone",
-                System.getProperty("user.timezone"));
+        SystemProperties.setProperty(
+                Constants.USER_PROPERTIES_KEY,
+                "startup.display.language",
+                System.getProperty("user.language")
+        );
     }
 
     private void setSystemLocaleProperties() {
-
-        // set locale and timezone info
-        System.setProperty("user.country", stringUserProperty("locale.country"));
-        System.setProperty("user.language", stringUserProperty("locale.language"));
-        System.setProperty("user.timezone", stringUserProperty("locale.timezone"));
-
-        Locale.setDefault(new Locale(stringUserProperty("locale.language")));
+        System.setProperty("user.language", stringUserProperty("startup.display.language"));
+        Locale.setDefault(new Locale(stringUserProperty("startup.display.language")));
         LocaleManager.updateLocaleEverywhere();
     }
 
     private void printVersionInfo() {
 
-        Log.info(bundleString("console-UsingJavaVersion") +
-                System.getProperty("java.version"));
+        Log.info(bundleString("console-UsingJavaVersion", System.getProperty("java.version")));
         Log.info(bundleString("console-RedExpertVersion") + ": " +
                 System.getProperty("executequery.minor.version") +
                 "-" + System.getProperty("executequery.build"));
@@ -588,8 +575,12 @@ public class ApplicationLauncher {
 
     }
 
-    String bundleString(String key) {
-        return Bundles.get(getClass(), key);
+    public static void setNeedUpdateColorsAndFonts(boolean needUpdateColorsAndFonts) {
+        ApplicationLauncher.needUpdateColorsAndFonts = needUpdateColorsAndFonts;
+    }
+
+    String bundleString(String key, Object... args) {
+        return Bundles.get(getClass(), key, args);
     }
 
 }

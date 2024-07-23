@@ -28,11 +28,8 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.databaseobjects.impl.TransactionAgnosticResultSet;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.DefaultKeywordEvent;
-import org.executequery.event.KeywordEvent;
-import org.executequery.event.KeywordListener;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.databaseobjects.CreateViewPanel;
 import org.executequery.gui.databaseobjects.DefaultDatabaseObjectTable;
@@ -64,8 +61,7 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
-        implements ChangeListener,
-        KeywordListener {
+        implements ChangeListener {
 
     public static final String NAME = "ObjectDefinitionPanel";
 
@@ -159,7 +155,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
 
         // --- base ---
 
-        setHeader("Database Object", GUIUtilities.loadIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
+        setHeader("Database Object", IconManager.getIcon(BrowserConstants.DATABASE_OBJECT_IMAGE));
         setContentPanel(descPanel);
     }
 
@@ -231,7 +227,7 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         // ---
 
         tableNameField.setText(object.getName());
-        setHeaderIcon(GUIUtilities.loadIcon(BrowserConstants.TABLES_IMAGE));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.TABLES_IMAGE));
         descBottomPanel.removeAll();
 
         try {
@@ -345,21 +341,6 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
             default:
                 return null;
         }
-    }
-
-    @Override
-    public void keywordsAdded(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords();
-    }
-
-    @Override
-    public void keywordsRemoved(KeywordEvent e) {
-        sqlTextPanel.setSQLKeywords();
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof DefaultKeywordEvent);
     }
 
     @Override

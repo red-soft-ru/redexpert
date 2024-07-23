@@ -35,7 +35,7 @@ public class ErdScrollPane extends JScrollPane {
     /**
      * The controller for the ERD viewer
      */
-    private ErdViewerPanel parent;
+    private final ErdViewerPanel parent;
     /**
      * The magnification to display with
      */
@@ -125,7 +125,7 @@ public class ErdScrollPane extends JScrollPane {
 
                 // determine the min/max extents of all components
                 ErdMoveableComponent component = null;
-                ErdTable[] tables = parent.getAllComponentsArray();
+                ErdMoveableComponent[] tables = parent.getAllComponentsArray();
 
                 int x = 0, y = 0;
                 int c_width = 0, c_height = 0;
@@ -234,7 +234,7 @@ public class ErdScrollPane extends JScrollPane {
 
                 }
 
-                Dimension viewDim = new Dimension((int) maxX, (int) (maxY));
+                Dimension viewDim = new Dimension((int) maxX + 50, (int) (maxY + 50));
                 view.setViewSize(viewDim);
 
 //                view.setViewPosition(new Point((int)(viewP.x - minX),
@@ -260,7 +260,7 @@ public class ErdScrollPane extends JScrollPane {
 
     private void moveComponentsByOffsetX(double offset) {
 
-        ErdTable[] tables = parent.getAllComponentsArray();
+        ErdTable[] tables = parent.getAllTablesArray();
 
         for (int i = 0; i < tables.length; i++) {
 
@@ -272,7 +272,7 @@ public class ErdScrollPane extends JScrollPane {
 
     private void moveComponentsByOffsetY(double offset) {
 
-        ErdTable[] tables = parent.getAllComponentsArray();
+        ErdTable[] tables = parent.getAllTablesArray();
 
         for (int i = 0; i < tables.length; i++) {
 

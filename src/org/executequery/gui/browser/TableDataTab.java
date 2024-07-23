@@ -35,6 +35,7 @@ import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -48,6 +49,7 @@ import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.plaf.UIUtils;
+import org.underworldlabs.swing.table.RowNumberHeader;
 import org.underworldlabs.swing.table.SortableHeaderRenderer;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -116,6 +118,7 @@ public class TableDataTab extends JPanel
     private Timer timer;
 
     public ResultSet resultSet;
+    private RowNumberHeader rowNumberHeader;
 
     public TableDataTab(boolean displayRowCount) {
 
@@ -457,19 +460,19 @@ public class TableDataTab extends JPanel
                     SQLException sqlException = (SQLException) e.getCause();
 
                     if (sqlException.getSQLState().contentEquals("28000"))
-                        GUIUtilities.displayExceptionErrorDialog("Data access error", e);
+                        GUIUtilities.displayExceptionErrorDialog("Data access error", e, this.getClass());
                     else {
-                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                         rebuildDataFromMetadata(columnDataList);
                     }
 
                 } else {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                     rebuildDataFromMetadata(columnDataList);
                 }
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 rebuildDataFromMetadata(columnDataList);
             }
 
@@ -491,14 +494,12 @@ public class TableDataTab extends JPanel
                 public void presorting(SortingEvent e) {
                     tableModel.setFetchAll(true);
                     tableModel.fetchMoreData();
-                    if (displayRowCount) {
+                    if (displayRowCount)
                         rowCountField.setText(String.valueOf(tableModel.getRowCount()));
-                    }
                 }
 
                 @Override
                 public void postsorting(SortingEvent e) {
-
                 }
 
                 @Override
@@ -511,19 +512,38 @@ public class TableDataTab extends JPanel
             tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
 
-            if (isDatabaseTable()) {
+            boolean showLineLumbers = SystemProperties.getBooleanProperty("user", "results.table.row.numbers");
+            if (showLineLumbers) {
+                Color background = SystemProperties.getColourProperty("user", "editor.output.background");
 
+                if (rowNumberHeader == null) {
+                    rowNumberHeader = new RowNumberHeader(table);
+                    rowNumberHeader.setBackground(background);
+                } else
+                    rowNumberHeader.setTable(table);
+
+                table.addPropertyChangeListener("rowHeight", e -> rowNumberHeader.setTable(table));
+                scroller.setRowHeaderView(rowNumberHeader);
+
+            } else {
+                if (rowNumberHeader != null)
+                    scroller.setRowHeaderView(null);
+                rowNumberHeader = null;
+            }
+
+            if (isDatabaseTable()) {
                 SortableHeaderRenderer renderer = new SortableHeaderRenderer(sorter) {
 
-                    private final ImageIcon primaryKeyIcon = GUIUtilities.loadIcon(BrowserConstants.PRIMARY_COLUMNS_IMAGE);
-                    private final ImageIcon foreignKeyIcon = GUIUtilities.loadIcon(BrowserConstants.FOREIGN_COLUMNS_IMAGE);
+                    private final ImageIcon primaryKeyIcon = IconManager.getIcon("icon_key_primary");
+                    private final ImageIcon foreignKeyIcon = IconManager.getIcon("icon_key_foreign");
+                    private final ImageIcon mixedKeyIcon = IconManager.getIcon("icon_key_mixed");
 
                     @Override
-                    public Component getTableCellRendererComponent(JTable table,
-                                                                   Object value, boolean isSelected, boolean hasFocus,
-                                                                   int row, int column) {
+                    public Component getTableCellRendererComponent(
+                            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-                        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        Component originalRenderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                        DefaultTableCellRenderer renderer = (DefaultTableCellRenderer) originalRenderer;
 
                         Icon keyIcon = iconForValue(value);
                         if (keyIcon != null) {
@@ -531,8 +551,11 @@ public class TableDataTab extends JPanel
                             Icon icon = renderer.getIcon();
                             if (icon != null) {
 
-                                BufferedImage image = new BufferedImage(icon.getIconWidth() + keyIcon.getIconWidth() + 2,
-                                        Math.max(keyIcon.getIconHeight(), icon.getIconHeight()), BufferedImage.TYPE_INT_ARGB);
+                                BufferedImage image = new BufferedImage(
+                                        icon.getIconWidth() + keyIcon.getIconWidth() + 2,
+                                        Math.max(keyIcon.getIconHeight(), icon.getIconHeight()),
+                                        BufferedImage.TYPE_INT_ARGB
+                                );
 
                                 Graphics graphics = image.getGraphics();
                                 keyIcon.paintIcon(null, graphics, 0, 0);
@@ -540,11 +563,8 @@ public class TableDataTab extends JPanel
 
                                 setIcon(new ImageIcon(image));
 
-                            } else {
-
+                            } else
                                 setIcon(keyIcon);
-                            }
-
                         }
 
                         return renderer;
@@ -552,25 +572,24 @@ public class TableDataTab extends JPanel
 
                     private ImageIcon iconForValue(Object value) {
 
-                        if (value != null) {
+                        if (value == null)
+                            return null;
 
-                            String name = value.toString();
-                            if (primaryKeyColumns.contains(name)) {
+                        boolean isPrimary = primaryKeyColumns.contains(value.toString());
+                        boolean isForeign = foreignKeyColumns.contains(value.toString());
 
-                                return primaryKeyIcon;
-
-                            } else if (foreignKeyColumns.contains(name)) {
-
-                                return foreignKeyIcon;
-                            }
-
-                        }
+                        if (isPrimary && isForeign)
+                            return mixedKeyIcon;
+                        else if (isPrimary)
+                            return primaryKeyIcon;
+                        else if (isForeign)
+                            return foreignKeyIcon;
 
                         return null;
                     }
 
-
                 };
+
                 sorter.setTableHeaderRenderer(renderer);
             }
 
@@ -662,6 +681,9 @@ public class TableDataTab extends JPanel
             tableModel.fetchMoreData();
             if (displayRowCount)
                 rowCountField.setText(String.valueOf(tableModel.getRowCount()));
+
+            if (rowNumberHeader != null)
+                rowNumberHeader.setTable(table);
         }
     }
 
@@ -1051,7 +1073,7 @@ public class TableDataTab extends JPanel
         buttonsEditingPanel = new JPanel(new GridBagLayout());
         PanelToolBar bar = new PanelToolBar();
         RolloverButton addRolloverButton = new RolloverButton();
-        addRolloverButton.setIcon(GUIUtilities.loadIcon("add_16.png"));
+        addRolloverButton.setIcon(IconManager.getIcon("icon_add"));
         addRolloverButton.setToolTipText(bundleString("InsertRecord"));
         addRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1066,7 +1088,7 @@ public class TableDataTab extends JPanel
         bar.add(addRolloverButton);
         tableButtons.add(addRolloverButton);
         RolloverButton deleteRolloverButton = new RolloverButton();
-        deleteRolloverButton.setIcon(GUIUtilities.loadIcon("delete_16.png"));
+        deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
         deleteRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1094,7 +1116,7 @@ public class TableDataTab extends JPanel
         bar.add(deleteRolloverButton);
         tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
-        commitRolloverButton.setIcon(GUIUtilities.loadIcon("Commit16.png"));
+        commitRolloverButton.setIcon(IconManager.getIcon("icon_commit"));
         commitRolloverButton.setToolTipText(bundleString("Commit"));
         commitRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1108,14 +1130,14 @@ public class TableDataTab extends JPanel
                         loadDataForTable(databaseObject);
 
                 } catch (DataSourceException e) {
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                 }
             }
         });
         bar.add(commitRolloverButton);
         tableButtons.add(commitRolloverButton);
         RolloverButton rollbackRolloverButton = new RolloverButton();
-        rollbackRolloverButton.setIcon(GUIUtilities.loadIcon("Rollback16.png"));
+        rollbackRolloverButton.setIcon(IconManager.getIcon("icon_rollback"));
         rollbackRolloverButton.setToolTipText(bundleString("Rollback"));
         rollbackRolloverButton.addActionListener(new ActionListener() {
             @Override
@@ -1162,6 +1184,8 @@ public class TableDataTab extends JPanel
                                         add(rowCountPanel, rowCountPanelConstraints);
                                         rowCountField.setText(String.valueOf(tableModel.getRowCount()));
                                     }
+                                    if (rowNumberHeader != null)
+                                        rowNumberHeader.setTable(table);
                                     setTableProperties();
                                     validate();
                                     repaint();
@@ -1188,7 +1212,7 @@ public class TableDataTab extends JPanel
         });
         bar.add(fetchAllRolloverButton);
         RolloverButton refreshButton = new RolloverButton();
-        refreshButton.setIcon(GUIUtilities.loadIcon("Refresh16.png"));
+        refreshButton.setIcon(IconManager.getIcon("icon_refresh"));
         refreshButton.setToolTipText(bundleString("ReloadData"));
         refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -1199,7 +1223,7 @@ public class TableDataTab extends JPanel
         bar.add(refreshButton);
 
         RolloverButton switchAutoresizeModeButton = new RolloverButton();
-        switchAutoresizeModeButton.setIcon(GUIUtilities.loadIcon("Zoom16.png"));
+        switchAutoresizeModeButton.setIcon(IconManager.getIcon("icon_zoom"));
         switchAutoresizeModeButton.setToolTipText(bundleString("SwitchTableAutoresizeMode"));
         switchAutoresizeModeButton.setMnemonic(KeyEvent.VK_ADD);
         switchAutoresizeModeButton.addActionListener(e -> popupMenuListener.autoWidthForCols(null));

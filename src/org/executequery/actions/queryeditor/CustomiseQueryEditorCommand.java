@@ -34,40 +34,22 @@ import java.awt.event.ActionEvent;
  */
 public class CustomiseQueryEditorCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
+        SwingUtilities.invokeLater(() -> {
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            try {
+                GUIUtilities.showWaitCursor();
 
-                try {
+                BaseDialog dialog = new BaseDialog(PropertiesPanel.TITLE, true);
+                PropertiesPanel panel = new PropertiesPanel(dialog, PropertyTypes.EDITOR);
 
-                    GUIUtilities.showWaitCursor();
+                dialog.addDisplayComponentWithEmptyBorder(panel);
+                dialog.display();
 
-                    BaseDialog dialog = new BaseDialog(PropertiesPanel.TITLE, true);
-                    PropertiesPanel panel = new PropertiesPanel(dialog, PropertyTypes.EDITOR_GENERAL);
-
-                    dialog.addDisplayComponentWithEmptyBorder(panel);
-                    dialog.display();
-
-                } finally {
-
-                    GUIUtilities.showNormalCursor();
-                }
-
+            } finally {
+                GUIUtilities.showNormalCursor();
             }
         });
-
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-

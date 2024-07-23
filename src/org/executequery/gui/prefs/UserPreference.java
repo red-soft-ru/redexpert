@@ -212,7 +212,7 @@ public class UserPreference {
                 return Integer.toString(((Color) value).getRGB());
 
             case ENUM_TYPE:
-                return ((Enum) valueOf(value)).name();
+                return ((Enum<?>) valueOf(value)).name();
 
             case BOOLEAN_TYPE:
             case INTEGER_TYPE:

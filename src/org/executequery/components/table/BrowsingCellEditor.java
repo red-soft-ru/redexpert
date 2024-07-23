@@ -122,9 +122,9 @@ public abstract class BrowsingCellEditor extends DefaultCellEditor
         textField.addActionListener(delegate);
         textField.addFocusListener(this);
 
-        browseButton = WidgetFactory.createButton("browseButton", this, "...");
-        browseButton.setPreferredSize(new Dimension(browseButton.getHeight(), browseButton.getHeight()));
-        browseButton.setVerticalAlignment(SwingConstants.TOP);
+        browseButton = WidgetFactory.createButton("browseButton", "...", this);
+        browseButton.setPreferredSize(new Dimension(WidgetFactory.defaultHeight(), WidgetFactory.defaultHeight()));
+        browseButton.setMargin(new Insets(0, 14, 6, 14));
         browseButton.setBackground(buttonBackground);
         browseButton.setBorderPainted(false);
         browseButton.setFocusPainted(false);

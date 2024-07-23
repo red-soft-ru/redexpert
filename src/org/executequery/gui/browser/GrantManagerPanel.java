@@ -37,7 +37,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
     // --- constants ---
 
-    public static final String FRAME_ICON = "grant_manager_16.png";
+    public static final String FRAME_ICON = "icon_manager_grant";
     public static final String TITLE = Bundles.get(GrantManagerPanel.class, "GrantManager");
 
     public static final int NO_GRANT_TO_ALL_OBJECTS = 0;
@@ -192,8 +192,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
                         ConnectionsTreePanel
                                 .getPanelFromBrowser()
                                 .getDefaultDatabaseHostFromConnection(connection),
-                        null,
-                        null,
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
                 name,

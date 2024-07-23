@@ -21,7 +21,8 @@
 package org.underworldlabs.swing;
 
 import org.executequery.Constants;
-import org.executequery.GUIUtilities;
+import org.executequery.gui.IconManager;
+import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.plaf.UIUtils;
@@ -66,7 +67,7 @@ public class GUIUtils {
      * @param e       - the throwable
      */
     public static void displayExceptionErrorDialog(Frame owner, String message, Throwable e) {
-        new ExceptionErrorDialog(owner, message, e);
+        new ExceptionErrorDialog(owner, message, e, GUIUtils.class);
     }
 
     /**
@@ -241,6 +242,39 @@ public class GUIUtils {
         setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR), component);
     }
 
+    public static void showChangeSizeCursor(Component component, int location) {
+        int cursor;
+        switch (location) {
+            case GridBagConstraints.NORTH:
+                cursor = Cursor.N_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.NORTHEAST:
+                cursor = Cursor.NE_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.EAST:
+                cursor = Cursor.E_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTHEAST:
+                cursor = Cursor.SE_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTH:
+                cursor = Cursor.S_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.SOUTHWEST:
+                cursor = Cursor.SW_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.WEST:
+                cursor = Cursor.W_RESIZE_CURSOR;
+                break;
+            case GridBagConstraints.NORTHWEST:
+                cursor = Cursor.NW_RESIZE_CURSOR;
+                break;
+            default:
+                cursor = Cursor.DEFAULT_CURSOR;
+        }
+        setCursor(Cursor.getPredefinedCursor(cursor), component);
+    }
+
     /**
      * Executes the specified runnable using the
      * <code>SwingWorker</code>.
@@ -411,9 +445,10 @@ public class GUIUtils {
             JDialog dialog;
             JFrame frame = null;
             if (parent == null) {
+                ImageIcon frameIcon = IconManager.getIcon(BrowserConstants.APPLICATION_IMAGE);
                 frame = new JFrame("My dialog asks....");
                 frame.setUndecorated(true);
-                frame.setIconImage(GUIUtilities.loadIcon("ApplicationIcon48.png", true).getImage());
+                frame.setIconImage(frameIcon != null ? frameIcon.getImage() : null);
                 frame.setVisible(true);
                 frame.setLocationRelativeTo(null);
                 dialog = pane.createDialog(frame, title);

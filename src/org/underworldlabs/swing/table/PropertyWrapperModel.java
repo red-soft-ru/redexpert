@@ -23,10 +23,7 @@ package org.underworldlabs.swing.table;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.util.KeyValuePair;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Simple wrapper class for key/value property values
@@ -36,130 +33,72 @@ import java.util.Properties;
  */
 public class PropertyWrapperModel extends AbstractSortableTableModel {
 
-    public static final int SORT_BY_KEY = 0;
-    public static final int SORT_BY_VALUE = 1;
+    public static final String[] DEFAULT_HEADERS = Bundles.get(PropertyWrapperModel.class, new String[]{
+            "property",
+            "value"
+    });
 
-    private static final String[] HEADER = Bundles.get(PropertyWrapperModel.class, new String[]{"property", "value"});
-
-    private int sortBy;
     private KeyValuePair[] valuePairs;
 
     public PropertyWrapperModel() {
-        this(SORT_BY_KEY);
-    }
-
-    public PropertyWrapperModel(int sortBy) {
-        this.sortBy = sortBy;
     }
 
     public PropertyWrapperModel(Properties values) {
-        this(values, SORT_BY_KEY);
-    }
-
-    public PropertyWrapperModel(Properties values, int sortBy) {
-        this.sortBy = sortBy;
-        setValues(values);
-    }
-
-    public void setValues(Properties values) {
-        int count = 0;
-        valuePairs = new KeyValuePair[values.size()];
-
-        for (Map.Entry<Object, Object> entry : values.entrySet()) {
-
-            valuePairs[count++] = new KeyValuePair(
-                    entry.getKey().toString(), entry.getValue().toString());
-        }
-
-        fireTableDataChanged();
+        setValues(values.entrySet(), values.size());
     }
 
     public void setValues(Map<Object, Object> values, boolean sort) {
-
-        Properties properties = new Properties();
-
-        for (Map.Entry<Object, Object> entry : values.entrySet()) {
-
-            properties.put(entry.getKey(), entry.getValue());
-        }
-
-        setValues(properties);
-
-        if (sort) {
+        setValues(values.entrySet(), values.size());
+        if (sort)
             sort();
-        }
-
     }
 
-    public void sort() {
-        if (valuePairs == null || valuePairs.length == 0) {
-            return;
-        }
-        Arrays.sort(valuePairs, new KeyValuePairSorter());
+    private void setValues(Set<Map.Entry<Object, Object>> entrySet, int setSize) {
+        int count = 0;
+        valuePairs = new KeyValuePair[setSize];
+        for (Map.Entry<Object, Object> entry : entrySet)
+            valuePairs[count++] = new KeyValuePair(entry.getKey().toString(), entry.getValue().toString());
+
         fireTableDataChanged();
     }
 
-    public void sort(int sortBy) {
-        this.sortBy = sortBy;
-        sort();
+    public void sort() {
+
+        if (valuePairs == null || valuePairs.length < 2)
+            return;
+
+        Arrays.sort(valuePairs, (pair1, pair2) -> {
+            String value1 = pair1.getKey().toString().toUpperCase();
+            String value2 = pair2.getKey().toString().toUpperCase();
+            return value1.compareTo(value2);
+        });
+
+        fireTableDataChanged();
     }
 
+    @Override
     public int getColumnCount() {
         return 2;
     }
 
+    @Override
     public int getRowCount() {
-        if (valuePairs == null) {
-            return 0;
-        }
-        return valuePairs.length;
+        return valuePairs != null ? valuePairs.length : 0;
     }
 
+    @Override
     public boolean isCellEditable(int row, int col) {
         return true;
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
-
-        KeyValuePair value = valuePairs[row];
-
-        if (col == 0) {
-            return value.getKey();
-        } else {
-            return value.getValue();
-        }
-
+        return col == 0 ? valuePairs[row].getKey() : valuePairs[row].getValue();
     }
 
+    @Override
     public String getColumnName(int col) {
-        return HEADER[col];
+        return DEFAULT_HEADERS[col];
     }
-
-
-    class KeyValuePairSorter implements Comparator<KeyValuePair> {
-
-        public int compare(KeyValuePair pair1, KeyValuePair pair2) {
-
-            String value1 = null;
-            String value2 = null;
-
-            if (sortBy == SORT_BY_KEY) {
-                value1 = pair1.getKey().toString().toUpperCase();
-                value2 = pair2.getKey().toString().toUpperCase();
-            } else {
-                value1 = pair1.getValue().toString().toUpperCase();
-                value2 = pair2.getValue().toString().toUpperCase();
-            }
-
-            return value1.compareTo(value2);
-        }
-
-    } // class KeyValuePairSorter
 
 }
-
-
-
-
-
-

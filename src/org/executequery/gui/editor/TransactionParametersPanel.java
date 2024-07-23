@@ -2,186 +2,256 @@ package org.executequery.gui.editor;
 
 import biz.redsoft.ITPB;
 import biz.redsoft.ITPBConstants;
+import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.Connection;
 
 public class TransactionParametersPanel extends JPanel {
-    ITPB tpb;
-    private JCheckBox readOnlyBox;
-    private JCheckBox waitCheckBox;
 
-    private JLabel lockTimeOutLabel;
-    private NumberTextField lockTimeOutField;
-    private JCheckBox noAutoUndoCheckBox;
+    private ITPB tpb;
 
-    private JLabel levelLabel;
-    private TransactionIsolationCombobox levelCombobox;
-    private JCheckBox recordVersionBox;
-    private JCheckBox ignoreLimboCheckBox;
-    private JCheckBox reservingCheckBox;
-    private TransactionTablesTable transactionTablesTable;
     private DatabaseConnection databaseConnection;
+    private TransactionTablesTable transactionTablesTable;
+
+    // --- GUI components ---
+
+    private JCheckBox waitCheck;
+    private JCheckBox readOnlyCheck;
+    private JCheckBox reservingCheck;
+    private JCheckBox noAutoUndoCheck;
+    private JCheckBox ignoreLimboCheck;
+    private JCheckBox recordVersionCheck;
+    private JCheckBox useSnapshotCheck;
+
+    private NumberTextField lockTimeOutField;
+    private NumberTextField snapshotToConnectField;
+    private TransactionIsolationComboBox isolationCombo;
+
+    // ---
 
     public TransactionParametersPanel(DatabaseConnection databaseConnection) {
         setDatabaseConnection(databaseConnection);
+
         init();
+        arrange();
+        checkEnabled();
     }
 
     private void init() {
-        readOnlyBox = new JCheckBox("READ ONLY");
-        waitCheckBox = new JCheckBox("WAIT");
-        waitCheckBox.setSelected(true);
-        waitCheckBox.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                checkEnabled();
-            }
-        });
-        lockTimeOutField = new NumberTextField();
-        levelCombobox = new TransactionIsolationCombobox();
-        levelCombobox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkEnabled();
-            }
-        });
-        recordVersionBox = new JCheckBox("RECORD VERSION");
-        noAutoUndoCheckBox = new JCheckBox("NO AUTO UNDO");
-        ignoreLimboCheckBox = new JCheckBox("IGNORE LIMBO");
-        reservingCheckBox = new JCheckBox("RESERVING");
-        //transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
-        reservingCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (reservingCheckBox.isSelected()) {
-                    if (databaseConnection == null) {
-                        reservingCheckBox.setSelected(false);
-                        return;
-                    }
-                    BaseDialog dialog = new BaseDialog("", true);
-                    dialog.setContentPane(transactionTablesTable);
-                    transactionTablesTable.setDialog(dialog);
-                    transactionTablesTable.display();
-                    dialog.display();
-                    if (!transactionTablesTable.isSuccess())
-                        reservingCheckBox.setSelected(false);
-                }
-            }
-        });
 
+        // --- CheckBox ---
+
+        readOnlyCheck = WidgetFactory.createCheckBox("readOnlyCheck", "READ ONLY");
+        noAutoUndoCheck = WidgetFactory.createCheckBox("noAutoUndoCheck", "NO AUTO UNDO");
+        ignoreLimboCheck = WidgetFactory.createCheckBox("ignoreLimboCheck", "IGNORE LIMBO");
+        recordVersionCheck = WidgetFactory.createCheckBox("recordVersionCheck", "RECORD VERSION");
+
+        waitCheck = WidgetFactory.createCheckBox("waitCheck", "WAIT", true);
+        waitCheck.addChangeListener(e -> checkEnabled());
+
+        reservingCheck = WidgetFactory.createCheckBox("reservingCheck", "RESERVING");
+        reservingCheck.addActionListener(e -> showReservingDialog());
+
+        useSnapshotCheck = WidgetFactory.createCheckBox("useSnapshotCheck", "SET TRANSACTION SNAPSHOT");
+        useSnapshotCheck.addActionListener(e -> checkEnabled());
+
+        // --- NumberTextField ---
+
+        lockTimeOutField = WidgetFactory.createNumberTextField("lockTimeOutField");
+        snapshotToConnectField = WidgetFactory.createNumberTextField("snapshotToConnectField");
+
+        // ---
+
+        isolationCombo = new TransactionIsolationComboBox();
+        isolationCombo.addItemListener(e -> checkEnabled());
+        isolationCombo.setName("isolationCombo");
+    }
+
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // ---  top panel ---
+
+        JPanel topPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().rightGap(5);
+        topPanel.add(readOnlyCheck, gbh.get());
+        topPanel.add(noAutoUndoCheck, gbh.nextCol().get());
+        topPanel.add(ignoreLimboCheck, gbh.nextCol().get());
+        topPanel.add(reservingCheck, gbh.nextCol().get());
+        topPanel.add(recordVersionCheck, gbh.nextCol().get());
+        topPanel.add(waitCheck, gbh.nextCol().get());
+        topPanel.add(useSnapshotCheck, gbh.nextCol().spanX().get());
+
+        // --- bottom panel ---
+
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().leftGap(5).rightGap(5);
+        bottomPanel.add(new JLabel(Bundles.get("ConnectionPanel.IsolationLevel")), gbh.topGap(3).get());
+        bottomPanel.add(isolationCombo, gbh.nextCol().leftGap(0).topGap(0).get());
+        bottomPanel.add(new JLabel(bundleString("lockTimeout")), gbh.nextCol().leftGap(10).topGap(3).get());
+        bottomPanel.add(lockTimeOutField, gbh.nextCol().leftGap(0).topGap(0).get());
+        bottomPanel.add(new JLabel(bundleString("snapshotToConnect")), gbh.nextCol().leftGap(10).topGap(3).get());
+        bottomPanel.add(snapshotToConnectField, gbh.nextCol().leftGap(0).topGap(0).spanX().get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().spanX();
+        mainPanel.add(topPanel, gbh.get());
+        mainPanel.add(bottomPanel, gbh.nextRow().topGap(5).get());
+
+        mainPanel.setMinimumSize(mainPanel.getPreferredSize());
+
+        // --- base ---
 
         setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
 
-        add(readOnlyBox, gbh.setLabelDefault().get());
-        add(noAutoUndoCheckBox, gbh.setLabelDefault().nextCol().get());
-        add(ignoreLimboCheckBox, gbh.setLabelDefault().nextCol().get());
-        levelLabel = new JLabel(Bundles.get("ConnectionPanel.IsolationLevel"));
-        add(levelLabel, gbh.setLabelDefault().nextCol().get());
-        add(levelCombobox, gbh.setLabelDefault().nextCol().get());
-        add(recordVersionBox, gbh.nextCol().spanX().get());
-        add(waitCheckBox, gbh.setLabelDefault().nextRowFirstCol().get());
-        lockTimeOutLabel = new JLabel(bundleString("lockTimeout"));
-        add(lockTimeOutLabel, gbh.nextCol().setLabelDefault().anchorNorthWest().get());
-        add(lockTimeOutField, gbh.fillHorizontally().setWeightX(0.2).nextCol().get());
-        add(reservingCheckBox, gbh.setLabelDefault().nextCol().spanX().get());
-        checkEnabled();
-
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return databaseConnection;
-    }
-
-
-
-    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
-        this.databaseConnection = databaseConnection;
-        if (databaseConnection != null)
-            transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables());
+        gbh = new GridBagHelper().anchorNorthWest().spanX();
+        add(mainPanel, gbh.leftGap(5).get());
     }
 
     private void checkEnabled() {
-        recordVersionBox.setEnabled(levelCombobox.getSelectedLevel() == Connection.TRANSACTION_READ_COMMITTED);
-        lockTimeOutLabel.setEnabled(waitCheckBox.isSelected());
-        lockTimeOutField.setEnabled(waitCheckBox.isSelected());
+        recordVersionCheck.setEnabled(isolationCombo.getSelectedLevel() == Connection.TRANSACTION_READ_COMMITTED);
+        if (!recordVersionCheck.isEnabled())
+            recordVersionCheck.setSelected(false);
 
+        lockTimeOutField.setEnabled(waitCheck.isSelected());
+        snapshotToConnectField.setEnabled(useSnapshotCheck.isSelected());
     }
 
-    private int getTransactionIsolation() {
-        return levelCombobox.getSelectedLevel();
-    }
+    public final ITPB getTpb(DatabaseConnection databaseConnection) {
 
-    public ITPB getTpb(DatabaseConnection databaseConnection) {
         if (databaseConnection != null && databaseConnection.isConnected()) {
             try {
-                tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(databaseConnection.getDriverMajorVersion(),ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection), "ITPBImpl");
-                tpb.initTPB();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        if (tpb != null) {
-            tpb.initTPB();
-            if (readOnlyBox.isSelected())
-                tpb.addArgument(ITPBConstants.isc_tpb_read);
-            else {
-                tpb.addArgument(ITPBConstants.isc_tpb_write);
-            }
-            if (waitCheckBox.isSelected()) {
-                tpb.addArgument(ITPBConstants.isc_tpb_wait);
-                if (lockTimeOutField.getValue() > 0)
-                    tpb.addArgument(ITPBConstants.isc_tpb_lock_timeout, lockTimeOutField.getValue());
-            } else tpb.addArgument(ITPBConstants.isc_tpb_nowait);
-            if (getTransactionIsolation() == Connection.TRANSACTION_REPEATABLE_READ) {
-                tpb.addArgument(ITPBConstants.isc_tpb_concurrency);
-            }
-            if (getTransactionIsolation() == Connection.TRANSACTION_SERIALIZABLE) {
-                tpb.addArgument(ITPBConstants.isc_tpb_consistency);
-            }
-            if (getTransactionIsolation() == Connection.TRANSACTION_READ_COMMITTED) {
-                tpb.addArgument(ITPBConstants.isc_tpb_read_committed);
-                if (recordVersionBox.isSelected())
-                    tpb.addArgument(ITPBConstants.isc_tpb_rec_version);
-                else tpb.addArgument(ITPBConstants.isc_tpb_no_rec_version);
+                tpb = (ITPB) DynamicLibraryLoader.loadingObjectFromClassLoaderWithCS(
+                        databaseConnection.getDriverMajorVersion(),
+                        ConnectionManager.getClassLoaderForDatabaseConnection(databaseConnection),
+                        "ITPBImpl"
+                );
 
-            }
-            if (noAutoUndoCheckBox.isSelected())
-                tpb.addArgument(ITPBConstants.isc_tpb_no_auto_undo);
-            if (ignoreLimboCheckBox.isSelected())
-                tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
-            if (reservingCheckBox.isSelected()) {
-                for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
-                    if (reservingTable.isReadTable())
-                        tpb.addArgument(ITPBConstants.isc_tpb_lock_read, reservingTable.getName());
-                    else tpb.addArgument(ITPBConstants.isc_tpb_lock_write, reservingTable.getName());
-                    if (reservingTable.isSharedTable())
-                        tpb.addArgument(ITPBConstants.isc_tpb_shared);
-                    else tpb.addArgument(ITPBConstants.isc_tpb_protected);
-                }
+            } catch (Exception e) {
+                Log.error(e.getMessage(), e);
             }
         }
+
+        if (tpb == null)
+            return null;
+
+        // --- setup transaction params ---
+
+        tpb.initTPB();
+
+        tpb.addArgument(readOnlyCheck.isSelected() ?
+                ITPBConstants.isc_tpb_read :
+                ITPBConstants.isc_tpb_write
+        );
+
+        if (waitCheck.isSelected()) {
+            tpb.addArgument(ITPBConstants.isc_tpb_wait);
+            if (lockTimeOutField.getValue() > 0)
+                tpb.addArgument(ITPBConstants.isc_tpb_lock_timeout, lockTimeOutField.getValue());
+
+        } else
+            tpb.addArgument(ITPBConstants.isc_tpb_nowait);
+
+        if (getTransactionIsolation() == Connection.TRANSACTION_REPEATABLE_READ)
+            tpb.addArgument(ITPBConstants.isc_tpb_concurrency);
+
+        if (getTransactionIsolation() == Connection.TRANSACTION_SERIALIZABLE)
+            tpb.addArgument(ITPBConstants.isc_tpb_consistency);
+
+        if (getTransactionIsolation() == Connection.TRANSACTION_READ_COMMITTED) {
+            tpb.addArgument(ITPBConstants.isc_tpb_read_committed);
+            tpb.addArgument(recordVersionCheck.isSelected() ?
+                    ITPBConstants.isc_tpb_rec_version :
+                    ITPBConstants.isc_tpb_no_rec_version
+            );
+        }
+
+        if (noAutoUndoCheck.isSelected())
+            tpb.addArgument(ITPBConstants.isc_tpb_no_auto_undo);
+
+        if (ignoreLimboCheck.isSelected())
+            tpb.addArgument(ITPBConstants.isc_tpb_ignore_limbo);
+
+        if (useSnapshotCheck.isSelected() && snapshotToConnectField.getLongValue() > 0)
+            tpb.addArgument(ITPBConstants.isc_tpb_at_snapshot_number, snapshotToConnectField.getLongValue());
+
+        if (reservingCheck.isSelected()) {
+            for (TransactionTablesTable.ReservingTable reservingTable : transactionTablesTable.getReservingTables()) {
+
+                tpb.addArgument(reservingTable.isReadTable() ?
+                                ITPBConstants.isc_tpb_lock_read :
+                                ITPBConstants.isc_tpb_lock_write,
+                        reservingTable.getName()
+                );
+
+                tpb.addArgument(reservingTable.isSharedTable() ?
+                        ITPBConstants.isc_tpb_shared :
+                        ITPBConstants.isc_tpb_protected
+                );
+            }
+        }
+
         return tpb;
     }
 
-    private String bundleString(String key, Object... args) {
+    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
+        this.databaseConnection = databaseConnection;
+        if (databaseConnection != null) {
+            transactionTablesTable = new TransactionTablesTable(ConnectionsTreePanel
+                    .getPanelFromBrowser()
+                    .getDefaultDatabaseHostFromConnection(databaseConnection)
+                    .getTables()
+            );
+        }
+    }
+
+    private void showReservingDialog() {
+
+        if (!reservingCheck.isSelected())
+            return;
+
+        if (databaseConnection == null) {
+            reservingCheck.setSelected(false);
+            return;
+        }
+
+        BaseDialog dialog = new BaseDialog(Constants.EMPTY, true);
+        dialog.setContentPane(transactionTablesTable);
+        transactionTablesTable.setDialog(dialog);
+        transactionTablesTable.display();
+        dialog.display();
+
+        if (!transactionTablesTable.isSuccess())
+            reservingCheck.setSelected(false);
+    }
+
+    private int getTransactionIsolation() {
+        return isolationCombo.getSelectedLevel();
+    }
+
+    private static String bundleString(String key, Object... args) {
         return Bundles.get(TransactionParametersPanel.class, key, args);
     }
+
+    public void setCurrentTransaction(long currentSnapshotTransaction) {
+        snapshotToConnectField.setLongValue(currentSnapshotTransaction);
+    }
+
 }

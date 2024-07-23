@@ -129,7 +129,7 @@ public class SimplePreferencesPanel extends JPanel
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
-        table.setFont(AbstractPropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         table.setTableHeader(null);
 
         EachRowEditor rowEditor = new EachRowEditor(table);
@@ -183,7 +183,7 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.INTEGER_TYPE:
                     final NumberCellEditor numEditor =
                             new NumberCellEditor(preferences[i].getMaxLength(), true);
-                    numEditor.setFont(AbstractPropertiesBasePanel.panelFont);
+                    numEditor.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
                     editor = new DefaultCellEditor(numEditor) {
                         public Object getCellEditorValue() {
@@ -207,7 +207,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (colourRenderer == null) {
                         colourRenderer = new ColourTableCellRenderer();
-                        colourRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        colourRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                         table.addMouseListener(this);
                     }
 
@@ -229,7 +229,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (fileRenderer == null) {
                         fileRenderer = new FileSelectionTableCell(JFileChooser.FILES_ONLY);
-                        fileRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        fileRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                     }
 
                     rowRendererValues.add(i, fileRenderer);
@@ -240,7 +240,7 @@ public class SimplePreferencesPanel extends JPanel
 
                     if (dirRenderer == null) {
                         dirRenderer = new FileSelectionTableCell(JFileChooser.DIRECTORIES_ONLY);
-                        dirRenderer.setFont(AbstractPropertiesBasePanel.panelFont);
+                        dirRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
                     }
 
                     rowRendererValues.add(i, dirRenderer);
@@ -395,8 +395,12 @@ public class SimplePreferencesPanel extends JPanel
                         SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
                         PropertiesPanel.setUpdateEnvNeed(true);
                     }
+
                 } else
                     SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+
+                if (preference.getKey().equals("startup.display.language"))
+                    System.setProperty("user.language", preference.getSaveValue());
             }
         }
 
@@ -535,22 +539,25 @@ public class SimplePreferencesPanel extends JPanel
 
         protected Properties defaultsForTheme() {
 
+            LookAndFeelType selectedLaf = GUIUtilities.getLookAndFeel();
+
+            String resourcePath;
+            if (selectedLaf.isDefaultTheme()) {
+                resourcePath = selectedLaf.isDarkTheme() ?
+                        "org/executequery/gui/editor/resource/sql-syntax.default.dark.profile" :
+                        "org/executequery/gui/editor/resource/sql-syntax.default.light.profile";
+            } else {
+                resourcePath = selectedLaf.isDarkTheme() ?
+                        "org/executequery/gui/editor/resource/sql-syntax.classic.dark.profile" :
+                        "org/executequery/gui/editor/resource/sql-syntax.classic.light.profile";
+            }
+
             try {
-
-                Properties defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.default.profile");
-                if (currentlySavedLookAndFeel().isDarkTheme())
-                    defaults = FileUtils.loadPropertiesResource("org/executequery/gui/editor/resource/sql-syntax.dark.profile");
-
-                return defaults;
+                return FileUtils.loadPropertiesResource(resourcePath);
 
             } catch (IOException e) {
                 throw new ApplicationException(e);
             }
-        }
-
-        private LookAndFeelType currentlySavedLookAndFeel() {
-            String lookAndFeel = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.lookandfeel");
-            return LookAndFeelType.valueOf(lookAndFeel);
         }
 
     } // class PreferencesTableModel
@@ -577,7 +584,7 @@ public class SimplePreferencesPanel extends JPanel
         public TableComboBox(Object[] values) {
 
             super(values);
-            setFont(AbstractPropertiesBasePanel.panelFont);
+            setFont(AbstractPropertiesBasePanel.getDefaultFont());
         }
 
     } // class TableComboBox
@@ -592,7 +599,7 @@ public class SimplePreferencesPanel extends JPanel
                 rewrite(path);
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e, JavaFileProperty.class);
                 return false;
             }
 
@@ -604,7 +611,7 @@ public class SimplePreferencesPanel extends JPanel
                 delete();
 
             } catch (Exception e) {
-                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e);
+                GUIUtilities.displayExceptionErrorDialog("Error updating Java path property", e, JavaFileProperty.class);
             }
         }
 

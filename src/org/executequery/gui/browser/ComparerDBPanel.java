@@ -2,16 +2,19 @@ package org.executequery.gui.browser;
 
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.SimpleDataSource;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
+import org.executequery.gui.erd.ErdTable;
 import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
@@ -51,8 +54,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     public static final String TITLE = bundleString("title");
     public static final String TITLE_EXPORT = bundleString("title-export");
-    public static final String COMPARE_ICON = "ComparerDB_16.png";
-    public static final String EXTRACT_ICON = "CreateScripts16.png";
+    public static final String COMPARE_ICON = "icon_compare_db";
+    public static final String EXTRACT_ICON = "icon_create_script";
 
     private static final int CHECK_CREATE = 0;
     private static final int CHECK_ALTER = 1;
@@ -75,6 +78,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private boolean isComparing;
     private boolean isReverseOrder;
     private final boolean isExtractMetadata;
+    private final boolean isErd;
 
     // --- panel components ---
 
@@ -99,6 +103,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
+    private List<DefaultDatabaseTable> erdTables;
 
     private StringBuilder settingScriptProps;
 
@@ -107,12 +112,31 @@ public class ComparerDBPanel extends JPanel implements TabView {
     public ComparerDBPanel() {
 
         isExtractMetadata = false;
+        isErd = false;
         init();
+    }
+
+    public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
+        isErd = true;
+        isExtractMetadata = databaseConnection == null;
+        this.erdTables = new ArrayList<>();
+        for (ErdTable erd : tables) {
+            erdTables.add(new DefaultDatabaseTable(erd));
+        }
+        init();
+
+        if (databaseConnection != null) {
+            dbTargetComboBox.setSelectedItem(databaseConnection.getName());
+            dbMasterComboBox.setSelectedItem(databaseConnection.getName());
+        }
+        if (databaseConnection != null)
+            attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }
 
     public ComparerDBPanel(DatabaseConnection dc) {
 
         isExtractMetadata = true;
+        isErd = false;
         init();
 
         if (dc != null) {
@@ -359,9 +383,16 @@ public class ComparerDBPanel extends JPanel implements TabView {
         gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
 
         JPanel comparePanel = new JPanel(new GridBagLayout());
+        if (!isErd) {
 
-        comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
-        comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
+            comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
+
+            comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
+        } else {
+            comparePanel.add(compareButton, gridBagHelper.setLabelDefault().get());
+            gridBagHelper.nextRowFirstCol();
+            gridBagHelper.previousCol();
+        }
         comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
 
         // --- main panel ---
@@ -396,7 +427,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
     }
 
     private boolean prepareComparer() {
-
+        if (isErd && isExtractMetadata) {
+            comparer = new Comparer(this, null, new boolean[]{
+                    !isPropertySelected(IGNORE_PK),
+                    !isPropertySelected(IGNORE_FK),
+                    !isPropertySelected(IGNORE_UK),
+                    !isPropertySelected(IGNORE_CK)
+            },
+                    !isPropertySelected(IGNORE_COMMENTS),
+                    !isPropertySelected(IGNORE_COMPUTED_FIELDS),
+                    !isPropertySelected(IGNORE_FIELDS_POSITIONS));
+            return true;
+        }
         DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
         DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
 
@@ -411,9 +453,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
         try {
 
             if (!isExtractMetadata && !masterConnection.isConnected())
-                ConnectionManager.createDataSource(masterConnection, true);
+                ConnectionMediator.getInstance().connect(masterConnection, true);
             if (!targetConnection.isConnected())
-                ConnectionManager.createDataSource(targetConnection, true);
+                ConnectionMediator.getInstance().connect(targetConnection, true);
 
         } catch (DataSourceException e) {
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
@@ -525,7 +567,21 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 Collections.reverse(scriptGenerationOrder);
             }
 
-            for (Integer type : scriptGenerationOrder) {
+            if (isErd && isExtractMetadata) {
+                ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
+                        .add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.TABLE,
+                                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE]), ComparerTreeNode.TYPE_FOLDER));
+
+                loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
+                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE])));
+                comparer.createErds(erdTables);
+                if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
+                    loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                    if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                        loggingOutputPanel.append(comparer.getComputedFieldsList());
+                    comparer.createComputedFields();
+                }
+            } else for (Integer type : scriptGenerationOrder) {
 
                 if (isCanceled())
                     break;
@@ -585,7 +641,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.alterObjects(type);
+                    if (isErd)
+                        comparer.alterErds(erdTables);
+                    else comparer.alterObjects(type);
                 }
             }
         }
@@ -615,7 +673,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
                     loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
                             Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.dropObjects(type);
+                    if (isErd)
+                        comparer.dropErds(erdTables);
+                    else comparer.dropObjects(type);
                 }
             }
         }
@@ -657,21 +717,22 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 return;
             }
         }
+        if (!isErd) {
+            for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
 
-        for (int objectType = 0; objectType < NamedObject.SYSTEM_DOMAIN; objectType++) {
+                if (objectType == NamedObject.USER)
+                    continue;
 
-            if (objectType == NamedObject.USER)
-                continue;
+                if (attributesCheckBoxMap.get(objectType).isSelected())
+                    break;
 
-            if (attributesCheckBoxMap.get(objectType).isSelected())
-                break;
-
-            if (objectType == NamedObject.SYSTEM_DOMAIN - 1) {
-                GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
-                        "UnableExtractNoAttributes" :
-                        "UnableCompareNoAttributes")
-                );
-                return;
+                if (objectType == NamedObject.SYSTEM_DOMAIN - 1) {
+                    GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
+                            "UnableExtractNoAttributes" :
+                            "UnableCompareNoAttributes")
+                    );
+                    return;
+                }
             }
         }
 
@@ -691,7 +752,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     try {
                         compare();
                     } catch (Throwable e) {
-                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e);
+                        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorOccurred"), e, this.getClass());
                         Log.error("Error occurred while comparing DBs", e);
                     }
 
@@ -803,7 +864,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             return;
         }
 
-        QueryEditor queryEditor = new QueryEditor(sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
+        QueryEditor queryEditor = new QueryEditor(isErd() ? sqlTextPanel.getSQLText() : sqlTextPanel.getSQLText().replace(settingScriptProps.toString(), ""));
         queryEditor.setSelectedConnection(comparer.getMasterConnection());
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE, QueryEditor.FRAME_ICON,
@@ -1071,93 +1132,84 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private static class ComparerTreeCellRenderer extends AbstractTreeCellRenderer {
 
+        private final Color textForeground;
+        private final Color selectedTextForeground;
+
+        ComparerTreeCellRenderer() {
+            textForeground = UIManager.getColor("Tree.textForeground");
+            selectedTextForeground = UIManager.getColor("Tree.selectionForeground");
+        }
+
         @Override
         public Component getTreeCellRendererComponent(
                 JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
+            this.selected = selected;
+            this.hasFocus = hasFocus;
+
             ComparerTreeNode treeNode = (ComparerTreeNode) value;
+            selected &= hasFocus;
             switch (treeNode.type) {
-
                 case NamedObject.DOMAIN:
-                    setIcon(GUIUtilities.loadIcon("domain16.png"));
+                    setIcon(IconManager.getIcon("icon_db_domain", selected));
                     break;
-
                 case NamedObject.TABLE:
-                    setIcon(GUIUtilities.loadIcon("PlainTable16.png"));
+                    setIcon(IconManager.getIcon("icon_db_table", selected));
                     break;
-
                 case NamedObject.GLOBAL_TEMPORARY:
-                    setIcon(GUIUtilities.loadIcon("GlobalTable16.png"));
+                    setIcon(IconManager.getIcon("icon_db_table_global", selected));
                     break;
-
                 case NamedObject.VIEW:
-                    setIcon(GUIUtilities.loadIcon("TableView16.png"));
+                    setIcon(IconManager.getIcon("icon_db_view", selected));
                     break;
-
                 case NamedObject.PROCEDURE:
-                    setIcon(GUIUtilities.loadIcon("Procedure16.png"));
+                    setIcon(IconManager.getIcon("icon_db_procedure", selected));
                     break;
-
                 case NamedObject.FUNCTION:
-                    setIcon(GUIUtilities.loadIcon("Function16.png"));
+                    setIcon(IconManager.getIcon("icon_db_function", selected));
                     break;
-
                 case NamedObject.PACKAGE:
-                    setIcon(GUIUtilities.loadIcon("package16.png"));
+                    setIcon(IconManager.getIcon("icon_db_package", selected));
                     break;
-
                 case NamedObject.TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("Trigger.png"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_table", selected));
                     break;
-
                 case NamedObject.DDL_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDDL.png"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_ddl", selected));
                     break;
-
                 case NamedObject.DATABASE_TRIGGER:
-                    setIcon(GUIUtilities.loadIcon("TriggerDB.png"));
+                    setIcon(IconManager.getIcon("icon_db_trigger_db", selected));
                     break;
-
                 case NamedObject.SEQUENCE:
-                    setIcon(GUIUtilities.loadIcon("Sequence16.png"));
+                    setIcon(IconManager.getIcon("icon_db_generator", selected));
                     break;
-
                 case NamedObject.EXCEPTION:
-                    setIcon(GUIUtilities.loadIcon("exception16.png"));
+                    setIcon(IconManager.getIcon("icon_db_exception", selected));
                     break;
-
                 case NamedObject.UDF:
-                    setIcon(GUIUtilities.loadIcon("udf16.png"));
+                    setIcon(IconManager.getIcon("icon_db_udf", selected));
                     break;
-
                 case NamedObject.USER:
-                    setIcon(GUIUtilities.loadIcon("User16.png"));
+                    setIcon(IconManager.getIcon("icon_db_user", selected));
                     break;
-
                 case NamedObject.ROLE:
-                    setIcon(GUIUtilities.loadIcon("user_manager_16.png"));
+                    setIcon(IconManager.getIcon("icon_db_role", selected));
                     break;
-
                 case NamedObject.INDEX:
-                    setIcon(GUIUtilities.loadIcon("TableIndex16.png"));
+                    setIcon(IconManager.getIcon("icon_db_index", selected));
                     break;
-
                 case NamedObject.TABLESPACE:
-                    setIcon(GUIUtilities.loadIcon("tablespace16.png"));
+                    setIcon(IconManager.getIcon("icon_db_tablespace", selected));
                     break;
-
                 case NamedObject.JOB:
-                    setIcon(GUIUtilities.loadIcon("job16.png"));
+                    setIcon(IconManager.getIcon("icon_db_job", selected));
                     break;
-
                 case NamedObject.COLLATION:
-                    setIcon(GUIUtilities.loadIcon("XmlFile16.png"));
+                    setIcon(IconManager.getIcon("icon_db_collation", selected));
                     break;
-
                 default:
-                    setIcon(getDefaultOpenIcon());
+                    setIcon(IconManager.getIcon("icon_folder", selected));
                     break;
-
             }
 
             Font font = getFont();
@@ -1172,9 +1224,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     setFont(font.deriveFont(Font.PLAIN));
             }
 
+            setForeground(selected ? selectedTextForeground : textForeground);
             return this;
         }
 
     }
 
+    public boolean isErd() {
+        return isErd;
+    }
 }

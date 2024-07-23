@@ -22,6 +22,7 @@ package org.executequery;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.executequery.components.SimpleHtmlContentPane;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
 import org.executequery.http.RemoteHttpClientException;
@@ -66,6 +67,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private boolean checkUnstable = false;
     private boolean useReleaseHub = false;
+    private boolean useHttpsProtocol = true;
     private boolean monitorProgress = false;
     private static boolean waitingForUpdate = false;
     private static boolean waitingForRestart = false;
@@ -112,7 +114,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                     displayDownloadDialog(null);
 
                 } else if (monitorProgress)
-                    GUIUtilities.displayInformationMessage(bundledString("noUpdateMessage"));
+                    GUIUtilities.displayInformationMessage(bundledString("RedExpertUpToDate"));
 
                 return Constants.WORKER_SUCCESS;
             }
@@ -131,7 +133,8 @@ public class CheckForUpdateNotifier implements Interruptible {
             return;
         }
 
-        useReleaseHub = UserProperties.getInstance().getBooleanProperty("releasehub");
+        useHttpsProtocol = UserProperties.getInstance().getBooleanProperty("update.use.https");
+        useReleaseHub = UserProperties.getInstance().getBooleanProperty("update.use.releasehub");
         checkUnstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
 
         if (useReleaseHub)
@@ -157,7 +160,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void checkFromReddatabase() {
         Log.info(String.format(bundledString("CheckingForNewVersion"), "https://reddatabase.ru"));
 
-        new DefaultRemoteHttpClient().setHttp("https");
+        new DefaultRemoteHttpClient().setHttp(useHttpsProtocol ? "https" : "http");
         new DefaultRemoteHttpClient().setHttpPort(443);
 
         try {
@@ -187,7 +190,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.error(message);
             Log.debug(e.getMessage(), e);
             if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e);
+                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
         }
     }
 
@@ -224,7 +227,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             Log.error(message);
             Log.debug(e.getMessage(), e);
             if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e);
+                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
 
             useReleaseHub = false;
             checkFromReddatabase();
@@ -292,7 +295,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
                 } catch (Exception e) {
                     restoreProgressDialog();
-                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e);
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
                     return Constants.WORKER_FAIL;
                 }
 
@@ -317,7 +320,6 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private void startUpdate() {
-
         try {
 
             List<String> argsList = new ArrayList<>();
@@ -375,7 +377,9 @@ public class CheckForUpdateNotifier implements Interruptible {
                 GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Update error", e);
+            GUIUtilities.displayExceptionErrorDialog("Update error", e, this.getClass());
+            GUIUtilities.getStatusBar().reset();
+            updateDownloadNotifier();
         }
     }
 
@@ -386,7 +390,7 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
-        label.setIcon(GUIUtilities.loadIcon("YellowBallAnimated16.gif"));
+        label.setIcon(IconManager.getIcon("icon_notification"));
         label.setToolTipText(newVersionAvailableText());
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));

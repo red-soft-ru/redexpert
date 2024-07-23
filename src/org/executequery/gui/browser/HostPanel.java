@@ -24,21 +24,16 @@ import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.log.Log;
-import org.executequery.print.TablePrinter;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.GUIUtils;
 
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.print.Printable;
-import java.util.HashMap;
-import java.util.Vector;
 
 /**
  * Database connection host panel.
@@ -50,56 +45,12 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
     public static final String NAME = "HostPanel";
 
-    private DisabledField databaseProductField;
-    private DisabledField hostField;
-    private DisabledField sourceField;
-    private DisabledField schemaField;
-    private DisabledField urlField;
-
-    private JTable schemaTable;
-    private HostModel model;
-
-    private boolean initialised;
-
-    /**
-     * the current host object
-     */
+    private final BrowserController controller;
     private DatabaseHost host;
 
-    /**
-     * the tab pane display
-     */
-    private JTabbedPane tabPane;
-
-    /**
-     * the connection info pane
-     */
-    private ConnectionPanel connectionPanel;
-
-    /**
-     * the key words panel
-     */
-    private KeyWordsPanel keyWordsPanel;
-
-    /**
-     * the java sql types panel
-     */
-    private JavaSQLTypesPanel javaSqlTypesPanel;
-
-    /**
-     * the database properties pane
-     */
-    private DatabasePropertiesPanel databasePropertiesPanel;
-
-    /**
-     * the data types panel
-     */
     private DataTypesPanel dataTypesPanel;
-
-    /**
-     * the browser's control object
-     */
-    private final BrowserController controller;
+    private ConnectionPanel connectionPanel;
+    private DatabasePropertiesPanel propertiesPanel;
 
     public HostPanel(BrowserController controller) {
         super();
@@ -107,33 +58,21 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
 
         try {
             init();
+
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
     }
 
     private void init() {
 
-        connectionPanel = new ConnectionPanel(controller);
-        databasePropertiesPanel = new DatabasePropertiesPanel();
-        keyWordsPanel = new KeyWordsPanel();
         dataTypesPanel = new DataTypesPanel();
-        javaSqlTypesPanel = new JavaSQLTypesPanel();
+        connectionPanel = new ConnectionPanel(controller);
+        propertiesPanel = new DatabasePropertiesPanel();
 
-        /*tabPane = new JTabbedPane(JTabbedPane.TOP);
-        tabPane.addTab(Bundles.getCommon("connection"), connectionPanel);
-        tabPane.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
-        tabPane.addTab(bundleString("SQLKeywords"), keyWordsPanel);
-        tabPane.addTab(bundleString("DataTypes"), dataTypesPanel);
-        tabPane.addTab("org.executequery.databaseobjects.Types", javaSqlTypesPanel);
-        enableConnectionTabs(false);*/
-
-        setHeaderText(bundleString("DatabaseConnection"));
-        setHeaderIcon(GUIUtilities.loadIcon("Database24.png"));
         setContentPanel(connectionPanel);
-        connectionPanel.addTab(bundleString("DatabaseProperties"), databasePropertiesPanel);
+        connectionPanel.addTab(bundleString("DatabaseProperties"), propertiesPanel);
 
-        // register with the event listener
         EventMediator.registerListener(this);
     }
 
@@ -143,16 +82,6 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     public boolean tabViewSelected() {
         connectionPanel.buildDriversList();
         return connectionPanel.tabViewSelected();
-    }
-
-    private void enableConnectionTabs(boolean enabled) {
-        /*int[] tabs = new int[]{1, 2, 3};
-        for (int i = 0; i < tabs.length; i++) {
-            tabPane.setEnabledAt(tabs[i], enabled);
-        }
-        if (!enabled) {
-            tabPane.setSelectedIndex(0);
-        }*/
     }
 
     public void connectionNameChanged(String name) {
@@ -181,41 +110,25 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         DatabaseConnection databaseConnection = host.getDatabaseConnection();
         if (databaseConnection.isConnected())
             changePanelData();
+        else
+            updateDatabaseProperties(true);
     }
 
     /**
      * Reloads the database properties meta data table panel.
      */
     protected void updateDatabaseProperties() {
-
-        if (!host.getDatabaseConnection().isConnected())
-            return;
-
-        try {
-            databasePropertiesPanel.setDatabaseProperties(host.getDatabaseProperties());
-
-        } catch (DataSourceException e) {
-            databasePropertiesPanel.setDatabaseProperties(new HashMap<>(0));
-            controller.handleException(e);
-        }
-
+        updateDatabaseProperties(false);
     }
 
     /**
-     * Loads the sql key words for this host.
+     * Reloads the database properties meta data table panel.
      */
-    protected void updateDatabaseKeywords() {
-
-        if (!host.getDatabaseConnection().isConnected()) {
-            return;
-        }
-
-        try {
-            keyWordsPanel.setDatabaseKeywords(host.getDatabaseKeywords());
-        } catch (DataSourceException e) {
-            controller.handleException(e);
-            keyWordsPanel.setDatabaseKeywords(new String[0]);
-        }
+    protected void updateDatabaseProperties(boolean useStaticMethhod) {
+        propertiesPanel.setDatabaseProperties(useStaticMethhod ?
+                DefaultDatabaseHost.getDatabaseProperties(host.getDatabaseConnection(), false) :
+                host.getDatabaseProperties()
+        );
     }
 
     /**
@@ -223,147 +136,63 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     protected void updateDatabaseTypeInfo() {
 
-        if (!host.getDatabaseConnection().isConnected()) {
-
+        if (!host.getDatabaseConnection().isConnected())
             return;
-        }
 
         try {
-
             dataTypesPanel.setDataTypes(host.getDataTypeInfo());
 
         } catch (DataSourceException e) {
-
             dataTypesPanel.setDataTypeError(e.getExtendedMessage());
             Log.warning("Error retriving type info for host: " + e.getExtendedMessage());
-//            controller.handleException(e);
         }
     }
 
     private void changePanelData() {
-
-        // notify the database properties
         updateDatabaseProperties();
-        //Hashtable properties = controller.getDatabaseProperties();
-        //databasePropertiesPanel.setDatabaseProperties(properties);
-
-        // notify the keywords panel
-        updateDatabaseKeywords();
-        //String[] keywords = controller.getDatabaseKeywords();
-        //keyWordsPanel.setDatabaseKeywords(keywords);
-
-        // notify the data types panel
         updateDatabaseTypeInfo();
-        //dataTypesPanel.setDataTypes(controller.getDataTypesResultSet());
-
-        // enable the tabs
     }
 
     /**
      * Indicates a connection has been established.
-     *
-     * @param the encapsulating event
      */
+    @Override
     public void connected(ConnectionEvent connectionEvent) {
-
-        // notify connection panel
         connectionPanel.connected(connectionEvent.getDatabaseConnection());
-        GUIUtils.startWorker(new Runnable() {
-            public void run() {
-                // notify other panels
-                changePanelData();
-            }
-        });
+        GUIUtils.startWorker(this::changePanelData);
         GUIUtilities.scheduleGC();
     }
 
     /**
      * Indicates a connection has been closed.
-     *
-     * @param the encapsulating event
      */
+    @Override
     public void disconnected(ConnectionEvent connectionEvent) {
         connectionPanel.disconnected(connectionEvent.getDatabaseConnection());
         GUIUtilities.scheduleGC();
     }
 
+    @Override
     public boolean canHandleEvent(ApplicationEvent event) {
         return (event instanceof ConnectionEvent);
     }
 
-
+    @Override
     public String getLayoutName() {
         return NAME;
     }
 
+    @Override
     public void refresh() {
     }
 
+    @Override
     public void cleanup() {
     }
 
+    @Override
     public Printable getPrintable() {
-
-        String hostText = hostField != null ? hostField.getText() : "";
-        return new TablePrinter(schemaTable, "Database Server: " + hostText);
+        return null;
     }
 
-    public JTable getTable() {
-        return schemaTable;
-    }
-
-    public boolean isInitialised() {
-        return initialised;
-    }
-
-    public void setValues(String sourceName, String schemaName, Vector values) {
-        sourceField.setText(sourceName);
-        schemaField.setText(schemaName);
-        model.setValues(values);
-        initialised = true;
-    }
-
-    public void setValues(String databaseName, String hostName, String sourceName,
-                          String schemaName, String urlName, Vector values) {
-        databaseProductField.setText(databaseName);
-        hostField.setText(hostName);
-        sourceField.setText(sourceName);
-        schemaField.setText(schemaName);
-        urlField.setText(urlName);
-        model.setValues(values);
-    }
-
-    private class HostModel extends AbstractTableModel {
-
-        private Vector values = new Vector(0);
-        private final String header = "Catalog Name";
-
-        public void setValues(Vector values) {
-            this.values = values;
-            fireTableDataChanged();
-        }
-
-        public int getRowCount() {
-            return values.size();
-        }
-
-        public int getColumnCount() {
-            return 1;
-        }
-
-        public String getColumnName(int col) {
-            return header;
-        }
-
-        public Object getValueAt(int row, int col) {
-            return values.elementAt(row);
-        }
-
-    } // class HostModel
-
-} 
-
-
-
-
-
+}

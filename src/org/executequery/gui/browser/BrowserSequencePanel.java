@@ -1,8 +1,8 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseSequence;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
@@ -56,6 +56,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
     private void init() {
 
+        cache = new HashMap<>();
         dependenciesPanel = new DependenciesPanel();
 
         JPanel panel = new JPanel();
@@ -117,8 +118,6 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        //base.add(new JLabel("Schema:"), gbc);
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;
@@ -138,11 +137,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         ++gbc.gridy;
         gbc.insets.top = 0;
 
-        setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence24.png", true));
         setContentPanel(base);
-        cache = new HashMap();
-
     }
 
     public void setDatabaseObjectNode(DatabaseObjectNode node) {
@@ -171,7 +166,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(sequence);
         objectNameLabel.setText(bundleString("SequenceName"));
         setHeaderText(bundleString("DatabaseSequence"));
-        setHeaderIcon(GUIUtilities.loadIcon("Sequence16.png", true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.SEQUENCES_IMAGE));
 
         try {
             sequenceNameField.setText(sequence.getName());
@@ -193,7 +188,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText("Sequence Name:");
         setHeaderText("Database Sequence");
-        setHeaderIcon("Sequence16.png");
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.SEQUENCES_IMAGE));
 
         if (sequence != null) {
             sequenceNameField.setText(sequence.getName());
@@ -206,11 +201,5 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
         }
 
     }
-
-    private void setHeaderIcon(String icon) {
-
-        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
-    }
-
 
 }

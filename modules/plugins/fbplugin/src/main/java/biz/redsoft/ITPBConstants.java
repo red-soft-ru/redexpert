@@ -25,6 +25,7 @@ public interface ITPBConstants {
     int isc_tpb_no_auto_undo = 20;
     int isc_tpb_lock_timeout = 21;
     int isc_tpb_read_consistency = 22;
+    int isc_tpb_at_snapshot_number = 23;
     int isc_tpb_multiple_txn_isolation = 335544886;
     int isc_tpb_reserv_before_table = 335544887;
     int isc_tpb_multiple_spec = 335544888;
@@ -51,4 +52,5 @@ public interface ITPBConstants {
     int isc_tpb_reserv_temptbl = 335544909;
     int isc_tpb_readtxn_after_writelock = 335544910;
     int isc_tpb_writelock_after_readtxn = 335544911;
+    int fb_info_tra_snapshot_number = 12;
 }

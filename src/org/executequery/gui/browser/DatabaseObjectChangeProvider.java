@@ -24,7 +24,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.ErrorMessagePublisher;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
@@ -158,7 +157,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
 
                     dispose();
-                    ErrorMessagePublisher.publish(sb.toString(), e.getCause());
+                    GUIUtilities.displayExceptionErrorDialog(sb.toString(), e, this.getClass());
                 }
 
                 return "done";
@@ -213,7 +212,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
 
                     dispose();
-                    ErrorMessagePublisher.publish(sb.toString(), e.getCause());
+                    GUIUtilities.displayExceptionErrorDialog(sb.toString(), e, this.getClass());
                 }
 
                 return "done";
@@ -268,7 +267,7 @@ public class DatabaseObjectChangeProvider implements Interruptible {
                     }
 
                     dispose();
-                    ErrorMessagePublisher.publish(sb.toString(), e.getCause());
+                    GUIUtilities.displayExceptionErrorDialog(sb.toString(), e, this.getClass());
                 }
 
                 return "done";

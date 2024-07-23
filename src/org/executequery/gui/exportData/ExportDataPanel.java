@@ -25,7 +25,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.gui.importexport.ImportExportDataProcess;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -60,6 +59,11 @@ import java.util.*;
 public class ExportDataPanel extends AbstractBaseDialog {
 
     public static final String TITLE = bundleString("title");
+
+    private static final int XML = 0;
+    private static final int DELIMITED = XML + 1;
+    private static final int EXCEL = DELIMITED + 1;
+    private static final int SQL = EXCEL + 1;
 
     // --- GUI components ---
 
@@ -307,15 +311,15 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         String validExtension;
         switch (type) {
-            case (ImportExportDataProcess.EXCEL):
+            case (EXCEL):
                 showXlsxPanel();
                 validExtension = ".xlsx";
                 break;
-            case (ImportExportDataProcess.XML):
+            case (XML):
                 showXmlPanel();
                 validExtension = ".xml";
                 break;
-            case (ImportExportDataProcess.SQL):
+            case (SQL):
                 showSqlPanel(isVisible());
                 validExtension = ".sql";
                 break;
@@ -442,13 +446,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         if (isFile) {
             switch (getExportFileType()) {
-                case (ImportExportDataProcess.EXCEL):
+                case (EXCEL):
                     suffix = ".xlsx";
                     break;
-                case (ImportExportDataProcess.XML):
+                case (XML):
                     suffix = ".xml";
                     break;
-                case (ImportExportDataProcess.SQL):
+                case (SQL):
                     suffix = ".sql";
                     break;
                 default:
@@ -593,13 +597,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         switch (typeCombo.getSelectedIndex()) {
             case 1:
-                return ImportExportDataProcess.EXCEL;
+                return EXCEL;
             case 2:
-                return ImportExportDataProcess.XML;
+                return XML;
             case 3:
-                return ImportExportDataProcess.SQL;
+                return SQL;
             default:
-                return ImportExportDataProcess.DELIMITED;
+                return DELIMITED;
         }
     }
 
@@ -607,13 +611,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         switch (getExportFileType()) {
 
-            case ImportExportDataProcess.DELIMITED:
+            case DELIMITED:
                 return new ExportHelperCSV(this);
-            case ImportExportDataProcess.EXCEL:
+            case EXCEL:
                 return new ExportHelperXLSX(this);
-            case ImportExportDataProcess.XML:
+            case XML:
                 return new ExportHelperXML(this);
-            case ImportExportDataProcess.SQL:
+            case SQL:
                 return new ExportHelperSQL(this);
             default:
                 return null;

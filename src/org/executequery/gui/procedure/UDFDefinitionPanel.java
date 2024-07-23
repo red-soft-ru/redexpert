@@ -6,6 +6,7 @@ import org.executequery.databaseobjects.Types;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.table.CreateTableSQLSyntax;
+import org.executequery.gui.table.CreateTableToolBar;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
@@ -35,7 +36,6 @@ public class UDFDefinitionPanel extends JPanel
     public static final int SUBTYPE_COLUMN = 3;
     public static final int ENCODING_COLUMN = 4;
 
-    //protected ComboBoxCellEditor comboCell;
     public static final int MECHANISM_COLUMN = 5;
     public static final int NULL_COLUMN = 6;
     public static final int CSTRING_COLUMN = 7;
@@ -75,7 +75,7 @@ public class UDFDefinitionPanel extends JPanel
     protected boolean editing;
     DatabaseConnection dc;
     List<String> charsets;
-    private CreateProcedureToolBar tools;
+    private CreateTableToolBar tools;
     /**
      * the available data types
      */
@@ -187,7 +187,7 @@ public class UDFDefinitionPanel extends JPanel
             _model.addTableModelListener(this);
         }
 
-        tools = new CreateProcedureToolBar(this);
+        tools = new CreateTableToolBar(this);
 
         JPanel definitionPanel = new JPanel(new GridBagLayout());
 
@@ -324,7 +324,8 @@ public class UDFDefinitionPanel extends JPanel
      * the table moving the column above the selection
      * below the selection.
      */
-    public void moveColumnUp() {
+    @Override
+    public void moveRowUp() {
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == 0) {
             return;
@@ -348,7 +349,8 @@ public class UDFDefinitionPanel extends JPanel
      * the table moving the column below the selection
      * above the selection.
      */
-    public void moveColumnDown() {
+    @Override
+    public void moveRowDown() {
         int selection = table.getSelectedRow();
         if (selection == -1 || selection == tableVector.size() - 1) {
             return;
@@ -367,39 +369,8 @@ public class UDFDefinitionPanel extends JPanel
         _model.fireTableRowsUpdated(selection, newPostn);
     }
 
-    /**
-     * <p>Inserts a new column before the selected
-     * column moving the selected column down one row.
-     */
-    public void insertBefore() {
-        fireEditingStopped();
-
-        if (table.isEditing()) {
-            table.removeEditor();
-        }
-
-        int selection = table.getSelectedRow();
-        if (selection == -1) {
-            return;
-        } else {
-            insertRow(new ColumnData(dc), selection);
-        }
-
-        _model.fireTableRowsInserted(
-                selection == 0 ? 0 : selection - 1,
-                selection == 0 ? 1 : selection);
-
-        table.setRowSelectionInterval(selection, selection);
-        table.setColumnSelectionInterval(1, 1);
-
-        table.setEditingRow(selection);
-        table.setEditingColumn(TYPE_COLUMN);
-
-    }
-
     public void insertRow(ColumnData cd, int position) {
         tableVector.insertElementAt(cd, position);
-
     }
 
     public void addRow(ColumnData cd) {
@@ -464,30 +435,23 @@ public class UDFDefinitionPanel extends JPanel
      * <p>Inserts a new column after the selected
      * column moving the selected column up one row.
      */
-    public void insertAfter() {
+    @Override
+    public void addRow() {
         fireEditingStopped();
-        int selection = table.getSelectedRow();
-        int newRow = selection + 1;
 
-        if (selection == -1) {
-            return;
-        } else {
-            ColumnData cd = new ColumnData(dc);
-            if (selection == tableVector.size()) {
-                addRow(cd);
-            } else {
-                insertRow(cd, newRow);
-            }
-        }
+        int lastRow = tableVector.size() - 1;
+        int newRow = lastRow + 1;
 
-        _model.fireTableRowsInserted(selection, newRow);
+        ColumnData columnData = new ColumnData(dc);
+        addRow(columnData);
+
+        _model.fireTableRowsInserted(lastRow, newRow);
         table.setRowSelectionInterval(newRow, newRow);
         table.setColumnSelectionInterval(1, 1);
 
         table.setEditingRow(newRow);
         table.setEditingColumn(TYPE_COLUMN);
-        ((DefaultCellEditor) table.getCellEditor(newRow, TYPE_COLUMN)).
-                getComponent().requestFocus();
+        ((DefaultCellEditor) table.getCellEditor(newRow, TYPE_COLUMN)).getComponent().requestFocus();
     }
 
     public void setRowSelectionInterval(int row) {

@@ -65,13 +65,10 @@ public interface NamedObject extends Named, java.io.Serializable {
     int SYSTEM_PACKAGE = SYSTEM_INDEX + 1;
     int TABLE_COLUMN = SYSTEM_PACKAGE + 1;
     int CONSTRAINT = TABLE_COLUMN + 1;
-    int SYNONYM = CONSTRAINT + 1;
 
     int META_TAG = 93;
     int OTHER = 95;
     int ROOT = 96;
-    int SCHEMA = 97;
-    int CATALOG = 98;
     int HOST = 99;
 
     int BRANCH_NODE = 100;
@@ -79,19 +76,13 @@ public interface NamedObject extends Named, java.io.Serializable {
     int FOREIGN_KEYS_FOLDER_NODE = 102;
     int PRIMARY_KEYS_FOLDER_NODE = 103;
     int INDEXES_FOLDER_NODE = 104;
+    int TRIGGERS_FOLDER_NODE = 105;
 
-    int PRIMARY_KEY = 999;
-    int FOREIGN_KEY = 998;
-    int UNIQUE_KEY = 997;
-    int CHECK_KEY = 996;
-    int TABLE_INDEX = 995;
-
-    String[] KEYS = {
-            "PRIMARY KEY",
-            "FOREIGN KEY",
-            "UNIQUE KEY",
-            "CHECK KEY"
-    };
+    int PRIMARY_KEY = 1000;
+    int FOREIGN_KEY = 1001;
+    int UNIQUE_KEY = 1002;
+    int CHECK_KEY = 1003;
+    int TABLE_INDEX = 1004;
 
     String[] KEYS_BUNDLE = {
             "PRIMARY_KEY",
@@ -99,6 +90,7 @@ public interface NamedObject extends Named, java.io.Serializable {
             "UNIQUE_KEY",
             "CHECK_KEY"
     };
+
     String[] META_TYPES = {
             "DOMAIN",
             "TABLE",
@@ -133,8 +125,8 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM PACKAGE",
             "TABLE COLUMN",
             "CONSTRAINT",
-            "SYNONYM",
     };
+
     String[] META_TYPES_FOR_BUNDLE = {
             "DOMAIN",
             "TABLE",
@@ -169,7 +161,6 @@ public interface NamedObject extends Named, java.io.Serializable {
             "SYSTEM_PACKAGE",
             "TABLE_COLUMN",
             "CONSTRAINT",
-            "SYNONYM"
     };
 
     Integer[] META_TYPES_FOR_COMPARE = {
@@ -192,6 +183,34 @@ public interface NamedObject extends Named, java.io.Serializable {
             DATABASE_TRIGGER,
             PACKAGE
     };
+
+    static boolean isTableFolder(int type) {
+        return type > BRANCH_NODE && type <= TRIGGERS_FOLDER_NODE;
+    }
+
+    static String getTypeForBundle(int type) {
+
+        switch (type) {
+            case FOREIGN_KEY:
+            case FOREIGN_KEYS_FOLDER_NODE:
+                return KEYS_BUNDLE[FOREIGN_KEY % 1000];
+
+            case PRIMARY_KEY:
+            case PRIMARY_KEYS_FOLDER_NODE:
+                return KEYS_BUNDLE[PRIMARY_KEY % 1000];
+
+            case COLUMNS_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[TABLE_COLUMN];
+
+            case INDEXES_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[INDEX];
+
+            case TRIGGERS_FOLDER_NODE:
+                return META_TYPES_FOR_BUNDLE[TRIGGER];
+        }
+
+        return META_TYPES_FOR_BUNDLE[type];
+    }
 
     /**
      * Marks this object as being 'reset', where for any loaded object
@@ -254,7 +273,7 @@ public interface NamedObject extends Named, java.io.Serializable {
      * @return drop statement result
      */
     int drop() throws DataSourceException;
-    
+
     String getDescription();
 
     boolean isSystem();
@@ -296,6 +315,6 @@ public interface NamedObject extends Named, java.io.Serializable {
      */
     default NamedObject copy() {
         return null;
-    };
-    
+    }
+
 }

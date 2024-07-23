@@ -41,7 +41,7 @@ import java.awt.event.*;
 import java.util.*;
 
 /**
- * <p>Query Editor syntax highlighting preferences panel.
+ * Query Editor syntax highlighting preferences panel.
  *
  * @author Takis Diakoumis
  */
@@ -52,26 +52,19 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
     private Properties userDefinedShortcuts;
     private ShortcutsTableModel tableModel;
 
-    public PropertiesKeyShortcuts() {
-
-        try {
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+    public PropertiesKeyShortcuts(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
-    private void init() throws Exception {
+    private void init() {
 
         Vector<ShortcutKey> shortcuts = formatValues(ActionBuilder.getActions());
         tableModel = new ShortcutsTableModel(shortcuts);
+
         table = new JTable(tableModel);
-        table.setFont(AbstractPropertiesBasePanel.panelFont);
+        table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
         table.addMouseListener(new MouseHandler());
-        
         table.setRowHeight(TABLE_ROW_HEIGHT);
         table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
@@ -83,7 +76,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets.left = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel(bundledString("KeyboardShortcuts")), gbc);
+        panel.add(new JLabel(bundledStaticString("KeyboardShortcuts")), gbc);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets.top = 10;
         gbc.gridy = 1;
@@ -93,96 +86,83 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         addContent(panel);
 
         userDefinedShortcuts = SystemResources.getUserActionShortcuts();
-        if (userDefinedShortcuts != null) {
+        if (userDefinedShortcuts != null)
             tableModel.loadUserDefined();
-        }
-
     }
 
     private Vector<ShortcutKey> formatValues(Map<?, ?> actionMap) {
 
-        Set<?> set = actionMap.keySet();
-        BaseActionCommand command = null;
-        Vector<ShortcutKey> shortcuts = new Vector<ShortcutKey>(actionMap.size());
+        Set<?> actionKeySet = actionMap.keySet();
+        Vector<ShortcutKey> shortcuts = new Vector<>(actionMap.size());
 
-        for (Iterator<?> i = set.iterator(); i.hasNext(); ) {
+        BaseActionCommand command;
+        for (Object key : actionKeySet) {
 
-            command = (BaseActionCommand) actionMap.get(i.next());
-
+            command = (BaseActionCommand) actionMap.get(key);
             if (command.isAcceleratorEditable()) {
                 shortcuts.add(new ShortcutKey(
                         command.getActionId(),
                         (String) command.getValue(Action.NAME),
-                        (KeyStroke) command.getValue(Action.ACCELERATOR_KEY)));
+                        (KeyStroke) command.getValue(Action.ACCELERATOR_KEY)
+                ));
             }
 
         }
 
-        Collections.sort(shortcuts, new ShortcutKeyComparator());
+        shortcuts.sort(new ShortcutKeyComparator());
         return shortcuts;
     }
 
-    public void restoreDefaults() {
-        Vector<ShortcutKey> shortcuts = formatValues(
-                ActionBuilder.reloadActions(Constants.ACTION_CONF_PATH));
-        tableModel.setShortcuts(shortcuts);
-    }
-
+    @Override
     public void save() {
 
-        if (userDefinedShortcuts == null) {
+        if (userDefinedShortcuts == null)
             userDefinedShortcuts = new Properties();
-        }
 
         Vector<ShortcutKey> shortcuts = tableModel.getShortcuts();
-        for (int i = 0, k = shortcuts.size(); i < k; i++) {
+        for (ShortcutKey shortcut : shortcuts) {
 
-            ShortcutKey shortcut = shortcuts.get(i);
             if (!MiscUtils.isNull(shortcut.keyStrokeText)) {
+                userDefinedShortcuts.setProperty(shortcut.key, shortcut.keyStrokeText);
 
-                userDefinedShortcuts.setProperty(
-                        shortcut.key, shortcut.keyStrokeText);
-
-            } else if (userDefinedShortcuts.containsKey(shortcut.key)) {
-
-                userDefinedShortcuts.setProperty(
-                        shortcut.key, ActionBuilder.INVALID_KEYSTROKE);
-            }
-
+            } else if (userDefinedShortcuts.containsKey(shortcut.key))
+                userDefinedShortcuts.setProperty(shortcut.key, ActionBuilder.INVALID_KEYSTROKE);
         }
 
-        if (Log.isDebugEnabled()) {
-            Log.debug("Saving user defined action shortcuts");
-        }
-
+        Log.debug("Saving user defined action shortcuts");
         SystemResources.setUserActionShortcuts(userDefinedShortcuts);
     }
 
+    @Override
+    public void restoreDefaults() {
+        Vector<ShortcutKey> shortcuts = formatValues(ActionBuilder.reloadActions(Constants.ACTION_CONF_PATH));
+        tableModel.setShortcuts(shortcuts);
+    }
 
-    class ShortcutsTableModel extends AbstractTableModel {
+
+    private class ShortcutsTableModel extends AbstractTableModel {
 
         private Vector<ShortcutKey> shortcuts;
-        private String[] columnHeaders = {bundledString("Command"), bundledString("Shortcut")};
+        private final String[] columnHeaders = {
+                bundledStaticString("Command"),
+                bundledStaticString("Shortcut")
+        };
 
-        ShortcutsTableModel(Vector<ShortcutKey> shortcuts) {
+        public ShortcutsTableModel(Vector<ShortcutKey> shortcuts) {
             this.shortcuts = shortcuts;
         }
 
         public void loadUserDefined() {
-            if (userDefinedShortcuts == null) {
+
+            if (userDefinedShortcuts == null)
                 return;
-            }
 
-            KeyStroke keyStroke = null;
-            for (int i = 0, k = shortcuts.size(); i < k; i++) {
-                ShortcutKey shortcut = shortcuts.get(i);
-
+            KeyStroke keyStroke;
+            for (ShortcutKey shortcut : shortcuts) {
                 if (userDefinedShortcuts.containsKey(shortcut.key)) {
-                    keyStroke = KeyStroke.getKeyStroke(
-                            userDefinedShortcuts.getProperty(shortcut.key));
+                    keyStroke = KeyStroke.getKeyStroke(userDefinedShortcuts.getProperty(shortcut.key));
                     shortcut.value = MiscUtils.keyStrokeToString(keyStroke);
                 }
-
             }
         }
 
@@ -191,17 +171,32 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
             fireTableDataChanged();
         }
 
+        public ShortcutKey getShortcut(int index) {
+            return shortcuts.elementAt(index);
+        }
+
+        public Vector<ShortcutKey> getShortcuts() {
+            return shortcuts;
+        }
+
+        public void updateShortcut(ShortcutKey shortcut, int row) {
+            shortcuts.set(row, shortcut);
+            fireTableRowsUpdated(row, row);
+        }
+
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public int getRowCount() {
             return shortcuts.size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             ShortcutKey shortcut = shortcuts.elementAt(row);
-
             switch (col) {
                 case 0:
                     return shortcut.label;
@@ -212,18 +207,9 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
             }
         }
 
-        public ShortcutKey getShortcut(int index) {
-            return shortcuts.elementAt(index);
-        }
-
-        public void updateShortcut(ShortcutKey shortcut, int row) {
-            shortcuts.set(row, shortcut);
-            fireTableRowsUpdated(row, row);
-        }
-
+        @Override
         public void setValueAt(Object value, int row, int col) {
             ShortcutKey shortcut = shortcuts.elementAt(row);
-
             switch (col) {
                 case 0:
                     shortcut.label = (String) value;
@@ -236,19 +222,12 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
             fireTableRowsUpdated(row, row);
         }
 
-        public boolean isCellEditable(int nRow, int nCol) {
-            return false;
-        }
-
+        @Override
         public String getColumnName(int col) {
             return columnHeaders[col];
         }
 
-        public Vector<ShortcutKey> getShortcuts() {
-            return shortcuts;
-        }
-
-    } // ShortcutsTableModel
+    } // ShortcutsTableModel class
 
     private class ShortcutDialog extends AbstractBaseDialog {
 
@@ -295,6 +274,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
                     bundleString("enterShortcutLabel"),
                     shortcutKey.label
             );
+
             String currentAssignmentLabelText = String.format(
                     bundleString("currentAssignmentLabel"),
                     !MiscUtils.isNull(shortcutKey.value) ? shortcutKey.value : ""
@@ -348,51 +328,51 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
 
     } // ShortcutDialog class
 
-    static class ShortcutKey {
-        String key;
-        String value;
-        String label;
-        String keyStrokeText;
-        KeyStroke keyStroke;
+    protected static class ShortcutKey {
 
-        ShortcutKey(String key, String label, KeyStroke keyStroke) {
+        public String key;
+        public String value;
+        public String label;
+        public String keyStrokeText;
+        public KeyStroke keyStroke;
+
+        public ShortcutKey(String key, String label, KeyStroke keyStroke) {
             this.key = key;
             this.label = label;
             this.keyStroke = keyStroke;
             value = MiscUtils.keyStrokeToString(keyStroke);
         }
 
+        @Override
         public String toString() {
             return value;
         }
-    } // ShortcutKey
+
+    } // ShortcutKey class
 
     static class ShortcutKeyComparator implements Comparator<ShortcutKey> {
 
+        @Override
         public int compare(ShortcutKey key1, ShortcutKey key2) {
-
             return key1.label.compareTo(key2.label);
         }
 
-    } // ShortcutKeyComparator
+    } // ShortcutKeyComparator class
 
-    class MouseHandler extends MouseAdapter {
+    private class MouseHandler extends MouseAdapter {
+
+        @Override
         public void mouseClicked(MouseEvent evt) {
+
             int row = table.rowAtPoint(evt.getPoint());
-            if (row == -1) {
+            if (row == -1)
                 return;
-            }
+
             int col = table.columnAtPoint(evt.getPoint());
-            if (col == 1) {
+            if (col == 1)
                 new ShortcutDialog(row);
-            }
         }
-    } // MouseHandler
+
+    } // MouseHandler class
 
 }
-
-
-
-
-
-

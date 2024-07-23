@@ -3,7 +3,7 @@ package org.executequery.gui.browser.managment.grantmanager;
 import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
-import org.executequery.components.table.BrowserTableCellRenderer;
+import org.executequery.components.table.MembershipTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
@@ -12,6 +12,8 @@ import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserConstants;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.GrantManagerPanel;
@@ -24,7 +26,6 @@ import org.japura.gui.event.ListEvent;
 import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.swing.util.IconUtilities;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -51,8 +52,8 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private static final int GRANT = 1;
     private static final int GRANT_OPTION = 2;
     private static final int GRANT_FIELD = 3;
-    JToolBar grantToolBar;
-    JToolBar grantFieldsToolbar;
+    JPanel grantToolBar;
+    JPanel grantFieldsToolbar;
     String grants;// "SUDIXRGA";
     String[] headers;// {bundleString("Object"), "Select", "Update", "Delete", "Insert", "Execute", "References", "Usage"};
     String[] headersFields = {bundleString("Field"), bundleString("Type"), "Update", "References"};
@@ -63,8 +64,8 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     Map<DatabaseColumn, Vector<Object>> tableForColumnsMap;
     DatabaseConnection databaseConnection;
     int act;
-    String[] iconNamesForFields = {"no_grant_vertical", "no_grant_gorisont", "grant_vertical", "grant_gorisont", "admin_option_vertical", "admin_option_gorisont"};
-    String[] iconNames = {"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"};
+    String[] iconNamesForFields = {"icon_revoke_column", "icon_revoke_row", "icon_grant_column", "icon_grant_row", "icon_grant_column_admin", "icon_grant_row_admin"};
+    String[] iconNames = {"icon_revoke_column", "icon_revoke_row", "icon_revoke_all", "icon_grant_column", "icon_grant_row", "icon_grant_all", "icon_grant_column_admin", "icon_grant_row_admin", "icon_grant_all_admin"};
     String[] toolTips = bundleStrings(new String[]{"no_grant_vertical", "no_grant_gorisont", "no_grant_all", "grant_vertical", "grant_gorisont", "grant_all", "admin_option_vertical", "admin_option_gorisont", "admin_option_all"});
     int firstGrantColumn = 1;
     int col_execute = 6;
@@ -91,18 +92,16 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private JCheckBox systemCheck;
     private EQCheckCombox objectTypeBox;
     private DefaultStatementExecutor querySender;
-    //private EQCheckCombox userBox;
-    private final int buttonSize = 20;
     private GrantManagerPanel grantManagerPanel;
 
     public PrivilegesTablePanel(int typeTable, GrantManagerPanel grantManagerPanel) {
         this.grantManagerPanel = grantManagerPanel;
         this.typeTable = typeTable;
         icons = new Icon[4];
-        icons[GRANT] = GUIUtilities.loadIcon(BrowserConstants.GRANT_IMAGE);
-        icons[REVOKE] = GUIUtilities.loadIcon(BrowserConstants.NO_GRANT_IMAGE);
-        icons[GRANT_OPTION] = GUIUtilities.loadIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
-        icons[GRANT_FIELD] = GUIUtilities.loadIcon(BrowserConstants.FIELD_GRANT_IMAGE);
+        icons[GRANT] = IconManager.getIcon(BrowserConstants.GRANT_IMAGE);
+        icons[REVOKE] = IconManager.getIcon(BrowserConstants.REVOKE_IMAGE);
+        icons[GRANT_OPTION] = IconManager.getIcon(BrowserConstants.ADMIN_OPTION_IMAGE);
+        icons[GRANT_FIELD] = IconManager.getIcon(BrowserConstants.FIELD_GRANT_IMAGE);
         objectVector = new Vector<>();
         tableMap = new HashMap<>();
         tableForColumnsMap = new HashMap<>();
@@ -194,34 +193,36 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                 }
             }
         });
+
         grantFieldButtons = new RolloverButton[iconNamesForFields.length];
         for (int i = 0; i < grantFieldButtons.length; i++) {
-            grantFieldButtons[i] = new RolloverButton();
-            grantFieldButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNamesForFields[i] + ".svg", buttonSize));
-            grantFieldButtons[i].setMouseEnteredContentAreaFill(false);
+            grantFieldButtons[i] = WidgetFactory.createRolloverButton(
+                    iconNamesForFields[i],
+                    bundleString(iconNamesForFields[i]),
+                    iconNamesForFields[i],
+                    this);
             grantFieldButtons[i].setActionCommand("field_" + i);
-            grantFieldButtons[i].setToolTipText(bundleString(iconNamesForFields[i]));
-            grantFieldButtons[i].addActionListener(this);
         }
+
         tablePrivileges = new JTable();
         privilegesForFieldTable = new JTable();
-        BrowserTableCellRenderer bctr = new BrowserTableCellRenderer();
-        tablePrivileges.setDefaultRenderer(Object.class, bctr);
-        privilegesForFieldTable.setDefaultRenderer(Object.class, bctr);
-        grantToolBar = new JToolBar();
-        grantToolBar.setFloatable(false);
+        MembershipTableCellRenderer renderer = new MembershipTableCellRenderer();
+        tablePrivileges.setDefaultRenderer(Object.class, renderer);
+        privilegesForFieldTable.setDefaultRenderer(Object.class, renderer);
+        grantToolBar = new JPanel();
+
         grantButtons = new RolloverButton[iconNames.length];
         for (int i = 0; i < grantButtons.length; i++) {
-            grantButtons[i] = new RolloverButton();
-            grantButtons[i].setIcon(IconUtilities.loadIcon("/org/executequery/icons/" + iconNames[i] + ".svg", buttonSize));
+            grantButtons[i] = WidgetFactory.createRolloverButton(
+                    iconNames[i],
+                    toolTips[i],
+                    iconNames[i],
+                    this);
             grantButtons[i].setActionCommand(iconNames[i]);
-            grantButtons[i].setMouseEnteredContentAreaFill(false);
-            grantButtons[i].setToolTipText(toolTips[i]);
             grantToolBar.add(grantButtons[i]);
-            grantButtons[i].addActionListener(this);
         }
-        grantFieldsToolbar = new JToolBar();
-        grantFieldsToolbar.setFloatable(false);
+
+        grantFieldsToolbar = new JPanel();
 
         tablePrivileges.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -298,17 +299,19 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
             }
         });
 
-        refreshButton = new RolloverButton();
-        refreshButton.setToolTipText(bundleString("Refresh"));
-        refreshButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Refresh16.svg", buttonSize));
-        refreshButton.setMouseEnteredContentAreaFill(false);
-        refreshButton.addActionListener(this);
+        refreshButton = WidgetFactory.createRolloverButton(
+                "refreshButton",
+                bundleString("Refresh"),
+                "icon_refresh",
+                this
+        );
 
-        cancelButton = new RolloverButton();
-        cancelButton.setToolTipText(bundleString("CancelFill"));
-        cancelButton.setIcon(IconUtilities.loadIcon("/org/executequery/icons/Stop16.svg", buttonSize));
-        cancelButton.setMouseEnteredContentAreaFill(false);
-        cancelButton.addActionListener(this);
+        cancelButton = WidgetFactory.createRolloverButton(
+                "cancelButton",
+                bundleString("CancelFill"),
+                "icon_execute_stop",
+                this
+        );
 
         filterBox = new JComboBox<>();
         filterField = new JTextField();
@@ -368,7 +371,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         grantToolBar.add(refreshButton);
         grantToolBar.add(cancelButton);
 
-        bottomPanel.add(grantFieldsToolbar, gridBagHelper.fillHorizontally().spanX().get());
+        bottomPanel.add(grantFieldsToolbar, gridBagHelper.fillNone().spanX().get());
         JScrollPane scrollPane = new JScrollPane(privilegesForFieldTable);
         bottomPanel.add(scrollPane, gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().get());
 
@@ -392,7 +395,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
 
         add(progressBar, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
 
-        add(grantToolBar, gbh.nextRowFirstCol().fillHorizontally().spanX().get());
+        add(grantToolBar, gbh.nextRowFirstCol().fillNone().spanX().get());
 
         add(splitPane, gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
     }
@@ -775,8 +778,6 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
                         ConnectionsTreePanel
                                 .getPanelFromBrowser()
                                 .getDefaultDatabaseHostFromConnection(databaseConnection),
-                        null,
-                        null,
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
                 name,

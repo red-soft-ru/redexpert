@@ -20,6 +20,7 @@
 
 package org.executequery.util;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.plaf.LookAndFeelDefinition;
 import org.executequery.repository.LookAndFeelProperties;
@@ -28,8 +29,6 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -40,157 +39,67 @@ import java.util.Vector;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class PluginLookAndFeelManager {
 
-    /**
-     * The look and feel to install
-     */
-    private LookAndFeelDefinition lfd;
-
-    /**
-     * Whether the look and feel has been installed
-     */
-    private boolean installed;
-
-    public PluginLookAndFeelManager() {
-    }
-
-    public PluginLookAndFeelManager(LookAndFeelDefinition lfd) {
-        this.lfd = lfd;
-    }
+    private LookAndFeelDefinition lookAndFeelDefinition;
 
     public void loadLookAndFeel() throws Exception {
 
-        if (lfd == null) {
-            LookAndFeelProperties.newInstance();
-            LookAndFeelProperties.loadLookAndFeels();
-            lfd = LookAndFeelProperties.getInstalledCustomLook();
+        if (lookAndFeelDefinition == null) {
+            lookAndFeelDefinition = LookAndFeelProperties.getLookAndFeel();
+            if (lookAndFeelDefinition == null)
+                lookAndFeelDefinition = new LookAndFeelDefinition(null);
         }
 
-        String paths = lfd.getLibraryPath();
-
-        String token = ";";
         Vector pathsVector = new Vector();
+        String paths = lookAndFeelDefinition.getLibraryPath();
+        if (paths.contains(String.valueOf(Constants.COLON_CHAR))) {
 
-        if (paths.indexOf(token) != -1) {
-            StringTokenizer st = new StringTokenizer(paths, token);
-            while (st.hasMoreTokens()) {
-                pathsVector.add(st.nextToken());
-            }
-        } else {
+            StringTokenizer tokenizer = new StringTokenizer(paths, String.valueOf(Constants.COLON_CHAR));
+            while (tokenizer.hasMoreTokens())
+                pathsVector.add(tokenizer.nextToken());
+
+        } else
             pathsVector.add(paths);
-        }
 
         URL[] urls = new URL[pathsVector.size()];
         for (int i = 0; i < urls.length; i++) {
-            File f = new File((String) pathsVector.elementAt(i));
-            urls[i] = f.toURL();
+            File file = new File((String) pathsVector.elementAt(i));
+            urls[i] = file.toURL();
         }
 
-        if (lfd.isSkinLookAndFeel()) {
-            loadSkinLookAndFeel(urls);
-        } else {
-            loadCustomLookAndFeel(urls);
+        if (loadCustomLookAndFeel(urls)) {
+            UserProperties.getInstance().setBooleanProperty("decorate.frame.look", lookAndFeelDefinition.isDecorateFrame());
+            UserProperties.getInstance().setBooleanProperty("decorate.dialog.look", lookAndFeelDefinition.isDecorateDialogs());
         }
-
     }
 
-    private void loadCustomLookAndFeel(URL[] urls)
-            throws Exception {
-
+    private boolean loadCustomLookAndFeel(URL[] urls) throws Exception {
         try {
-            DynamicLibraryLoader d_loader = new DynamicLibraryLoader(urls);
-            Class c = d_loader.loadLibrary(lfd.getClassName());
 
-            LookAndFeel laf = (LookAndFeel) c.newInstance();
+            DynamicLibraryLoader loader = new DynamicLibraryLoader(urls);
+            Class loadedClass = loader.loadLibrary(lookAndFeelDefinition.getClassName());
+
+            LookAndFeel laf = (LookAndFeel) loadedClass.newInstance();
 
             if (!laf.isSupportedLookAndFeel()) {
-                GUIUtilities.displayErrorMessage(
-                        "The selected Look and Feel is not supported");
-                return;
+                GUIUtilities.displayErrorMessage("The selected Look and Feel is not supported");
+                return false;
             }
 
-            LookAndFeelInfo info = new LookAndFeelInfo(laf.getName(), c.getName());
+            LookAndFeelInfo info = new LookAndFeelInfo(laf.getName(), loadedClass.getName());
             UIManager.installLookAndFeel(info);
             UIManager.setLookAndFeel(laf);
-            UIManager.getLookAndFeelDefaults().put("ClassLoader", d_loader);
-
-            installed = true;
-        } catch (ClassNotFoundException cExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The specified Look and Feel class was not found");
-        } catch (UnsupportedLookAndFeelException ulfExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The selected Look and Feel is not supported");
-        }
-
-    }
-
-    private void loadSkinLookAndFeel(URL[] urls)
-            throws Exception {
-        try {
-            DynamicLibraryLoader d_loader = new DynamicLibraryLoader(urls);
-
-            String skinLFClassName = "com.l2fprod.gui.plaf.skin.SkinLookAndFeel";
-
-            Class skinLfClass = d_loader.loadLibrary(skinLFClassName);
-            Class skinClass = d_loader.loadLibrary("com.l2fprod.gui.plaf.skin.Skin");
-
-            Method loadThemePack = skinLfClass.getMethod("loadThemePack",
-                    new Class[]{String.class});
-
-            Method setSkin = skinLfClass.getMethod("setSkin", new Class[]{skinClass});
-
-            Object[] params = new String[]{lfd.getThemePack()};
-            Object skin = loadThemePack.invoke(skinLfClass, params);
-            setSkin.invoke(skinLfClass, new Object[]{skin});
-
-            LookAndFeel laf = (LookAndFeel) skinLfClass.newInstance();
-
-            if (!laf.isSupportedLookAndFeel()) {
-                GUIUtilities.displayErrorMessage(
-                        "The selected Look and Feel is not supported");
-                return;
-            }
-
-            UIManager.setLookAndFeel(laf);
-            UIManager.getLookAndFeelDefaults().put("ClassLoader", d_loader);
-
-            installed = true;
+            UIManager.getLookAndFeelDefaults().put("ClassLoader", loader);
 
         } catch (ClassNotFoundException cExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The specified Look and Feel class was not found");
-        } catch (InvocationTargetException invExc) {
-            GUIUtilities.displayErrorMessage(
-                    "An error occured loading the Skin L&F library.\n" +
-                            "Loading default look and feel.");
+            GUIUtilities.displayErrorMessage("The specified Look and Feel class was not found");
+            return false;
+
         } catch (UnsupportedLookAndFeelException ulfExc) {
-            GUIUtilities.displayErrorMessage(
-                    "The selected Look and Feel is not supported");
+            GUIUtilities.displayErrorMessage("The selected Look and Feel is not supported");
+            return false;
         }
 
-    }
-
-    public boolean isInstalled() {
-        return installed;
-    }
-
-    public LookAndFeelDefinition getLookAndFeelDefinition() {
-        return lfd;
+        return true;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -26,6 +26,7 @@ import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /* ----------------------------------------------------------
@@ -47,68 +48,43 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
     /**
      * <p>Constructs a new instance.
      */
-    public PropertiesToolBarGeneral() {
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public PropertiesToolBarGeneral(PropertiesPanel parent) {
+        super(parent);
+        init();
     }
 
     /**
      * <p>Initializes the state of this instance.
      */
-    private void init() throws Exception {
+    private void init() {
 
         List<UserPreference> list = new ArrayList<UserPreference>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
-                bundledString("Visibility"),
+                bundledStaticString("Visibility"),
                 null));
 
-        String key = ToolBarManager.FILE_TOOLS;
+        String key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("FileToolBar"),
+                bundledStaticString("DatabaseToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
-        key = ToolBarManager.EDIT_TOOLS;
+        key = ToolBarManager.APPLICATION_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("EditToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-        key = ToolBarManager.SEARCH_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("SearchToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-        key = ToolBarManager.DATABASE_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("DatabaseToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
-
-
-        /*key = ToolBarManager.IMPORT_EXPORT_TOOLS;
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledString("ImportExportToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));*/
+                bundledStaticString("ApplicationToolBar"),
+                Objects.requireNonNull(ToolBarProperties.getToolBar(key)).isVisible()));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
-                bundledString("SystemToolBar"),
+                bundledStaticString("SystemToolBar"),
                 Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
 
         UserPreference[] preferences =

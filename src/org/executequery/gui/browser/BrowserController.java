@@ -23,16 +23,17 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.MetaDataValues;
-import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
 import org.executequery.gui.databaseobjects.CreateIndexPanel;
 import org.executequery.gui.forms.FormObjectView;
+import org.executequery.gui.table.EditConstraintPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -79,7 +80,7 @@ public class BrowserController {
             ((DatabaseHost) treePanel.getHostNode(dc).getDatabaseObject()).connect();
 
         } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(Bundles.getCommon("error.connection") + e.getExtendedMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(Bundles.getCommon("error.connection") + e.getExtendedMessage(), e, this.getClass());
         }
     }
 
@@ -180,17 +181,25 @@ public class BrowserController {
             panel.setDatabaseObjectNode(node);
             String type = "";
 
-            if (node.getType() < NamedObject.META_TYPES.length)
+            int nodeType = node.getType();
+            if (NamedObject.isTableFolder(nodeType))
+                return;
+
+            if (nodeType < NamedObject.META_TYPES.length)
                 type = NamedObject.META_TYPES[node.getType()];
 
             if (connection == null)
                 connection = getDatabaseConnection();
 
-            if (node.isHostNode() || node.getType() == NamedObject.CATALOG) {
+            if (node.isHostNode()) {
                 panel.setObjectName(null);
 
             } else if (node.getType() == NamedObject.TABLE_COLUMN) {
                 String name = MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName()) + ":" + type + ":" + connection.getName();
+                panel.setObjectName(name);
+
+            } else if (node.getType() == NamedObject.USER) {
+                String name = MiscUtils.trimEnd(node.getShortName()) + ":" + ((DefaultDatabaseUser) node.getDatabaseObject()).getPlugin() + ":" + type + ":" + connection.getName();
                 panel.setObjectName(name);
 
             } else
@@ -229,8 +238,7 @@ public class BrowserController {
 
             int type = node.getType();
             viewPanel = new BrowserViewPanel(this);
-
-            switch (node.getType()) {
+            switch (type) {
 
                 case NamedObject.HOST: {
 
@@ -333,6 +341,7 @@ public class BrowserController {
                     return sequencePanel;
                 }
 
+                case NamedObject.TABLE_INDEX:
                 case NamedObject.INDEX: {
                     try {
 
@@ -382,49 +391,35 @@ public class BrowserController {
                     return objectDefinitionPanel;
                 }
 
+
                 case NamedObject.TABLE_COLUMN: {
+                    AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
+                            .getEditPanelFromType(type, connection, node.getDatabaseObject());
 
-                    if (node.getParent() != null && ((DatabaseObjectNode) node.getParent()).getDatabaseObject() instanceof DatabaseTable) {
-
-                        AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
-                                .getEditPanelFromType(type, connection, node.getDatabaseObject());
-
-                        if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
-                            viewPanel.addToLayout(objectPanel);
-                        } else
-                            objectPanel = (AbstractCreateObjectPanel) viewPanel.getFormObjectView(objectPanel.getLayoutName());
-
-                        objectPanel.setCurrentPath(node.getTreePath());
-                        return objectPanel;
-                    }
-
-                    TableColumnPanel columnPanel;
-                    if (!viewPanel.containsPanel(TableColumnPanel.NAME)) {
-                        columnPanel = new TableColumnPanel(this);
-                        viewPanel.addToLayout(columnPanel);
-
+                    if (!viewPanel.containsPanel(objectPanel.getLayoutName())) {
+                        viewPanel.addToLayout(objectPanel);
                     } else
-                        columnPanel = (TableColumnPanel) viewPanel.getFormObjectView(TableColumnPanel.NAME);
+                        objectPanel = (AbstractCreateObjectPanel) viewPanel.getFormObjectView(objectPanel.getLayoutName());
 
-                    columnPanel.setValues((DatabaseColumn) databaseObject);
-                    return columnPanel;
+                    objectPanel.setCurrentPath(node.getTreePath());
+                    return objectPanel;
                 }
 
-                case NamedObject.TABLE_INDEX:
                 case NamedObject.PRIMARY_KEY:
                 case NamedObject.FOREIGN_KEY:
                 case NamedObject.UNIQUE_KEY: {
+                    try {
+                        GUIUtilities.showWaitCursor();
+                        ColumnConstraint constraint = (ColumnConstraint) databaseObject;
 
-                    SimpleMetaDataPanel metaDataPanel;
-                    if (!viewPanel.containsPanel(SimpleMetaDataPanel.NAME)) {
-                        metaDataPanel = new SimpleMetaDataPanel(this);
-                        viewPanel.addToLayout(metaDataPanel);
+                        BaseDialog dialog = new BaseDialog(EditConstraintPanel.EDIT_TITLE, true);
+                        EditConstraintPanel objectPanel = new EditConstraintPanel(constraint.getTable(), dialog, constraint);
+                        showDialogCreateObject(objectPanel, dialog);
 
-                    } else
-                        metaDataPanel = (SimpleMetaDataPanel) viewPanel.getFormObjectView(SimpleMetaDataPanel.NAME);
-
-                    metaDataPanel.setValues(databaseObject);
-                    return metaDataPanel;
+                    } finally {
+                        GUIUtilities.showNormalCursor();
+                    }
+                    return null;
                 }
 
                 default: {
@@ -524,8 +519,8 @@ public class BrowserController {
                         bundleString("error.handle.exception"),
                         isDataSourceException ? ((DataSourceException) throwable).getExtendedMessage() : throwable.getMessage()
                 ),
-                throwable
-        );
+                throwable,
+                this.getClass());
 
         if (isDataSourceException && ((DataSourceException) throwable).wasConnectionClosed())
             disconnect(treePanel.getSelectedDatabaseConnection());
@@ -537,7 +532,7 @@ public class BrowserController {
     protected Vector<String> getColumnNamesVector(DatabaseConnection dc, String table) {
         try {
             metaData.setDatabaseConnection(dc);
-            return metaData.getColumnNamesVector(table, null);
+            return metaData.getColumnNamesVector(table);
 
         } catch (DataSourceException e) {
             handleException(e);
@@ -555,32 +550,21 @@ public class BrowserController {
     /**
      * Propagates the call to the metadata object.
      */
-    protected Vector<String> getTables(String schema) {
-        return getTables(getDatabaseConnection(), schema);
+    protected Vector<String> getTables() {
+        return getTables(getDatabaseConnection());
     }
 
     /**
      * Propagates the call to the metadata object.
      */
-    protected Vector<String> getTables(DatabaseConnection dc, String schema) {
+    protected Vector<String> getTables(DatabaseConnection dc) {
         try {
             metaData.setDatabaseConnection(dc);
-            return metaData.getSchemaTables(schema);
+            return metaData.getAllTables();
 
         } catch (DataSourceException e) {
             handleException(e);
             return new Vector<>(0);
-        }
-    }
-
-    protected ColumnData[] getColumnData(String schema, String name, DatabaseConnection connection) {
-        try {
-            metaData.setDatabaseConnection(connection);
-            return metaData.getColumnMetaData(null, schema, name);
-
-        } catch (DataSourceException e) {
-            handleException(e);
-            return new ColumnData[0];
         }
     }
 

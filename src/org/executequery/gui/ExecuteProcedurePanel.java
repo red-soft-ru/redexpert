@@ -20,12 +20,8 @@
 
 package org.executequery.gui;
 
-import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.base.DefaultTabViewActionPanel;
-import org.executequery.components.ItemSelectionListener;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -33,113 +29,56 @@ import org.executequery.databasemediators.spi.StatementExecutor;
 import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DefaultDatabaseFunction;
 import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.ConnectionEvent;
-import org.executequery.event.ConnectionListener;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.gui.editor.InputParametersDialog;
 import org.executequery.gui.editor.QueryEditorHistory;
 import org.executequery.gui.editor.QueryEditorResultsPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.sqlParser.SqlParser;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.DatabaseMetaData;
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
  */
-public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
-        implements NamedView,
-        ItemListener,
-        ItemSelectionListener,
-        ConnectionListener {
+public class ExecuteProcedurePanel extends JPanel {
 
-    public static final String TITLE = "Execute Stored Objects ";
-    public static final String FRAME_ICON = "Procedure16.png";
-
-    /**
-     * the active connections combo
-     */
-    private OpenConnectionsComboboxPanel connectionsCombo;
-
-    /**
-     * the object type combo
-     */
-    private JComboBox<?> objectTypeCombo;
-
-    /**
-     * lists available procedures
-     */
-    private JComboBox<?> procedureCombo;
-
-    /**
-     * the active connections combo box model
-     */
-    private DynamicComboBoxModel proceduresModel;
-
-    /**
-     * the parameters table
-     */
     private JTable table;
-
-    /**
-     * procedure parameters table model
-     */
+    private JButton executeButton;
     private ParameterTableModel tableModel;
-
-    /**
-     * the results panel
-     */
     private QueryEditorResultsPanel resultsPanel;
 
-    /**
-     * execution utility
-     */
-    private StatementExecutor statementExecutor;
+    private StatementExecutor executor;
+    private DatabaseExecutable executableObject;
 
-    /**
-     * the instance count
-     */
-    private static int count = 1;
+    private final String objectType;
+    private final String objectName;
+    private final DatabaseConnection connection;
 
-    private final int type;
-    private final String nameStoredObject;
-
-    public ExecuteProcedurePanel() {
-        this(0, null);
-    }
-
-    public ExecuteProcedurePanel(int type, String nameStoredObject) {
+    public ExecuteProcedurePanel(String objectType, String objectName, DatabaseConnection connection) {
         super(new BorderLayout());
 
-        this.type = type;
-        this.nameStoredObject = nameStoredObject;
+        this.objectType = objectType;
+        this.objectName = objectName;
+        this.connection = connection;
 
-        try {
-            init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        init();
+        arrange();
     }
 
     private void init() {
@@ -151,189 +90,72 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
 
-        connectionsCombo = new OpenConnectionsComboboxPanel();
-        connectionsCombo.connectionsCombo.addItemListener(e -> connectionSelectionMade());
-        connectionsCombo.setEnabled(nameStoredObject == null);
-
-        objectTypeCombo = WidgetFactory.createComboBox("objectTypeCombo", createAvailableObjectTypes());
-        objectTypeCombo.setToolTipText(bundleString("ObjectType.tool-tip"));
-        objectTypeCombo.addItemListener(this);
-
-        proceduresModel = new DynamicComboBoxModel();
-        procedureCombo = WidgetFactory.createComboBox("procedureCombo", proceduresModel);
-        procedureCombo.setActionCommand("procedureSelectionChanged");
-        procedureCombo.setToolTipText(bundleString("ObjectName.tool-tip"));
-        procedureCombo.addActionListener(this);
-
         resultsPanel = new QueryEditorResultsPanel();
         resultsPanel.setVisible(false);
 
-        arrangeComponents();
+        executeButton = WidgetFactory.createButton(
+                "executeButton",
+                Bundles.getCommon("execute"),
+                e -> execute()
+        );
 
-        if (nameStoredObject != null) {
-
-            objectTypeCombo.setSelectedIndex(type);
-            for (int i = 0; i < proceduresModel.getSize(); i++) {
-
-                if (((NamedObject) proceduresModel.getElementAt(i)).getName().contentEquals(nameStoredObject)) {
-                    procedureCombo.setSelectedIndex(i);
-                    procedureCombo.setEnabled(false);
-                    enableCombos(false);
-                    break;
-                }
-            }
-        }
-
+        if (objectName != null)
+            prepareExecute();
     }
 
-    private void arrangeComponents() {
-
-        GridBagHelper ghb = new GridBagHelper()
-                .setInsets(5, 5, 5, 5)
-                .anchorNorthWest()
-                .fillBoth();
+    private void arrange() {
+        GridBagHelper gbh;
 
         // --- basePanel ---
 
         JPanel basePanel = new JPanel(new GridBagLayout());
         basePanel.setBorder(BorderFactory.createEtchedBorder());
 
-        // comboBoxes
-        basePanel.add(connectionsCombo, ghb.setWidth(2).setMaxWeightX().get());
-        ghb.setWidth(1).setMinWeightX().addLabelFieldPair(basePanel, bundleString("ObjectType"), objectTypeCombo, null, true);
-        ghb.addLabelFieldPair(basePanel, bundleString("ObjectName"), procedureCombo, null, true);
-
-        // result splitPane
-        basePanel.add(new JScrollPane(table), ghb.fillBoth().setMaxWeightY().nextRowFirstCol().spanX().get());
-        basePanel.add(resultsPanel, ghb.nextRowFirstCol().spanX().get());
-
-        // execute button
-        basePanel.add(ActionUtilities.createButton(this, Bundles.getCommon("execute"), "execute"),
-                ghb.nextRowFirstCol().setMinWeightY().anchorEast().fillNone().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
+        basePanel.add(new JScrollPane(table), gbh.setMaxWeightY().spanX().get());
+        basePanel.add(resultsPanel, gbh.nextRowFirstCol().get());
+        basePanel.add(executeButton, gbh.nextRowFirstCol().setMinWeightY().anchorEast().bottomGap(0).fillNone().get());
 
         // --- main frame ---
 
         setBorder(BorderFactory.createEmptyBorder(5, 5, 7, 5));
         add(basePanel, BorderLayout.CENTER);
-
-        // ---
-
-        EventMediator.registerListener(this);
-        connectionSelectionMade();
     }
 
-    private Vector<ExecutableObjectType> createAvailableObjectTypes() {
+    private void prepareExecute() {
 
-        Vector<ExecutableObjectType> types = new Vector<>();
-        types.add(new ExecutableObjectType(NamedObject.META_TYPES[NamedObject.PROCEDURE]));
-        types.add(new ExecutableObjectType(NamedObject.META_TYPES[NamedObject.FUNCTION]));
+        JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (tabComponent instanceof ConnectionsTreePanel) {
 
-        return types;
-    }
-
-    private void enableCombos(boolean enable) {
-        connectionsCombo.setEnabled(enable);
-        objectTypeCombo.setEnabled(objectTypeCombo.isEnabled() ? enable : objectTypeCombo.isEnabled());
-        procedureCombo.setEnabled(enable);
-    }
-
-    /**
-     * Invoked when an item has been selected or deselected by the user.
-     * The code written for this method performs the operations
-     * that need to occur when an item is selected (or deselected).
-     */
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-
-        // interested in selections only
-        if (e.getStateChange() != ItemEvent.DESELECTED)
-            reloadProcedureList(e.getSource());
-    }
-
-    private void reloadProcedureList(Object source) {
-
-        if (source == connectionsCombo)
-            connectionSelectionMade();
-        if (source == objectTypeCombo)
-            objectTypeSelectionMade();
-    }
-
-    private void objectTypeSelectionMade() {
-
-        ExecutableObjectType objectType = (ExecutableObjectType) objectTypeCombo.getSelectedItem();
-        ConnectionsTreePanel treePanel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-
-        if (objectType != null && treePanel != null) {
-
-            DatabaseObjectNode node = treePanel.getHostNode(connectionsCombo.getSelectedConnection());
+            ConnectionsTreePanel treePanel = (ConnectionsTreePanel) tabComponent;
+            DatabaseObjectNode node = treePanel.getHostNode(connection);
             DatabaseHost databaseHost = (DatabaseHost) node.getDatabaseObject();
-            DatabaseMetaTag databaseMetaTag = getDatabaseMetaTag(objectType.name, databaseHost.getMetaObjects());
+            DatabaseMetaTag databaseMetaTag = getDatabaseMetaTag(objectType, databaseHost.getMetaObjects());
 
-            if (databaseMetaTag != null) {
-                populateProcedureValues(databaseMetaTag.getObjects());
+            for (NamedObject namedObject : databaseMetaTag.getObjects()) {
+                if (Objects.equals(namedObject.getName(), objectName)) {
 
-            } else {
-                proceduresModel.removeAllElements();
-                procedureCombo.setEnabled(false);
+                    executableObject = (DatabaseExecutable) namedObject;
+                    if (executableObject instanceof DefaultDatabaseFunction) {
+                        DefaultDatabaseFunction function = (DefaultDatabaseFunction) executableObject;
+                        tableModel.setValues(function.getFunctionArguments().toArray(new FunctionArgument[0]));
+
+                    } else
+                        tableModel.setValues(executableObject.getParametersArray());
+
+                    tableModel.fireTableDataChanged();
+                    break;
+                }
             }
         }
     }
 
-    private void connectionSelectionMade() {
+    private void execute() {
 
-        if (objectTypeCombo.getSelectedIndex() != 0)
-            objectTypeCombo.setSelectedIndex(0);
-        else
-            objectTypeSelectionMade();
-
-    }
-
-    private void populateProcedureValues(final List<NamedObject> pros) {
-
-        if (pros != null && !pros.isEmpty()) {
-            proceduresModel.setElements(pros);
-            procedureCombo.setSelectedIndex(0);
-            procedureCombo.setEnabled(true);
-
-        } else {
-            proceduresModel.removeAllElements();
-            procedureCombo.setEnabled(false);
+        if (connection == null) {
+            GUIUtilities.displayErrorMessage("No database connection is available.");
+            return;
         }
-
-    }
-
-    /**
-     * Invoked on selection of a procedure from the combo.
-     */
-    @SuppressWarnings("unused")
-    public void procedureSelectionChanged() {
-
-        int index = procedureCombo.getSelectedIndex();
-        DatabaseExecutable databaseExecutable = (DatabaseExecutable) proceduresModel.getElementAt(index);
-
-        if (databaseExecutable != null) {
-
-            if (databaseExecutable instanceof DefaultDatabaseFunction) {
-                FunctionArgument[] args = new FunctionArgument[((DefaultDatabaseFunction) databaseExecutable).getFunctionArguments().size()];
-                ((DefaultDatabaseFunction) databaseExecutable).getFunctionArguments().toArray(args);
-                tableModel.setValues(args);
-
-            } else
-                tableModel.setValues(databaseExecutable.getParametersArray());
-
-        } else
-            tableModel.clear();
-
-        tableModel.fireTableDataChanged();
-    }
-
-    /**
-     * Executes the selected procedure.
-     */
-    public void execute() {
-
-        if (!resultsPanel.isVisible())
-            resultsPanel.setVisible(true);
 
         int selectedRow = table.getSelectedRow();
         int selectedColumn = table.getSelectedColumn();
@@ -342,138 +164,113 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
             table.getCellEditor(selectedRow, selectedColumn).stopCellEditing();
 
         GUIUtils.startWorker(() -> {
+            setActionMessage("Executing " + objectType.toLowerCase() + " " + executableObject.getName() + "...");
 
-            try {
-                setInProcess(true);
+            if (executor == null)
+                executor = new DefaultStatementExecutor(connection);
+            else
+                executor.setDatabaseConnection(connection);
 
-                DatabaseConnection databaseConnection = connectionsCombo.getSelectedConnection();
-                if (databaseConnection == null) {
-                    GUIUtilities.displayErrorMessage("No database connection is available.");
-                    return;
-                }
+            int queryType;
+            StringBuilder sql = new StringBuilder();
 
-                Object object = procedureCombo.getSelectedItem();
-                if (object == null)
-                    return;
+            if (Objects.equals(objectType, NamedObject.META_TYPES[NamedObject.FUNCTION])) {
+                queryType = QueryTypes.SELECT;
 
-                DatabaseExecutable databaseExecutable = (DatabaseExecutable) object;
-                int type = objectTypeCombo.getSelectedIndex();
-                String text = type == 1 ? " function " : " procedure ";
-                setActionMessage("Executing" + text + databaseExecutable.getName() + "...");
+                DefaultDatabaseFunction function = (DefaultDatabaseFunction) executableObject;
+                sql.append("SELECT ").append(function.getNameForQuery()).append(" (");
 
-                if (statementExecutor == null)
-                    statementExecutor = new DefaultStatementExecutor(databaseConnection);
-                else
-                    statementExecutor.setDatabaseConnection(databaseConnection);
-
-                int queryType;
-                StringBuilder sql;
-
-                if (type == 1) {
-                    queryType = QueryTypes.SELECT;
-
-                    DefaultDatabaseFunction function = (DefaultDatabaseFunction) databaseExecutable;
-                    sql = new StringBuilder("SELECT " + function.getNameForQuery() + " (");
-
-                    boolean first = true;
-                    for (int i = 0; i < function.getFunctionArguments().size(); i++) {
-                        if (!function.getFunctionArguments().get(i).getName().contentEquals("< Return Value >")) {
-                            sql.append(!first ? "," : "").append(":").append(function.getFunctionArguments().get(i).getName());
-                            first = false;
-                        }
+                boolean first = true;
+                for (int i = 0; i < function.getFunctionArguments().size(); i++) {
+                    if (!function.getFunctionArguments().get(i).getName().contentEquals("< Return Value >")) {
+                        sql.append(!first ? "," : "").append(":").append(function.getFunctionArguments().get(i).getName());
+                        first = false;
                     }
-                    sql.append(") AS \"< Return Value >\" FROM rdb$database");
+                }
+                sql.append(") AS \"< Return Value >\" FROM rdb$database");
+
+            } else {
+                DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) executableObject;
+                if (procedure.getProcedureType() == DefaultDatabaseProcedure.SELECTABLE) {
+                    queryType = QueryTypes.SELECT;
+                    sql.append("SELECT * FROM ").append(procedure.getNameForQuery());
 
                 } else {
-                    sql = new StringBuilder();
-                    DefaultDatabaseProcedure procedure = (DefaultDatabaseProcedure) databaseExecutable;
-                    if (procedure.getProcedureType() == DefaultDatabaseProcedure.SELECTABLE) {
-                        queryType = QueryTypes.SELECT;
-                        sql.append("SELECT * FROM " + procedure.getNameForQuery());
-
-                    } else {
-                        queryType = QueryTypes.EXECUTE;
-                        sql.append("EXECUTE PROCEDURE " + procedure.getNameForQuery());
-                    }
-                    if (procedure.getProcedureInputParameters().size() > 0) {
-                        sql.append("(");
-
-                        boolean first = true;
-                        for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
-                            sql.append(!first ? "," : "").append(":").append(procedure.getProcedureInputParameters().get(i).getName());
-                            first = false;
-                        }
-
-                        sql.append(")");
-                    }
+                    queryType = QueryTypes.EXECUTE;
+                    sql.append("EXECUTE PROCEDURE ").append(procedure.getNameForQuery());
                 }
 
-                setActionMessage("Executing: " + sql);
-                PreparedStatement statement = prepareStatementWithParameters(sql.toString(), "");
-                SqlStatementResult result = statementExecutor.execute(queryType, statement);
-                Map results = (Map) result.getOtherResult();
+                if (!procedure.getProcedureInputParameters().isEmpty()) {
+                    sql.append("(");
 
-                if (!result.isException()) {
+                    boolean first = true;
+                    for (int i = 0; i < procedure.getProcedureInputParameters().size(); i++) {
+                        sql.append(!first ? "," : "").append(":").append(procedure.getProcedureInputParameters().get(i).getName());
+                        first = false;
+                    }
 
-                    setPlainMessage("Statement executed successfully.");
-                    int updateCount = result.getUpdateCount();
+                    sql.append(")");
+                }
+            }
 
-                    if (updateCount > 0)
-                        setPlainMessage(updateCount + updateCount > 1 ? " rows affected." : " row affected.");
+            setActionMessage("Executing: " + sql);
+            try {
 
-                    if (results != null)
-                        for (Object key : results.keySet())
-                            setPlainMessage(key.toString() + " = " + results.get(key.toString()));
-
-                    if (result.isResultSet())
-                        resultsPanel.setResultSet(result.getResultSet(), false, -1, null);
-
-                } else
+                SqlStatementResult result = executor.execute(queryType, prepareStatement(sql.toString()));
+                if (result.isException()) {
                     setErrorMessage(result.getErrorMessage());
+                    return;
+                }
 
+                setPlainMessage("Statement executed successfully.");
+                int updateCount = result.getUpdateCount();
+                if (updateCount > 0)
+                    setPlainMessage(updateCount + updateCount > 1 ? " rows affected." : " row affected.");
+
+                if (result.getOtherResult() instanceof Map<?, ?>) {
+                    Map<?, ?> results = (Map<?, ?>) result.getOtherResult();
+                    for (Object key : results.keySet())
+                        setPlainMessage(key.toString() + " = " + results.get(key.toString()));
+                }
+
+                if (result.isResultSet())
+                    resultsPanel.setResultSet(result.getResultSet(), false, -1, null);
 
             } catch (Exception e) {
                 if (!e.getMessage().contentEquals("Canceled"))
-                    e.printStackTrace();
+                    Log.error(e.getMessage(), e);
 
             } finally {
-                statementExecutor.releaseResources();
-                setInProcess(false);
+                executor.releaseResources();
+                resultsPanel.setVisible(true);
             }
-
         });
-
     }
 
-    PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+    private PreparedStatement prepareStatement(String sql) throws SQLException {
 
-        SqlParser parser = new SqlParser(sql, variables);
-        String queryToExecute = parser.getProcessedSql();
-
-        PreparedStatement statement = statementExecutor.getPreparedStatement(queryToExecute);
+        SqlParser parser = new SqlParser(sql, "");
+        PreparedStatement statement = executor.getPreparedStatement(parser.getProcessedSql());
         statement.setEscapeProcessing(true);
 
-        ParameterMetaData pmd = statement.getParameterMetaData();
-        List<org.executequery.gui.editor.autocomplete.Parameter> params = parser.getParameters();
-        List<org.executequery.gui.editor.autocomplete.Parameter> displayParams = parser.getDisplayParameters();
+        List<Parameter> params = parser.getParameters();
+        List<Parameter> displayParams = parser.getDisplayParameters();
 
         for (int i = 0; i < params.size(); i++) {
-            params.get(i).setType(pmd.getParameterType(i + 1));
-            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
+            params.get(i).setType(statement.getParameterMetaData().getParameterType(i + 1));
+            params.get(i).setTypeName(statement.getParameterMetaData().getParameterTypeName(i + 1));
         }
 
-        if (QueryEditorHistory.getHistoryParameters().containsKey(statementExecutor.getDatabaseConnection())) {
+        if (QueryEditorHistory.getHistoryParameters().containsKey(executor.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(executor.getDatabaseConnection());
 
-            List<org.executequery.gui.editor.autocomplete.Parameter> oldParams =
-                    QueryEditorHistory.getHistoryParameters().get(statementExecutor.getDatabaseConnection());
+            for (Parameter parameter : displayParams) {
+                for (int i = 0; i < oldParams.size(); i++) {
+                    Parameter oldParameter = oldParams.get(i);
 
-            for (Parameter dp : displayParams) {
-                for (int g = 0; g < oldParams.size(); g++) {
-
-                    Parameter p = oldParams.get(g);
-                    if (p.getType() == dp.getType() && p.getName().contentEquals(dp.getName())) {
-                        dp.setValue(p.getValue());
-                        oldParams.remove(p);
+                    if (oldParameter.getType() == parameter.getType() && oldParameter.getName().contentEquals(parameter.getName())) {
+                        parameter.setValue(oldParameter.getValue());
+                        oldParams.remove(oldParameter);
                         break;
                     }
                 }
@@ -481,9 +278,9 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         }
 
         if (!displayParams.isEmpty()) {
-            InputParametersDialog spd = new InputParametersDialog(displayParams);
-            spd.display();
-            if (spd.isCanceled())
+            InputParametersDialog inputParametersDialog = new InputParametersDialog(displayParams);
+            inputParametersDialog.display();
+            if (inputParametersDialog.isCanceled())
                 throw new DataSourceException("Canceled");
         }
 
@@ -494,7 +291,7 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                 statement.setObject(i + 1, params.get(i).getPreparedValue());
         }
 
-        QueryEditorHistory.getHistoryParameters().put(statementExecutor.getDatabaseConnection(), displayParams);
+        QueryEditorHistory.getHistoryParameters().put(executor.getDatabaseConnection(), displayParams);
         return statement;
     }
 
@@ -510,104 +307,42 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         GUIUtils.invokeAndWait(() -> resultsPanel.setErrorMessage(message));
     }
 
-    // ---------------------------------------------
-    // ConnectionListener implementation
-    // ---------------------------------------------
-
-    /**
-     * Indicates a connection has been established.
-     *
-     * @param connectionEvent encapsulating event
-     */
-    @Override
-    public void connected(ConnectionEvent connectionEvent) {
-        enableCombos(true);
-    }
-
-    /**
-     * Indicates a connection has been closed.
-     *
-     * @param connectionEvent encapsulating event
-     */
-    @Override
-    public void disconnected(ConnectionEvent connectionEvent) {
-    }
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return (event instanceof ConnectionEvent);
-    }
-
-    /**
-     * Returns the display name for this view.
-     *
-     * @return the display name
-     */
-    @Override
-    public String getDisplayName() {
-        return TITLE + (count++);
-    }
-
-    /**
-     * Indicates the panel is being removed from the pane
-     */
-    @Override
-    public boolean tabViewClosing() {
-
-        EventMediator.deregisterListener(this);
-
-        if (statementExecutor != null) {
-            try {
-                statementExecutor.destroyConnection();
-
-            } catch (SQLException ignored) {
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public void itemStateChanging(ItemEvent e) {
-    }
-
     public DatabaseMetaTag getDatabaseMetaTag(String name, List<DatabaseMetaTag> metaObjects) {
 
-        name = name.toUpperCase();
         for (DatabaseMetaTag object : metaObjects)
-            if (name.equals(object.getMetaDataKey().toUpperCase()))
+            if (Objects.equals(name.toUpperCase(), object.getMetaDataKey().toUpperCase()))
                 return object;
 
         return null;
     }
-
-    static class ExecutableObjectType {
-
-        String name;
-
-        ExecutableObjectType(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return StringUtils.capitalize(name.toLowerCase());
-        }
-
-    } // class ExecutableObjectType
 
     static class ParameterTableModel extends AbstractTableModel {
 
         private final String UNKNOWN = "UNKNOWN";
         private final String RETURN = "RETURN";
         private final String RESULT = "RESULT";
-        private final String IN = "IN";
         private final String INOUT = "INOUT";
         private final String OUT = "OUT";
+        private final String IN = "IN";
 
-        private final String[] columns = Bundles.get(ExecuteProcedurePanel.class,
-                new String[]{"Parameter", "DataType", "Mode"});
         private org.executequery.databaseobjects.Parameter[] values;
+        private final String[] columns = Bundles.get(ExecuteProcedurePanel.class, new String[]{
+                "Parameter",
+                "DataType",
+                "Mode"
+        });
+
+        public void setValues(ProcedureParameter[] procedureParameters) {
+            values = procedureParameters;
+        }
+
+        public void setValues(FunctionArgument[] functionArguments) {
+            values = functionArguments;
+        }
+
+        public void clear() {
+            values = null;
+        }
 
         @Override
         public int getRowCount() {
@@ -617,18 +352,6 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
         @Override
         public int getColumnCount() {
             return columns.length;
-        }
-
-        public void clear() {
-            values = null;
-        }
-
-        public void setValues(ProcedureParameter[] procedureParameters) {
-            values = procedureParameters;
-        }
-
-        public void setValues(FunctionArgument[] functionArguments) {
-            values = functionArguments;
         }
 
         @Override
@@ -644,13 +367,12 @@ public class ExecuteProcedurePanel extends DefaultTabViewActionPanel
                     return param.getName();
 
                 case 1:
-                    return (param.getSize() > 0) ?
+                    return param.getSize() > 0 ?
                             param.getSqlType() + "(" + param.getSize() + ")" :
                             param.getSqlType();
 
                 case 2:
                     switch (param.getType()) {
-
                         case DatabaseMetaData.procedureColumnIn:
                             return IN;
                         case DatabaseMetaData.procedureColumnOut:

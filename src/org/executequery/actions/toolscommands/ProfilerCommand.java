@@ -5,7 +5,6 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.underworldlabs.swing.actions.BaseCommand;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class ProfilerCommand extends OpenFrameCommand
@@ -14,19 +13,17 @@ public class ProfilerCommand extends OpenFrameCommand
     @Override
     public void execute(ActionEvent e) {
 
-        if (!isConnected()) {
+        String title = ProfilerPanel.TITLE;
+        if (!isConnected() || isCentralPaneOpen(title))
             return;
-        }
 
-        if (isActionableDialogOpen()) {
-            GUIUtilities.actionableDialogToFront();
-            return;
-        }
-
-        GUIUtilities.addCentralPane(ProfilerPanel.TITLE,
-                (Icon) null,
+        GUIUtilities.addCentralPane(
+                title,
+                ProfilerPanel.FRAME_ICON,
                 new ProfilerPanel(),
                 null,
-                true);
+                true
+        );
     }
+
 }

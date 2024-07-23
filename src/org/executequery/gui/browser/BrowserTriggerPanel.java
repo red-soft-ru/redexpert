@@ -1,7 +1,7 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.gui.IconManager;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -62,6 +62,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private void init() {
 
+        cache = new HashMap<>();
         dependenciesPanel = new DependenciesPanel();
         JPanel panel = new JPanel();
 
@@ -141,8 +142,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(objectNameLabel, gbc);
         gbc.gridy++;
         gbc.insets.top = 0;
-        gbc.insets.right = 5;
-        //base.add(new JLabel("Schema:"), gbc);
         gbc.insets.right = 10;
         gbc.gridy++;
         gbc.weightx = 1.0;
@@ -161,13 +160,8 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         base.add(triggerNameField, gbc);
         ++gbc.gridy;
         gbc.insets.top = 0;
-        //base.add(schemaNameField, gbc);
 
-        setHeaderText("Database Procedure");
-        setHeaderIcon(GUIUtilities.loadIcon("Procedure24.png", true));
         setContentPanel(base);
-        cache = new HashMap();
-
     }
 
     public String getLayoutName() {
@@ -206,7 +200,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         dependenciesPanel.setDatabaseObject(trigger);
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("DatabaseTrigger"));
-        setHeaderIcon(GUIUtilities.loadIcon("TableTrigger16.png", true));
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.DB_TRIGGER_IMAGE));
 
         try {
             triggerNameField.setText(trigger.getName());
@@ -251,21 +245,14 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
         objectNameLabel.setText(bundleString("TriggerName"));
         setHeaderText(bundleString("Database Trigger"));
-        setHeaderIcon("Trigger16.png");
+        setHeaderIcon(IconManager.getIcon(BrowserConstants.DB_TRIGGER_IMAGE));
 
         if (trigger != null) {
             triggerNameField.setText(trigger.getName());
-            //model.setValues(procedure.getParametersArray());
         } else {
             triggerNameField.setText(metaObject.getName());
         }
 
-        //schemaNameField.setText(metaObject.getSchemaName());
-    }
-
-    private void setHeaderIcon(String icon) {
-
-//        setHeaderIcon(GUIUtilities.loadIcon(icon, true));
     }
 
 }

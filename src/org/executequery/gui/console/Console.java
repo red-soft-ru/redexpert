@@ -211,7 +211,6 @@ public class Console extends JScrollPane {
         addCommand(new ExitCommand());
         addCommand(new HomeCommand());
         addCommand(new HelpCommand());
-        //    addCommand(new ListCommand());
         addCommand(new PwdCommand());
     }
 

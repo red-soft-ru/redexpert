@@ -37,70 +37,39 @@ import java.util.Map;
 public class ToolBarsViewMenu extends AbstractOptionsMenu
         implements UserPreferenceListener {
 
-    private ToolBarViewOptionsCommand menuItemListener;
+    private final ToolBarViewOptionsCommand menuItemListener;
+    private final Map<String, String> toolbarActionCommands;
 
     public ToolBarsViewMenu() {
-
         menuItemListener = new ToolBarViewOptionsCommand();
 
-        createCommandToToolBarNameMap();
+        toolbarActionCommands = new HashMap<>();
+        toolbarActionCommands.put("viewDatabaseTools", ToolBarManager.DATABASE_TOOLS);
+        toolbarActionCommands.put("viewApplicationTools", ToolBarManager.APPLICATION_TOOLS);
+        toolbarActionCommands.put("viewSystemTools", ToolBarManager.SYSTEM_TOOLS);
 
         EventMediator.registerListener(this);
     }
 
+    @Override
     protected boolean listeningForEvent(UserPreferenceEvent event) {
-
-        return (event.getEventType() == UserPreferenceEvent.ALL
-                || event.getEventType() == UserPreferenceEvent.TOOL_BAR);
+        return event.getEventType() == UserPreferenceEvent.ALL || event.getEventType() == UserPreferenceEvent.TOOL_BAR;
     }
 
+    @Override
     protected void addActionForMenuItem(JCheckBoxMenuItem menuItem) {
-
         menuItem.addActionListener(menuItemListener);
     }
 
+    @Override
     protected void setMenuItemValue(JCheckBoxMenuItem menuItem) {
-
         String actionCommand = menuItem.getActionCommand();
-
-        if (actionCommand != null &&
-                actionCommandToToolBarNameMap.containsKey(actionCommand)) {
-
+        if (actionCommand != null && toolbarActionCommands.containsKey(actionCommand))
             menuItem.setSelected(toolBarVisible(actionCommand));
-        }
-
     }
 
     private boolean toolBarVisible(String key) {
-
-        return ToolBarProperties.isToolBarVisible(
-                actionCommandToToolBarNameMap.get(key));
-    }
-
-    private Map<String, String> actionCommandToToolBarNameMap;
-
-    private void createCommandToToolBarNameMap() {
-
-        actionCommandToToolBarNameMap = new HashMap<String, String>();
-
-        actionCommandToToolBarNameMap.put("viewFileTools", ToolBarManager.FILE_TOOLS);
-        actionCommandToToolBarNameMap.put("viewEditTools", ToolBarManager.EDIT_TOOLS);
-        actionCommandToToolBarNameMap.put("viewSearchTools", ToolBarManager.SEARCH_TOOLS);
-        actionCommandToToolBarNameMap.put("viewDatabaseTools", ToolBarManager.DATABASE_TOOLS);
-        actionCommandToToolBarNameMap.put("viewImportExportTools", ToolBarManager.IMPORT_EXPORT_TOOLS);
-        actionCommandToToolBarNameMap.put("viewSystemTools", ToolBarManager.SYSTEM_TOOLS);
-
+        return ToolBarProperties.isToolBarVisible(toolbarActionCommands.get(key));
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

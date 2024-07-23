@@ -33,6 +33,7 @@ public class ProfilerPanel extends JPanel
         implements TabView {
 
     public final static String TITLE = bundleString("title");
+    public static final String FRAME_ICON = "icon_execute_profiler";
     private final static boolean SORTABLE = true;
 
     private static final int ACTIVE = 0;
@@ -62,6 +63,7 @@ public class ProfilerPanel extends JPanel
 
     private int sessionId;
     private int currentState;
+    private boolean dataCollected;
     private DefaultProfilerExecutor profilerExecutor;
     private TableSelectionCombosGroup combosGroup;
     private List<ProfilerData> oldDataList;
@@ -90,6 +92,7 @@ public class ProfilerPanel extends JPanel
     }
 
     private void init() {
+        dataCollected = false;
 
         // --- attachments comboBox ---
 
@@ -247,7 +250,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionStart"), e, this.getClass());
         }
     }
 
@@ -266,7 +269,7 @@ public class ProfilerPanel extends JPanel
             generateTree(false);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionPause"), e, this.getClass());
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -286,7 +289,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(ACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionResume"), e, this.getClass());
         }
     }
 
@@ -308,7 +311,7 @@ public class ProfilerPanel extends JPanel
             generateTree(false);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionFinish"), e, this.getClass());
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -332,7 +335,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionCancel"), e, this.getClass());
         }
     }
 
@@ -353,7 +356,7 @@ public class ProfilerPanel extends JPanel
             switchSessionState(INACTIVE);
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorSessionDiscard"), e, this.getClass());
         }
 
     }
@@ -378,6 +381,7 @@ public class ProfilerPanel extends JPanel
         // display tree
         updateTreeDisplay();
         oldDataList = profilerDataList;
+        dataCollected = true;
     }
 
     private void generateCompactTree(List<ProfilerData> profilerDataList) {
@@ -646,6 +650,10 @@ public class ProfilerPanel extends JPanel
         Object[] values1 = (Object[]) o1;
         Object[] values2 = (Object[]) o2;
         return Long.compare((long) values1[0], (long) values2[0]);
+    }
+
+    public boolean isDataCollected() {
+        return dataCollected;
     }
 
     private boolean isConnected() {

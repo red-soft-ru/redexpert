@@ -436,14 +436,8 @@ public class PooledConnection implements Connection {
         }
     }
 
-    public String getCatalog() throws SQLException {
-        checkOpen();
-        try {
-            return realConnection.getCatalog();
-        } catch (SQLException e) {
-            handleException(e);
-            return null;
-        }
+    public String getCatalog() {
+        return null;
     }
 
     public DatabaseMetaData getMetaData() throws SQLException {
@@ -528,12 +522,6 @@ public class PooledConnection implements Connection {
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        checkOpen();
-        try {
-            realConnection.setCatalog(catalog);
-        } catch (SQLException e) {
-            handleException(e);
-        }
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
@@ -904,13 +892,10 @@ public class PooledConnection implements Connection {
     }
 
     public String getSchema() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     public void setSchema(String schema) {
-        // TODO Auto-generated method stub
-
     }
 
     public void abort(Executor executor) {

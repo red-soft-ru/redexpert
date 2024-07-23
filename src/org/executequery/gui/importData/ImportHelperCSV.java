@@ -135,7 +135,7 @@ class ImportHelperCSV extends AbstractImportHelper {
             statement = DriverManager.getConnection(connectionUrl, properties).createStatement();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ImportDataErrorMessage") + "\n" + e.getMessage(), e, this.getClass());
         }
 
         return statement;

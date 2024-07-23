@@ -35,6 +35,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author Takis Diakoumis
  */
+@SuppressWarnings("unused")
 public class SmoothGradientRootPaneUI extends BasicRootPaneUI {
 
     /**

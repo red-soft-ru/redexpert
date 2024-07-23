@@ -20,41 +20,13 @@
 
 package org.executequery.gui.browser;
 
-import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.menu.MenuItemFactory;
-
-import javax.swing.*;
-import java.awt.event.ActionListener;
-
-public class BrowserTreeFolderPopupMenu extends JPopupMenu {
+public class BrowserTreeFolderPopupMenu extends BrowserTreeDefaultPopupMenu {
 
     public BrowserTreeFolderPopupMenu(ConnectionsTreePanel treePanel) {
+        super(treePanel);
 
-        add(createMenuItem(bundleString("NewConnection"), "newConnection", treePanel));
+        addSeparator();
         add(createMenuItem(bundleString("DeleteFolder"), "deleteConnection", treePanel));
-        addSeparator();
-
-        add(createMenuItem(bundleString("ConnectAll"), "connectAll", treePanel));
-        add(createMenuItem(bundleString("DisconnectAll"), "disconnectAll", treePanel));
-
-        addSeparator();
-        add(createMenuItem(bundleString("SortConnections"), "sortConnections", treePanel));
-    }
-
-    private JMenuItem createMenuItem(String text,
-                                     String actionCommand,
-                                     ActionListener listener) {
-
-        JMenuItem menuItem = MenuItemFactory.createMenuItem(text);
-        menuItem.setActionCommand(actionCommand);
-        menuItem.addActionListener(listener);
-        return menuItem;
-    }
-
-    private String bundleString(String key) {
-
-        return Bundles.get(getClass(), key);
     }
 
 }
-

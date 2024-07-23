@@ -216,16 +216,6 @@ public class UIUtils {
 
     /**
      * Returns whether the current applied look and feel is
-     * the MotifLookAndFeel
-     *
-     * @return true | false
-     */
-    public static boolean isMotifLookAndFeel() {
-        return isLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-    }
-
-    /**
-     * Returns whether the current applied look and feel is
      * the WindowsLookAndFeel
      *
      * @return true | false

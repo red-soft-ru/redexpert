@@ -26,23 +26,17 @@ import org.executequery.databasemediators.ConnectionBuilder;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
-import javax.swing.*;
-import javax.swing.plaf.TreeUI;
 import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -59,17 +53,6 @@ import java.util.*;
 public final class ConnectionManager {
 
     private static final Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
-
-    /**
-     * Creates a stored data source for the specified database
-     * connection properties object.
-     *
-     * @param databaseConnection database connection properties object
-     * @param isAutoconnect      is connection opened automaticaly
-     */
-    public static synchronized void createDataSource(DatabaseConnection databaseConnection, boolean isAutoconnect) throws IllegalArgumentException {
-        createDataSource(databaseConnection, null, isAutoconnect);
-    }
 
     public static synchronized void createDataSource(
             DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder, boolean isAutoconnect
@@ -101,7 +84,6 @@ public final class ConnectionManager {
         ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
         if (panel != null) {
             DatabaseObjectNode hostNode = panel.getHostNode(databaseConnection);
-            ((DefaultDatabaseHost) hostNode.getDatabaseObject()).resetCountFinishedMetaTags();
             loadTree(hostNode, connectionBuilder);
             panel.getTree().nodeChanged(hostNode);
         }
@@ -138,12 +120,8 @@ public final class ConnectionManager {
             while (nodes.hasMoreElements()) {
 
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
-                if (node.isHostNode() || node.getType() == NamedObject.META_TAG) {
+                if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                     loadTree(node, connectionBuilder);
-
-                    if (node.getType() == NamedObject.META_TAG)
-                        ((DefaultDatabaseMetaTag) node.getDatabaseObject()).getHost().incCountFinishedMetaTags();
-                }
             }
 
         } catch (Exception e) {
@@ -155,7 +133,7 @@ public final class ConnectionManager {
     /**
      * Returns a connection from the pool of the specified type.
      *
-     * @param the stored database connection properties object
+     * @param databaseConnection stored database connection properties object
      * @return the connection itself
      */
     public static Connection getConnection(DatabaseConnection databaseConnection) {
@@ -169,7 +147,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection, false);
+                createDataSource(databaseConnection, null, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
@@ -195,7 +173,7 @@ public final class ConnectionManager {
 
             if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
 
-                createDataSource(databaseConnection, false);
+                createDataSource(databaseConnection, null, false);
             }
 
             ConnectionPool pool = connectionPools.get(databaseConnection);
@@ -228,13 +206,34 @@ public final class ConnectionManager {
     }
 
     public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+
+        if (connection == null)
+            return -1;
+
         DataSource dataSource = getDataSource(databaseConnection);
         if (dataSource instanceof SimpleDataSource) {
-            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
             try {
+                SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
                 return simpleDataSource.getIDTransaction(connection);
-            } catch (SQLException e) {
-                e.printStackTrace();
+
+            } catch (Exception e) {
+                Log.error(e.getMessage(), e);
+            }
+        }
+
+        return -1;
+    }
+
+    public static long getCurrentSnapshotTransaction(DatabaseConnection databaseConnection, Connection connection) {
+        if (databaseConnection != null && databaseConnection.getMajorServerVersion() >= 4) {
+            DataSource dataSource = getDataSource(databaseConnection);
+            if (dataSource instanceof SimpleDataSource) {
+                SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
+                try {
+                    return simpleDataSource.getSnapshotTransaction(connection);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         return -1;

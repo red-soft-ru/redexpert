@@ -68,19 +68,14 @@ public class MetaKeyPanel extends BrowserNodeBasePanel {
 
     private void init() {
 
+        cache = new HashMap<>();
         noValuesLabel = new JLabel(bundleString("NoObjects"), JLabel.CENTER);
 
         tablePanel().setBorder(BorderFactory.createTitledBorder(bundleString("AvailableObjects")));
 
         model = new MetaKeyModel();
         table().setModel(model);
-
-        // add the mouse listener
         table().addMouseListener(new MouseHandler());
-
-        setHeaderIcon(GUIUtilities.loadIcon("DatabaseObject24.png"));
-
-        cache = new HashMap();
     }
 
     public String getLayoutName() {

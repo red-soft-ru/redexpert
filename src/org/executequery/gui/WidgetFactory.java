@@ -20,6 +20,7 @@
 
 package org.executequery.gui;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.*;
@@ -57,6 +58,7 @@ public final class WidgetFactory {
 
         JButton button = new JButton(text);
         button.setPreferredSize(getPreferredSize(button));
+        button.setFocusPainted(false);
         button.setName(name);
 
         return button;
@@ -82,6 +84,22 @@ public final class WidgetFactory {
     /**
      * Create named JButton class instance
      *
+     * @param name     the component's name
+     * @param icon     the icon used as the default image
+     * @param listener the ActionListener to be added
+     */
+    public static JButton createButton(String name, Icon icon, ActionListener listener) {
+
+        JButton button = createButton(name, icon, Constants.EMPTY);
+        button.setPreferredSize(getPreferredSize(button));
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
+     * Create named JButton class instance
+     *
      * @param name    the component's name
      * @param text    the displayed button text
      * @param icon    the icon used as the default image
@@ -92,9 +110,24 @@ public final class WidgetFactory {
         JButton button = createButton(name, icon, toolTip);
         button.setText(text);
 
-        Dimension defaultPrefered = getPreferredSize(button);
-        defaultPrefered.width += button.getFontMetrics(button.getFont()).stringWidth(text) + button.getMargin().left + button.getMargin().right;
-        button.setPreferredSize(defaultPrefered);
+        Dimension preferredSize = getPreferredSize(button);
+        preferredSize.width += button.getFontMetrics(button.getFont()).stringWidth(text) + icon.getIconWidth();
+        button.setPreferredSize(preferredSize);
+
+        return button;
+    }
+
+    /**
+     * Create named JButton class instance
+     *
+     * @param name     the component's name
+     * @param text     the displayed button text
+     * @param listener the ActionListener to be added
+     */
+    public static JButton createButton(String name, String text, ActionListener listener) {
+
+        JButton button = createButton(name, text);
+        button.addActionListener(listener);
 
         return button;
     }
@@ -438,6 +471,20 @@ public final class WidgetFactory {
         return progressBar;
     }
 
+    /**
+     * Create JLabel class instance
+     *
+     * @param text     text to be displayed by the label
+     * @param fontSize the point size of the <code>Font</code>
+     */
+    public static JLabel createLabel(String text, int fontSize) {
+
+        JLabel label = new JLabel(text);
+        label.setFont(new Font(label.getFont().getFontName(), Font.PLAIN, fontSize));
+
+        return label;
+    }
+
 
     // -------------------------
     // --- Custom Components ---
@@ -511,13 +558,14 @@ public final class WidgetFactory {
     /**
      * Create named DefaultButton class instance
      *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param actionListener the ActionListener to be added
+     * @param name     the component's name
+     * @param text     the displayed button text
+     * @param listener the ActionListener to be added
      */
-    public static JButton createButton(String name, ActionListener actionListener, String text) {
+    public static JButton createDefaultButton(String name, String text, ActionListener listener) {
 
-        DefaultButton button = new DefaultButton(actionListener, text, null);
+        DefaultButton button = new DefaultButton(listener, text, null);
+        button.setFocusPainted(false);
         button.setName(name);
 
         return button;
@@ -533,9 +581,40 @@ public final class WidgetFactory {
     public static RolloverButton createRolloverButton(String name, String toolTip, String icon) {
 
         RolloverButton button = new RolloverButton();
-        button.setIcon(GUIUtilities.loadIcon(icon));
-        button.setMouseEnteredContentAreaFill(false);
+        button.setIcon(IconManager.getIcon(icon));
         button.setToolTipText(toolTip);
+        button.setName(name);
+
+        return button;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
+     * @param name     the component's name
+     * @param toolTip  the tool tip text for this component
+     * @param icon     the icon file name used as the default image
+     * @param listener <code>ActionListener</code> to be added
+     */
+    public static RolloverButton createRolloverButton(String name, String toolTip, String icon, ActionListener listener) {
+
+        RolloverButton button = createRolloverButton(name, toolTip, icon);
+        button.addActionListener(listener);
+
+        return button;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
+     * @param name    the component's name
+     * @param action  action to be added
+     * @param toolTip the tool tip text for this component
+     */
+    public static RolloverButton createRolloverButton(String name, Action action, String toolTip) {
+
+        RolloverButton button = new RolloverButton(action, toolTip);
+        button.setText(Constants.EMPTY);
         button.setName(name);
 
         return button;
@@ -551,6 +630,21 @@ public final class WidgetFactory {
 
         LinkButton button = new LinkButton(text);
         button.setName(name);
+
+        return button;
+    }
+
+    /**
+     * Create named LinkButton class instance
+     *
+     * @param name     the component's name
+     * @param text     the text for display on this component
+     * @param listener <code>ActionListener</code> to be added
+     */
+    public static LinkButton createLinkButton(String name, String text, ActionListener listener) {
+
+        LinkButton button = createLinkButton(name, text);
+        button.addActionListener(listener);
 
         return button;
     }
@@ -625,6 +719,36 @@ public final class WidgetFactory {
         return checkCombox;
     }
 
+    /**
+     * Create named LinkLabel class instance
+     *
+     * @param name the component's name
+     * @param text the text to be displayed by the label
+     * @param link the string of the link to browse
+     */
+    public static LinkLabel createLinkLabel(String name, String text, String link) {
+
+        LinkLabel linkLabel = new LinkLabel(text, link);
+        linkLabel.setName(name);
+
+        return linkLabel;
+    }
+
+    /**
+     * Create named LinkLabel class instance
+     *
+     * @param name     the component's name
+     * @param text     the text to be displayed by the label
+     * @param link     the string of the link to browse
+     * @param fontSize the point size of the <code>Font</code>
+     */
+    public static LinkLabel createLinkLabel(String name, String text, String link, int fontSize) {
+
+        LinkLabel linkLabel = createLinkLabel(name, text, link);
+        linkLabel.setFont(new Font(linkLabel.getFont().getFontName(), Font.PLAIN, fontSize));
+
+        return linkLabel;
+    }
 
     // -----------------------
     // --- Utility Methods ---
@@ -634,4 +758,7 @@ public final class WidgetFactory {
         return new Dimension((int) component.getPreferredSize().getWidth(), DEFAULT_HEIGHT);
     }
 
+    public static int defaultHeight() {
+        return DEFAULT_HEIGHT;
+    }
 }

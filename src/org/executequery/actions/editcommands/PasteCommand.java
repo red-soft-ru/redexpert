@@ -34,41 +34,11 @@ import java.awt.event.ActionEvent;
  */
 public class PasteCommand implements BaseCommand {
 
-    /**
-     * <p>Executes the paste command on the <code>TextEditor</code>.
-     *
-     * @param the originating event
-     */
+    @Override
     public void execute(ActionEvent e) {
         TextEditor textFunction = GUIUtilities.getTextEditorInFocus();
-        if (textFunction != null) {
-            try {
-                textFunction.paste();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-        textFunction = null;
+        if (textFunction != null)
+            textFunction.paste();
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

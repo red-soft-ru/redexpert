@@ -30,26 +30,9 @@ public interface KeywordRepository extends Repository {
 
     String REPOSITORY_ID = "keywords";
 
-    List<String> getUserDefinedSQL();
-
     TreeSet<String> getSQLKeywords();
-
-    void setUserDefinedKeywords(List<String> keywords);
 
     boolean contains(String word);
 
-    void addUserDefinedKeyword(String word);
-
     List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName);
 }
-
-
-
-
-
-
-
-
-
-
-

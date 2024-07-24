@@ -2,6 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -96,7 +97,8 @@ public class DefaultDatabaseException extends AbstractDatabaseObject {
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table mainTable = getMainTable();
-        sb.appendFields(mainTable, getFieldName(), ID, EXCEPTION_TEXT, DESCRIPTION);
+        sb.appendField(Field.createField(mainTable, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(mainTable, ID, EXCEPTION_TEXT, DESCRIPTION);
         sb.appendTable(mainTable);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;

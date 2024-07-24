@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -62,7 +63,7 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table jobs = getMainTable();
         sb.appendTable(jobs);
-
+        sb.appendField(Field.createField(jobs, getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendFields(jobs, JOB_ID, SOURCE, ACTIVE, JOB_TYPE, SCHEDULE, START_DATE, END_DATE, DATABASE, DESCRIPTION);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;

@@ -80,7 +80,8 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table collates = getMainTable();
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CH");
-        sb.appendFields(collates, getFieldName(), BASE_COLLATE, ATTRIBUTES, DESCRIPTION, COLLATION_ATTRIBUTES);
+        sb.appendField(Field.createField(collates, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(collates, BASE_COLLATE, ATTRIBUTES, DESCRIPTION, COLLATION_ATTRIBUTES);
         sb.appendFields(charsets, CHARACTER_SET_NAME);
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(collates, CHARACTER_SET_ID), Field.createField(charsets, CHARACTER_SET_ID)));
         sb.setOrdering(getObjectField().getFieldTable());

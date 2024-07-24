@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -95,7 +96,8 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
-        sb.appendFields(table, getFieldName(), ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
+        sb.appendField(Field.createField(table, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(table, ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
         sb.appendTable(table);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;

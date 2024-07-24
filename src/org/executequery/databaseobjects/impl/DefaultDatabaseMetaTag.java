@@ -811,7 +811,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             String sql = "SELECT CAST (RDB$PROCEDURE_NAME as VARCHAR(1024)) AS PROCEDURE_NAME\n" +
                     "FROM RDB$PROCEDURES\n" +
                     ((majorVersion > 2) ? "WHERE RDB$PACKAGE_NAME IS NULL\n" : "") +
-                    "ORDER BY PROCEDURE_NAME";
+                    "ORDER BY RDB$PROCEDURE_NAME";
 
             if (typeTree == TreePanel.DEPENDED_ON)
                 sql = getDependOnQuery(5);

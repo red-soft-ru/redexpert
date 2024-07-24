@@ -67,7 +67,8 @@ public class DefaultDatabaseView extends AbstractTableObject
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table rels = getMainTable();
         Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
-        sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
+        sb.appendField(Field.createField(rels, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(rels, SOURCE, DESCRIPTION);
         sb.appendFields(rf, FIELD_NAME);
         sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());

@@ -321,7 +321,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
 
-        sb.appendField(Field.createField(indicies, getFieldName()));
+        sb.appendField(Field.createField(indicies, getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendField(Field.createField(indicies, RELATION_NAME));
         sb.appendField(Field.createField(indicies, INDEX_TYPE));
         sb.appendField(Field.createField(indicies, UNIQUE_FLAG));

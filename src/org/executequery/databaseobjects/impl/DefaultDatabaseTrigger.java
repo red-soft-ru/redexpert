@@ -467,7 +467,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table triggers = getMainTable();
         sb.appendTable(triggers);
-        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION, VALID_BLR);
+        sb.appendField(Field.createField(triggers, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(triggers, TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION, VALID_BLR);
         sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(triggers));
         sb.setOrdering(getObjectField().getFieldTable());

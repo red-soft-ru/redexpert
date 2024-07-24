@@ -1213,7 +1213,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
                 .appendArgument("NULL")
                 .appendArgument(conName.getFieldTable());
-        sb.appendField(getObjectField());
+        sb.appendField(Field.createField(getMainTable(), getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
         compareCheck.setArgument(2, conType.getFieldTable());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));

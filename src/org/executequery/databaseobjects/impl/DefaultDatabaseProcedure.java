@@ -176,7 +176,8 @@ public class DefaultDatabaseProcedure extends DefaultDatabaseExecutable
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
-        sb.appendFields(procedures, getFieldName(), PROCEDURE_SOURCE, PROCEDURE_TYPE, DESCRIPTION, VALID_BLR);
+        sb.appendField(Field.createField(procedures, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(procedures, PROCEDURE_SOURCE, PROCEDURE_TYPE, DESCRIPTION, VALID_BLR);
         sb.appendFields(procedures, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(procedures));
         Field authid = Field.createField(procedures, PROCEDURE_CONTEXT);

@@ -28,6 +28,8 @@ echo "Installing components"
 $PYTHON -m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git
 $PYTHON -m pip install robotframework
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/RedDatabase/lib
+
 export PYTHONPATH=$PYTHONPATH:/root/remoteswinglibrary-2.3.3.jar
 export DISPLAY=:0
 su reduser -c 'xhost +'

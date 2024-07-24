@@ -22,7 +22,10 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.gui.browser.ComparerDBPanel;
@@ -601,6 +604,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         switch (type) {
             case TABLE:
+            case SYSTEM_TABLE:
                 return new DefaultDatabaseTable(object);
             case VIEW:
                 return new DefaultDatabaseView(object);

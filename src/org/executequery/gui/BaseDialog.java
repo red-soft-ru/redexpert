@@ -247,6 +247,11 @@ public class BaseDialog extends AbstractBaseDialog
         toFront();
     }
 
+    @Override
+    public void setResizable(boolean resize) {
+        super.setResizable(resize);
+    }
+
 }
 
 

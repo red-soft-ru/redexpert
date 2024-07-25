@@ -1,163 +1,229 @@
 package org.executequery.gui.connections;
 
 import org.executequery.GUIUtilities;
-import org.executequery.components.BottomButtonPanel;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
 import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
+import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.components.OpenConnectionsComboboxPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class ImportConnectionsDBPanel extends JPanel {
-    public static final String TITLE = "Import Connections";
+    public static final String TITLE = bundleString("title");
 
-    ActionContainer parent;
-    OpenConnectionsComboboxPanel connectionsComboboxPanel;
-    DatabaseConnectionFactory databaseConnectionFactory;
+    private final ActionContainer parent;
+    private final List<String> loadedConnections;
+    private final List<String> availableConnections;
+    private DatabaseConnectionFactory connectionFactory;
 
+    private JButton applyButton;
+    private JButton cancelButton;
+    private JComboBox<?> connectionsCombo;
 
-    public ImportConnectionsDBPanel(ActionContainer dialog) {
-        parent = dialog;
+    public ImportConnectionsDBPanel(ActionContainer parent) {
+        this.parent = parent;
+        this.loadedConnections = new ArrayList<>();
+        this.availableConnections = new ArrayList<>();
+
         init();
+        arrange();
     }
 
-    void init() {
-        connectionsComboboxPanel = new OpenConnectionsComboboxPanel();
-        BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(parent.isDialog());
-        bottomButtonPanel.setOkButtonAction(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                doImport();
-            }
-        });
-        bottomButtonPanel.setOkButtonText("OK");
-        bottomButtonPanel.setHelpButtonVisible(false);
-
-        setLayout(new BorderLayout());
-
-        this.add(connectionsComboboxPanel, BorderLayout.NORTH);
-        this.add(bottomButtonPanel, BorderLayout.SOUTH);
-
+    private void init() {
+        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", ConnectionManager.getActiveConnections());
+        applyButton = WidgetFactory.createButton("applyButton", Bundles.get("common.ok.button"), e -> importConnections());
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> finished(false));
     }
 
-    void doImport() {
-        DatabaseConnection connection = connectionsComboboxPanel.getSelectedConnection();
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorSouthWest();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(applyButton, gbh.nextCol().setMinWeightX().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().leftGap(5).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        mainPanel.add(new JLabel(Bundles.get("common.connection")), gbh.topGap(3).setMinWeightX().get());
+        mainPanel.add(connectionsCombo, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().leftGap(0).topGap(10).spanX().spanY().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
+
+        setPreferredSize(new Dimension(300, getPreferredSize().height));
+        parent.setResizable(false);
+    }
+
+    private void importConnections() {
+
+        DatabaseConnection connection = getSelectedConnection();
         DefaultStatementExecutor sender = new DefaultStatementExecutor(connection, true);
-        String query = "SELECT PROPS FROM DATABASES";
+
+        ConnectionsTreePanel treePanel = null;
+        JPanel tabbedComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (tabbedComponent instanceof ConnectionsTreePanel)
+            treePanel = (ConnectionsTreePanel) tabbedComponent;
+
+        if (treePanel == null) {
+            GUIUtilities.displayWarningMessage(bundleString("connectionsTreeUnavailable"));
+            finished(false);
+            return;
+        }
+
         try {
+
+            String query = "SELECT PROPS FROM DATABASES";
             ResultSet rs = sender.getResultSet(query).getResultSet();
-            if (rs == null)
-                GUIUtilities.displayErrorMessage("Sorry, this connection does not seem to contain connection settings");
-            else
-                while (rs.next()) {
-                    Properties properties = new Properties();
-                    String str = rs.getString(1);
-                    String[] strs = str.split("\r\n");
-                    for (int i = 0; i < strs.length; i++) {
-                        int ind = strs[i].indexOf("=");
-                        String key = strs[i].substring(0, ind);
-                        String prop = strs[i].substring(ind + 1);
-                        properties.setProperty(key, prop);
-                    }
-                    String name = properties.getProperty("Alias");
-                    if (!MiscUtils.isNull(name)) {
-                        DatabaseConnection databaseConnection = databaseConnectionFactory().create(name);
-                        ConnectionsTreePanel connectionsTreePanel = null;
-                        if (!connectionNameExists(databaseConnection.getName(), databaseConnection)) {
-                            try {
-                                connectionsTreePanel = (ConnectionsTreePanel) GUIUtilities.
-                                        getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+            if (rs == null) {
+                GUIUtilities.displayErrorMessage(bundleString("noConnections"));
+                finished(false);
+                return;
+            }
 
-                            /***/
-                            databaseConnection.setUserName(properties.getProperty("UserName"));
-                            databaseConnection.setPasswordStored(true);
-                            databaseConnection.setPassword(properties.getProperty("Password"));
-                            databaseConnection.setRole(properties.getProperty("Role"));
-                            databaseConnection.setCharset(properties.getProperty("Charset"));
-                            String s = properties.getProperty("DBName");
-                            databaseConnection.setSourceName(s);
-                            String host = properties.getProperty("SrvName");
-                            if (MiscUtils.isNull(host)) {
-                                databaseConnection.setHost("127.0.0.1");
-                                databaseConnection.setPort("3050");
-                            } else {
-                                String server;
-                                String port;
-                                if (host.contains("/")) {
-                                    String[] serverport = host.split("/");
-                                    server = serverport[0];
-                                    port = serverport[1];
-                                } else {
-                                    server = host;
-                                    port = "3050";
-                                }
-                                databaseConnection.setHost(server);
-                                databaseConnection.setPort(port);
-                            }
+            while (rs.next()) {
 
-                            try {
-                                connectionsTreePanel.newConnection(databaseConnection);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
+                String rsValue = rs.getString(1);
+                if (MiscUtils.isNull(rsValue))
+                    continue;
 
-                        /***/
-                    }
+                String[] connectionProperties = rsValue.split("\r\n");
+                if (MiscUtils.isEmpty(connectionProperties))
+                    continue;
 
+                Properties properties = new Properties();
+                for (String propertyString : connectionProperties) {
+                    int splitIndex = propertyString.indexOf("=");
+                    properties.setProperty(
+                            propertyString.substring(0, splitIndex),
+                            propertyString.substring(splitIndex + 1)
+                    );
                 }
-            parent.finished();
+
+                String alias = properties.getProperty("Alias");
+                if (MiscUtils.isNull(alias))
+                    continue;
+
+                availableConnections.add(alias);
+                DatabaseConnection databaseConnection = databaseConnectionFactory().create(alias);
+                if (!connectionNameExists(databaseConnection.getName(), databaseConnection)) {
+
+                    String port = "3050";
+                    String host = "localhost";
+                    String serverString = properties.getProperty("SrvName");
+                    if (!MiscUtils.isNull(serverString)) {
+                        if (serverString.contains("/")) {
+                            String[] serverProperties = serverString.split("/");
+                            host = serverProperties[0];
+                            port = serverProperties[1];
+                        } else {
+                            host = serverString;
+                            port = "3050";
+                        }
+                    }
+
+                    databaseConnection.setHost(host);
+                    databaseConnection.setPort(port);
+                    databaseConnection.setPasswordStored(true);
+                    databaseConnection.setRole(properties.getProperty("Role"));
+                    databaseConnection.setCharset(properties.getProperty("Charset"));
+                    databaseConnection.setSourceName(properties.getProperty("DBName"));
+                    databaseConnection.setUserName(properties.getProperty("UserName"));
+                    databaseConnection.setPassword(properties.getProperty("Password"));
+
+                    try {
+                        treePanel.newConnection(databaseConnection, false);
+                        loadedConnections.add(alias);
+
+                    } catch (Exception e) {
+                        Log.error(e.getMessage(), e);
+                    }
+                }
+            }
+            finished(true);
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, getClass());
+
         } finally {
             sender.releaseResources();
         }
+    }
 
+    private void finished(boolean showMessage) {
+        parent.finished();
+
+        if (!showMessage)
+            return;
+
+        if (availableConnections.size() == loadedConnections.size()) {
+            GUIUtilities.displayInformationMessage(bundleString("loadedSuccessfully"));
+            return;
+        }
+
+        availableConnections.removeAll(loadedConnections);
+        GUIUtilities.displayWarningMessage(bundleString(
+                "loadedWithError",
+                availableConnections.size(),
+                String.join("\n", availableConnections)
+        ));
+    }
+
+    private DatabaseConnection getSelectedConnection() {
+        return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
 
     private boolean connectionNameExists(String name, DatabaseConnection databaseConnection) {
 
         if (databaseConnectionRepository().nameExists(databaseConnection, name, databaseConnection.getFolderId())) {
-            GUIUtilities.displayErrorMessage(String.format(Bundles.get("ConnectionPanel.error.nameExist"), name));
+            GUIUtilities.displayErrorMessage(bundleString("nameExist", name));
             return true;
         }
 
         return false;
     }
 
-
     private DatabaseConnectionFactory databaseConnectionFactory() {
-
-        if (databaseConnectionFactory == null) {
-
-            databaseConnectionFactory = new DatabaseConnectionFactoryImpl();
-        }
-
-        return databaseConnectionFactory;
+        if (connectionFactory == null)
+            connectionFactory = new DatabaseConnectionFactoryImpl();
+        return connectionFactory;
     }
 
     private DatabaseConnectionRepository databaseConnectionRepository() {
-
-        return (DatabaseConnectionRepository) RepositoryCache.load(
-                DatabaseConnectionRepository.REPOSITORY_ID);
+        return (DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
     }
 
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(ImportConnectionsDBPanel.class, key, args);
+    }
 
 }
-

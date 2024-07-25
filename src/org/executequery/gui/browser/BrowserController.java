@@ -170,11 +170,18 @@ public class BrowserController {
      * This void has been moved in BrowserTreePopupMenuActionListener
      */
     public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
+        valueChanged(node, connection, true);
+    }
+
+    /**
+     * This void has been moved in BrowserTreePopupMenuActionListener
+     */
+    public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection, boolean updatePropertiesPanel) {
 
         treePanel.setInProcess(true);
         try {
 
-            FormObjectView panel = buildPanelView(node);
+            FormObjectView panel = buildPanelView(node,updatePropertiesPanel);
             if (panel == null)
                 return;
 
@@ -225,7 +232,7 @@ public class BrowserController {
      * @param node the selected node
      */
     @SuppressWarnings("DataFlowIssue")
-    private FormObjectView buildPanelView(DatabaseObjectNode node) {
+    private FormObjectView buildPanelView(DatabaseObjectNode node, boolean updatePropertiesPanel) {
         try {
 
             NamedObject databaseObject = node.getDatabaseObject();
@@ -247,7 +254,7 @@ public class BrowserController {
                         viewPanel = new BrowserViewPanel(this);
 
                     HostPanel hostPanel = hostPanel();
-                    hostPanel.setValues((DatabaseHost) databaseObject);
+                    hostPanel.setValues((DatabaseHost) databaseObject, updatePropertiesPanel);
 
                     return hostPanel;
                 }

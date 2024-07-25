@@ -20,13 +20,13 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DefaultFieldLabel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,330 +36,192 @@ import java.awt.event.*;
  * @author Takis Diakoumis
  */
 public class ErdNewRelationshipDialog extends ErdPrintableDialog {
+    private static final String TITLE = bundleString("title");
 
-    /**
-     * The controller for the ERD viewer
-     */
     private final ErdViewerPanel parent;
-    /**
-     * The constraint name text field
-     */
+
+    private JButton createButton;
+    private JButton cancelButton;
     private JTextField nameField;
-    /**
-     * The referencing table combo
-     */
-    private JComboBox referencingTableCombo;
-    /**
-     * The referencing column combo
-     */
-    private JComboBox referencingColumnCombo;
-    /**
-     * The referenced table combo
-     */
-    private JComboBox referencedTableCombo;
-    /**
-     * The referenced column combo
-     */
-    private JComboBox referencedColumnCombo;
-    /**
-     * The SQL text string buffer
-     */
-    private StringBuffer sqlBuffer;
 
-    /**
-     * The literal 'ALTER TABLE '
-     */
-    private static final String ALTER_TABLE = "ALTER TABLE ";
-    /**
-     * The literal ' ADD CONSTRAINT '
-     */
-    private static final String ADD_CONSTRAINT = "\n  ADD CONSTRAINT ";
-    /**
-     * The literal ' FOREIGN KEY('
-     */
-    private static final String FOREIGN_KEY = " FOREIGN KEY(";
-    /**
-     * The literal ') REFERENCES '
-     */
-    private static final String REFERENCES = ")\n  REFERENCES ";
-    /**
-     * The literal '('
-     */
-    private static final char OPEN_B = '(';
-    /**
-     * The literal ');'
-     */
-    private static final String CLOSE_END = ");\n";
-
-    private static final int DIALOG_WIDTH = 600;
-    private static final int DIALOG_HEIGHT = 400;
+    private JComboBox<?> referencedTableCombo;
+    private JComboBox<?> referencedColumnCombo;
+    private JComboBox<?> referencingTableCombo;
+    private JComboBox<?> referencingColumnCombo;
 
     public ErdNewRelationshipDialog(ErdViewerPanel parent) {
-        super("New Table Relationship");
-
+        super(TITLE);
         this.parent = parent;
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
         display();
-
     }
 
-    private void jbInit() throws Exception {
-        JButton createButton = new DefaultPanelButton(Bundles.get("common.create.button"));
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"));
-        createButton.setActionCommand("Create");
-        cancelButton.setActionCommand("Cancel");
+    private void init() {
+        ErdTable[] tables = parent.getAllTablesArray();
 
-        ActionListener btnListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                buttons_actionPerformed(e);
-            }
-        };
+        createButton = WidgetFactory.createButton("createButton", Bundles.get("common.create.button"), e -> create());
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> dispose());
 
-        cancelButton.addActionListener(btnListener);
-        createButton.addActionListener(btnListener);
-
-        sqlText.setPreferredSize(new Dimension(420, 120));
+        sqlText.setSQLTextEditable(false);
+        sqlText.setPreferredSize(new Dimension(420, 150));
 
         nameField = WidgetFactory.createTextField("nameField");
         nameField.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyReleased(KeyEvent e) {
                 setSQLText();
             }
         });
 
-        ErdTable[] tables = parent.getAllTablesArray();
         referencingTableCombo = WidgetFactory.createComboBox("referencingTableCombo", tables);
+        referencingTableCombo.addActionListener(this::tableChanged);
+
         referencedTableCombo = WidgetFactory.createComboBox("referencedTableCombo", tables);
+        referencedTableCombo.addActionListener(this::tableChanged);
 
         referencingColumnCombo = WidgetFactory.createComboBox("referencingColumnCombo");
+        referencingColumnCombo.addActionListener(e -> setSQLText());
+
         referencedColumnCombo = WidgetFactory.createComboBox("referencedColumnCombo");
+        referencedColumnCombo.addActionListener(e -> setSQLText());
 
-        referencingTableCombo.addActionListener(btnListener);
-        referencedTableCombo.addActionListener(btnListener);
-        referencingColumnCombo.addActionListener(btnListener);
-        referencedColumnCombo.addActionListener(btnListener);
-
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder());
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        gbc.insets = new Insets(10, 10, 0, 10);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.insets.top = 0;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("Constraint Name:"), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(nameField, gbc);
-
-        gbc.insets = new Insets(10, 10, 0, 10);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("Referencing Table:"), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(referencingTableCombo, gbc);
-
-        gbc.insets = new Insets(10, 10, 0, 10);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("Referencing Column:"), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(referencingColumnCombo, gbc);
-
-        gbc.insets = new Insets(10, 10, 0, 10);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("Referenced Table:"), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(referencedTableCombo, gbc);
-
-        gbc.insets = new Insets(10, 10, 0, 10);
-        gbc.gridy++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        panel.add(new DefaultFieldLabel("Referenced Column:"), gbc);
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 1;
-        gbc.insets.left = 5;
-        gbc.weightx = 1.0;
-        panel.add(referencedColumnCombo, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets.left = 5;
-        gbc.insets.bottom = 5;
-        panel.add(sqlText, gbc);
-        gbc.gridy = 6;
-        gbc.gridx = 2;
-        gbc.weighty = 0;
-        gbc.weightx = 1.0;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        panel.add(createButton, gbc);
-        gbc.gridx = 3;
-        gbc.insets.left = 0;
-        gbc.weightx = 0;
-        panel.add(cancelButton, gbc);
-
-        Container c = getContentPane();
-        c.setLayout(new GridBagLayout());
-
-        c.add(panel, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                new Insets(7, 7, 7, 7), 0, 0));
-
-        this.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                int width = getWidth();
-                int height = getHeight();
-
-                if (width < DIALOG_WIDTH)
-                    width = DIALOG_WIDTH;
-
-                if (height < DIALOG_HEIGHT)
-                    height = DIALOG_HEIGHT;
-
-                setSize(width, height);
-            }
-        });
-
-        sqlBuffer = new StringBuffer();
-
-        ErdTable table = (ErdTable) referencingTableCombo.getSelectedItem();
-        referencingColumnCombo.setModel(new DefaultComboBoxModel(
-                table.getTableColumns()));
-        table = (ErdTable) referencedTableCombo.getSelectedItem();
-        referencedColumnCombo.setModel(new DefaultComboBoxModel(
-                table.getTableColumns()));
-
-        this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
+        referencingTableChanged();
+        referencedTableChanged();
     }
 
-    private void setSQLText() {
-        sqlBuffer.delete(0, sqlBuffer.length());
+    private void arrange() {
+        GridBagHelper gbh;
 
-        sqlBuffer.append(ALTER_TABLE).
-                append(referencingTableCombo.getSelectedItem()).
-                append(ADD_CONSTRAINT).
-                append(nameField.getText()).
-                append(FOREIGN_KEY).
-                append(referencingColumnCombo.getSelectedItem()).
-                append(REFERENCES).
-                append(referencedTableCombo.getSelectedItem()).
-                append(OPEN_B).
-                append(referencedColumnCombo.getSelectedItem()).
-                append(CLOSE_END);
+        // --- button panel ---
 
-        sqlText.setSQLText(sqlBuffer.toString());
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
 
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(createButton, gbh.nextCol().fillNone().setMinWeightX().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().leftGap(5).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        mainPanel.add(new JLabel(bundleString("ConstraintName")), gbh.topGap(3).get());
+        mainPanel.add(nameField, gbh.nextCol().leftGap(5).topGap(0).get());
+        mainPanel.add(new JLabel(bundleString("ReferencingTable")), gbh.nextRowFirstCol().leftGap(0).topGap(8).get());
+        mainPanel.add(referencingTableCombo, gbh.nextCol().leftGap(5).topGap(5).get());
+        mainPanel.add(new JLabel(bundleString("ReferencingColumn")), gbh.nextRowFirstCol().leftGap(0).topGap(8).get());
+        mainPanel.add(referencingColumnCombo, gbh.nextCol().leftGap(5).topGap(5).get());
+        mainPanel.add(new JLabel(bundleString("ReferencedTable")), gbh.nextRowFirstCol().leftGap(0).topGap(8).get());
+        mainPanel.add(referencedTableCombo, gbh.nextCol().leftGap(5).topGap(5).get());
+        mainPanel.add(new JLabel(bundleString("ReferencedColumn")), gbh.nextRowFirstCol().leftGap(0).topGap(8).get());
+        mainPanel.add(referencedColumnCombo, gbh.nextCol().leftGap(5).topGap(5).get());
+        mainPanel.add(sqlText, gbh.nextRowFirstCol().leftGap(0).setMaxWeightY().fillBoth().spanX().get());
+        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().setMinWeightY().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setPreferredSize(new Dimension(800, 400));
+        setMinimumSize(getPreferredSize());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
     }
 
     private void create() {
 
-        ColumnData column = (ColumnData) referencingColumnCombo.getSelectedItem();
+        Object selectedReferencingColumn = referencingColumnCombo.getSelectedItem();
+        if (!(selectedReferencingColumn instanceof ColumnData)) {
+            GUIUtilities.displayWarningMessage(bundleString("isEmptyOrNull", bundleString("referencingColumn")));
+            return;
+        }
+
+        Object selectedReferencingTable = referencingTableCombo.getSelectedItem();
+        if (!(selectedReferencingTable instanceof ErdTable)) {
+            GUIUtilities.displayWarningMessage(bundleString("isEmptyOrNull", bundleString("referencingTable")));
+            return;
+        }
+
+        Object selectedReferencedColumn = referencedColumnCombo.getSelectedItem();
+        if (selectedReferencedColumn == null) {
+            GUIUtilities.displayWarningMessage(bundleString("isEmptyOrNull", bundleString("referencedColumn")));
+            return;
+        }
+
+        Object selectedReferencedTable = referencedTableCombo.getSelectedItem();
+        if (selectedReferencedTable == null) {
+            GUIUtilities.displayWarningMessage(bundleString("isEmptyOrNull", bundleString("referencedTable")));
+            return;
+        }
+
+        ErdTable referencingTable = (ErdTable) selectedReferencingTable;
+        ColumnData referencingColumn = (ColumnData) selectedReferencingColumn;
 
         ColumnConstraint constraint = new ColumnConstraint();
         constraint.setName(nameField.getText());
-        constraint.setRefTable(referencedTableCombo.getSelectedItem().toString());
-        constraint.setColumn(column.getColumnName());
-        constraint.setRefColumn(referencedColumnCombo.getSelectedItem().toString());
+        constraint.setRefTable(selectedReferencedTable.toString());
+        constraint.setColumn(referencingColumn.getColumnName());
+        constraint.setRefColumn(selectedReferencedColumn.toString());
         constraint.setType(NamedObject.FOREIGN_KEY);
 
-        column.addConstraint(constraint);
-        column.setForeignKey(true);
+        referencingColumn.addConstraint(constraint);
+        referencingColumn.setForeignKey(true);
 
-        ErdTable referencingTable = (ErdTable) referencingTableCombo.getSelectedItem();
         referencingTable.setAddConstraintsScript(sqlText.getSQLText());
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                parent.updateTableRelationships();
-            }
-        });
-
+        SwingUtilities.invokeLater(parent::updateTableRelationships);
         dispose();
-
     }
 
-    private void buttons_actionPerformed(ActionEvent e) {
-        Object button = e.getSource();
+    private void setSQLText() {
 
-        if (button instanceof JButton) {
-            String command = e.getActionCommand();
+        String query = String.format(
+                "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY(%s) REFERENCES %s (%s);\n",
+                referencingTableCombo.getSelectedItem(),
+                nameField.getText(),
+                referencingColumnCombo.getSelectedItem(),
+                referencedTableCombo.getSelectedItem(),
+                referencedColumnCombo.getSelectedItem()
+        );
 
-            if (command.equals("Cancel"))
-                dispose();
+        sqlText.setSQLText(query);
+    }
 
-            else if (command.equals("Create"))
-                create();
+    private void tableChanged(ActionEvent e) {
 
-        } else {
+        Object source = e.getSource();
+        if (source == referencingTableCombo)
+            referencingTableChanged();
+        if (source == referencedTableCombo)
+            referencedTableChanged();
 
-            if (button == referencingTableCombo) {
-                ErdTable table = (ErdTable) referencingTableCombo.getSelectedItem();
-                referencingColumnCombo.setModel(new DefaultComboBoxModel(
-                        table.getTableColumns()));
-            } else if (button == referencedTableCombo) {
-                ErdTable table = (ErdTable) referencedTableCombo.getSelectedItem();
-                referencedColumnCombo.setModel(new DefaultComboBoxModel(
-                        table.getTableColumns()));
-            }
+        setSQLText();
+    }
 
-            setSQLText();
-
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void referencedTableChanged() {
+        Object selectedItem = referencedTableCombo.getSelectedItem();
+        if (selectedItem instanceof ErdTable) {
+            ErdTable table = (ErdTable) selectedItem;
+            referencedColumnCombo.setModel(new DefaultComboBoxModel(table.getTableColumns()));
         }
+    }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void referencingTableChanged() {
+        Object selectedItem = referencingTableCombo.getSelectedItem();
+        if (selectedItem instanceof ErdTable) {
+            ErdTable table = (ErdTable) selectedItem;
+            referencingColumnCombo.setModel(new DefaultComboBoxModel(table.getTableColumns()));
+        }
+    }
+
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(ErdNewRelationshipDialog.class, key, args);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

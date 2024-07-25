@@ -1233,7 +1233,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
                 .setLogicOperator("OR"));
-        sb.setOrdering("1");
+        sb.setOrdering(getObjectField().getFieldTable());
 
         return sb;
     }

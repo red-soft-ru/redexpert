@@ -177,12 +177,12 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             if (Thread.currentThread() instanceof InterruptibleThread)
                 thread = (InterruptibleThread) Thread.currentThread();
 
+            ResultSet rs = querySender.getResultSet(query).getResultSet();
+
             ComparerDBPanel comparerDBPanel = getComparerDBPanel(
                     thread, "LoadFullInfoForObjects", objects.size());
 
-            int currentIndex = 0;
-            int skippedCount = 0;
-            ResultSet rs = querySender.getResultSet(query).getResultSet();
+            int i = 0;
             while (rs != null && rs.next()) {
 
                 if (thread != null && thread.isCanceled()) {
@@ -190,44 +190,38 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                     return;
                 }
 
-                String objectName = MiscUtils.trimEnd(rs.getString(1));
-                if (objects.get(currentIndex) instanceof DefaultDatabaseUser) {
+                String userName = MiscUtils.trimEnd(rs.getString(1));
+                if (objects.get(i) instanceof DefaultDatabaseUser) {
 
-                    DefaultDatabaseUser user = (DefaultDatabaseUser) objects.get(currentIndex);
+                    DefaultDatabaseUser user = (DefaultDatabaseUser) objects.get(i);
                     String pluginName = MiscUtils.trimEnd(rs.getString("SEC$PLUGIN"));
 
-                    while (!user.getName().contentEquals(objectName) || !user.getPlugin().contentEquals(pluginName)) {
+                    while (!user.getName().contentEquals(userName) || !user.getPlugin().contentEquals(pluginName)) {
 
-                        currentIndex = first ? currentIndex + 1 : currentIndex - skippedCount;
-                        skippedCount = first ? skippedCount + 1 : 0;
-
-                        if (currentIndex >= objects.size())
+                        i++;
+                        if (i >= objects.size())
                             throw new DataSourceException("Error load info for " + metaDataKey);
 
-                        user = (DefaultDatabaseUser) objects.get(currentIndex);
+                        user = (DefaultDatabaseUser) objects.get(i);
                         first = true;
                     }
 
                 } else {
-                    while (!objects.get(currentIndex).getName().contentEquals(objectName)) {
-
-                        currentIndex = first ? currentIndex + 1 : currentIndex - skippedCount;
-                        skippedCount = first ? skippedCount + 1 : 0;
-
-                        if (currentIndex >= objects.size())
+                    while (!objects.get(i).getName().contentEquals(userName)) {
+                        i++;
+                        if (i >= objects.size())
                             throw new DataSourceException("Error load info for " + metaDataKey);
-
                         first = true;
                     }
                 }
 
                 if (first) {
-                    ((AbstractDatabaseObject) objects.get(currentIndex)).prepareLoadingInfo();
+                    ((AbstractDatabaseObject) objects.get(i)).prepareLoadingInfo();
                     if (comparerDBPanel != null)
                         comparerDBPanel.incrementProgressBarValue();
                 }
 
-                ((AbstractDatabaseObject) objects.get(currentIndex)).setInfoFromSingleRowResultSet(rs, first);
+                ((AbstractDatabaseObject) objects.get(i)).setInfoFromSingleRowResultSet(rs, first);
                 first = false;
             }
 

@@ -235,11 +235,11 @@ public class ErdNewTableDialog extends BaseDialog
         }
 
         public boolean isShowCommentOnTable() {
-            return showCommentOnTableBox.isSelected();
+            return showTableCommentCheck.isSelected();
         }
 
         public boolean isShowCommentOnFields() {
-            return showCommentOnFieldsBox.isSelected();
+            return showFieldCommentCheck.isSelected();
         }
 
         @Override

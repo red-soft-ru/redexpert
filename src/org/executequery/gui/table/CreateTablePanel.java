@@ -26,6 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseTypeConverter;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.T;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.FocusComponentPanel;
 import org.executequery.gui.WidgetFactory;
@@ -56,7 +57,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -75,128 +75,71 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         TableConstraintFunction,
         TextEditorContainer {
 
-    public static final String TITLE = Bundles.get(CreateTablePanel.class, "title");
-
+    public static final String TITLE = bundledString("title");
     public static final String FRAME_ICON = "icon_table_add";
 
-    protected JComboBox tablespacesCombo;
+    // --- GUI components ---
 
-    protected DynamicComboBoxModel tablespaceComboModel;
+    private JComboBox<?> tablespacesCombo;
+    private JComboBox<?> temporaryTypeCombo;
 
-    /**
-     * The components for creating EXTERNAL table
-     */
-    protected JCheckBox isExternalTable;    //checking for creating EXTERNAL table
-    protected JPanel externalTablePropsPanel;   //panel with components for creating EXTERNAL table
-    protected JTextField externalTableFilePathField;    //path to table data file
-    protected JButton browseExternalTableFileButton;    //button for open selectFileDialog
-    protected JCheckBox isAdapterNeeded;    //checking for using ADAPTER table
+    private JCheckBox isExternalCheck;
+    private JCheckBox isAdapterNeededCheck;
+    protected JCheckBox showTableCommentCheck;
+    protected JCheckBox showFieldCommentCheck;
 
-    /**
-     * The table column definition panel
-     */
-    protected NewTablePanel tablePanel;
+    private DynamicComboBoxModel tablespaceComboModel;
 
-    /**
-     * The table constraints panel
-     */
-    protected NewTableConstraintsPanel consPanel;
+    private JButton browseExternalFileButton;
+    private JTextField externalFileField;
 
-    /**
-     * The text pane showing SQL generated
-     */
-    protected SimpleSqlTextPanel sqlText;
-    /**
-     * The buffer off all SQL generated
-     */
-    protected StringBuffer sqlBuffer;
+    private JPanel externalPanel;
+    private NewTablePanel tablePanel;
+    private SimpleSqlTextPanel sqlText;
+    private NewTableConstraintsPanel consPanel;
 
-    /**
-     * The toolbar
-     */
-    private CreateTableToolBar colTools;
-    private CreateTableToolBar conTools;
+    private CreateTableToolBar columnsToolBar;
+    private CreateTableToolBar constraintsToolBar;
 
-    /**
-     * The base panel
-     */
-    protected JPanel mainPanel;
-    private JComboBox typeTemporaryBox;
+    // ---
 
-    protected JCheckBox showCommentOnTableBox;
-    protected JCheckBox showCommentOnFieldsBox;
-
-    /**
-     * <p> Constructs a new instance.
-     */
     public CreateTablePanel(DatabaseConnection dc, ActionContainer dialog) {
         super(dc, dialog, null, null);
     }
 
+    // --- AbstractCreateObjectPanel impl ---
+
     @Override
-    protected void reset() {
-
-    }
-
     protected void init() {
-
         initSQLSecurity();
-        securityCombo.addActionListener(actionEvent -> setSQLText());
 
+        securityCombo.addActionListener(e -> setSQLText());
         connectionsCombo.addItemListener(this);
-        colTools = new CreateTableToolBar(this);
-        conTools = new CreateTableToolBar(this);
+
+        columnsToolBar = new CreateTableToolBar(this);
+        constraintsToolBar = new CreateTableToolBar(this);
+
         tablespaceComboModel = new DynamicComboBoxModel(new Vector<>());
         tablespacesCombo = WidgetFactory.createComboBox("tablespaceCombo", tablespaceComboModel);
         tablespacesCombo.addItemListener(this);
-        JPanel columnsPanel = new JPanel(new GridBagLayout());
-        tablePanel = new NewTablePanel(this);
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic();
-        columnsPanel.add(colTools, gbh.setLabelDefault().fillVertical().spanY().get());
-        columnsPanel.add(tablePanel, gbh.nextCol().fillBoth().spanX().spanY().get());
-        tabbedPane.add(bundledString("Columns"), columnsPanel);
-
-        // create the constraints table and model
-        JPanel constraintsPanel = new JPanel(new GridBagLayout());
-        consPanel = new NewTableConstraintsPanel(this);
-        consPanel.setData(new Vector(0), true);
-        typeTemporaryBox = new JComboBox(new DefaultComboBoxModel(new String[]{"DELETE ROWS", "PRESERVE ROWS"}));
-        typeTemporaryBox.addActionListener(actionEvent -> setSQLText());
-        gbh.setDefaultsStatic();
-        constraintsPanel.add(conTools, gbh.setLabelDefault().fillVertical().spanY().get());
-        constraintsPanel.add(consPanel, gbh.nextCol().fillBoth().spanX().spanY().get());
-
-        tabbedPane.add(bundledString("Constraints"), constraintsPanel);
-
-        addCommentTab(null);
-        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                setSQLText();
-            }
-            @Override
-            public void keyPressed(KeyEvent e) {
-                setSQLText();
-            }
-            @Override
-            public void keyReleased(KeyEvent e) {
-                setSQLText();
-            }
-        });
 
         sqlText = new SimpleSqlTextPanel();
+        tablePanel = new NewTablePanel(this);
 
-        // ----- components for creating EXTERNAL table -----
+        consPanel = new NewTableConstraintsPanel(this);
+        consPanel.setData(new Vector<>(0), true);
 
-        isExternalTable = new JCheckBox(bundledString("IsExternalTableText"));
-        isExternalTable.addActionListener(e -> externalTablePropsChanged());
+        temporaryTypeCombo = WidgetFactory.createComboBox("temporaryTypeCombo", new String[]{"DELETE ROWS", "PRESERVE ROWS"});
+        temporaryTypeCombo.addActionListener(e -> setSQLText());
 
-        showCommentOnTableBox = new JCheckBox(Bundles.get(ErdPopupMenu.class, "DisplayCommentOnTable"));
-        showCommentOnFieldsBox = new JCheckBox(Bundles.get(ErdPopupMenu.class, "DisplayCommentsOnFields"));
+        isExternalCheck = WidgetFactory.createCheckBox("isExternalCheck", bundledString("IsExternalTableText"));
+        isExternalCheck.addActionListener(e -> externalTablePropsChanged());
 
-        externalTableFilePathField = WidgetFactory.createTextField("externalTableFilePathField");
-        externalTableFilePathField.getDocument().addDocumentListener(new DocumentListener() {
+        showTableCommentCheck = WidgetFactory.createCheckBox("showTableCommentCheck", Bundles.get(ErdPopupMenu.class, "DisplayCommentOnTable"));
+        showFieldCommentCheck = WidgetFactory.createCheckBox("showFieldCommentCheck", Bundles.get(ErdPopupMenu.class, "DisplayCommentsOnFields"));
+
+        externalFileField = WidgetFactory.createTextField("externalFileField");
+        externalFileField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -215,95 +158,81 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
         });
 
-        browseExternalTableFileButton = WidgetFactory.createInlineFieldButton("browseExternalTableFileButton", bundledString("BrowseButtonText"));
-        browseExternalTableFileButton.addActionListener(e -> browseExternalTableFile());
+        browseExternalFileButton = WidgetFactory.createButton("browseExternalTableFileButton", Bundles.get("common.browse.button"));
+        browseExternalFileButton.addActionListener(e -> browseExternalTableFile());
 
-        isAdapterNeeded = new JCheckBox(bundledString("IsAdapterNeededText"));
-        isAdapterNeeded.addActionListener(e -> externalTablePropsChanged());
+        isAdapterNeededCheck = WidgetFactory.createCheckBox("isAdapterNeededCheck", bundledString("IsAdapterNeededText"));
+        isAdapterNeededCheck.addActionListener(e -> externalTablePropsChanged());
 
-        // ------ components arranging -----
-        if (!(this instanceof CreateGlobalTemporaryTable))
-            topGbh.addLabelFieldPair(topPanel, bundledString("Tablespace"), tablespacesCombo, null, false);
-        tablespacesCombo.setToolTipText(Bundles.get(TableDefinitionPanel.class, "Tablespace"));
-        tablespacesCombo.addActionListener(actionEvent -> setSQLText());
-        if (this instanceof CreateGlobalTemporaryTable) {
-            topGbh.addLabelFieldPair(topPanel, bundledString("TypeTemporaryTable"), typeTemporaryBox, null, false);
-        }
-        if (connection != null) {
-            if (getDatabaseVersion() >= 3 && !(this instanceof CreateGlobalTemporaryTable)) {
+        arrange();
+        addListeners();
 
-                topPanel.add(isExternalTable, topGbh.nextRowFirstCol().setLabelDefault().get());
-
-                topPanel.add(isAdapterNeeded, topGbh.nextCol().get());
-            }
-        }
-        if (this instanceof ErdNewTableDialog.CreateTableERDPanel) {
-            if (connection == null)
-                topGbh.nextRowFirstCol().previousCol();
-            topPanel.add(showCommentOnTableBox, topGbh.nextCol().setLabelDefault().get());
-            topPanel.add(showCommentOnFieldsBox, topGbh.nextCol().setLabelDefault().get());
-        }
-
-        // ----- external panel -----
-        GridBagHelper gridBagHelper = new GridBagHelper();
-        gridBagHelper.setDefaultsStatic();
-        externalTablePropsPanel = new JPanel(new GridBagLayout());
-
-        gridBagHelper.addLabelFieldPair(externalTablePropsPanel,
-                bundledString("ExternalTableDataFileLabel"), externalTableFilePathField,
-                null, true, false);
-
-        externalTablePropsPanel.add(browseExternalTableFileButton,
-                gridBagHelper.nextCol().setLabelDefault().get());
-
-        // -----
-
-        topPanel.add(externalTablePropsPanel, topGbh.nextRowFirstCol().spanX().spanY().fillHorizontally().get());
-        tabbedPane.addTab("SQL", sqlText);
-
-        // ------
-
-        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        //add(mainPanel, BorderLayout.CENTER);
-
-        tabbedPane.addChangeListener(this);
-        nameField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                setSQLText();
-            }
-        });
-
-        sqlBuffer = new StringBuffer(CreateTableSQLSyntax.CREATE_TABLE);
-
-        // check initial values for possible value inits
         if (connection != null) {
             tablePanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
             tablePanel.setDomains(getDomains());
             tablePanel.setGenerators(getGenerators());
-        } else {
+        } else
             tablePanel.setDataTypes(T.DEFAULT_TYPES, DatabaseTypeConverter.getSQLDataTypesFromNames(T.DEFAULT_TYPES));
-        }
+
         tablePanel.setDatabaseConnection(connection);
         if (connection != null)
             populateTablespaces(connection);
 
         externalTablePropsChanged();
-        conTools.enableButtons(false);
-        colTools.enableButtons(true);
+        constraintsToolBar.enableButtons(false);
+        columnsToolBar.enableButtons(true);
         centralPanel.setVisible(false);
     }
 
     @Override
-    protected void initEdited() {
+    @SuppressWarnings("unchecked")
+    protected String generateQuery() {
 
+        String tablespace = null;
+        if (tablespacesCombo.getSelectedItem() != null)
+            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
+
+        String adapter = null;
+        String externalFile = null;
+
+        if (isExternalCheck.isSelected()) {
+            externalFile = externalFileField.getText();
+            if (isAdapterNeededCheck.isSelected())
+                adapter = "CSV";
+        }
+
+        String comment = null;
+        if (!Objects.equals(simpleCommentPanel.getComment(), ""))
+            comment = simpleCommentPanel.getComment().trim();
+
+        return SQLUtils.generateCreateTable(
+                nameField.getText(),
+                tablePanel.getTableColumnDataVector(),
+                consPanel.getKeys(),
+                false,
+                this instanceof CreateGlobalTemporaryTable,
+                true,
+                true,
+                true,
+                "ON COMMIT " + temporaryTypeCombo.getSelectedItem(),
+                externalFile,
+                adapter,
+                (String) securityCombo.getSelectedItem(),
+                tablespace,
+                comment,
+                "^"
+        );
     }
 
     @Override
     public void createObject() {
-        if (!checkFullType())
-            return;
-        String queries = getSQLText();
-        displayExecuteQueryDialog(queries, "^");
+        if (checkFullType())
+            displayExecuteQueryDialog(getSQLText(), "^");
+    }
+
+    @Override
+    public String getTypeObject() {
+        return NamedObject.META_TYPES[NamedObject.TABLE];
     }
 
     @Override
@@ -317,8 +246,11 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     }
 
     @Override
-    public String getTypeObject() {
-        return NamedObject.META_TYPES[NamedObject.TABLE];
+    protected void initEdited() {
+    }
+
+    @Override
+    protected void reset() {
     }
 
     @Override
@@ -329,192 +261,188 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     public void setParameters(Object[] params) {
     }
 
-    @Override
-    protected String generateQuery() {
+    // ---
 
-        String tablespace = null;
-        if (tablespacesCombo.getSelectedItem() != null)
-            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
+    private void arrange() {
+        GridBagHelper gbh;
 
-        String externalFile = null;
-        String adapter = null;
-        if (isExternalTable.isSelected()) {
-            externalFile = externalTableFilePathField.getText();
+        // --- columns panel ---
 
-            if (isAdapterNeeded.isSelected())
-                adapter = "CSV";
+        JPanel columnsPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setDefaultsStatic();
+        columnsPanel.add(columnsToolBar, gbh.setLabelDefault().fillVertical().spanY().get());
+        columnsPanel.add(tablePanel, gbh.nextCol().fillBoth().spanX().spanY().get());
+
+        // --- constraints panel ---
+
+        JPanel constraintsPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setDefaultsStatic();
+        constraintsPanel.add(constraintsToolBar, gbh.setLabelDefault().fillVertical().spanY().get());
+        constraintsPanel.add(consPanel, gbh.nextCol().fillBoth().spanX().spanY().get());
+
+        // --- erd panel ---
+
+        JPanel erdPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().rightGap(5).fillHorizontally();
+        erdPanel.add(showTableCommentCheck, gbh.get());
+        erdPanel.add(showFieldCommentCheck, gbh.nextCol().rightGap(0).get());
+        erdPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().get());
+
+        // --- external panel ---
+
+        externalPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().rightGap(5).leftGap(2).fillHorizontally();
+        externalPanel.add(new JLabel(bundledString("ExternalTableDataFileLabel")), gbh.setMinWeightX().get());
+        externalPanel.add(externalFileField, gbh.nextCol().leftGap(0).setMaxWeightX().get());
+        externalPanel.add(browseExternalFileButton, gbh.nextCol().setMinWeightX().rightGap(0).get());
+
+        // --- top panel ---
+
+        if (!(this instanceof CreateGlobalTemporaryTable)) {
+            topPanel.add(new JLabel(bundledString("Tablespace")), topGbh.nextCol().topGap(3).setMinWeightX().get());
+            topPanel.add(tablespacesCombo, topGbh.nextCol().topGap(0).setMaxWeightX().get());
+
+            if (connection != null && getDatabaseVersion() >= 3) {
+                topPanel.add(isExternalCheck, topGbh.nextRowFirstCol().leftGap(2).setMinWeightX().setWidth(1).get());
+                topPanel.add(isAdapterNeededCheck, topGbh.nextCol().get());
+                topPanel.add(externalPanel, topGbh.nextRowFirstCol().fillHorizontally().spanX().get());
+            }
         }
 
-        String comment = null;
-        if (!Objects.equals(simpleCommentPanel.getComment(), ""))
-            comment = simpleCommentPanel.getComment().trim();
+        if (this instanceof CreateGlobalTemporaryTable) {
+            topPanel.add(new JLabel(bundledString("TypeTemporaryTable")), topGbh.nextCol().topGap(3).setMinWeightX().get());
+            topPanel.add(temporaryTypeCombo, topGbh.nextCol().topGap(0).setMaxWeightX().get());
+        }
 
-        return SQLUtils.generateCreateTable(
-                nameField.getText(), tablePanel.getTableColumnDataVector(), consPanel.getKeys(),
-                false, this instanceof CreateGlobalTemporaryTable, true, true, true,
-                "ON COMMIT " + typeTemporaryBox.getSelectedItem(),
-                externalFile, adapter, (String) securityCombo.getSelectedItem(), tablespace, comment, "^");
+        if (this instanceof ErdNewTableDialog.CreateTableERDPanel)
+            topPanel.add(erdPanel, topGbh.nextRowFirstCol().fillHorizontally().spanX().get());
+
+        // --- tabbed pane filling ---
+
+        tabbedPane.add(bundledString("Columns"), columnsPanel);
+        tabbedPane.add(bundledString("Constraints"), constraintsPanel);
+        addCommentTab(null);
+        tabbedPane.addTab("SQL", sqlText);
+        tabbedPane.addChangeListener(this);
+
+        // --- base ---
+
+        setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+    }
+
+    private void addListeners() {
+
+        KeyAdapter keyAdapter = new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                setSQLText();
+            }
+        };
+
+        nameField.addKeyListener(keyAdapter);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(keyAdapter);
+    }
+
+    protected void addButtonsPanel(JPanel buttonsPanel) {
+        add(buttonsPanel, BorderLayout.SOUTH);
     }
 
     private void externalTablePropsChanged() {
+        boolean isExternal = isExternalCheck.isSelected();
+        externalPanel.setVisible(isExternal);
+        isAdapterNeededCheck.setVisible(isExternal);
 
-        if (isExternalTable.isSelected()) {
-
-            externalTablePropsPanel.setVisible(true);
-            isAdapterNeeded.setVisible(true);
-            setSQLText();
-
-        } else {
-
-            externalTablePropsPanel.setVisible(false);
-            isAdapterNeeded.setVisible(false);
-            setSQLText();
-        }
-
-    }
-
-    public void sqlSecurityChanged(ActionEvent e) {
         setSQLText();
     }
-
 
     public void browseExternalTableFile() {
 
         FileChooserDialog fileChooser = new FileChooserDialog();
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Files", "csv"));
+        fileChooser.setDialogTitle(bundledString("OpenFileDialogText"));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setFileFilter(
-                new FileNameExtensionFilter("CSV Files", "csv"));
+        fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
         fileChooser.setMultiSelectionEnabled(false);
 
-        fileChooser.setDialogTitle(bundledString("OpenFileDialogText"));
-        fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
-
-        int result = fileChooser.showDialog(
-                GUIUtilities.getInFocusDialogOrWindow(), bundledString("OpenFileDialogButton"));
-        if (result == JFileChooser.CANCEL_OPTION) {
-
+        int result = fileChooser.showDialog(GUIUtilities.getInFocusDialogOrWindow(), Bundles.get("common.select.button"));
+        if (result == JFileChooser.CANCEL_OPTION)
             return;
-        }
 
         File file = fileChooser.getSelectedFile();
-
         if (!file.exists()) {
-
-            GUIUtilities.displayWarningMessage(
-                    bundledString("FileDoesNotExistMessage"));
+            GUIUtilities.displayWarningMessage(bundledString("FileDoesNotExistMessage"));
             return;
         }
 
-        externalTableFilePathField.setText(file.getAbsolutePath());
+        externalFileField.setText(file.getAbsolutePath());
         externalTablePropsChanged();
-
     }
 
-    String[] getDomains() {
-        java.util.List<String> domains = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.DOMAIN]);
-        return domains.toArray(new String[domains.size()]);
+    private String[] getDomains() {
+        List<String> domains = getDatabaseObjectNames(getSelectedConnection(), NamedObject.DOMAIN);
+        return domains.toArray(new String[0]);
     }
 
-    String[] getGenerators() {
-        java.util.List<String> generators = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(getSelectedConnection()).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.SEQUENCE]);
-        return generators.toArray(new String[generators.size()]);
-    }
-
-    /**
-     * Returns the selected connection from the panel's
-     * connections combo selection box.
-     *
-     * @return the selected connection properties object
-     */
-    public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
-    }
-
-    /**
-     * Returns the table name field.
-     */
-    public Component getDefaultFocusComponent() {
-        return nameField;
-    }
-
-    /**
-     * Invoked when an item has been selected or deselected by the user.
-     * The code written for this method performs the operations
-     * that need to occur when an item is selected (or deselected).
-     */
-    public void itemStateChanged(ItemEvent event) {
-        // interested in selections only
-        if (event.getStateChange() == ItemEvent.DESELECTED) {
-            return;
-        }
-
-        final Object source = event.getSource();
-        if (event.getSource() == tablespacesCombo) {
-            setSQLText();
-
-        } else
-            GUIUtils.startWorker(() -> {
-                try {
-                    setInProcess(true);
-                    if (source == connectionsCombo)
-                        connectionChanged();
-
-                } finally {
-                    setInProcess(false);
-                }
-            });
+    private String[] getGenerators() {
+        List<String> generators = getDatabaseObjectNames(getSelectedConnection(), NamedObject.SEQUENCE);
+        return generators.toArray(new String[0]);
     }
 
     private void columnChangeConnection(DatabaseConnection dc) {
-        Vector<ColumnData> cd = getTableColumnDataVector();
-        for (ColumnData c : cd) {
-            c.setConnection(dc);
-        }
+        for (Object object : getTableColumnDataVector())
+            if (object instanceof ColumnData)
+                ((ColumnData) object).setConnection(dc);
     }
 
     private void connectionChanged() {
-        // retrieve connection selection
-        DatabaseConnection connection =
-                (DatabaseConnection) connectionsCombo.getSelectedItem();
 
-        // reset meta data
-        tablePanel.setDatabaseConnection(connection);
-        columnChangeConnection(connection);
+        DatabaseConnection selectedConnection = getSelectedConnection();
+        tablePanel.setDatabaseConnection(selectedConnection);
+        columnChangeConnection(selectedConnection);
 
-        // reset data types
         try {
-            populateDataTypes(getDatabaseConnection().getDataTypesArray(), getDatabaseConnection().getIntDataTypesArray());
+            DatabaseConnection databaseConnection = getDatabaseConnection();
+            populateDataTypes(databaseConnection.getDataTypesArray(), databaseConnection.getIntDataTypesArray());
+
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    bundledString("error.retrieving", bundledString("data-types"), bundledString("selected-connection"), e.getExtendedMessage()),
-                    e, this.getClass());
+                    bundledString("error.retrieving",
+                            bundledString("data-types"),
+                            bundledString("selected-connection"),
+                            e.getExtendedMessage()),
+                    e,
+                    this.getClass()
+            );
+
             populateDataTypes(new String[0], new int[0]);
         }
-        populateTablespaces(connection);
 
-
+        populateTablespaces(selectedConnection);
     }
 
     private void populateTablespaces(DatabaseConnection connection) {
-        List<NamedObject> tss = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection)
-                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
-        if (tss == null)
+
+        List<NamedObject> tablespacesList = getDatabaseObjects(connection, NamedObject.TABLESPACE);
+        if (tablespacesList == null) {
             tablespacesCombo.setEnabled(false);
-        else {
-            Vector<NamedObject> vector = new Vector<>();
-            vector.add(null);
-            vector.addAll(tss);
-            tablespaceComboModel.setElements(vector);
+            return;
         }
+
+        Vector<NamedObject> vector = new Vector<>();
+        vector.add(null);
+        vector.addAll(tablespacesList);
+        tablespaceComboModel.setElements(vector);
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {
-        GUIUtils.invokeAndWait(new Runnable() {
-            public void run() {
-                tablePanel.setDataTypes(dataTypes, intDataTypes);
-                tablePanel.setDomains(getDomains());
-                tablePanel.setGenerators(getGenerators());
-            }
+        GUIUtils.invokeAndWait(() -> {
+            tablePanel.setDataTypes(dataTypes, intDataTypes);
+            tablePanel.setDomains(getDomains());
+            tablePanel.setGenerators(getGenerators());
         });
     }
 
@@ -527,47 +455,22 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         sqlText.setCaretPosition(position);
     }
 
-    protected void addButtonsPanel(JPanel buttonsPanel) {
-        add(buttonsPanel, BorderLayout.SOUTH);
-    }
-
     public void fireEditingStopped() {
         tablePanel.fireEditingStopped();
         consPanel.fireEditingStopped();
     }
 
-    public void setColumnDataArray(ColumnData[] cda) {
-        tablePanel.setColumnDataArray(cda);
+    public void setColumnDataArray(ColumnData[] columnData) {
+        tablePanel.setColumnDataArray(columnData);
     }
 
-    public void setColumnConstraintVector(Vector ccv, boolean fillCombos) {
-        consPanel.setData(ccv, fillCombos);
-    }
-
-    public void setColumnConstraintsArray(ColumnConstraint[] cca, boolean fillCombos) {
-        Vector ccv = new Vector(cca.length);
-        Collections.addAll(ccv, cca);
-        consPanel.setData(ccv, fillCombos);
-    }
-
-    /**
-     * Indicates that a [long-running] process has begun or ended
-     * as specified. This may trigger the glass pane on or off
-     * or set the cursor appropriately.
-     *
-     * @param inProcess - true | false
-     */
-    public void setInProcess(boolean inProcess) {
+    public void setColumnConstraintVector(Vector<?> constraintsVector, boolean fillCombos) {
+        consPanel.setData(constraintsVector, fillCombos);
     }
 
     public void resetSQLText() {
         tablePanel.resetSQLText();
         consPanel.resetSQLText();
-    }
-
-    @Override
-    public void setSQLText() {
-        setSQLText(generateQuery());
     }
 
     private void setSQLText(final String text) {
@@ -578,203 +481,198 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         return sqlText.getSQLText();
     }
 
-    @Override
-    public String getTableName() {
-        return nameField.getText();
-    }
+    private boolean checkFullType() {
 
-    // -----------------------------------------------
-
-
-    // constraints panel only
-    public void updateCellEditor(int col, int row, String value) {
-    }
-
-    public void columnValuesChanging(int col, int row, String value) {
-    }
-
-    public Vector getTableColumnDataVector() {
-        return tablePanel.getTableColumnDataVector();
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        if (tabbedPane.getSelectedIndex() == 1) {
-            checkFullType();
-        }
-        if (e.getSource() == sqlText)
-            setSQLText();
-    }
-
-    protected boolean checkFullType() {
-        for (int i = 0; i < getTableColumnData().length; i++) {
-            if (getTableColumnData()[i].getTypeName() == null) {
+        for (ColumnData columnData : getTableColumnData()) {
+            if (columnData.getTypeName() == null) {
                 GUIUtilities.displayErrorMessage(bundledString("error.select-type"));
                 tabbedPane.setSelectedIndex(0);
                 return false;
             }
         }
+
         return true;
     }
 
-    /*
-    private void tableTabs_changed() {
-        
-        if (tableTabs.getSelectedIndex() == 1) {
-            tools.enableButtons(false);
-            
-            //          if (table.isEditing())
-            //            table.removeEditor();
-            
-        }
-        else {
-            tools.enableButtons(true);
-        }
-        
-    }
-    */
-
     public ColumnData[] getTableColumnDataAndConstraints() {
-        String tableName;
-        ColumnData[] cda = tablePanel.getTableColumnData();
-        ColumnConstraint[] cca = consPanel.getColumnConstraintArray();
 
-        for (ColumnData columnData : cda) {
+        ColumnData[] tableColumnData = tablePanel.getTableColumnData();
+        ColumnConstraint[] constraintsArray = consPanel.getColumnConstraintArray();
 
-            // reset the keys
-            //columnData.setPrimaryKey(false);
+        for (ColumnData columnData : tableColumnData) {
             columnData.setForeignKey(false);
             columnData.resetConstraints();
 
-            tableName = columnData.getTableName();
-
+            String tableName = columnData.getTableName();
             String columnName = columnData.getColumnName();
 
-            for (ColumnConstraint columnConstraint : cca) {
+            for (ColumnConstraint constraint : constraintsArray) {
 
-                String constraintColumn = columnConstraint.getColumn();
+                String constraintColumn = constraint.getColumn();
+                if (constraintColumn == null || constraintColumn.equalsIgnoreCase(columnName))
+                    continue;
 
-                if (constraintColumn != null
-                        && constraintColumn.equalsIgnoreCase(columnName)) {
+                columnData.setPrimaryKey(constraint.isPrimaryKey());
+                columnData.setForeignKey(constraint.isForeignKey());
+                columnData.setUniqueKey(constraint.isUniqueKey());
 
-                    if (columnConstraint.isPrimaryKey()) {
-                        columnData.setPrimaryKey(true);
-                    } else if (columnConstraint.isForeignKey()) {
-                        columnData.setForeignKey(true);
-                    } else if (columnConstraint.isUniqueKey()) {
-                        columnData.setUniqueKey(true);
-                    }
-
-                    columnConstraint.setTable(tableName);
-                    columnConstraint.setNewConstraint(true);
-                    columnData.addConstraint(columnConstraint);
-                }
-
+                constraint.setTable(tableName);
+                constraint.setNewConstraint(true);
+                columnData.addConstraint(constraint);
             }
-
         }
 
-        return cda;
-
+        return tableColumnData;
     }
 
-    public void columnValuesChanging() {
+    private static DefaultDatabaseHost getDefaultDatabaseHost(DatabaseConnection connection) {
+        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static List<NamedObject> getDatabaseObjects(DatabaseConnection connection, int metaTag) {
+        return getDefaultDatabaseHost(connection).getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[metaTag]);
+    }
+
+    private static List<String> getDatabaseObjectNames(DatabaseConnection connection, int metaTag) {
+        return getDefaultDatabaseHost(connection).getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[metaTag]);
+    }
+
+    // --- ItemListener impl ---
+
+    /**
+     * Invoked when an item has been selected or deselected by the user.
+     * The code written for this method performs the operations
+     * that need to occur when an item is selected (or deselected).
+     */
+    @Override
+    public void itemStateChanged(ItemEvent event) {
+
+        if (event.getStateChange() == ItemEvent.DESELECTED)
+            return;
+
+        final Object source = event.getSource();
+        if (event.getSource() == tablespacesCombo) {
+            setSQLText();
+            return;
+        }
+
+        GUIUtils.startWorker(() -> {
+            if (source == connectionsCombo)
+                connectionChanged();
+        });
+    }
+
+    // --- TableModifier impl ---
+
+    @Override
+    public void setSQLText() {
+        setSQLText(generateQuery());
+    }
+
+    @Override
+    public String getTableName() {
+        return nameField.getText();
+    }
+
+    // --- ChangeListener impl ---
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+
+        if (tabbedPane.getSelectedIndex() == 1)
+            checkFullType();
+
+        if (e.getSource() == sqlText)
+            setSQLText();
+    }
+
+    // --- TableConstraintFunction impl ---
+
+    @Override
+    public DatabaseConnection getSelectedConnection() {
+        return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
 
     @Override
     public List<String> getTables() {
-        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getTableNames();
+        return getDefaultDatabaseHost(connection).getTableNames();
     }
 
     @Override
     public List<String> getColumns(String table) {
-        return ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection).getColumnNames(table);
+        return getDefaultDatabaseHost(connection).getColumnNames(table);
     }
 
+    @Override
     public ColumnData[] getTableColumnData() {
         return tablePanel.getTableColumnData();
     }
 
-    // -----------------------------------------------
-    // -------- TableFunction implementations --------
-    // -----------------------------------------------
+    @Override
+    public Vector<?> getTableColumnDataVector() {
+        return tablePanel.getTableColumnDataVector();
+    }
+
+    // --- DefinitionPanel impl ---
 
     @Override
     public void moveRowUp() {
-        int index = tabbedPane.getSelectedIndex();
-        if (index == 0) {
+        if (tabbedPane.getSelectedIndex() == 0)
             tablePanel.moveColumnUp();
-        }
     }
 
     @Override
     public void moveRowDown() {
-        int index = tabbedPane.getSelectedIndex();
-        if (index == 0) {
+        if (tabbedPane.getSelectedIndex() == 0)
             tablePanel.moveColumnDown();
-        }
     }
 
     @Override
     public void deleteRow() {
-        if (tabbedPane.getSelectedIndex() == 0) {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+
+        if (selectedIndex == 0)
             tablePanel.deleteRow();
-        } else if (tabbedPane.getSelectedIndex() == 1) {
+        else if (selectedIndex == 1)
             consPanel.deleteSelectedRow();
-        }
     }
 
     @Override
     public void addRow() {
-        if (tabbedPane.getSelectedIndex() == 0) {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+
+        if (selectedIndex == 0)
             tablePanel.insertAfter();
-        } else if (tabbedPane.getSelectedIndex() == 1) {
+        else if (selectedIndex == 1)
             consPanel.insertRowAfter();
-        }
     }
 
-    // -----------------------------------------------
-
-    public String getDisplayName() {
-        return "";
-    }
-
-    // ------------------------------------------------
-    // ----- TextEditorContainer implementations ------
-    // ------------------------------------------------
+    // --- TextEditorContainer impl ---
 
     /**
      * Returns the SQL text pane as the TextEditor component
      * that this container holds.
      */
+    @Override
     public TextEditor getTextEditor() {
         return sqlText;
     }
 
-    protected String bundleString(String key, Object... args) {
-        return Bundles.get(getClass(), key, args);
+    // --- FocusComponentPanel impl ---
+
+    /**
+     * Returns the table name field.
+     */
+    @Override
+    public Component getDefaultFocusComponent() {
+        return nameField;
     }
 
-    private String bundledString(String key) {
-        return Bundles.get("CreateTableFunctionPanel." + key);
-    }
+    // ---
 
-    private String bundledString(String key, Object... args) {
-        return Bundles.get("CreateTableFunctionPanel." + key, args);
+    private static String bundledString(String key, Object... args) {
+        return Bundles.get(CreateTablePanel.class, key, args);
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

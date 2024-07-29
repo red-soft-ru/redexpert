@@ -37,6 +37,7 @@ import org.underworldlabs.swing.plaf.TabRollOverListener;
 import org.underworldlabs.swing.plaf.TabRolloverEvent;
 import org.underworldlabs.swing.plaf.TabSelectionListener;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -89,10 +90,13 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     private static final String SUCCESS = bundleString("SUCCESS");
     private static final String NO_ROWS = bundleString("NO_ROWS");
     private static final String SUCCESS_NO_ROWS = SUCCESS + "\n" + NO_ROWS;
-    private static final String ZERO_ROWS = bundleString("ZERO_ROWS");
-    private static final String SPACE = " ";
-    private static final String ROW_RETURNED = bundleString("ROW_RETURNED");
-    private static final String ROWS_RETURNED = bundleString("ROWS_RETURNED");
+
+    private static final Icon WARNING_ICON = IconManager.getIcon(
+            "icon_warning_animated",
+            "gif",
+            20,
+            IconManager.IconFolder.BASE
+    );
 
     private ResultSetTableColumnResizingManager resultSetTableColumnResizingManager;
 
@@ -505,23 +509,27 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
      */
     private void resetEditorRowCount(int rowCount) {
 
-        if (queryEditor != null) {
+        if (queryEditor == null)
+            return;
 
-            if (rowCount > 1) {
+        String text = bundleString("ZERO_ROWS");
+        if (rowCount > 1) {
+            text = bundleString("ROWS_RETURNED", rowCount);
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROWS_RETURNED);
+        } else if (rowCount == 1)
+            text = bundleString("ROW_RETURNED", rowCount);
 
-            } else if (rowCount == 1) {
+        boolean isRowsCountLimited = SystemProperties.getBooleanProperty("user", "editor.limit.records.count");
+        if (isRowsCountLimited) {
 
-                queryEditor.setLeftStatusText(SPACE + rowCount + " " + ROW_RETURNED);
-
-            } else {
-
-                queryEditor.setLeftStatusText(ZERO_ROWS);
+            int limit = SystemProperties.getIntProperty("user", "editor.max.records.count");
+            if (limit <= rowCount) {
+                queryEditor.setLeftStatus(text, bundleString("LIMIT_ON", limit), WARNING_ICON);
+                return;
             }
-
         }
 
+        queryEditor.setLeftStatusText(text);
     }
 
     private int getResultSetRowCount(ResultSetTableModel model, boolean showRowNumber) {
@@ -896,10 +904,8 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
         return true;
     }
 
-    private static String bundleString(String key) {
-        return Bundles.get(QueryEditorResultsPanel.class, key);
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(QueryEditorResultsPanel.class, key, args);
     }
 
 }
-
-

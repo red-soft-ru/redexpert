@@ -572,6 +572,17 @@ public class QueryEditor extends DefaultTabView
     }
 
     /**
+     * Sets the text of the left status label.
+     *
+     * @param text    the text to be set
+     * @param toolTip the label toolTip
+     * @param icon    the icon to be set
+     */
+    public void setLeftStatus(String text, String toolTip, Icon icon) {
+        statusBar.setStatus(text, toolTip, icon);
+    }
+
+    /**
      * Propagates the call to interrupt an executing process.
      */
     public void interrupt() {

@@ -23,11 +23,10 @@ package org.executequery.gui;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.AbstractBaseDialog;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
@@ -35,135 +34,92 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-public class SaveOnExitDialog extends AbstractBaseDialog
-        implements ActionListener {
+public class SaveOnExitDialog extends AbstractBaseDialog {
+    public static final String TITLE = bundleString("title");
 
-    public static final int DISCARD_OPTION = 0;
-
-    /**
-     * The frames list
-     */
-    private JList list;
-
-    /**
-     * The button choice result
-     */
     private int result;
+    private JList<?> list;
+
+    private JButton saveButton;
+    private JButton discardButton;
 
     public SaveOnExitDialog() {
+        super(GUIUtilities.getParentFrame(), TITLE, true);
 
-        super(GUIUtilities.getParentFrame(), "Save Changes", true);
-
-        result = SaveFunction.SAVE_CANCELLED;
-
-        try {
-
-            init();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
-        pack();
-        setLocation(GUIUtilities.getLocationForDialog(getSize()));
-        setVisible(true);
+        init();
+        arrange();
     }
 
-    private void init() throws Exception {
-
-        JButton saveButton = new JButton("Save Selected");
-        JButton cancelButton = new JButton(Bundles.get("common.cancel.button"));
-        JButton discardButton = new JButton("Discard All");
-
-        Insets buttonInsets = new Insets(0, 0, 0, 0);
-        saveButton.setMargin(buttonInsets);
-        cancelButton.setMargin(buttonInsets);
-        discardButton.setMargin(buttonInsets);
-
-        Dimension buttonSize = new Dimension(130, 25);
-        saveButton.setPreferredSize(buttonSize);
-        cancelButton.setPreferredSize(buttonSize);
-        discardButton.setPreferredSize(buttonSize);
-
-        saveButton.addActionListener(this);
-        cancelButton.addActionListener(this);
-        discardButton.addActionListener(this);
-
+    private void init() {
         List<SaveFunction> panels = GUIUtilities.getOpenSaveFunctionPanels();
+
+        saveButton = WidgetFactory.createButton("saveButton", Bundles.get("common.save.button"), e -> save());
+        discardButton = WidgetFactory.createButton("discardButton", bundleString("discardButton"), e -> discardSaving());
 
         list = new DefaultList(panels.toArray());
         list.setSelectionInterval(0, panels.size() - 1);
+    }
 
-        JPanel base = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.gridwidth = 3;
-        base.add(new JLabel("The following open frames have unsaved changes"), gbc);
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.insets.top = 0;
-        base.add(new JScrollPane(list), gbc);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weighty = 0;
-        gbc.gridwidth = 1;
-        gbc.gridy = 2;
-        base.add(saveButton, gbc);
-        gbc.insets.left = 0;
-        gbc.gridx = 1;
-        base.add(discardButton, gbc);
-        gbc.gridx = 2;
-        base.add(cancelButton, gbc);
+    private void arrange() {
+        GridBagHelper gbh;
 
-        Container c = this.getContentPane();
-        c.setLayout(new BorderLayout());
-        c.add(base, BorderLayout.CENTER);
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().fillHorizontally();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(saveButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(discardButton, gbh.nextCol().leftGap(5).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        mainPanel.add(new JLabel(bundleString("label")), gbh.spanX().get());
+        mainPanel.add(new JScrollPane(list), gbh.nextRow().topGap(5).setMaxWeightY().fillBoth().get());
+        mainPanel.add(buttonPanel, gbh.nextRow().setMinWeightY().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
 
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
-                result = SaveFunction.SAVE_CANCELLED;
-                dispose();
+                discardSaving();
             }
         });
 
+        pack();
+        setLocation(GUIUtilities.getLocationForDialog(getSize()));
+        setResizable(false);
+        setVisible(true);
     }
 
-    public int saveChanges() {
+    private void save() {
+        result = SaveFunction.SAVE_CANCELLED;
 
-        int result = -1;
+        for (Object selectedFrame : list.getSelectedValuesList()) {
+            if (selectedFrame instanceof SaveFunction) {
 
-        Object[] selectedFrames = list.getSelectedValues();
+                SaveFunction saveFunction = (SaveFunction) selectedFrame;
+                result = saveFunction.save(false);
 
-        for (int i = 0; i < selectedFrames.length; i++) {
-
-            SaveFunction saveFunction = (SaveFunction) selectedFrames[i];
-            result = saveFunction.save(false);
-
-            if (result != SaveFunction.SAVE_COMPLETE) {
-
-                break;
+                if (result != SaveFunction.SAVE_COMPLETE)
+                    break;
             }
-
         }
 
-        return result;
+        dispose();
     }
 
-    public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-
-        if (command.equals("Cancel")) {
-            result = SaveFunction.SAVE_CANCELLED;
-        } else if (command.equals("Discard All")) {
-            result = DISCARD_OPTION;
-        } else if (command.equals("Save Selected")) {
-            result = saveChanges();
-        }
-
+    private void discardSaving() {
+        result = SaveFunction.SAVE_CANCELLED;
         dispose();
     }
 
@@ -171,15 +127,8 @@ public class SaveOnExitDialog extends AbstractBaseDialog
         return result;
     }
 
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(SaveOnExitDialog.class, key, args);
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-

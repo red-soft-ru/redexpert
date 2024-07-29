@@ -489,9 +489,21 @@ public class ExportDataPanel extends AbstractBaseDialog {
             return false;
         }
 
+        // export file writable
+        if (!Files.isWritable(new File(exportFilePath).toPath())) {
+            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
+            return false;
+        }
+
         // blob file defined
         if (isContainsBlob() && MiscUtils.isNull(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
+            return false;
+        }
+
+        // blob file writable
+        if (!Files.isWritable(new File(exportBlobPath).toPath())) {
+            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
 
@@ -907,8 +919,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
         super.dispose();
     }
 
-    private static String bundleString(String key) {
-        return Bundles.get(ExportDataPanel.class, key);
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(ExportDataPanel.class, key, args);
     }
 
 }

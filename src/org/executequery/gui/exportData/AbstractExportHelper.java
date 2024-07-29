@@ -208,11 +208,11 @@ public abstract class AbstractExportHelper implements ExportHelper {
     // ---
 
     protected final void displayErrorMessage(Throwable e) {
-        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile") + e.getMessage(), e, this.getClass());
+        GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorWritingToFile", e.getMessage()), e, this.getClass());
     }
 
-    protected final String bundleString(String key) {
-        return Bundles.get(ExportDataPanel.class, key);
+    protected final String bundleString(String key, Object... args) {
+        return Bundles.get(ExportDataPanel.class, key, args);
     }
 
 }

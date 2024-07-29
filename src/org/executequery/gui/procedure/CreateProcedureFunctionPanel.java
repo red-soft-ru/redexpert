@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author vasiliy
@@ -110,34 +112,24 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         initExternal();
 
-        engineField.addKeyListener(changeKeyListener);
-        externalField.addKeyListener(changeKeyListener);
-        authidCombo.addActionListener(changeActionListener);
-        securityCombo.addActionListener(changeActionListener);
-        useExternalCheck.addActionListener(changeActionListener);
-
         // ---
 
         cursorsPanel = new CursorsPanel();
-        cursorsPanel.addChangesListener(changeActionListener);
 
         inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         inputParamsPanel.setDomains(getDomains());
         inputParamsPanel.setDatabaseConnection(connection);
-        inputParamsPanel.addChangesListener(changeActionListener);
 
         outputParamsPanel = new ProcedureDefinitionPanel(ColumnData.OUTPUT_PARAMETER);
         outputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         outputParamsPanel.setDomains(getDomains());
         outputParamsPanel.setDatabaseConnection(connection);
-        outputParamsPanel.addChangesListener(changeActionListener);
 
         variablesPanel = new ProcedureDefinitionPanel(ColumnData.VARIABLE);
         variablesPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
         variablesPanel.setDomains(getDomains());
         variablesPanel.setDatabaseConnection(connection);
-        variablesPanel.addChangesListener(changeActionListener);
 
         ddlTextPanel = new SimpleSqlTextPanel(false, true, "DDL");
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
@@ -149,9 +141,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
 
-        nameField.addKeyListener(changeKeyListener);
-        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
-
         arrange();
         checkExternal();
         fillSqlBody();
@@ -160,6 +149,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             generateDdlScript();
         } catch (Exception ignored) {
         }
+
+        if (!editing)
+            addListeners();
     }
 
     protected void initEditing() {
@@ -191,6 +183,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         addDependenciesTab((DatabaseObject) namedObject);
 
         reset();
+        addListeners();
         generateDdlScript();
     }
 
@@ -235,6 +228,20 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         setPreferredSize(new Dimension(1200, 600));
     }
 
+    private void addListeners() {
+        nameField.addKeyListener(changeKeyListener);
+        engineField.addKeyListener(changeKeyListener);
+        externalField.addKeyListener(changeKeyListener);
+        authidCombo.addActionListener(changeActionListener);
+        cursorsPanel.addChangesListener(changeActionListener);
+        securityCombo.addActionListener(changeActionListener);
+        variablesPanel.addChangesListener(changeActionListener);
+        useExternalCheck.addActionListener(changeActionListener);
+        inputParamsPanel.addChangesListener(changeActionListener);
+        outputParamsPanel.addChangesListener(changeActionListener);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
+    }
+
     @SuppressWarnings("DataFlowIssue")
     protected void generateDdlScript() {
 
@@ -257,12 +264,21 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         if (MiscUtils.isNull(sqlText))
             return procedureBody;
 
-        sqlText = sqlText.trim();
-        int beginIndex = sqlText.toUpperCase().indexOf("BEGIN");
-        int endIndex = sqlText.toUpperCase().lastIndexOf("END") + 3;
+        int beginIndex = -1;
+        int endIndex = -1;
+        sqlText = sqlText.toUpperCase().trim();
+
+        Pattern pattern = Pattern.compile("\\bBEGIN\\b");
+        Matcher matcher = pattern.matcher(sqlText);
+        if (matcher.find())
+            beginIndex = matcher.start();
+
+        pattern = Pattern.compile("\\bEND\\b");
+        matcher = pattern.matcher(sqlText);
+        while (matcher.find())
+            endIndex = matcher.end();
 
         procedureBody = sqlText.substring(beginIndex, endIndex);
-
         return procedureBody;
     }
 

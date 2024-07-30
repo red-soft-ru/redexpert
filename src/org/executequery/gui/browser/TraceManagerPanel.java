@@ -25,6 +25,7 @@ import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.PanelsStateProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,16 +41,15 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 public class TraceManagerPanel extends AbstractServiceManagerPanel implements TabView {
 
     public static final String TITLE = Bundles.get(TraceManagerPanel.class, "title");
     public static final String FRAME_ICON = "icon_manager_trace";
 
+    private PanelsStateProperties stateProperties;
 
     private IFBTraceManager traceManager;
     private TablePanel loggerPanel;
@@ -174,14 +174,23 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
     }
 
     protected void initOtherComponents() {
+        stateProperties = new PanelsStateProperties(TraceManagerPanel.class.getName());
+
         message = Message.LOG_MESSAGE;
         sessions = new ArrayList<>();
         initTraceManager(null);
         sessionField = new JTextField();
         sessionField.setText("Session");
         sessionManagerPanel = new SessionManagerPanel(traceManager, sessionField);
+
         columnsCheckPanel = new ListSelectionPanel(new Vector<>(Arrays.asList(LogConstants.COLUMNS)));
-        columnsCheckPanel.selectAllAction();
+        if (stateProperties.isLoaded()) {
+            for (Object available : LogConstants.COLUMNS)
+                if (Objects.equals(stateProperties.get(available.toString()), String.valueOf(true)))
+                    columnsCheckPanel.selectOneStringAction(available.toString());
+        } else
+            columnsCheckPanel.selectAllAction();
+
         loggerPanel = new TablePanel(columnsCheckPanel);
         analisePanel = new AnalisePanel(loggerPanel.getTableRows());
         fileConfButton = new JButton("...");
@@ -211,14 +220,7 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
         toolBar.add(encodeCombobox, gbhToolBar.nextCol().setLabelDefault().fillHorizontally().setWeightX(0.1).get());
         //toolBar.add(new JSeparator(),gbhToolBar.nextCol().setLabelDefault().get());
         visibleColumnsButton = WidgetFactory.createRolloverButton("visibleColumnsButton", bundleString("VisibleColumns"), "icon_find_next");
-        visibleColumnsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                BaseDialog dialog = new BaseDialog(bundleString("VisibleColumns"), true);
-                dialog.addDisplayComponentWithEmptyBorder(columnsCheckPanel);
-                dialog.display();
-            }
-        });
+        visibleColumnsButton.addActionListener(e -> showVisibleColumnsDialog());
         toolBar.add(visibleColumnsButton, gbhToolBar.nextCol().setLabelDefault().get());
         toolBar.add(new JPanel(), gbhToolBar.nextCol().fillHorizontally().spanX().get());
         fileConfField = new JTextField();
@@ -382,6 +384,17 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
 
     }
 
+    private void showVisibleColumnsDialog() {
+        BaseDialog dialog = new BaseDialog(bundleString("VisibleColumns"), true);
+        dialog.addDisplayComponentWithEmptyBorder(columnsCheckPanel);
+        dialog.display();
+
+        for (Object available : columnsCheckPanel.getAvailableValues())
+            stateProperties.put(available.toString(), String.valueOf(false));
+        for (Object available : columnsCheckPanel.getSelectedValues())
+            stateProperties.put(available.toString(), String.valueOf(true));
+        stateProperties.save();
+    }
 
     protected void loadFromFile(int selectedRow, int selectedCol) {
 

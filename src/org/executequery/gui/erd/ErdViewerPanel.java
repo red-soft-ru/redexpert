@@ -549,6 +549,8 @@ public class ErdViewerPanel extends DefaultTabView
                         continue;
 
                     referencedTable = columnConstraint.getRefTable();
+                    if (referencedTable == null)
+                        continue;
 
                     for (int j = 0; j < m; j++) {
 

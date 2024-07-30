@@ -33,6 +33,7 @@ import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.PanelsStateProperties;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -63,8 +64,12 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     protected KeyListener changeKeyListener;
     protected ActionListener changeActionListener;
+    private PanelsStateProperties stateProperties;
 
     // --- GUI components ---
+
+    private JSplitPane splitPane;
+    private JCheckBox showHelpersCheck;
 
     protected ProcedureDefinitionPanel outputParamsPanel;
     protected ProcedureDefinitionPanel inputParamsPanel;
@@ -91,6 +96,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     @Override
     protected void init() {
+        stateProperties = new PanelsStateProperties(CreateProcedureFunctionPanel.class.getName());
 
         changeActionListener = e -> generateDdlScript();
         changeKeyListener = new KeyListener() {
@@ -142,9 +148,16 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
         addCommentTab(null);
 
+        showHelpersCheck = WidgetFactory.createCheckBox("showHelpersCheck", bundleString("showHelpersCheck"));
+
         arrange();
         checkExternal();
         fillSqlBody();
+
+        String value = stateProperties.get(showHelpersCheck.getName());
+        showHelpersCheck.setSelected(value == null || Boolean.parseBoolean(value));
+        if (!showHelpersCheck.isSelected())
+            showHelpersCheckTriggered();
 
         try {
             generateDdlScript();
@@ -193,7 +206,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         // --- split pane ---
 
-        JSplitPane splitPane = new JSplitPane();
+        splitPane = new JSplitPane();
         splitPane.setLeftComponent(tabbedPane);
         splitPane.setRightComponent(ddlTextPanel);
         splitPane.setOneTouchExpandable(true);
@@ -204,7 +217,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         JPanel buttonPanel = new JPanel(new GridBagLayout());
 
         gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally().anchorNorthEast();
-        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(showHelpersCheck, gbh.get());
+        buttonPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().get());
         buttonPanel.add(actionButton, gbh.nextCol().setMinWeightX().fillNone().get());
         buttonPanel.add(submitButton, gbh.nextCol().get());
         buttonPanel.add(cancelButton, gbh.nextCol().get());
@@ -216,7 +230,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
         mainPanel.add(topPanel, gbh.setMinWeightY().spanX().get());
         mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().setMaxWeightY().get());
-        mainPanel.add(buttonPanel, gbh.nextRow().fillNone().anchorNorthEast().setMinWeightY().bottomGap(5).get());
+        mainPanel.add(buttonPanel, gbh.nextRow().fillHorizontally().anchorNorthEast().setMinWeightY().bottomGap(5).get());
 
         // --- base ---
 
@@ -240,7 +254,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         useExternalCheck.addActionListener(changeActionListener);
         inputParamsPanel.addChangesListener(changeActionListener);
         outputParamsPanel.addChangesListener(changeActionListener);
+        showHelpersCheck.addActionListener(e -> showHelpersCheckTriggered());
         simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
+    }
+
+    private void showHelpersCheckTriggered() {
+        boolean selected = showHelpersCheck.isSelected();
+        tabbedPane.setVisible(selected);
+        splitPane.setDividerLocation(splitPane.getMaximumDividerLocation());
+        splitPane.updateUI();
+
+        stateProperties.put(showHelpersCheck.getName(), String.valueOf(selected));
+        stateProperties.save();
     }
 
     @SuppressWarnings("DataFlowIssue")

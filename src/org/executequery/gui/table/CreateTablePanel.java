@@ -55,7 +55,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
@@ -179,7 +182,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
             populateTablespaces(connection);
 
         externalTablePropsChanged();
-        constraintsToolBar.enableButtons(false);
+        constraintsToolBar.enableButtons(true);
         columnsToolBar.enableButtons(true);
         centralPanel.setVisible(false);
     }

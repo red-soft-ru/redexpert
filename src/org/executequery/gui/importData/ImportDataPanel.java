@@ -25,6 +25,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.PanelsStateProperties;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -131,7 +132,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
         delimiterCombo.setEditable(true);
-        setDelimiterComboSelectedValue("columnDelimiterCombo", delimiterCombo);
+        String selectedValue = getDelimiterComboSelectedValue();
+        if (selectedValue != null)
+            delimiterCombo.setSelectedItem(selectedValue);
         delimiterCombo.addActionListener(e -> previewSourceFile(false));
 
         targetTableCombo = WidgetFactory.createComboBox("targetTableCombo");
@@ -859,23 +862,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             previewSourceFile(false);
     }
 
-    private void setDelimiterComboSelectedValue(@SuppressWarnings("SameParameterValue") String key, JComboBox combo) {
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(ExportDataPanel.getParametersSaverFilePath()))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-
-                String[] data = line.split(ExportDataPanel.getParametersSaverDelimiter());
-                if (data[0].equals(key)) {
-                    if (data.length > 1)
-                        combo.setSelectedItem(data[1]);
-                    break;
-                }
-            }
-
-        } catch (IOException ignored) {
-        }
+    private String getDelimiterComboSelectedValue() {
+        PanelsStateProperties stateProperties = new PanelsStateProperties(ExportDataPanel.class.getName());
+        return stateProperties.get("columnDelimiterCombo");
     }
 
     private boolean targetNotSelected(boolean displayWarnings) {

@@ -490,7 +490,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // export file writable
-        if (!Files.isWritable(new File(exportFilePath).toPath())) {
+        if (!new File(exportFilePath).getAbsoluteFile().getParentFile().exists()) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
             return false;
         }
@@ -502,7 +502,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // blob file writable
-        if (!Files.isWritable(new File(exportBlobPath).toPath())) {
+        if (!new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }

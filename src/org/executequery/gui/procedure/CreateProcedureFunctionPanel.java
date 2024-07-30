@@ -132,6 +132,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         variablesPanel.setDatabaseConnection(connection);
 
         ddlTextPanel = new SimpleSqlTextPanel(false, true, "DDL");
+        ddlTextPanel.setMinimumSize(new Dimension(500, ddlTextPanel.getPreferredSize().height));
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
 
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -196,7 +197,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         splitPane.setLeftComponent(tabbedPane);
         splitPane.setRightComponent(ddlTextPanel);
         splitPane.setOneTouchExpandable(true);
-        splitPane.setDividerLocation(0.5);
+        splitPane.setResizeWeight(1.0);
 
         // --- button panel ---
 

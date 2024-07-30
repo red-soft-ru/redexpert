@@ -284,10 +284,6 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
     private void loadVariables() {
 
-        // remove first empty row
-        variablesPanel.clearRows();
-        cursorsPanel.clearRows();
-
         String fullProcedureBody = getFullSourceBody();
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
 

@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Vector;
 
-import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -545,7 +545,7 @@ public class ErdViewerPanel extends DefaultTabView
 
                 for (ColumnConstraint columnConstraint : cca) {
 
-                    if (columnConstraint.getType() == PRIMARY_KEY)
+                    if (columnConstraint.getType() != FOREIGN_KEY)
                         continue;
 
                     referencedTable = columnConstraint.getRefTable();

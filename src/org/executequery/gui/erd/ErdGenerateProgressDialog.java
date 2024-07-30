@@ -38,7 +38,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -277,7 +277,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 cca = columnData.getColumnConstraintsArray();
                 for (ColumnConstraint columnConstraint : cca) {
 
-                    if (columnConstraint.getType() == PRIMARY_KEY)
+                    if (columnConstraint.getType() != FOREIGN_KEY)
                         continue;
 
                     referencedTable = columnConstraint.getRefTable();

@@ -26,8 +26,8 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.*;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
@@ -378,7 +378,8 @@ public class BrowserController {
                 }
 
                 case NamedObject.TABLE:
-                case NamedObject.GLOBAL_TEMPORARY: {
+                case NamedObject.GLOBAL_TEMPORARY:
+                case NamedObject.SYSTEM_TABLE: {
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;

@@ -803,6 +803,28 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return keys != null && !keys.isEmpty();
     }
 
+    String[][] monTables = new String[][]
+            {
+                    {"MON$ATTACHMENTS", "MON$ATTACHMENT_ID"},
+                    {"MON$TRANSACTIONS", "MON$TRANSACTION_ID"},
+                    {"MON$STATEMENTS", "MON$STATEMENT_ID"},
+                    {"MON$CALL_STACK", "MON$CALL_ID"},
+                    {"MON$COMPILED_STATEMENTS", "MON$COMPILED_STATEMENT_ID"},
+                    {"MON$TEMP_SPACES", "MON$TEMP_SPACE_ID"}
+            };
+
+    public String[] getMonField() {
+        for (int i = 0; i < monTables.length; i++)
+            if (monTables[i][0].contentEquals(getName()))
+                return monTables[i];
+        return null;
+    }
+
+    public boolean isMonTable() {
+        return getMonField() != null;
+    }
+
+
     @Override
     public List<ColumnConstraint> getPrimaryKeys() {
 
@@ -1105,6 +1127,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public String prepareStatementInMonTable(List<String> columns) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
+        for (String column : columns)
+            sb.append(MiscUtils.getFormattedObject(column, getHost().getDatabaseConnection())).append(" = ?,");
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" WHERE ");
+        sb.append(getMonField()[1]).append(" = ?");
+        return sb.toString();
+    }
+
+    @Override
     public String prepareStatementDeletingWithPK() {
 
         StringBuilder sb = new StringBuilder();
@@ -1122,6 +1157,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.deleteCharAt(sb.length() - 1);
 
         return sb.toString();
+    }
+
+    @Override
+    public String prepareStatementDeletingFromMonTable() {
+        String sb = "DELETE FROM " + getNameWithPrefixForQuery() +
+                " WHERE " +
+                getMonField()[1] + " = ?";
+        return sb;
     }
 
     @Override

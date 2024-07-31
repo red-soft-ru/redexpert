@@ -22,6 +22,7 @@ package org.executequery.gui.erd;
 
 import org.apache.batik.ext.awt.g2d.DefaultGraphics2D;
 import org.apache.commons.lang.ArrayUtils;
+import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -963,6 +964,21 @@ public class ErdTable extends ErdMoveableComponent
 
     public void setShowCommentOnFields(boolean showCommentOnFields) {
         this.showCommentOnFields = showCommentOnFields;
+    }
+
+    public Vector<ColumnConstraint> getColumnConstraints() {
+
+        if (columns == null)
+            return new Vector<>();
+
+        Vector<ColumnConstraint> columnConstraintVector = new Vector<>();
+        for (ColumnData columnData : columns) {
+            Vector<ColumnConstraint> tempConstraintsVector = columnData.getColumnConstraintsVector();
+            if (tempConstraintsVector != null)
+                columnConstraintVector.addAll(tempConstraintsVector);
+        }
+
+        return columnConstraintVector;
     }
 
     static class ErdTableConnectionPoint {

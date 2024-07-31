@@ -68,7 +68,7 @@ public class ErdNewTableDialog extends BaseDialog
         createPanel.setTableName(erdTable.getTableName());
         createPanel.getSimpleCommentPanel().setComment(erdTable.getDescriptionTable());
         createPanel.setColumnDataArray(tableColumns);
-        createPanel.setColumnConstraintVector(getColumnConstraints(tableColumns));
+        createPanel.setColumnConstraintVector(erdTable.getColumnConstraints());
         createPanel.resetSQLText();
         createPanel.setSQLTextCaretPosition(0);
     }
@@ -146,21 +146,6 @@ public class ErdNewTableDialog extends BaseDialog
 
         SwingUtilities.invokeLater(erdViewerPanel::updateTableRelationships);
         dispose();
-    }
-
-    private static Vector<ColumnConstraint> getColumnConstraints(ColumnData[] columnDataArray) {
-
-        if (columnDataArray == null)
-            return new Vector<>();
-
-        Vector<ColumnConstraint> columnConstraintVector = new Vector<>();
-        for (ColumnData columnData : columnDataArray) {
-            Vector<ColumnConstraint> tempConstraintsVector = columnData.getColumnConstraintsVector();
-            if (tempConstraintsVector != null)
-                columnConstraintVector.addAll(tempConstraintsVector);
-        }
-
-        return columnConstraintVector;
     }
 
     // --- ActionContainer impl ---

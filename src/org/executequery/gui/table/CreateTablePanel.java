@@ -512,7 +512,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
             for (ColumnConstraint constraint : constraintsArray) {
 
                 String constraintColumn = constraint.getColumn();
-                if (constraintColumn == null || constraintColumn.equalsIgnoreCase(columnName))
+                if (constraintColumn == null || !constraintColumn.equalsIgnoreCase(columnName))
                     continue;
 
                 columnData.setPrimaryKey(constraint.isPrimaryKey());

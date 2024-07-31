@@ -2,6 +2,7 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 
@@ -20,6 +21,6 @@ public abstract class AbstractMethodPanel extends JPanel {
     }
 
     protected String bundles(String key) {
-        return GeneratorTestDataPanel.bundles(key);
+        return Bundles.get(GeneratorTestDataPanel.class, key);
     }
 }

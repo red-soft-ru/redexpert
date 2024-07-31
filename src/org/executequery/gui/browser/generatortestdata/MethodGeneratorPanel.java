@@ -4,6 +4,7 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.browser.generatortestdata.methodspanels.*;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -114,6 +115,6 @@ public class MethodGeneratorPanel extends JPanel implements ActionListener {
     }
 
     private String bundledString(String key) {
-        return GeneratorTestDataPanel.bundles(key);
+        return Bundles.get(GeneratorTestDataPanel.class, key);
     }
 }

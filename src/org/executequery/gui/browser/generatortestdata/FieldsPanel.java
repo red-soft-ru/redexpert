@@ -8,6 +8,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FieldsPanel extends JPanel {
@@ -22,14 +23,14 @@ public class FieldsPanel extends JPanel {
     private FieldGeneratorModel model;
     private JPanel rightPanel;
 
-    public FieldsPanel(List<FieldGenerator> fieldGenerators) {
-        this.fieldGenerators = fieldGenerators;
+    public FieldsPanel() {
+        fieldGenerators = new ArrayList<>();
         init();
     }
 
     private void init() {
         rightPanel = new JPanel();
-        rightPanel.setBorder(BorderFactory.createTitledBorder(bundledString("GeneratorMethod")));
+        rightPanel.setBorder(BorderFactory.createTitledBorder(Bundles.get("GeneratorTestDataPanel.GeneratorMethod")));
         rightPanel.setLayout(new GridBagLayout());
         model = new FieldGeneratorModel();
         tableFields = new JTable(model);
@@ -62,10 +63,6 @@ public class FieldsPanel extends JPanel {
     public void setFieldGenerators(List<FieldGenerator> fieldGenerators) {
         this.fieldGenerators = fieldGenerators;
         model.fireTableDataChanged();
-    }
-
-    private String bundledString(String key) {
-        return GeneratorTestDataPanel.bundles(key);
     }
 
     public class FieldGeneratorModel extends AbstractTableModel {

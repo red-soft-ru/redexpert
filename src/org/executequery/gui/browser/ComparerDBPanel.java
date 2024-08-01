@@ -458,6 +458,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 ConnectionMediator.getInstance().connect(targetConnection, true);
 
         } catch (DataSourceException e) {
+            Log.error(e.getMessage(), e);
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
             return false;
         }
@@ -527,6 +528,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
 
         } catch (SQLException | NullPointerException e) {
+            Log.error(e.getMessage(), e);
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
             return false;
         }

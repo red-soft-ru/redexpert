@@ -4,7 +4,8 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
 
 public class FieldGenerator {
-    MethodGeneratorPanel methodGeneratorPanel;
+    private final MethodGeneratorPanel methodGeneratorPanel;
+
     private boolean selectedField;
     private DatabaseColumn column;
 
@@ -37,11 +38,4 @@ public class FieldGenerator {
         methodGeneratorPanel.setFirst();
     }
 
-    public void setMethodGeneratorPanel(MethodGeneratorPanel methodGeneratorPanel) {
-        this.methodGeneratorPanel = methodGeneratorPanel;
-    }
-
-    public Object getNextDataTestObject() {
-        return getMethodGeneratorPanel().getTestDataObject();
-    }
 }

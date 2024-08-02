@@ -197,6 +197,7 @@ public class GeneratorTestDataPanel extends JPanel
 
             @Override
             public Object construct() {
+                tabbedPane.setSelectedIndex(1);
                 runGeneration();
                 return Constants.WORKER_SUCCESS;
             }

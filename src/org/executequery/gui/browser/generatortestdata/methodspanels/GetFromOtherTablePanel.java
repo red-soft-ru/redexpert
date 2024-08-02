@@ -149,7 +149,8 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
 
         if (first) {
             try {
-                ResultSet rs = executor.getResultSet(getQuery()).getResultSet();
+                String query = getQuery();
+                ResultSet rs = executor.getResultSet(query).getResultSet();
                 while (rs.next())
                     objList.add(rs.getObject(1));
 

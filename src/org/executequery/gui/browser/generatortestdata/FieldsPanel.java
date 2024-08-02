@@ -40,7 +40,7 @@ public class FieldsPanel extends JPanel {
         // ---
 
         JScrollPane rightScrollPane = new JScrollPane(rightPanel);
-        rightScrollPane.setPreferredSize(new Dimension(400, 400));
+        rightScrollPane.setPreferredSize(new Dimension(600, 400));
         rightScrollPane.setMinimumSize(rightScrollPane.getPreferredSize());
 
         JScrollPane leftScrollPane = new JScrollPane(tableFields);

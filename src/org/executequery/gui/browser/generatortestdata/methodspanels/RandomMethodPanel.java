@@ -3,6 +3,7 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.T;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SimpleTextArea;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
@@ -19,26 +20,34 @@ import java.time.*;
 import java.util.Random;
 
 public class RandomMethodPanel extends AbstractMethodPanel {
+
+    private JCheckBox useNullCheck;
     private JPanel settingsPanel;
-    private JTextField maxField;
-    private JTextField minField;
-    private TimePicker minTime;
-    private TimePicker maxTime;
-    private ZonedTimePicker minTimezone;
-    private ZonedTimePicker maxTimezone;
-    private TimestampPicker minDateTime;
-    private TimestampPicker maxDateTime;
-    private ZonedTimestampPicker minDateTimezone;
-    private ZonedTimestampPicker maxDateTimezone;
+
+    private NumberTextField maxField;
+    private NumberTextField minField;
+    private NumberTextField symbolsAfterComma;
+
     private DatePicker maxDate;
     private DatePicker minDate;
-    private NumberTextField countSymbolsAfterComma;
-    private JCheckBox useOnlyThisSymbolsBox;
-    private SimpleTextArea useOnlyThisSymbolsField;
-    //private JScrollPane scrollSymbols;
+
+    private TimePicker minTime;
+    private TimePicker maxTime;
+
+    private ZonedTimePicker minTimezone;
+    private ZonedTimePicker maxTimezone;
+
+    private TimestampPicker minDateTime;
+    private TimestampPicker maxDateTime;
+
+    private ZonedTimestampPicker minDateTimezone;
+    private ZonedTimestampPicker maxDateTimezone;
+
+    private JCheckBox useSelectedCharsetCheck;
+    private SimpleTextArea useSelectedCharsetField;
+
     private JTextField maxByteField;
     private JTextField minByteField;
-    private JCheckBox nullBox;
 
     public RandomMethodPanel(DatabaseColumn col) {
         super(col);
@@ -46,444 +55,468 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     }
 
     private void init() {
-        countSymbolsAfterComma = new NumberTextField();
-        countSymbolsAfterComma.setText("1");
-        nullBox = new JCheckBox(bundles("UseNull"));
+
         settingsPanel = new JPanel();
         settingsPanel.setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        gbh.setDefaults(gbc);
+        useNullCheck = WidgetFactory.createCheckBox("useNullCheck", bundleString("UseNull"));
 
-        if (col.getFormattedDataType().contentEquals(T.BIGINT)
-                || col.getFormattedDataType().contentEquals(T.INT128)
-                || col.getFormattedDataType().contentEquals(T.INTEGER)
-                || col.getFormattedDataType().contentEquals(T.SMALLINT)
-                || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                || col.getFormattedDataType().contentEquals(T.FLOAT)
-                || col.getFormattedDataType().startsWith(T.DECIMAL)
-                || col.getFormattedDataType().startsWith(T.NUMERIC)
-                || col.getFormattedDataType().startsWith(T.DECFLOAT)
-        ) {
+        // --- init settings panel ---
 
-            if (col.getFormattedDataType().contentEquals(T.BIGINT)
-                    || col.getFormattedDataType().contentEquals(T.INT128)
-                    || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                    || col.getFormattedDataType().contentEquals(T.FLOAT)
-                    || col.getFormattedDataType().startsWith(T.DECIMAL)
-                    || col.getFormattedDataType().startsWith(T.NUMERIC)
-                    || col.getFormattedDataType().startsWith(T.DECFLOAT)
-            ) {
-                maxField = new JTextField();
-                minField = new JTextField();
-                if (col.getFormattedDataType().contentEquals("BIGINT")) {
-                    maxField.setText("9223372036854775807");
-                    minField.setText("-9223372036854775808");
-                } else {
-                    maxField.setText("1");
-                    minField.setText("0");
-                }
-            } else {
-                maxField = new NumberTextField();
-                minField = new NumberTextField();
-                if (col.getFormattedDataType().contentEquals(T.INTEGER)) {
-                    maxField.setText("" + Integer.MAX_VALUE);
-                    minField.setText("" + Integer.MIN_VALUE);
-                } else {
-                    maxField.setText("" + 32767);
-                    minField.setText("" + (-32768));
-                }
-            }
+        String dataType = col.getFormattedDataType();
+        if (isNumeric(dataType)) {
+            initNumericPanel(dataType);
 
+        } else if (isChar(dataType)) {
+            initCharPanel();
 
-            JLabel label = new JLabel(bundles("Min"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
+        } else if (isDate(dataType)) {
+            initDatePanel();
 
-            label = new JLabel(bundles("Max"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
-            if (col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                    || col.getFormattedDataType().contentEquals(T.FLOAT)
-                    || col.getFormattedDataType().startsWith(T.DECIMAL)
-                    || col.getFormattedDataType().startsWith(T.NUMERIC)
-                    || col.getFormattedDataType().startsWith(T.DECFLOAT)
-            ) {
-                label = new JLabel(bundles("CountDigitsAfterComma"));
-                settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-                settingsPanel.add(countSymbolsAfterComma, gbh.defaults().nextCol().spanX().get());
-            }
+        } else if (isTime(dataType)) {
+            initTimePanel();
 
-        }
+        } else if (isTimestamp(dataType)) {
+            initTimestampPanel();
 
-        if (col.getFormattedDataType().contentEquals(T.TIME)) {
+        } else if (isZonedTime(dataType)) {
+            initZonedTimePanel();
 
-            minTime = new TimePicker();
-            minTime.setVisibleNullCheck(false);
-            minTime.setTime(LocalTime.MIN);
+        } else if (isZonedTimestamp(dataType)) {
+            initZonedTimestampPanel();
 
-            maxTime = new TimePicker();
-            maxTime.setVisibleNullCheck(false);
-            maxTime.setTime(LocalTime.MAX);
+        } else if (isBlob(dataType))
+            initBlobPanel();
 
-            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxTime, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
+        // --- base ---
 
-        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
-
-            minTimezone = new ZonedTimePicker();
-            minTimezone.setVisibleNullCheck(false);
-            minTimezone.setTime(LocalTime.MIN);
-
-            maxTimezone = new ZonedTimePicker();
-            maxTimezone.setVisibleNullCheck(false);
-            maxTimezone.setTime(LocalTime.MAX);
-
-            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.DATE)) {
-            minDate = new DatePicker();
-            minDate.setDate(LocalDate.of(0, 1, 1));
-            maxDate = new DatePicker();
-            maxDate.setDate(LocalDate.of(9999, 1, 1));
-            JLabel label = new JLabel(bundles("Min"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Max"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxDate, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
-
-            minDateTime = new TimestampPicker();
-            minDateTime.setVisibleNullCheck(false);
-            minDateTime.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
-
-            maxDateTime = new TimestampPicker();
-            maxDateTime.setVisibleNullCheck(false);
-            maxDateTime.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
-
-            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minDateTime, gbh.defaults().nextCol().spanX().get());
-            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(maxDateTime, gbh.defaults().nextCol().spanX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
-
-            minDateTimezone = new ZonedTimestampPicker();
-            minDateTimezone.setVisibleNullCheck(false);
-            minDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0)));
-
-            maxDateTimezone = new ZonedTimestampPicker();
-            maxDateTimezone.setVisibleNullCheck(false);
-            maxDateTimezone.setDateTime(LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59)));
-
-            settingsPanel.add(new JLabel(bundles("Min")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minDateTimezone, gbh.defaults().nextCol().spanX().get());
-            settingsPanel.add(new JLabel(bundles("Max")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(maxDateTimezone, gbh.defaults().nextCol().spanX().get());
-        }
-
-        if (col.getFormattedDataType().contains(T.CHAR)) {
-            maxField = new NumberTextField(false);
-            minField = new NumberTextField(false);
-            maxField.setText("" + col.getColumnSize());
-            minField.setText("0");
-            useOnlyThisSymbolsBox = new JCheckBox(bundles("UseOnlyThisSymbols"));
-            useOnlyThisSymbolsField = new SimpleTextArea();
-
-            //scrollSymbols = new JScrollPane(useOnlyThisSymbolsField);
-            //scrollSymbols.setVerticalScrollBar(scrollSymbols.createVerticalScrollBar());
-
-            JLabel label = new JLabel(bundles("MinLength"));
-
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("MaxLength"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(useOnlyThisSymbolsBox, gbh.defaults().nextRowFirstCol().spanX().get());
-            settingsPanel.add(useOnlyThisSymbolsField, gbh.defaults().nextRowFirstCol().fillBoth().spanX().spanY().get());
-        }
-        if (col.getFormattedDataType().contains(T.BLOB)) {
-            maxField = new NumberTextField(false);
-            minField = new NumberTextField(false);
-            maxField.setText("" + col.getColumnSize());
-            minField.setText("0");
-            maxByteField = new NumberTextField();
-            minByteField = new NumberTextField();
-            maxByteField.setText("255");
-            minByteField.setText("0");
-
-
-            JLabel label = new JLabel(bundles("MinLength"));
-
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(minField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("MaxLength"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("MinByte"));
-
-            settingsPanel.add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(minByteField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("MaxByte"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(maxByteField, gbh.defaults().nextCol().setMaxWeightX().get());
-
-
-        }
         setLayout(new GridBagLayout());
-        gbh.setXY(0, 0);
-        add(nullBox, gbh.defaults().spanX().get());
-        if (col.getFormattedDataType().contains(T.CHAR)) {
-            add(settingsPanel, gbh.defaults().nextRowFirstCol().fillBoth().spanX().spanY().get());
-        } else {
-            add(settingsPanel, gbh.defaults().nextRowFirstCol().spanX().get());
-            add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().get());
-        }
 
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        add(useNullCheck, gbh.spanX().get());
+        add(settingsPanel, gbh.nextRowFirstCol().topGap(5).fillBoth().spanY().get());
     }
 
-    private BigInteger getBigint() {
-        BigInteger bigint = new BigInteger(62, new Random());
-        BigInteger max = new BigInteger(maxField.getText());
-        BigInteger min = new BigInteger(minField.getText());
-        if (max.compareTo(min) == -1)
-            throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-        BigInteger zero = new BigInteger("0");
+    private void initNumericPanel(String dataType) {
+
+        maxField = WidgetFactory.createNumberTextField("maxField");
+        minField = WidgetFactory.createNumberTextField("minField");
+
+        if (dataType.contentEquals(T.INTEGER)) {
+            maxField.setText("" + Integer.MAX_VALUE);
+            minField.setText("" + Integer.MIN_VALUE);
+
+        } else if (dataType.contentEquals(T.SMALLINT)) {
+            maxField.setText("" + 32767);
+            minField.setText("" + (-32768));
+
+        } else if (dataType.contentEquals("BIGINT")) {
+            maxField.setText("9223372036854775807");
+            minField.setText("-9223372036854775808");
+
+        } else {
+            maxField.setText("1");
+            minField.setText("0");
+        }
+
+        if (isDecimal(dataType)) {
+            symbolsAfterComma = WidgetFactory.createNumberTextField("symbolsAfterComma");
+            symbolsAfterComma.setText("1");
+        }
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        if (isDecimal(dataType)) {
+            settingsPanel.add(new JLabel(bundleString("CountDigitsAfterComma")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+            settingsPanel.add(symbolsAfterComma, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        }
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initCharPanel() {
+
+        maxField = WidgetFactory.createNumberTextField("maxField");
+        maxField.setText("" + col.getColumnSize());
+        maxField.setEnableNegativeNumbers(false);
+
+        minField = WidgetFactory.createNumberTextField("minField");
+        minField.setEnableNegativeNumbers(false);
+        minField.setText("0");
+
+        useSelectedCharsetField = new SimpleTextArea();
+        useSelectedCharsetCheck = WidgetFactory.createCheckBox("useSelectedCharsetCheck", bundleString("UseOnlyThisSymbols"));
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("MinLength")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("MaxLength")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(useSelectedCharsetCheck, gbh.nextRowFirstCol().leftGap(0).spanX().get());
+        settingsPanel.add(useSelectedCharsetField, gbh.nextRowFirstCol().setMaxWeightY().fillBoth().spanY().get());
+    }
+
+    private void initDatePanel() {
+
+        minDate = new DatePicker();
+        minDate.setDate(LocalDate.of(0, 1, 1));
+
+        maxDate = new DatePicker();
+        maxDate.setDate(LocalDate.of(9999, 1, 1));
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minDate, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxDate, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initTimePanel() {
+
+        minTime = new TimePicker();
+        minTime.setTime(LocalTime.MIN);
+        minTime.setVisibleNullCheck(false);
+
+        maxTime = new TimePicker();
+        maxTime.setTime(LocalTime.MAX);
+        maxTime.setVisibleNullCheck(false);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minTime, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initTimestampPanel() {
+
+        LocalDateTime minValue = LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0));
+        LocalDateTime maxValue = LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59));
+
+        minDateTime = new TimestampPicker();
+        minDateTime.setDateTime(minValue);
+        minDateTime.setVisibleNullCheck(false);
+
+        maxDateTime = new TimestampPicker();
+        maxDateTime.setDateTime(maxValue);
+        maxDateTime.setVisibleNullCheck(false);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minDateTime, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxDateTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initZonedTimePanel() {
+
+        minTimezone = new ZonedTimePicker();
+        minTimezone.setTime(LocalTime.MIN);
+        minTimezone.setVisibleNullCheck(false);
+
+        maxTimezone = new ZonedTimePicker();
+        maxTimezone.setTime(LocalTime.MAX);
+        maxTimezone.setVisibleNullCheck(false);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minTimezone, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxTimezone, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initZonedTimestampPanel() {
+
+        LocalDateTime minValue = LocalDateTime.of(LocalDate.of(0, 1, 1), LocalTime.of(0, 0, 0));
+        LocalDateTime maxValue = LocalDateTime.of(LocalDate.of(9999, 12, 31), LocalTime.of(23, 59, 59));
+
+        minDateTimezone = new ZonedTimestampPicker();
+        minDateTimezone.setVisibleNullCheck(false);
+        minDateTimezone.setDateTime(minValue);
+
+        maxDateTimezone = new ZonedTimestampPicker();
+        maxDateTimezone.setVisibleNullCheck(false);
+        maxDateTimezone.setDateTime(maxValue);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("Min")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minDateTimezone, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxDateTimezone, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initBlobPanel() {
+
+        maxField = WidgetFactory.createNumberTextField("maxField");
+        maxField.setText("" + col.getColumnSize());
+        maxField.setEnableNegativeNumbers(false);
+
+        minField = WidgetFactory.createNumberTextField("minField");
+        minField.setEnableNegativeNumbers(false);
+        minField.setText("0");
+
+        maxByteField = WidgetFactory.createNumberTextField("maxByteField");
+        maxByteField.setText("255");
+
+        minByteField = WidgetFactory.createNumberTextField("minByteField");
+        minByteField.setText("0");
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("MinLength")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(minField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("MaxLength")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("MinByte")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(minByteField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("MaxByte")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(maxByteField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    // ---
+
+    private BigInteger getBigintValue() {
         BigInteger diapason;
+        BigInteger zero = new BigInteger("0");
+
+        BigInteger min = new BigInteger(minField.getText());
+        BigInteger max = new BigInteger(maxField.getText());
+        checkDiapason(max.compareTo(min) < 0);
+
+        BigInteger value = new BigInteger(62, new Random());
         if (min.compareTo(zero) < 0 && max.compareTo(zero) > 0) {
-            Random random = new Random();
-            int x = random.nextInt();
-            x = x % 2;
+
+            int x = new Random().nextInt() % 2;
             if (x == 0) {
                 diapason = min.multiply(new BigInteger("-1"));
-                bigint = bigint.mod(diapason).multiply(new BigInteger("-1"));
+                value = value.mod(diapason).multiply(new BigInteger("-1"));
             } else {
                 diapason = max;
-                bigint = bigint.mod(diapason);
+                value = value.mod(diapason);
             }
+
         } else {
             diapason = max.subtract(min);
-            bigint = min.add(bigint.mod(diapason));
+            value = min.add(value.mod(diapason));
         }
-        return bigint;
+
+        return value;
     }
 
+    private int getIntegerValue(String dataType) {
 
+        long max = maxField.getValue();
+        long min = minField.getValue();
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        return dataType.contentEquals(T.SMALLINT) ? (short) value : (int) value;
+    }
+
+    private Double getDecimalValue() {
+        long power = (long) Math.pow(10, symbolsAfterComma.getLongValue());
+
+        long max = Long.parseLong(maxField.getText()) * power;
+        long min = Long.parseLong(minField.getText()) * power;
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        return ((double) value) / ((double) power);
+    }
+
+    private String getCharValue() {
+
+        long max = maxField.getLongValue() + 1;
+        long min = minField.getLongValue();
+        checkDiapason(min, max);
+
+        StringBuilder value = new StringBuilder();
+        long valueLength = getRandomValue(max, min);
+        if (useSelectedCharsetCheck.isSelected()) {
+
+            String charset = useSelectedCharsetField.getTextAreaComponent().getText();
+            int length = charset.length();
+
+            for (int i = 0; i < valueLength; i++) {
+                int x = new Random().nextInt(length);
+                value.append(charset.charAt(x));
+            }
+
+        } else {
+            for (int i = 0; i < valueLength; i++) {
+                int x = new Random().nextInt(127);
+                value.append((char) x);
+            }
+        }
+
+        return value.toString();
+    }
+
+    private LocalDate getDateValue() {
+
+        long max = maxDate.getDate().toEpochDay();
+        long min = minDate.getDate().toEpochDay();
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        return LocalDate.ofEpochDay(value);
+    }
+
+    private LocalTime getTimeValue() {
+
+        long max = maxTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
+                .toInstant(ZoneId.of(ZoneId.systemDefault().getId()).getRules().getOffset(Instant.now()))
+                .toEpochMilli();
+
+        long min = minTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
+                .toInstant(ZoneId.of(ZoneId.systemDefault().getId()).getRules().getOffset(Instant.now()))
+                .toEpochMilli();
+
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
+        return dateTime.toLocalTime();
+    }
+
+    private LocalDateTime getTimestampValue() {
+        ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+
+        long max = maxDateTime.getDateTime().toInstant(offset).toEpochMilli();
+        long min = minDateTime.getDateTime().toInstant(offset).toEpochMilli();
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
+    }
+
+    private OffsetTime getZonedTimeValue() {
+
+        long max = maxTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
+        long min = minTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        OffsetDateTime dateTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
+        return dateTime.toOffsetTime();
+    }
+
+    private OffsetDateTime getZonedTimestamp() {
+
+        long max = maxDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
+        long min = minDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
+        checkDiapason(min, max);
+
+        long value = getRandomValue(max, min);
+        return OffsetDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
+    }
+
+    private byte[] getBlobValue() {
+
+        int maxLength = maxField.getValue() + 1;
+        int minLength = minField.getValue();
+        checkDiapason(minLength, maxLength);
+
+        int max = ((NumberTextField) maxByteField).getValue() + 1;
+        int min = ((NumberTextField) minByteField).getValue();
+        checkDiapason(min, max);
+
+        int valueLength = (int) getRandomValue(maxLength, minLength);
+        byte[] bytes = new byte[valueLength];
+        for (int i = 0; i < valueLength; i++)
+            bytes[i] = (byte) getRandomValue(max, min);
+
+        return bytes;
+    }
+
+    private static boolean getBooleanValue() {
+        return new Random().nextInt(2) == 1;
+    }
+
+    // ---
+
+    private static long getRandomValue(long max, long min) {
+
+        long diapason = max - min;
+        if (diapason == 0)
+            return max;
+
+        return min + Math.abs(new Random().nextLong()) % diapason;
+    }
+
+    private void checkDiapason(long min, long max) throws DataSourceException {
+        checkDiapason(min > max);
+    }
+
+    private void checkDiapason(boolean isInvalid) throws DataSourceException {
+        if (isInvalid)
+            throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
+    }
+
+    // --- AbstractMethodPanel impl ---
+
+    @Override
     public Object getTestDataObject() {
-        if (nullBox.isSelected()) {
-            if (new Random().nextInt(10) == 0)
-                return null;
-        }
-        if (col.getFormattedDataType().contentEquals(T.BIGINT) || col.getFormattedDataType().contentEquals(T.INT128)) {
-            return getBigint();
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIME)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
 
-            long max = maxTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
-                    .toInstant(ZoneId.of(ZoneId.systemDefault().getId())
-                            .getRules().getOffset(Instant.now()))
-                    .toEpochMilli();
-            long min = minTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1))
-                    .toInstant(ZoneId.of(ZoneId.systemDefault().getId())
-                            .getRules().getOffset(Instant.now()))
-                    .toEpochMilli();
+        if (useNullCheck.isSelected() && new Random().nextInt(10) == 0)
+            return null;
 
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
-            return dateTime.toLocalTime();
-        }
+        String dataType = col.getFormattedDataType();
+        if (isBigint(dataType)) {
+            return getBigintValue();
 
-        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
+        } else if (isSmallint(dataType) || isInteger(dataType)) {
+            return getIntegerValue(dataType);
 
-            long max = maxTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
-            long min = minTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1)).toInstant().toEpochMilli();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            OffsetDateTime dateTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
-            return dateTime.toOffsetTime();
-        }
+        } else if (isDecimal(dataType)) {
+            return getDecimalValue();
 
-        if (col.getFormattedDataType().contentEquals(T.DATE)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
-            long max = maxDate.getDate().toEpochDay();
-            long min = minDate.getDate().toEpochDay();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            LocalDate temp = LocalDate.ofEpochDay(value);
-            return temp;
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
-            ZoneId z_id = ZoneId.systemDefault();
-            ZoneOffset offset = z_id.getRules().getOffset(Instant.now());
-            long max = maxDateTime.getDateTime().toInstant(offset).toEpochMilli();
-            long min = minDateTime.getDateTime().toInstant(offset).toEpochMilli();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
-            return dateTime;
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
-            long max = maxDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
-            long min = minDateTimezone.getOffsetDateTime().toInstant().toEpochMilli();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            OffsetDateTime dateTime = OffsetDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneId.systemDefault());
-            return dateTime;
-        }
-        if (col.getFormattedDataType().contentEquals(T.INTEGER)
-                || col.getFormattedDataType().contentEquals(T.SMALLINT)) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
-            long max = ((NumberTextField) maxField).getValue();
-            long min = ((NumberTextField) minField).getValue();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            if (col.getFormattedDataType().contentEquals(T.SMALLINT))
-                return (short) value;
-            return (int) value;
-        }
-        if (col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                || col.getFormattedDataType().contentEquals(T.FLOAT)
-                || col.getFormattedDataType().startsWith(T.DECIMAL)
-                || col.getFormattedDataType().startsWith(T.NUMERIC)
-                || col.getFormattedDataType().startsWith(T.DECFLOAT)
-        ) {
-            long value = new Random().nextLong();
-            if (value < 0)
-                value *= -1;
-            long power = (long) Math.pow(10, countSymbolsAfterComma.getLongValue());
-            long max = Long.parseLong(maxField.getText()) * power;
-            long min = Long.parseLong(minField.getText()) * power;
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                value = max;
-            } else
-                value = (min + (value % diapason));
-            return ((double) value) / ((double) power);
-        }
-        if (col.getFormattedDataType().contains(T.CHAR)) {
-            long n = new Random().nextLong();
-            if (n < 0)
-                n *= -1;
-            long max = ((NumberTextField) maxField).getLongValue() + 1;
-            long min = ((NumberTextField) minField).getLongValue();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            long diapason = max - min;
-            if (diapason == 0) {
-                n = max;
-            } else
-                n = (min + (n % diapason));
-            StringBuilder result = new StringBuilder();
-            if (useOnlyThisSymbolsBox.isSelected()) {
-                String charset = useOnlyThisSymbolsField.getTextAreaComponent().getText();
-                int length = charset.length();
-                for (int i = 0; i < n; i++) {
-                    int x = new Random().nextInt(length);
-                    result.append(charset.charAt(x));
-                }
-            } else {
-                for (int i = 0; i < n; i++) {
-                    int x = new Random().nextInt(127);
-                    result.append((char) x);
-                }
-            }
-            return result.toString();
-        }
-        if (col.getFormattedDataType().contains(T.BLOB)) {
-            int n = new Random().nextInt();
-            if (n < 0)
-                n *= -1;
-            int max = ((NumberTextField) maxField).getValue() + 1;
-            int min = ((NumberTextField) minField).getValue();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            int diapason = max - min;
-            if (diapason == 0) {
-                n = max;
-            } else
-                n = (min + (n % diapason));
-            max = ((NumberTextField) maxByteField).getValue() + 1;
-            min = ((NumberTextField) minByteField).getValue();
-            if (min > max)
-                throw new DataSourceException("minimum greater than maximum for column \"" + col.getName() + "\"");
-            diapason = max - min;
-            byte[] bytes = new byte[n];
-            for (int i = 0; i < n; i++) {
-                if (diapason == 0)
-                    bytes[i] = (byte) max;
-                int x = new Random().nextInt();
-                if (x < 0)
-                    x *= -1;
-                x = min + (x % diapason);
-                bytes[i] = (byte) x;
-            }
-            return bytes;
-        }
-        if (col.getFormattedDataType().contains(T.BOOLEAN)) {
-            return new Random().nextInt(2) == 1;
-        }
+        } else if (isChar(dataType)) {
+            return getCharValue();
+
+        } else if (isDate(dataType)) {
+            return getDateValue();
+
+        } else if (isTime(dataType)) {
+            return getTimeValue();
+
+        } else if (isTimestamp(dataType)) {
+            return getTimestampValue();
+
+        } else if (isZonedTime(dataType)) {
+            return getZonedTimeValue();
+
+        } else if (isZonedTimestamp(dataType)) {
+            return getZonedTimestamp();
+
+        } else if (isBlob(dataType)) {
+            return getBlobValue();
+
+        } else if (isBoolean(dataType))
+            return getBooleanValue();
+
         return null;
     }
 

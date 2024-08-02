@@ -95,10 +95,10 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             }
 
             gbh.setXY(0, 0);
-            JLabel label = new JLabel(bundles("StartValue"));
+            JLabel label = new JLabel(bundleString("StartValue"));
             settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundles("Iteration"));
+            label = new JLabel(bundleString("Iteration"));
             settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
 
@@ -115,9 +115,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationTime.setTime(LocalTime.of(1, 1, 1));
 
             gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
 
@@ -132,9 +132,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationTime.setTime(LocalTime.of(1, 1, 1));
 
             gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
         }
 
@@ -145,9 +145,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
 
             iterationDate = new DateDifferenceSetter();
 
-            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
         }
 
@@ -164,9 +164,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 
             gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
         }
@@ -184,9 +184,9 @@ public class AutoincrementPanel extends AbstractMethodPanel {
             iterationTime.setTime(LocalTime.of(0, 0, 0));
 
             gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundles("StartValue")), gbh.defaults().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
             settingsPanel.add(startValueDateTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundles("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
+            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
             settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
         }

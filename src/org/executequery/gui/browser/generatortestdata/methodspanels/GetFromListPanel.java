@@ -5,7 +5,6 @@ import org.executequery.databaseobjects.T;
 import org.executequery.gui.browser.GeneratorTestDataPanel;
 import org.executequery.gui.text.SimpleTextArea;
 import org.executequery.localization.Bundles;
-import org.executequery.localization.LocaleManager;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
@@ -98,12 +97,12 @@ public class GetFromListPanel extends AbstractMethodPanel {
         GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
         gbh.setDefaults(gbc);
-        String labelStr = bundles("ChooseDirectory");
+        String labelStr = bundleString("ChooseDirectory");
         if (!col.getFormattedDataType().contains("BLOB")) {
-            JLabel label = new JLabel(bundles("Source"));
+            JLabel label = new JLabel(bundleString("Source"));
             add(label, gbh.defaults().setLabelDefault().get());
             add(sourceBox, gbh.defaults().nextCol().spanX().get());
-            labelStr = bundles("ChooseFile");
+            labelStr = bundleString("ChooseFile");
         }
         labelFile = new JLabel(labelStr);
         if (!col.getFormattedDataType().contains("BLOB")) {
@@ -112,11 +111,11 @@ public class GetFromListPanel extends AbstractMethodPanel {
             fileSelectButton.setVisible(false);
 
         }
-        JLabel label = new JLabel(bundles("Method"));
+        JLabel label = new JLabel(bundleString("Method"));
         add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
         add(orderBox, gbh.defaults().nextCol().spanX().get());
         if (!col.getFormattedDataType().contains("BLOB")) {
-            label = new JLabel(bundles("Delimiter"));
+            label = new JLabel(bundleString("Delimiter"));
             add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
             add(delimiterField, gbh.defaults().nextCol().spanX().get());
         }

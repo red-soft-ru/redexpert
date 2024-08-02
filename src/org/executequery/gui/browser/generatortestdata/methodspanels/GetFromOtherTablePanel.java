@@ -54,19 +54,19 @@ public class GetFromOtherTablePanel extends AbstractMethodPanel {
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
         gbh.setDefaults(gbc);
 
-        JLabel label = new JLabel(bundles("TableView"));
+        JLabel label = new JLabel(bundleString("TableView"));
 
         add(label, gbh.defaults().setLabelDefault().get());
 
         add(tableBox, gbh.defaults().nextCol().spanX().get());
 
-        label = new JLabel(bundles("Column"));
+        label = new JLabel(bundleString("Column"));
 
         add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 
         add(colBox, gbh.defaults().nextCol().spanX().get());
 
-        label = new JLabel(bundles("CountRecords"));
+        label = new JLabel(bundleString("CountRecords"));
 
         add(label, gbh.defaults().nextRowFirstCol().setLabelDefault().get());
 

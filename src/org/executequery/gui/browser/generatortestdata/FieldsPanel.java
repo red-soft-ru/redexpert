@@ -50,7 +50,7 @@ public class FieldsPanel extends JPanel {
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setTopComponent(leftScrollPane);
         splitPane.setBottomComponent(rightScrollPane);
-        splitPane.setResizeWeight(0.6);
+        splitPane.setResizeWeight(1);
 
         setLayout(new GridBagLayout());
         add(splitPane, new GridBagHelper().fillBoth().spanX().spanY().get());

@@ -33,8 +33,11 @@ public abstract class AbstractMethodPanel extends JPanel {
         return dataType.contentEquals(T.DOUBLE_PRECISION)
                 || dataType.contentEquals(T.FLOAT)
                 || dataType.startsWith(T.DECIMAL)
-                || dataType.startsWith(T.NUMERIC)
-                || dataType.startsWith(T.DECFLOAT);
+                || dataType.startsWith(T.NUMERIC);
+    }
+
+    protected static boolean isDecFloat(String dataType) {
+        return dataType.startsWith(T.DECFLOAT);
     }
 
     protected static boolean isSmallint(String dataType) {

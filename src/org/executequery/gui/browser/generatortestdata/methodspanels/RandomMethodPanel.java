@@ -118,7 +118,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             minField.setText("0");
         }
 
-        if (isDecimal(dataType)) {
+        if (isDecimal(dataType) || isDecFloat(dataType)) {
             symbolsAfterComma = WidgetFactory.createNumberTextField("symbolsAfterComma");
             symbolsAfterComma.setText("1");
         }
@@ -130,7 +130,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         settingsPanel.add(minField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
         settingsPanel.add(new JLabel(bundleString("Max")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
         settingsPanel.add(maxField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
-        if (isDecimal(dataType)) {
+        if (isDecimal(dataType) || isDecFloat(dataType)) {
             settingsPanel.add(new JLabel(bundleString("CountDigitsAfterComma")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
             settingsPanel.add(symbolsAfterComma, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
         }
@@ -490,7 +490,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         } else if (isSmallint(dataType) || isInteger(dataType)) {
             return getIntegerValue(dataType);
 
-        } else if (isDecimal(dataType)) {
+        } else if (isDecimal(dataType) || isDecFloat(dataType)) {
             return getDecimalValue();
 
         } else if (isChar(dataType)) {

@@ -2,8 +2,7 @@ package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import org.executequery.databaseobjects.DatabaseColumn;
-import org.executequery.databaseobjects.T;
-import org.executequery.log.Log;
+import org.executequery.gui.WidgetFactory;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
@@ -16,28 +15,31 @@ import java.awt.*;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+import java.time.*;
 
 public class AutoincrementPanel extends AbstractMethodPanel {
+
     private JPanel settingsPanel;
     private JTextField iterationField;
     private JTextField startValueField;
-    private ZonedTimePicker startValueTimezone;
-    private TimePicker startValueTime;
+    private JComboBox<?> incrementsCombo;
+
+    private DatePicker startDate;
+    private TimePicker startTime;
+    private TimestampPicker startTimestamp;
+    private ZonedTimePicker startZonedTime;
+    private ZonedTimestampPicker startZonedTimestamp;
+
+    private NumberTextField iterationYears;
+    private NumberTextField iterationMouths;
+    private NumberTextField iterationDays;
     private TimePicker iterationTime;
-    private TimestampPicker startValueDateTime;
-    private ZonedTimestampPicker startValueDateTimezone;
-    private DateDifferenceSetter iterationDate;
-    private DatePicker startValueDate;
-    private JComboBox plusMinusBox;
-    private long current_value;
-    private LocalDateTime current_local_date_time;
-    private OffsetDateTime current_offset_date_time;
-    private BigInteger cur_bigint;
-    private double current_double;
+
+    private long currentInteger;
+    private double currentDouble;
+    private BigInteger currentBigint;
+    private LocalDateTime currentLocalDateTime;
+    private OffsetDateTime currentOffsetDateTime;
 
     public AutoincrementPanel(DatabaseColumn col) {
         super(col);
@@ -45,315 +47,405 @@ public class AutoincrementPanel extends AbstractMethodPanel {
     }
 
     private void init() {
+
         settingsPanel = new JPanel();
-        plusMinusBox = new JComboBox(new String[]{
-                "+", "-"
-        });
-
         settingsPanel.setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0);
-        gbh.setDefaults(gbc);
-        Log.info("\"" + col.getFormattedDataType() + "\"");
-        if (col.getFormattedDataType().contentEquals(T.BIGINT)
-                || col.getFormattedDataType().contentEquals(T.INTEGER)
-                || col.getFormattedDataType().contentEquals(T.SMALLINT)
-                || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                || col.getFormattedDataType().contentEquals(T.FLOAT)
-                || col.getFormattedDataType().startsWith(T.DECIMAL)
-                || col.getFormattedDataType().startsWith(T.NUMERIC)
-                || col.getFormattedDataType().startsWith(T.INT128)) {
+        incrementsCombo = WidgetFactory.createComboBox("incrementsCombo", new String[]{"+", "-"});
 
-            if (col.getFormattedDataType().contentEquals(T.BIGINT)
-                    || col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                    || col.getFormattedDataType().contentEquals(T.FLOAT)
-                    || col.getFormattedDataType().startsWith(T.DECIMAL)
-                    || col.getFormattedDataType().startsWith(T.NUMERIC)
-                    || col.getFormattedDataType().startsWith(T.DECFLOAT)
-                    || col.getFormattedDataType().startsWith(T.INT128)
-            ) {
-                iterationField = new JTextField();
-                startValueField = new JTextField();
-                if (col.getFormattedDataType().contentEquals(T.BIGINT)) {
-                    iterationField.setText("1");
-                    startValueField.setText("-9223372036854775808");
-                } else {
-                    iterationField.setText("1");
-                    startValueField.setText("0");
-                }
-            } else {
-                iterationField = new NumberTextField();
-                startValueField = new NumberTextField();
-                if (col.getFormattedDataType().contentEquals(T.INTEGER)) {
-                    iterationField.setText("" + 1);
-                    startValueField.setText("" + Integer.MIN_VALUE);
-                } else {
-                    iterationField.setText("" + 1);
-                    startValueField.setText("" + (-32768));
-                }
-            }
+        // --- init settings panel ---
 
-            gbh.setXY(0, 0);
-            JLabel label = new JLabel(bundleString("StartValue"));
-            settingsPanel.add(label, gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueField, gbh.defaults().nextCol().setMaxWeightX().get());
-            label = new JLabel(bundleString("Iteration"));
-            settingsPanel.add(label, gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(iterationField, gbh.defaults().nextCol().setMaxWeightX().get());
+        String dataType = col.getFormattedDataType();
+        if (isNumeric(dataType)) {
+            initNumericPanel(dataType);
 
-        }
+        } else if (isDate(dataType)) {
+            initDatePanel();
 
-        if (col.getFormattedDataType().contentEquals(T.TIME)) {
+        } else if (isTime(dataType)) {
+            initTimePanel();
 
-            startValueTime = new TimePicker();
-            startValueTime.setVisibleNullCheck(false);
-            startValueTime.setTime(LocalTime.MIN);
+        } else if (isTimestamp(dataType)) {
+            initTimestampPanel();
 
-            iterationTime = new TimePicker();
-            iterationTime.setVisibleNullCheck(false);
-            iterationTime.setTime(LocalTime.of(1, 1, 1));
+        } else if (isZonedTime(dataType)) {
+            initZonedTimePanel();
 
-            gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
+        } else if (isZonedTimestamp(dataType))
+            initZonedTimestampPanel();
 
-        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
-
-            startValueTimezone = new ZonedTimePicker();
-            startValueTimezone.setVisibleNullCheck(false);
-            startValueTimezone.setTime(LocalTime.MIN);
-
-            iterationTime = new TimePicker();
-            iterationTime.setVisibleNullCheck(false);
-            iterationTime.setTime(LocalTime.of(1, 1, 1));
-
-            gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextCol().setLabelDefault().get());
-            settingsPanel.add(iterationTime, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.DATE)) {
-
-            startValueDate = new DatePicker();
-            startValueDate.setDate(LocalDate.now());
-
-            iterationDate = new DateDifferenceSetter();
-
-            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
-
-            startValueDateTime = new TimestampPicker();
-            startValueDateTime.setVisibleNullCheck(false);
-            startValueDateTime.setDateTime(LocalDateTime.now());
-
-            iterationDate = new DateDifferenceSetter();
-
-            iterationTime = new TimePicker();
-            iterationTime.setVisibleNullCheck(false);
-            iterationTime.setTime(LocalTime.of(0, 0, 0));
-
-            gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueDateTime, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
-        }
-
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
-
-            startValueDateTimezone = new ZonedTimestampPicker();
-            startValueDateTimezone.setVisibleNullCheck(false);
-            startValueDateTimezone.setDateTime(LocalDateTime.now());
-
-            iterationDate = new DateDifferenceSetter();
-
-            iterationTime = new TimePicker();
-            iterationTime.setVisibleNullCheck(false);
-            iterationTime.setTime(LocalTime.of(0, 0, 0));
-
-            gbh.setXY(0, 0);
-            settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.defaults().setLabelDefault().get());
-            settingsPanel.add(startValueDateTimezone, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.defaults().nextRowFirstCol().setLabelDefault().get());
-            settingsPanel.add(iterationDate, gbh.defaults().nextCol().setMaxWeightX().get());
-            settingsPanel.add(iterationTime, gbh.defaults().nextRow().setMaxWeightX().get());
-        }
+        // --- base ---
 
         setLayout(new GridBagLayout());
-        gbh.setXY(0, 0);
-        add(plusMinusBox, gbh.defaults().spanX().get());
-        add(settingsPanel, gbh.defaults().nextRowFirstCol().spanX().fillBoth().get());
-        add(new JPanel(), gbh.defaults().nextRowFirstCol().spanX().spanY().fillBoth().get());
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        add(incrementsCombo, gbh.spanX().get());
+        add(settingsPanel, gbh.nextRowFirstCol().topGap(5).fillBoth().spanY().get());
     }
 
+    private void initNumericPanel(String dataType) {
+
+        iterationField = WidgetFactory.createNumberTextField("iterationField");
+        iterationField.setText("1");
+
+        startValueField = WidgetFactory.createNumberTextField("startValueField");
+        if (isInteger(dataType)) {
+            startValueField.setText("" + Integer.MIN_VALUE);
+        } else if (isSmallint(dataType)) {
+            startValueField.setText("" + (-32768));
+        } else if (isBigint(dataType)) {
+            startValueField.setText("-9223372036854775808");
+        } else
+            startValueField.setText("0");
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startValueField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initDatePanel() {
+
+        startDate = new DatePicker();
+        startDate.setDate(LocalDate.now());
+
+        iterationYears = WidgetFactory.createNumberTextField("yearsField");
+        iterationYears.setValue(0);
+
+        iterationMouths = WidgetFactory.createNumberTextField("mouthsField");
+        iterationMouths.setValue(0);
+
+        iterationDays = WidgetFactory.createNumberTextField("daysField");
+        iterationDays.setValue(1);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startDate, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Years")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationYears, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Mouths")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationMouths, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Days")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationDays, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initTimePanel() {
+
+        startTime = new TimePicker();
+        startTime.setVisibleNullCheck(false);
+        startTime.setTime(LocalTime.MIN);
+
+        iterationTime = new TimePicker();
+        iterationTime.setVisibleNullCheck(false);
+        iterationTime.setTime(LocalTime.of(1, 0, 0));
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startTime, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initTimestampPanel() {
+
+        startTimestamp = new TimestampPicker();
+        startTimestamp.setVisibleNullCheck(false);
+        startTimestamp.setDateTime(LocalDateTime.now());
+
+        iterationTime = new TimePicker();
+        iterationTime.setVisibleNullCheck(false);
+        iterationTime.setTime(LocalTime.of(0, 0, 0));
+
+        iterationYears = WidgetFactory.createNumberTextField("yearsField");
+        iterationYears.setValue(0);
+
+        iterationMouths = WidgetFactory.createNumberTextField("mouthsField");
+        iterationMouths.setValue(0);
+
+        iterationDays = WidgetFactory.createNumberTextField("daysField");
+        iterationDays.setValue(1);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startTimestamp, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Years")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationYears, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Mouths")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationMouths, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Days")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationDays, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Time")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initZonedTimePanel() {
+
+        startZonedTime = new ZonedTimePicker();
+        startZonedTime.setVisibleNullCheck(false);
+        startZonedTime.setTime(LocalTime.MIN);
+
+        iterationTime = new TimePicker();
+        iterationTime.setVisibleNullCheck(false);
+        iterationTime.setTime(LocalTime.of(1, 0, 0));
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startZonedTime, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Iteration")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    private void initZonedTimestampPanel() {
+
+        startZonedTimestamp = new ZonedTimestampPicker();
+        startZonedTimestamp.setVisibleNullCheck(false);
+        startZonedTimestamp.setDateTime(LocalDateTime.now());
+
+        iterationTime = new TimePicker();
+        iterationTime.setVisibleNullCheck(false);
+        iterationTime.setTime(LocalTime.of(0, 0, 0));
+
+        iterationYears = WidgetFactory.createNumberTextField("yearsField");
+        iterationYears.setValue(0);
+
+        iterationMouths = WidgetFactory.createNumberTextField("mouthsField");
+        iterationMouths.setValue(0);
+
+        iterationDays = WidgetFactory.createNumberTextField("daysField");
+        iterationDays.setValue(1);
+
+        // --- arrange ---
+
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        settingsPanel.add(new JLabel(bundleString("StartValue")), gbh.leftGap(3).topGap(3).get());
+        settingsPanel.add(startZonedTimestamp, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Years")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationYears, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Mouths")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationMouths, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Days")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationDays, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JLabel(bundleString("Time")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(iterationTime, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(new JPanel(), gbh.nextRowFirstCol().fillBoth().spanX().spanY().get());
+    }
+
+    // ---
+
+    private BigInteger getBigintValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentBigint = new BigInteger(startValueField.getText());
+            return currentBigint;
+        }
+
+        BigInteger iterationBig = new BigInteger(iterationField.getText());
+        currentBigint = increment ? currentBigint.add(iterationBig) : currentBigint.subtract(iterationBig);
+        return currentBigint;
+    }
+
+    private int getIntegerValue(String dataType, boolean increment) {
+
+        if (first) {
+            first = false;
+            currentInteger = Long.parseLong(startValueField.getText());
+            return isSmallint(dataType) ? (short) currentInteger : (int) currentInteger;
+        }
+
+        currentInteger += Long.parseLong(iterationField.getText()) * (increment ? 1 : -1);
+        return isSmallint(dataType) ? (short) currentInteger : (int) currentInteger;
+    }
+
+    private double getDecimalValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentDouble = Double.parseDouble(startValueField.getText());
+            return currentDouble;
+        }
+
+        currentDouble += Double.parseDouble(iterationField.getText()) * (increment ? 1 : -1);
+        return currentDouble;
+    }
+
+    private LocalDate getDateValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentLocalDateTime = LocalDateTime.of(startDate.getDate(), LocalTime.of(0, 0, 0));
+            return currentLocalDateTime.toLocalDate();
+        }
+
+        if (increment) {
+            currentLocalDateTime = currentLocalDateTime.plusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusDays(iterationDays.getValue());
+        } else {
+            currentLocalDateTime = currentLocalDateTime.minusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusDays(iterationDays.getValue());
+        }
+
+        return new Date(Timestamp.valueOf(currentLocalDateTime).getTime()).toLocalDate();
+    }
+
+    private LocalTime getTimeValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentLocalDateTime = startTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1));
+            return currentLocalDateTime.toLocalTime();
+        }
+
+        LocalTime iteration = iterationTime.getLocalTime();
+        if (increment) {
+            currentLocalDateTime = currentLocalDateTime.plusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.plusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.plusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.plusNanos(iteration.getNano());
+        } else {
+            currentLocalDateTime = currentLocalDateTime.minusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.minusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.minusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.minusNanos(iteration.getNano());
+        }
+
+        return currentLocalDateTime.toLocalTime();
+    }
+
+    private LocalDateTime getTimestampValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentLocalDateTime = startTimestamp.getDateTime();
+            return currentLocalDateTime;
+        }
+
+        LocalTime iteration = iterationTime.getLocalTime();
+        if (increment) {
+            currentLocalDateTime = currentLocalDateTime.plusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusDays(iterationDays.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.plusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.plusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.plusNanos(iteration.getNano());
+        } else {
+            currentLocalDateTime = currentLocalDateTime.minusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusDays(iterationDays.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.minusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.minusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.minusNanos(iteration.getNano());
+        }
+
+        return currentLocalDateTime;
+    }
+
+    private OffsetTime getZonedTimeValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentOffsetDateTime = startZonedTime.getOffsetTime().atDate(LocalDate.of(1970, 1, 1));
+            return currentOffsetDateTime.toOffsetTime();
+        }
+
+        LocalTime iteration = iterationTime.getLocalTime();
+        if (increment) {
+            currentOffsetDateTime = currentOffsetDateTime.plusHours(iteration.getHour());
+            currentOffsetDateTime = currentOffsetDateTime.plusMinutes(iteration.getMinute());
+            currentOffsetDateTime = currentOffsetDateTime.plusSeconds(iteration.getSecond());
+            currentOffsetDateTime = currentOffsetDateTime.plusNanos(iteration.getNano());
+        } else {
+            currentOffsetDateTime = currentOffsetDateTime.minusHours(iteration.getHour());
+            currentOffsetDateTime = currentOffsetDateTime.minusMinutes(iteration.getMinute());
+            currentOffsetDateTime = currentOffsetDateTime.minusSeconds(iteration.getSecond());
+            currentOffsetDateTime = currentOffsetDateTime.minusNanos(iteration.getNano());
+        }
+
+        return currentOffsetDateTime.toOffsetTime();
+    }
+
+    private OffsetDateTime getZonedTimestampValue(boolean increment) {
+
+        if (first) {
+            first = false;
+            currentOffsetDateTime = startZonedTimestamp.getOffsetDateTime();
+            return currentOffsetDateTime;
+        }
+
+        LocalTime iteration = iterationTime.getLocalTime();
+        if (increment) {
+            currentLocalDateTime = currentLocalDateTime.plusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusDays(iterationDays.getValue());
+            currentLocalDateTime = currentLocalDateTime.plusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.plusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.plusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.plusNanos(iteration.getNano());
+        } else {
+            currentLocalDateTime = currentLocalDateTime.minusYears(iterationYears.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusMonths(iterationMouths.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusDays(iterationDays.getValue());
+            currentLocalDateTime = currentLocalDateTime.minusHours(iteration.getHour());
+            currentLocalDateTime = currentLocalDateTime.minusMinutes(iteration.getMinute());
+            currentLocalDateTime = currentLocalDateTime.minusSeconds(iteration.getSecond());
+            currentLocalDateTime = currentLocalDateTime.minusNanos(iteration.getNano());
+        }
+
+        return currentOffsetDateTime;
+    }
+
+    // --- AbstractMethodPanel impl ---
+
+    @Override
     public Object getTestDataObject() {
-        if (col.getFormattedDataType().contentEquals(T.BIGINT) || col.getFormattedDataType().contentEquals(T.INT128)) {
-            if (first) {
-                cur_bigint = new BigInteger(startValueField.getText());
-                first = false;
-                return cur_bigint;
-            }
-            BigInteger iterationBig = new BigInteger(iterationField.getText());
-            if (plusMinusBox.getSelectedIndex() == 0)
-                cur_bigint = cur_bigint.add(iterationBig);
-            else cur_bigint = cur_bigint.subtract(iterationBig);
-            return cur_bigint;
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIME)) {
-            if (first) {
-                current_local_date_time = startValueTime.getLocalTime().atDate(LocalDate.of(1970, 1, 1));
-                first = false;
-                return current_local_date_time.toLocalTime();
-            }
-            LocalTime iteration = iterationTime.getLocalTime();
-            if (plusMinusBox.getSelectedIndex() == 0) {
-                current_local_date_time = current_local_date_time.plusHours(iteration.getHour());
-                current_local_date_time = current_local_date_time.plusMinutes(iteration.getMinute());
-                current_local_date_time = current_local_date_time.plusSeconds(iteration.getSecond());
-                current_local_date_time = current_local_date_time.plusNanos(iteration.getNano());
-            } else {
-                current_local_date_time = current_local_date_time.minusHours(iteration.getHour());
-                current_local_date_time = current_local_date_time.minusMinutes(iteration.getMinute());
-                current_local_date_time = current_local_date_time.minusSeconds(iteration.getSecond());
-                current_local_date_time = current_local_date_time.minusNanos(iteration.getNano());
-            }
-            return current_local_date_time.toLocalTime();
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIME_WITH_TIMEZONE)) {
-            if (first) {
-                current_offset_date_time = startValueTimezone.getOffsetTime().atDate(LocalDate.of(1970, 1, 1));
-                first = false;
-                return current_offset_date_time.toOffsetTime();
-            }
-            LocalTime iteration = iterationTime.getLocalTime();
-            if (plusMinusBox.getSelectedIndex() == 0) {
-                current_offset_date_time = current_offset_date_time.plusHours(iteration.getHour());
-                current_offset_date_time = current_offset_date_time.plusMinutes(iteration.getMinute());
-                current_offset_date_time = current_offset_date_time.plusSeconds(iteration.getSecond());
-                current_offset_date_time = current_offset_date_time.plusNanos(iteration.getNano());
-            } else {
-                current_offset_date_time = current_offset_date_time.minusHours(iteration.getHour());
-                current_offset_date_time = current_offset_date_time.minusMinutes(iteration.getMinute());
-                current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
-                current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
-            }
-            return current_offset_date_time.toOffsetTime();
-        }
-        if (col.getFormattedDataType().contentEquals(T.DATE)) {
-            if (first) {
-                current_local_date_time = LocalDateTime.of(startValueDate.getDate(), LocalTime.of(0, 0, 0));
-                first = false;
-                return current_local_date_time.toLocalDate();
-            }
-            if (plusMinusBox.getSelectedIndex() == 0) {
-                current_local_date_time = current_local_date_time.plusYears(iterationDate.getYears());
-                current_local_date_time = current_local_date_time.plusDays(iterationDate.getDays());
-                current_local_date_time = current_local_date_time.plusMonths(iterationDate.getMouths());
-            } else {
-                current_local_date_time = current_local_date_time.minusYears(iterationDate.getYears());
-                current_local_date_time = current_local_date_time.minusDays(iterationDate.getDays());
-                current_local_date_time = current_local_date_time.minusMonths(iterationDate.getMouths());
-            }
-            return new Date(Timestamp.valueOf(current_local_date_time).getTime());
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP)) {
-            if (first) {
-                current_local_date_time = startValueDateTime.getDateTime();
-                first = false;
-                return current_local_date_time;
-            }
-            LocalTime iteration = iterationTime.getLocalTime();
-            if (plusMinusBox.getSelectedIndex() == 0) {
-                current_local_date_time = current_local_date_time.plusYears(iterationDate.getYears());
-                current_local_date_time = current_local_date_time.plusDays(iterationDate.getDays());
-                current_local_date_time = current_local_date_time.plusMonths(iterationDate.getMouths());
-                current_local_date_time = current_local_date_time.plusHours(iteration.getHour());
-                current_local_date_time = current_local_date_time.plusMinutes(iteration.getMinute());
-                current_local_date_time = current_local_date_time.plusSeconds(iteration.getSecond());
-                current_local_date_time = current_local_date_time.plusNanos(iteration.getNano());
-            } else {
-                current_local_date_time = current_local_date_time.minusYears(iterationDate.getYears());
-                current_local_date_time = current_local_date_time.minusDays(iterationDate.getDays());
-                current_local_date_time = current_local_date_time.minusMonths(iterationDate.getMouths());
-                current_local_date_time = current_local_date_time.minusHours(iteration.getHour());
-                current_local_date_time = current_local_date_time.minusMinutes(iteration.getMinute());
-                current_local_date_time = current_local_date_time.minusSeconds(iteration.getSecond());
-                current_local_date_time = current_local_date_time.minusNanos(iteration.getNano());
-            }
-            return current_local_date_time;
 
-        }
-        if (col.getFormattedDataType().contentEquals(T.TIMESTAMP_WITH_TIMEZONE)) {
-            if (first) {
-                current_offset_date_time = startValueDateTimezone.getOffsetDateTime();
-                first = false;
-                return current_offset_date_time;
-            }
-            LocalTime iteration = iterationTime.getLocalTime();
-            if (plusMinusBox.getSelectedIndex() == 0) {
-                current_offset_date_time = current_offset_date_time.plusYears(iterationDate.getYears());
-                current_offset_date_time = current_offset_date_time.plusDays(iterationDate.getDays());
-                current_offset_date_time = current_offset_date_time.plusMonths(iterationDate.getMouths());
-                current_offset_date_time = current_offset_date_time.plusHours(iteration.getHour());
-                current_offset_date_time = current_offset_date_time.plusMinutes(iteration.getMinute());
-                current_offset_date_time = current_offset_date_time.plusSeconds(iteration.getSecond());
-                current_offset_date_time = current_offset_date_time.plusNanos(iteration.getNano());
-            } else {
-                current_offset_date_time = current_offset_date_time.minusYears(iterationDate.getYears());
-                current_offset_date_time = current_offset_date_time.minusDays(iterationDate.getDays());
-                current_offset_date_time = current_offset_date_time.minusMonths(iterationDate.getMouths());
-                current_offset_date_time = current_offset_date_time.minusHours(iteration.getHour());
-                current_offset_date_time = current_offset_date_time.minusMinutes(iteration.getMinute());
-                current_offset_date_time = current_offset_date_time.minusSeconds(iteration.getSecond());
-                current_offset_date_time = current_offset_date_time.minusNanos(iteration.getNano());
-            }
-            return current_offset_date_time;
+        String dataType = col.getFormattedDataType();
+        boolean increment = incrementsCombo.getSelectedIndex() == 0;
 
-        }
-        if (col.getFormattedDataType().contentEquals(T.INTEGER) || col.getFormattedDataType().contentEquals(T.SMALLINT)) {
-            if (first) {
-                current_value = Long.parseLong(startValueField.getText());
-                first = false;
-                if (col.getFormattedDataType().contentEquals(T.SMALLINT))
-                    return (short) current_value;
-                return (int) current_value;
-            }
-            if (plusMinusBox.getSelectedIndex() == 0)
-                current_value += Long.parseLong(iterationField.getText());
-            else current_value -= Long.parseLong(iterationField.getText());
-            if (col.getFormattedDataType().contentEquals(T.SMALLINT))
-                return (short) current_value;
-            return (int) current_value;
-        }
-        if (col.getFormattedDataType().contentEquals(T.DOUBLE_PRECISION)
-                || col.getFormattedDataType().contentEquals(T.FLOAT)
-                || col.getFormattedDataType().startsWith(T.DECIMAL)
-                || col.getFormattedDataType().startsWith(T.NUMERIC)
-                || col.getFormattedDataType().startsWith(T.DECFLOAT)
-        ) {
-            if (first) {
-                current_double = Double.parseDouble(startValueField.getText());
-                first = false;
-                return current_double;
-            }
-            if (plusMinusBox.getSelectedIndex() == 0)
-                current_double += Double.parseDouble(iterationField.getText());
-            else current_double -= Double.parseDouble(iterationField.getText());
-            return current_double;
-        }
+        if (isBigint(dataType)) {
+            return getBigintValue(increment);
+
+        } else if (isSmallint(dataType) || isInteger(dataType)) {
+            return getIntegerValue(dataType, increment);
+
+        } else if (isDecimal(dataType) || isDecFloat(dataType)) {
+            return getDecimalValue(increment);
+
+        } else if (isDate(dataType)) {
+            return getDateValue(increment);
+
+        } else if (isTime(dataType)) {
+            return getTimeValue(increment);
+
+        } else if (isTimestamp(dataType)) {
+            return getTimestampValue(increment);
+
+        } else if (isZonedTime(dataType)) {
+            return getZonedTimeValue(increment);
+
+        } else if (isZonedTimestamp(dataType))
+            return getZonedTimestampValue(increment);
 
         return null;
     }
+
 }

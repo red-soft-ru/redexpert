@@ -101,15 +101,15 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         maxField = WidgetFactory.createNumberTextField("maxField");
         minField = WidgetFactory.createNumberTextField("minField");
 
-        if (dataType.contentEquals(T.INTEGER)) {
+        if (isInteger(dataType)) {
             maxField.setText("" + Integer.MAX_VALUE);
             minField.setText("" + Integer.MIN_VALUE);
 
-        } else if (dataType.contentEquals(T.SMALLINT)) {
+        } else if (isSmallint(dataType)) {
             maxField.setText("" + 32767);
             minField.setText("" + (-32768));
 
-        } else if (dataType.contentEquals("BIGINT")) {
+        } else if (isBigint(dataType)) {
             maxField.setText("9223372036854775807");
             minField.setText("-9223372036854775808");
 

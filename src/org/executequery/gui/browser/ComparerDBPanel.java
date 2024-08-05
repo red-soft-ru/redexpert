@@ -844,9 +844,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
 
-                for (int i = 0; i < comparer.getScript().size(); i++) {
-                    String text = comparer.getScript(i);
-                    byte[] buffer = text.getBytes();
+                String[] sqlTextLines = sqlTextPanel.getSQLText().split("\n");
+                for (String sqlLine : sqlTextLines) {
+                    byte[] buffer = (sqlLine + "\n").getBytes();
                     path.write(buffer, 0, buffer.length);
                 }
 
@@ -854,7 +854,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
 
             } catch (IOException e) {
-                e.printStackTrace(System.out);
+                Log.error(e.getMessage(), e);
             }
         }
     }

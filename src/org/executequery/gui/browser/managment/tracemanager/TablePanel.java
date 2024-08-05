@@ -307,6 +307,7 @@ public class TablePanel extends JPanel {
         littleSplit.setTopComponent(logListPanel);
         txtFieldRawSql = new SimpleSqlTextPanel();
         txtFieldRawSql.setBorder(BorderFactory.createTitledBorder(TraceManagerPanel.bundleString("Body")));
+        txtFieldRawSql.setFont(new Font("Monospaced", Font.PLAIN, 14));
         littleSplit.setBottomComponent(txtFieldRawSql);
 
         JSplitPane bigSplit = new JSplitPane();

@@ -206,4 +206,12 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
         return true;
     }
 
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+
+        if (textComponent != null)
+            textComponent.setFont(font);
+    }
+
 }

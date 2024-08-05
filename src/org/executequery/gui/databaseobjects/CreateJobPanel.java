@@ -26,7 +26,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
     private DefaultDatabaseJob job;
 
-    // --- GUI ccomponents ---
+    // --- GUI components ---
 
     private TimestampPicker startDatePicker;
     private TimestampPicker endDatePicker;
@@ -81,7 +81,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
         tabbedPane.add(bundleString("Task"), taskPanel);
         tabbedPane.add(bundleString("Schedule"), cronPanel);
-//        addCommentTab(null); RDB doesn't support adding comments on the JOBs
+        addCommentTab(null);
 
         if (!editing)
             arrange();
@@ -99,7 +99,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         reset();
         arrange();
 
-//        simpleCommentPanel.setDatabaseObject(job); RDB doesn't support adding comments on the JOBs
+        simpleCommentPanel.setDatabaseObject(job);
         nameField.setEditable(false);
         tabbedPane.addTab(bundleString("Log"), new JobsLogPanel(job));
         addCreateSqlTab(job);

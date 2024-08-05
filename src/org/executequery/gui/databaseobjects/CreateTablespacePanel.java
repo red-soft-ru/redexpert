@@ -68,6 +68,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         centralPanel.add(fileField, gbh.nextCol().setMaxWeightX().fillHorizontally().get());
         centralPanel.add(fileButton, gbh.nextCol().setLabelDefault().get());
         tabbedPane.add("SQL", sqlTextPanel);
+        addCommentTab(null);
 
         nameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -111,6 +112,7 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
         tabbedPane.insertTab(Bundles.getCommon("contents"), null, new JScrollPane(tablesIndexesPanel), null, 0);
         addCreateSqlTab(tablespace);
         tabbedPane.setSelectedIndex(0);
+        simpleCommentPanel.setDatabaseObject(tablespace);
     }
 
     protected void reset() {

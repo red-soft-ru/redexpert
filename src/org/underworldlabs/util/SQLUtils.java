@@ -1857,7 +1857,11 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(formattedOutputParams.trim()))
             sb.append(String.format("\nRETURNS (\n%s)", formattedOutputParams));
 
-        return sb.append("\nAS BEGIN END^\n").toString();
+        sb.append("\nAS BEGIN ");
+        if (!outputParams.isEmpty())
+            sb.append("\n\tSUSPEND;\n");
+
+        return sb.append("END^").toString();
     }
 
     public static String generateCreateTriggerStub(DefaultDatabaseTrigger obj) {

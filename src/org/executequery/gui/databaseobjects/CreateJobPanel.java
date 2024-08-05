@@ -1,6 +1,5 @@
 package org.executequery.gui.databaseobjects;
 
-import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
@@ -217,7 +216,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
                 jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                         sqlTextPanel.getSQLText() :
                         bashTextPanel.getTextAreaComponent().getText(),
-                Constants.EMPTY,
+                simpleCommentPanel.getComment(),
                 false,
                 getDatabaseConnection()
         );
@@ -239,7 +238,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
                 jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                         sqlTextPanel.getSQLText() :
                         bashTextPanel.getTextAreaComponent().getText(),
-                Constants.EMPTY,
+                simpleCommentPanel.getComment(),
                 false
         );
     }

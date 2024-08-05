@@ -794,26 +794,41 @@ public final class SQLUtils {
     }
 
     public static String generateNameForDBObject(String type, DatabaseConnection databaseConnection) {
-        String name = "NEW_" + type + "_";
-        int int_number = 0;
-        String number;
-        List<NamedObject> keys = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(type);
-        if (keys != null)
-            for (NamedObject key : keys) {
-                if (!MiscUtils.isNull(key.getName()))
-                    if (key.getName().contains(name)) {
-                        number = key.getName().replace(name, "");
-                        try {
-                            if (Integer.parseInt(number) > int_number)
-                                int_number = Integer.parseInt(number);
-                        } catch (NumberFormatException e) {
-                            Log.debug(e.getMessage());
-                        }
-                    }
 
+        String newObjectName = "NEW_" + type + "_";
+        String stringNumber;
+        int newNumber = 0;
+
+        DefaultDatabaseHost databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection);
+        List<NamedObject> databaseObjects = databaseHost.getDatabaseObjectsForMetaTag(type);
+        if (Objects.equals(type, META_TYPES[TRIGGER])) {
+            databaseObjects.addAll(databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DATABASE_TRIGGER]));
+            databaseObjects.addAll(databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DDL_TRIGGER]));
+        }
+
+        if (databaseObjects == null)
+            return newObjectName + "1";
+
+        for (NamedObject object : databaseObjects) {
+
+            if (MiscUtils.isNull(object.getName()))
+                continue;
+
+            if (object.getName().contains(newObjectName)) {
+                stringNumber = object.getName().replace(newObjectName, "");
+
+                try {
+                    if (Integer.parseInt(stringNumber) > newNumber)
+                        newNumber = Integer.parseInt(stringNumber);
+
+                } catch (NumberFormatException e) {
+                    Log.debug(e.getMessage());
+                }
             }
-        number = String.valueOf(int_number + 1);
-        return name + number;
+        }
+
+        stringNumber = String.valueOf(newNumber + 1);
+        return newObjectName + stringNumber;
     }
 
     private static String generateNameForConstraint(String type, List<ColumnConstraint> keys) {

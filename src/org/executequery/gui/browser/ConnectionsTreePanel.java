@@ -967,18 +967,11 @@ public class ConnectionsTreePanel extends TreePanel
 
             GUIUtilities.showWaitCursor();
 
-            boolean expanded = tree.isExpanded(path);
-            if (expanded)
-                tree.collapsePath(path);
-
             DatabaseObjectNode node = (DatabaseObjectNode) object;
             node.reset();
+
             nodeStructureChanged(node);
             pathExpanded(path);
-
-            if (expanded)
-                tree.expandPath(path);
-
             pathChanged(oldSelectionPath, path, refreshButtons);
 
             // --- reload panel view ---

@@ -1418,26 +1418,62 @@ public final class SQLUtils {
     }
 
 
-    public static String generateAlterTablespace(
-            DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
+    public static String generateAlterTablespace(DefaultDatabaseTablespace thisTablespace,
+                                                 DefaultDatabaseTablespace comparingTablespace,
+                                                 boolean commentsNeed) {
+
+        StringBuilder sb = new StringBuilder();
 
         String comparingFileName = comparingTablespace.getFileName();
+        if (!Objects.equals(thisTablespace.getFileName(), comparingFileName)) {
+            sb.append(generateAlterTablespace(
+                    thisTablespace.getName(),
+                    comparingFileName,
+                    null,
+                    false,
+                    thisTablespace.getHost().getDatabaseConnection()
+            ));
+        }
 
-        return !Objects.equals(thisTablespace.getFileName(), comparingFileName) ?
-                "/* there are no changes */\n" :
-                generateAlterTablespace(thisTablespace.getName(), comparingFileName, thisTablespace.getHost().getDatabaseConnection());
+        String comparingComment = comparingTablespace.getRemarks();
+        if (commentsNeed && !Objects.equals(thisTablespace.getRemarks(), comparingComment)) {
+            sb.append(generateComment(
+                    thisTablespace.getName(),
+                    "TABLESPACE",
+                    comparingComment,
+                    ";",
+                    false,
+                    thisTablespace.getHost().getDatabaseConnection()
+            ));
+        }
+
+        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
     }
 
-    public static String generateAlterTablespace(String name, String file, DatabaseConnection dc) {
-        String sb = "ALTER TABLESPACE " + format(name, dc) +
-                " SET FILE '" + file + "';\n";
-        return sb;
+    public static String generateAlterTablespace(String name, String file, String comment, boolean commentNeed, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        String formattedName = format(name, dc);
+
+        sb.append("ALTER TABLESPACE ").append(formattedName);
+        sb.append(" SET FILE '").append(file).append("';\n");
+
+        if (commentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(formattedName, "TABLESPACE", comment, ";"));
+
+        return sb.toString();
     }
 
-    public static String generateCreateTablespace(String name, String file, DatabaseConnection dc) {
-        String sb = "CREATE TABLESPACE " + format(name, dc) +
-                " FILE '" + file + "';\n";
-        return sb;
+    public static String generateCreateTablespace(String name, String file, String comment, boolean commentNeed, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        String formattedName = format(name, dc);
+
+        sb.append("CREATE TABLESPACE ").append(formattedName);
+        sb.append(" FILE '").append(file).append("';\n");
+
+        if (commentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(formattedName, "TABLESPACE", comment, ";"));
+
+        return sb.toString();
     }
 
     public static String generateCreateSequence(

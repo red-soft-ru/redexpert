@@ -123,9 +123,27 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
 
     @Override
     protected String generateQuery() {
-        return editing ?
-                SQLUtils.generateAlterTablespace(nameField.getText(), fileField.getText(), getDatabaseConnection()) :
-                SQLUtils.generateCreateTablespace(nameField.getText(), fileField.getText(), getDatabaseConnection());
+        return editing ? getGenerateAlterQuery() : getGenerateCreateQuery();
+    }
+
+    private String getGenerateCreateQuery() {
+        return SQLUtils.generateCreateTablespace(
+                nameField.getText(),
+                fileField.getText(),
+                simpleCommentPanel.getComment(),
+                true,
+                getDatabaseConnection()
+        );
+    }
+
+    private String getGenerateAlterQuery() {
+        return SQLUtils.generateAlterTablespace(
+                nameField.getText(),
+                fileField.getText(),
+                simpleCommentPanel.getComment(),
+                true,
+                getDatabaseConnection()
+        );
     }
 
     private void generateSQL() {
@@ -134,12 +152,10 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
 
     @Override
     public void createObject() {
-        if (tabbedPane.getSelectedComponent() != sqlTextPanel) {
+        if (tabbedPane.getSelectedComponent() != sqlTextPanel)
             generateSQL();
-        }
+
         displayExecuteQueryDialog(sqlTextPanel.getSQLText(), ";");
-
-
     }
 
     @Override

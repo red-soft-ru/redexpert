@@ -58,6 +58,7 @@ public class GeneratorTestDataPanel extends JPanel
     private JCheckBox stopOnErrorCheck;
     private JCheckBox loggingEnabledCheck;
 
+    private JLabel batchLabel;
     private JTabbedPane tabbedPane;
     private FieldsPanel fieldsPanel;
     private JProgressBar progressBar;
@@ -72,6 +73,8 @@ public class GeneratorTestDataPanel extends JPanel
     public GeneratorTestDataPanel() {
         init();
         arrange();
+        checkBatchToolsEnable();
+        updateBatchToolsEnable();
         loadTableColumns();
     }
 
@@ -80,6 +83,7 @@ public class GeneratorTestDataPanel extends JPanel
         fieldsPanel = new FieldsPanel();
         progressBar = new JProgressBar();
         logPanel = new LoggingOutputPanel();
+        batchLabel = new JLabel(bundleString("BatchCount"));
 
         tabbedPane = new JTabbedPane();
         tabbedPane.add(bundleString("Generator"), fieldsPanel);
@@ -114,7 +118,9 @@ public class GeneratorTestDataPanel extends JPanel
         commitAfterField.setText("500");
 
         stopOnErrorCheck = WidgetFactory.createCheckBox("stopOnErrorCheck", bundleString("StopOnError"));
+
         useBatchesCheck = WidgetFactory.createCheckBox("useBatchesCheck", bundleString("useBatchesBox"));
+        useBatchesCheck.addActionListener(e -> updateBatchToolsEnable());
 
         loggingEnabledCheck = WidgetFactory.createCheckBox("loggingEnabledCheck", bundleString("OutputLog"));
         loggingEnabledCheck.setSelected(true);
@@ -127,7 +133,6 @@ public class GeneratorTestDataPanel extends JPanel
 
     private void arrange() {
         GridBagHelper gbh;
-        JLabel batchLabel = new JLabel(bundleString("BatchCount"));
 
         // --- check panel ---
 
@@ -179,17 +184,6 @@ public class GeneratorTestDataPanel extends JPanel
         setLayout(new GridBagLayout());
         gbh = new GridBagHelper().fillBoth().setInsets(5, 5, 5, 5).spanY().spanX();
         add(mainPanel, gbh.get());
-
-        // ---
-
-        if (new DefaultDriverLoader().load(getSelectedConnection().getJDBCDriver()).getMajorVersion() < 4
-                || getSelectedConnection().getMajorServerVersion() < 4
-                || !getSelectedConnection().useNewAPI()) {
-
-            batchLabel.setEnabled(false);
-            batchSizeField.setEnabled(false);
-            useBatchesCheck.setEnabled(false);
-        }
     }
 
     private void start() {
@@ -514,6 +508,22 @@ public class GeneratorTestDataPanel extends JPanel
         fieldsPanel.setFieldGenerators(fieldGenerators);
     }
 
+    private void checkBatchToolsEnable() {
+        boolean enable = new DefaultDriverLoader().load(getSelectedConnection().getJDBCDriver()).getMajorVersion() > 3
+                && getSelectedConnection().getMajorServerVersion() > 3
+                && getSelectedConnection().useNewAPI();
+
+        useBatchesCheck.setEnabled(enable);
+        useBatchesCheck.setSelected(false);
+        updateBatchToolsEnable();
+    }
+
+    private void updateBatchToolsEnable() {
+        boolean enable = useBatchesCheck.isSelected();
+        batchLabel.setEnabled(enable);
+        batchSizeField.setEnabled(enable);
+    }
+
     private void tablesComboTriggered(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED)
             loadTableColumns();
@@ -525,6 +535,7 @@ public class GeneratorTestDataPanel extends JPanel
 
         executor.setDatabaseConnection(getSelectedConnection());
         tablesModel.setElements(getDatabaseTables());
+        checkBatchToolsEnable();
     }
 
     private String getSelectedTable() {
@@ -535,7 +546,7 @@ public class GeneratorTestDataPanel extends JPanel
         return (DatabaseConnection) connectionsCombo.getSelectedItem();
     }
 
-// --- TabView impl ---
+    // --- TabView impl ---
 
     @Override
     public boolean tabViewSelected() {
@@ -552,7 +563,7 @@ public class GeneratorTestDataPanel extends JPanel
         return true;
     }
 
-// ---
+    // ---
 
     private static String bundleString(String key, Object... args) {
         return Bundles.get(GeneratorTestDataPanel.class, key, args);

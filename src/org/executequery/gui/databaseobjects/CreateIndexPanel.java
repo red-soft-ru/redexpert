@@ -178,7 +178,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             }
         }
 
-        if (databaseIndex.getExpression() == null) {
+        if (MiscUtils.isNull(databaseIndex.getExpression())) {
 
             for (int i = 0; i < databaseIndex.getIndexColumns().size(); i++) {
                 DefaultDatabaseIndex.DatabaseIndexColumn column = databaseIndex.getIndexColumns().get(i);

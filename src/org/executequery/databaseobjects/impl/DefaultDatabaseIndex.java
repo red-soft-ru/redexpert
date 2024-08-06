@@ -298,10 +298,11 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public void setExpression(String expression) {
-        if (MiscUtils.isNull(expression))
-            return;
-        expression = expression.trim().substring(1, expression.trim().length() - 1);
         this.expression = expression;
+        if (!MiscUtils.isNull(expression)) {
+            expression = expression.trim().substring(1, expression.trim().length() - 1);
+            this.expression = expression;
+        }
     }
 
     @Override

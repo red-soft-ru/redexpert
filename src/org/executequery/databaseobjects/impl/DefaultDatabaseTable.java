@@ -333,7 +333,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
                 index1.getObjectInfo();
                 indexes.add(index1);
-                if (index1.getExpression() != null) {
+                if (!MiscUtils.isNull(index1.getExpression())) {
                     index.setIndexedColumns(null);
                     index.setExpression(index1.getExpression());
                 }

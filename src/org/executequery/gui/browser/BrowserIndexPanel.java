@@ -1,6 +1,5 @@
 package org.executequery.gui.browser;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
@@ -14,6 +13,7 @@ import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -177,7 +177,7 @@ public class BrowserIndexPanel extends AbstractFormObjectViewPanel {
         uniqueCheckBox.setSelected(index.isUnique());
         activeCheckBox.setSelected(index.isActive());
         descriptionPane.setText(index.getRemarks());
-        if (index.getExpression() != null) {
+        if (!MiscUtils.isNull(index.getExpression())) {
             expressionText = new SimpleSqlTextPanel();
             expressionText.setSQLText(index.getExpression());
             tabPane.remove(0);

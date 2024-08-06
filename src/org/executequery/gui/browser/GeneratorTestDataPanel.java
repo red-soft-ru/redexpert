@@ -26,15 +26,14 @@ import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Vector;
 
 public class GeneratorTestDataPanel extends JPanel
         implements TabView {
@@ -356,8 +355,12 @@ public class GeneratorTestDataPanel extends JPanel
 
     private void generateUsingBatches(int recordsCount, List<FieldGenerator> selectedFields) throws SQLException {
 
-        int batchCount = batchSizeField.getValue();
+        long countError = 0;
+        long countSuccess = 0;
+
+        int batchSize = batchSizeField.getValue();
         int commitAfter = commitAfterField.getValue();
+        boolean isStopOnError = stopOnErrorCheck.isSelected();
         boolean loggingEnabled = loggingEnabledCheck.isSelected();
 
         Connection realConnection = ConnectionManager.getTemporaryConnection(getSelectedConnection());
@@ -385,43 +388,93 @@ public class GeneratorTestDataPanel extends JPanel
 
         int recordIndex = 0;
         while (recordIndex < recordsCount && !stop) {
+            try {
 
-            if (recordIndex + batchCount > recordsCount)
-                batchCount = recordIndex + batchCount - recordsCount;
+                if (recordIndex + batchSize > recordsCount)
+                    batchSize = recordIndex + batchSize - recordsCount;
 
-            for (int batchRecordIndex = 0; batchRecordIndex < batchCount; batchRecordIndex++) {
-                for (int columnIndex = 0; columnIndex < selectedFields.size(); columnIndex++) {
+                for (int batchRecordIndex = 0; batchRecordIndex < batchSize; batchRecordIndex++) {
+                    for (int columnIndex = 0; columnIndex < selectedFields.size(); columnIndex++) {
 
-                    String parameterType = selectedFields.get(columnIndex).getColumn().getTypeName();
-                    Object parameterValue = selectedFields.get(columnIndex).getMethodGeneratorPanel().getTestDataObject();
+                        String parameterType = selectedFields.get(columnIndex).getColumn().getTypeName();
+                        Object parameterValue = selectedFields.get(columnIndex).getMethodGeneratorPanel().getTestDataObject();
 
-                    if (parameterType.contains("BLOB")) {
-                        if (((byte[]) parameterValue).length == 0)
-                            parameterValue = new byte[1];
-                        batch.addBlob(columnIndex + 1, (byte[]) parameterValue);
+                        if (parameterType.contains("BLOB")) {
+                            if (((byte[]) parameterValue).length == 0)
+                                parameterValue = new byte[1];
+                            batch.addBlob(columnIndex + 1, (byte[]) parameterValue);
 
-                    } else
-                        batch.setObject(columnIndex + 1, parameterValue);
+                        } else
+                            batch.setObject(columnIndex + 1, parameterValue);
+                    }
+
+                    batch.addBatch();
                 }
 
-                batch.addBatch();
+                IFBBatchCompletionState execute = batch.execute();
+                int[] states = execute.getAllStates();
+                long batchError = Arrays.stream(states).filter(i -> i < 0).count();
+                long batchSuccess = states.length - batchError;
+
+                countError += batchError;
+                countSuccess += batchSuccess;
+
+                String errorMessage = null;
+                if (countError > 0 && isStopOnError) {
+                    for (int i = 0; i < states.length; i++) {
+                        if (states[i] < 0) {
+
+                            try {
+                                errorMessage = execute.getError(i);
+                            } catch (SQLException ignored) {
+                            }
+
+                            if (!MiscUtils.isNull(errorMessage))
+                                throw new SQLException(errorMessage);
+                        }
+                    }
+                }
+
+                if (loggingEnabled) {
+                    logPanel.append(String.format("Batch executed. Added: %d. Failed: %d", batchSuccess, batchError));
+
+                    if (countError > 0) {
+                        for (int i = 0; i < states.length; i++) {
+                            if (states[i] < 0) {
+                                try {
+                                    errorMessage = execute.getError(i);
+                                    if (!MiscUtils.isNull(errorMessage))
+                                        logPanel.appendError(errorMessage);
+
+                                } catch (SQLException ignored) {
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (recordIndex % commitAfter == 0 && recordIndex != 0) {
+                    batch.commit();
+                    batch.startTransaction();
+                }
+
+            } catch (SQLException e) {
+                logPanel.appendError(e.getMessage());
+                batch.cancel();
+
+                if (isStopOnError) {
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
+                    break;
+                }
             }
 
-            IFBBatchCompletionState execute = batch.execute();
-            if (loggingEnabled)
-                logPanel.append(execute.printAllStates());
-
-            if (recordIndex % commitAfter == 0 && recordIndex != 0) {
-                batch.commit();
-                batch.startTransaction();
-            }
-
-            recordIndex += batchCount;
+            recordIndex += batchSize;
             progressBar.setValue(recordIndex);
         }
 
         batch.commit();
-        GUIUtilities.displayInformationMessage(bundleString("batchGenerationEndMessage"));
+        logPanel.appendAction("Added: " + countSuccess + "\nFailed: " + countError);
+        GUIUtilities.displayInformationMessage(bundleString("generationEndMessage", countSuccess, recordsCount, countError));
     }
 
     private String getInsertQuery(List<FieldGenerator> selectedFields) {

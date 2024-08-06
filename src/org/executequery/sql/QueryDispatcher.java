@@ -1059,8 +1059,10 @@ public class QueryDispatcher {
                         continue;
                     }
 
-                    if (isBeginEndQuery(query))
-                        return executeCreateOrAlterObject(queryToExecute, query, anyConnections);
+                    if (isBeginEndQuery(query)) {
+                        executeCreateOrAlterObject(queryToExecute, query, anyConnections);
+                        continue;
+                    }
 
                     int type = query.getQueryType();
                     if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {

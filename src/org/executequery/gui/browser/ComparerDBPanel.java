@@ -1,5 +1,6 @@
 package org.executequery.gui.browser;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.ConnectionMediator;
@@ -570,50 +571,46 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
 
             if (isErd && isExtractMetadata) {
-                ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                        .add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.TABLE,
-                                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE]), ComparerTreeNode.TYPE_FOLDER));
-
-                loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
-                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE])));
+                updateOutputPanels(ComparerTreeNode.CREATE, NamedObject.TABLE);
                 comparer.createErds(erdTables);
+
                 if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
                     loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
                     if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                         loggingOutputPanel.append(comparer.getComputedFieldsList());
                     comparer.createComputedFields();
                 }
-            } else for (Integer type : scriptGenerationOrder) {
 
-                if (isCanceled())
-                    break;
+            } else {
 
-                if (type == STUBS) {
-                    comparer.createStubs(attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
+                for (Integer type : scriptGenerationOrder) {
 
-                    if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
-                        loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
-                        if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
-                            loggingOutputPanel.append(comparer.getComputedFieldsList());
-                        comparer.createComputedFields();
+                    if (isCanceled())
+                        break;
+
+                    if (type == STUBS) {
+                        comparer.createStubs(
+                                attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected()
+                        );
+
+                        if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
+                            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                                loggingOutputPanel.append(comparer.getComputedFieldsList());
+                            comparer.createComputedFields();
+                        }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                if (attributesCheckBoxMap.get(type).isSelected()) {
-
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.createObjects(type);
+                    if (attributesCheckBoxMap.get(type).isSelected()) {
+                        updateOutputPanels(ComparerTreeNode.CREATE, type);
+                        comparer.createObjects(type);
+                    }
                 }
             }
         }
@@ -636,16 +633,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
+                    updateOutputPanels(ComparerTreeNode.ALTER, type);
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     if (isErd)
                         comparer.alterErds(erdTables);
-                    else comparer.alterObjects(type);
+                    else
+                        comparer.alterObjects(type);
                 }
             }
         }
@@ -668,16 +661,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
+                    updateOutputPanels(ComparerTreeNode.DROP, type);
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     if (isErd)
                         comparer.dropErds(erdTables);
-                    else comparer.dropObjects(type);
+                    else
+                        comparer.dropObjects(type);
                 }
             }
         }
@@ -953,6 +942,30 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         return dialect;
+    }
+
+    private void updateOutputPanels(int treeNodeType, Integer objectType) {
+
+        ComparerTreeNode childNode = (ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1);
+        childNode.add(new ComparerTreeNode(
+                treeNodeType,
+                objectType,
+                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]),
+                ComparerTreeNode.TYPE_FOLDER
+        ));
+
+        String pattern = Constants.EMPTY;
+        if (treeNodeType == ComparerTreeNode.CREATE)
+            pattern = "\n============= {0} to CREATE  =============";
+        else if (treeNodeType == ComparerTreeNode.ALTER)
+            pattern = "\n============= {0} to ALTER  =============";
+        else if (treeNodeType == ComparerTreeNode.DROP)
+            pattern = "\n============= {0} to DROP  =============";
+
+        loggingOutputPanel.append(MessageFormat.format(
+                pattern,
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType])
+        ));
     }
 
     public void recreateProgressBar(String label, String metaTag, int maxValue) {

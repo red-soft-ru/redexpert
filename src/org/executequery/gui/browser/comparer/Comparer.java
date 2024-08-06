@@ -40,6 +40,10 @@ public class Comparer {
     protected DatabaseConnection masterConnection;
     protected DatabaseConnection compareConnection;
 
+    private int stubsInsertIndex;
+    private Map<Integer, List<NamedObject>> stubsOnAlter;
+    private Map<Integer, List<NamedObject>> stubsOnCreate;
+
     private final int[] counter;
     private String constraintsList;
     private String computedFieldsList;
@@ -254,6 +258,9 @@ public class Comparer {
         if (createObjects == null || createObjects.isEmpty())
             return;
 
+        if (stubsOnCreate != null && stubsOnCreate.containsKey(type) && stubsOnCreate.get(type) != null)
+            stubsOnCreate.get(type).addAll(createObjects);
+
         String header = MessageFormat.format(
                 "\n/* ----- Creating {0} ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
@@ -350,6 +357,9 @@ public class Comparer {
 
         if (alterObjects.isEmpty())
             return;
+
+        if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
+            stubsOnAlter.get(type).addAll(alterObjects.values());
 
         if (Objects.equals(Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), "ROLE"))
             return;
@@ -633,20 +643,27 @@ public class Comparer {
         }
     }
 
-    public void createStubs(
+    public void setStubsNeed(
+            boolean onCreate,
             boolean functions, boolean procedures, boolean triggers,
             boolean ddlTriggers, boolean dbTriggers) {
 
-        if (functions)
-            addStubsToScript(FUNCTION);
-        if (procedures)
-            addStubsToScript(PROCEDURE);
-        if (triggers)
-            addStubsToScript(TRIGGER);
-        if (ddlTriggers)
-            addStubsToScript(DDL_TRIGGER);
-        if (dbTriggers)
-            addStubsToScript(DATABASE_TRIGGER);
+        Map<Integer, List<NamedObject>> exampleHashMap = new HashMap<>();
+        exampleHashMap.put(FUNCTION, functions ? new ArrayList<>() : null);
+        exampleHashMap.put(PROCEDURE, procedures ? new ArrayList<>() : null);
+        exampleHashMap.put(TRIGGER, triggers ? new ArrayList<>() : null);
+        exampleHashMap.put(DDL_TRIGGER, ddlTriggers ? new ArrayList<>() : null);
+        exampleHashMap.put(DATABASE_TRIGGER, dbTriggers ? new ArrayList<>() : null);
+
+        if (onCreate) {
+            stubsInsertIndex = script.size();
+            stubsOnCreate = new HashMap<>(exampleHashMap);
+
+        } else {
+            if (stubsInsertIndex < 0)
+                stubsInsertIndex = script.size();
+            stubsOnAlter = new HashMap<>(exampleHashMap);
+        }
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -1114,21 +1131,15 @@ public class Comparer {
         return objectsList;
     }
 
-    private void addStubsToScript(int type) {
+    private void addStubsToScript(int type, List<NamedObject> stubsList, int insertIndex) {
 
-        List<NamedObject> stubsList = createListObjects(
-                panel.isExtractMetadata() ? new ArrayList<>() : getObjects(masterConnection, type),
-                getObjects(compareConnection, type),
-                type
-        );
-
-        if (stubsList.isEmpty())
+        if (stubsList == null || stubsList.isEmpty())
             return;
 
         String header = MessageFormat.format(
                 "\n/* ----- Creating {0} stubs ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
-        script.add(header);
+        script.add(insertIndex++, header);
 
         panel.recreateProgressBar(
                 "CreatingStubs", NamedObject.META_TYPES[type],
@@ -1136,8 +1147,8 @@ public class Comparer {
         );
 
         for (NamedObject obj : stubsList) {
-            script.add("\n/* " + obj.getName() + " (STUB) */");
-            script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
+            script.add(insertIndex++, "\n/* " + obj.getName() + " (STUB) */");
+            script.add(insertIndex++, "\n" + SQLUtils.generateCreateDefaultStub(obj));
             panel.incrementProgressBarValue();
         }
 
@@ -1160,6 +1171,21 @@ public class Comparer {
     }
 
     public ArrayList<String> getScript() {
+
+        if (stubsInsertIndex > 0 && stubsOnCreate != null) {
+            for (Integer key : stubsOnCreate.keySet())
+                addStubsToScript(key, stubsOnCreate.get(key), stubsInsertIndex);
+
+            stubsOnCreate = null;
+        }
+
+        if (stubsInsertIndex > 0 && stubsOnAlter != null) {
+            for (Integer key : stubsOnAlter.keySet())
+                addStubsToScript(key, stubsOnAlter.get(key), stubsInsertIndex);
+
+            stubsOnAlter = null;
+        }
+
         return script;
     }
 

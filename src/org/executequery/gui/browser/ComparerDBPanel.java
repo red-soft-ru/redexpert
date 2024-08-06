@@ -589,7 +589,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
                         break;
 
                     if (type == STUBS) {
-                        comparer.createStubs(
+                        comparer.setStubsNeed(
+                                true,
                                 attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
                                 attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
                                 attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
@@ -629,8 +630,18 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 if (isCanceled())
                     break;
 
-                if (type == STUBS)
+                if (type == STUBS) {
+                    comparer.setStubsNeed(
+                            false,
+                            attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected()
+                    );
+
                     continue;
+                }
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
                     updateOutputPanels(ComparerTreeNode.ALTER, type);

@@ -769,7 +769,10 @@ public final class WidgetFactory {
     // -----------------------
 
     private static Dimension getPreferredSize(JComponent component) {
-        return new Dimension((int) component.getPreferredSize().getWidth(), DEFAULT_HEIGHT);
+        return new Dimension(
+                (int) component.getPreferredSize().getWidth(),
+                (int) Math.max(DEFAULT_HEIGHT, component.getPreferredSize().getHeight())
+        );
     }
 
     public static int defaultHeight() {

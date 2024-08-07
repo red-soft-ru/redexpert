@@ -505,6 +505,13 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         for (ColumnData columnData : tableColumnData) {
             columnData.setForeignKey(false);
             columnData.resetConstraints();
+            if (columnData.isPrimaryKey()) {
+                ColumnConstraint primaryConstraint = new ColumnConstraint();
+                primaryConstraint.setName("PK_" + columnData.getTableName());
+                primaryConstraint.setType(NamedObject.PRIMARY_KEY);
+                primaryConstraint.setColumn(columnData.getColumnName());
+                columnData.addConstraint(primaryConstraint);
+            }
 
             String tableName = columnData.getTableName();
             String columnName = columnData.getColumnName();

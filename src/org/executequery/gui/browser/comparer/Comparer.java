@@ -67,6 +67,7 @@ public class Comparer {
         constraintsToDrop = new ArrayList<>();
         computedFields = new ArrayList<>();
 
+        stubsInsertIndex = -1;
         counter = new int[]{0, 0, 0};
 
         this.panel = panel;
@@ -655,15 +656,13 @@ public class Comparer {
         exampleHashMap.put(DDL_TRIGGER, ddlTriggers ? new ArrayList<>() : null);
         exampleHashMap.put(DATABASE_TRIGGER, dbTriggers ? new ArrayList<>() : null);
 
-        if (onCreate) {
+        if (stubsInsertIndex < 0)
             stubsInsertIndex = script.size();
-            stubsOnCreate = new HashMap<>(exampleHashMap);
 
-        } else {
-            if (stubsInsertIndex < 0)
-                stubsInsertIndex = script.size();
+        if (onCreate)
+            stubsOnCreate = new HashMap<>(exampleHashMap);
+        else
             stubsOnAlter = new HashMap<>(exampleHashMap);
-        }
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {

@@ -359,9 +359,6 @@ public class Comparer {
         if (alterObjects.isEmpty())
             return;
 
-        if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
-            stubsOnAlter.get(type).addAll(alterObjects.values());
-
         if (Objects.equals(Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), "ROLE"))
             return;
 
@@ -394,6 +391,10 @@ public class Comparer {
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
             if (!sqlScript.contains("there are no changes")) {
+
+                if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
+                    stubsOnAlter.get(type).add(compareObject);
+
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
                 panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));

@@ -93,33 +93,34 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton switchTargetSourceButton;
 
     private JTabbedPane tabPane;
-    private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private LoggingOutputPanel loggingOutputPanel;
     private DifferenceSqlTextPanel differenceSqlTextPanel;
+
     private JTree dbComponentsTree;
     private ComparerTreeNode rootTreeNode;
 
     private JProgressBar progressBar;
     private BackgroundProgressDialog progressDialog;
 
+    private List<DefaultDatabaseTable> erdTables;
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
-    private List<DefaultDatabaseTable> erdTables;
 
     private StringBuilder settingScriptProps;
 
     // ---
 
     public ComparerDBPanel() {
+        this.isExtractMetadata = false;
+        this.isErd = false;
 
-        isExtractMetadata = false;
-        isErd = false;
         init();
     }
 
     public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
-        isErd = true;
-        isExtractMetadata = databaseConnection == null;
+        this.isExtractMetadata = databaseConnection == null;
+        this.isErd = true;
 
         this.erdTables = new ArrayList<>();
         for (ErdTable erd : tables)
@@ -137,9 +138,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
     }
 
     public ComparerDBPanel(DatabaseConnection databaseConnection) {
+        this.isExtractMetadata = true;
+        this.isErd = false;
 
-        isExtractMetadata = true;
-        isErd = false;
         init();
 
         if (databaseConnection != null) {
@@ -163,29 +164,40 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- buttons defining ---
 
-        compareButton = new JButton();
-        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
-        compareButton.addActionListener(e -> compareDatabase());
+        compareButton = WidgetFactory.createButton(
+                "compareButton",
+                bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"),
+                e -> compareDatabase()
+        );
 
-        saveScriptButton = new JButton();
-        saveScriptButton.setText(bundleString("SaveScriptButton"));
-        saveScriptButton.addActionListener(e -> saveScript());
+        saveScriptButton = WidgetFactory.createButton(
+                "saveScriptButton",
+                bundleString("SaveScriptButton"),
+                e -> saveScript()
+        );
 
-        executeScriptButton = new JButton();
-        executeScriptButton.setText(bundleString("ExecuteScriptButton"));
-        executeScriptButton.addActionListener(e -> executeScript());
+        executeScriptButton = WidgetFactory.createButton(
+                "executeScriptButton",
+                bundleString("ExecuteScriptButton"),
+                e -> executeScript()
+        );
 
-        selectAllAttributesButton = new JButton();
-        selectAllAttributesButton.setText(bundleString("SelectAllButton"));
-        selectAllAttributesButton.addActionListener(e -> selectAll("attributes"));
+        selectAllAttributesButton = WidgetFactory.createButton(
+                "selectAllAttributesButton",
+                bundleString("SelectAllButton"),
+                e -> selectAll("attributes")
+        );
 
-        selectAllPropertiesButton = new JButton();
-        selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
-        selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
+        selectAllPropertiesButton = WidgetFactory.createButton(
+                "selectAllPropertiesButton",
+                bundleString("SelectAllButton"),
+                e -> selectAll("properties")
+        );
 
-        switchTargetSourceButton = new JButton();
-        switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
-        switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+        switchTargetSourceButton = WidgetFactory.createButton(
+                "switchTargetSourceButton",
+                "<html><p style=\"font-size:20pt\">&#x21C5;</p>",
+                e -> switchTargetSource());
         switchTargetSourceButton.setVisible(!isExtractMetadata);
 
         // --- attributes checkBox defining ---
@@ -200,23 +212,23 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (checkBoxText.isEmpty())
                 checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
 
-            attributesCheckBoxMap.put(objectType, new JCheckBox(checkBoxText));
+            JCheckBox checkBox = WidgetFactory.createCheckBox(NamedObject.META_TYPES_FOR_BUNDLE[objectType] + "_CHECK", checkBoxText);
+            attributesCheckBoxMap.put(objectType, checkBox);
         }
 
         // --- properties checkBox defining ---
 
         propertiesCheckBoxMap = new LinkedHashMap<>();
-        propertiesCheckBoxMap.put(CHECK_CREATE, new JCheckBox(bundleString("CheckCreate")));
-        propertiesCheckBoxMap.put(CHECK_ALTER, new JCheckBox(bundleString("CheckAlter")));
-        propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
-        propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
-        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
-        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, new JCheckBox(bundleString(("IgnorePositions"))));
-        propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
-        propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
-        propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
-        propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
-
+        propertiesCheckBoxMap.put(CHECK_CREATE, WidgetFactory.createCheckBox("checkCreate", bundleString("CheckCreate")));
+        propertiesCheckBoxMap.put(CHECK_ALTER, WidgetFactory.createCheckBox("checkAlter", bundleString("CheckAlter")));
+        propertiesCheckBoxMap.put(CHECK_DROP, WidgetFactory.createCheckBox("checkDrop", bundleString("CheckDrop")));
+        propertiesCheckBoxMap.put(IGNORE_COMMENTS, WidgetFactory.createCheckBox("ignoreComments", bundleString(("IgnoreComments"))));
+        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, WidgetFactory.createCheckBox("ignoreComputed", bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, WidgetFactory.createCheckBox("ignorePositions", bundleString(("IgnorePositions"))));
+        propertiesCheckBoxMap.put(IGNORE_PK, WidgetFactory.createCheckBox("ignorePK", bundleString("IgnorePK")));
+        propertiesCheckBoxMap.put(IGNORE_FK, WidgetFactory.createCheckBox("ignoreFK", bundleString("IgnoreFK")));
+        propertiesCheckBoxMap.put(IGNORE_UK, WidgetFactory.createCheckBox("ignoreUK", bundleString("IgnoreUK")));
+        propertiesCheckBoxMap.put(IGNORE_CK, WidgetFactory.createCheckBox("ignoreCK", bundleString("IgnoreCK")));
 
         if (isExtractMetadata) {
             propertiesCheckBoxMap.remove(CHECK_CREATE);
@@ -240,6 +252,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
         dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        dbComponentsTree.setName("dbComponentsTree");
         dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
         dbComponentsTree.addMouseListener(new MouseAdapter() {
             @Override

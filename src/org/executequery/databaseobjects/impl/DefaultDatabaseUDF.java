@@ -101,7 +101,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("UDF", getName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateDefaultDropQuery("EXTERNAL FUNCTION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override

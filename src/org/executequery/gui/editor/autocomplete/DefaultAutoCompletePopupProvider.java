@@ -33,8 +33,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.*;
+import java.util.TreeSet;
 
 public class DefaultAutoCompletePopupProvider
         implements AutoCompletePopupProvider,
@@ -712,14 +714,13 @@ public class DefaultAutoCompletePopupProvider
             QueryEditorAutoCompletePopupPanel popupPanel = popupMenu();
             Container parent = textComponent.getParent();
 
-            int popupHeight = popupPanel.getHeight();
+            int popupHeight = popupPanel.getPreferredSize().height;
             if (popupHeight != 0 && caretPosition.y + popupHeight > parent.getHeight())
                 caretPosition.y = caretPosition.y - popupHeight;
             else
                 caretPosition.y += heightFont;
-
-            if (caretPosition.x + popupPanel.getWidth() > parent.getWidth())
-                caretPosition.x = parent.getWidth() - popupPanel.getWidth();
+            if (caretPosition.x + popupPanel.getPreferredSize().width > parent.getWidth())
+                caretPosition.x = parent.getWidth() - popupPanel.getPreferredSize().width;
 
             if (caretPosition.x < 0)
                 caretPosition.x = 0;

@@ -190,7 +190,6 @@ public class GeneratorTestDataPanel extends JPanel
 
             @Override
             public Object construct() {
-                tabbedPane.setSelectedIndex(1);
                 runGeneration();
                 return Constants.WORKER_SUCCESS;
             }
@@ -228,6 +227,7 @@ public class GeneratorTestDataPanel extends JPanel
 
         stopButton.setEnabled(true);
         startButton.setEnabled(false);
+        tabbedPane.setSelectedIndex(1);
 
         stop = false;
         progressBar.setMinimum(0);
@@ -578,8 +578,10 @@ public class GeneratorTestDataPanel extends JPanel
     }
 
     private void tablesComboTriggered(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED)
+        if (e.getStateChange() == ItemEvent.SELECTED) {
             loadTableColumns();
+            tabbedPane.setSelectedIndex(0);
+        }
     }
 
     private void connectionsComboTriggered(ItemEvent e) {

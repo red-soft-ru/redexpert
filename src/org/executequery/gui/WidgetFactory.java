@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import org.executequery.Constants;
-import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.*;
 
@@ -490,6 +489,21 @@ public final class WidgetFactory {
     // --- Custom Components ---
     // -------------------------
 
+    /**
+     * Create named <code>ConnectionsComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
+     * with the automatically updated active connections list
+     *
+     * @param name                      the component's name
+     * @param showOnlyActiveConnections whether comboBox will contain only active connections
+     */
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
+
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+        connectionsCombo.setName(name);
+
+        return connectionsCombo;
+    }
 
     /**
      * Create named DefaultInlineFieldButton class instance

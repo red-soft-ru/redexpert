@@ -30,7 +30,9 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.log.Log;
+import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
+import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
@@ -346,15 +348,29 @@ public final class ConnectionManager {
      * @return a collection of active connections
      */
     public static Vector<DatabaseConnection> getActiveConnections() {
-        if (connectionPools == null || connectionPools.isEmpty()) {
-            return new Vector<DatabaseConnection>(0);
-        }
-        Vector<DatabaseConnection> connections =
-                new Vector<DatabaseConnection>(connectionPools.size());
-        for (Iterator<DatabaseConnection> i =
-             connectionPools.keySet().iterator(); i.hasNext(); ) {
-            connections.add(i.next());
-        }
+
+        if (connectionPools.isEmpty())
+            return new Vector<>(0);
+
+        Vector<DatabaseConnection> connections = new Vector<>(connectionPools.size());
+        connections.addAll(connectionPools.keySet());
+
+        return connections;
+    }
+
+    /**
+     * Returns a collection of database connection property
+     * objects that are active (connected).
+     *
+     * @return a collection of active connections
+     */
+    public static Vector<DatabaseConnection> getAllConnections() {
+
+        Vector<DatabaseConnection> connections = new Vector<>();
+        Repository repository = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repository instanceof DatabaseConnectionRepository)
+            connections.addAll(((DatabaseConnectionRepository) repository).findAll());
+
         return connections;
     }
 

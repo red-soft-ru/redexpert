@@ -23,6 +23,8 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
         if (showOnlyActiveConnections)
             EventMediator.registerListener(this);
+        else
+            selectFirstActiveConnection();
     }
 
     public DatabaseConnection getSelectedConnection() {
@@ -36,6 +38,16 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
                 return true;
 
         return false;
+    }
+
+    private void selectFirstActiveConnection() {
+        for (int i = 0; i < getItemCount(); i++) {
+            DatabaseConnection dc = getItemAt(i);
+            if (dc.isConnected()) {
+                setSelectedItem(dc);
+                return;
+            }
+        }
     }
 
     private void updateEnable() {

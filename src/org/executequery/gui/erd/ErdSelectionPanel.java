@@ -62,12 +62,11 @@ public class ErdSelectionPanel extends JPanel
     private final ErdViewerPanel erdViewer;
 
     public ErdSelectionPanel() {
-        this(null, null);
+        this(null);
     }
 
-    public ErdSelectionPanel(DatabaseConnection databaseConnection, ErdViewerPanel erdViewer) {
+    public ErdSelectionPanel(ErdViewerPanel erdViewer) {
         super(new GridBagLayout());
-        this.databaseConnection = databaseConnection;
         this.erdViewer = erdViewer;
         init();
     }
@@ -137,12 +136,16 @@ public class ErdSelectionPanel extends JPanel
                         tables.add(table.getTableName());
                 }
             }
+
             populateTableValues(tables);
+
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                    "Error retrieving the tables names for the " +
-                            "current connection.\n\nThe system returned:\n" +
-                            e.getExtendedMessage(), e, this.getClass());
+                    "Error retrieving the tables names for the current connection." +
+                            "\n\nThe system returned:\n" + e.getExtendedMessage(),
+                    e,
+                    this.getClass()
+            );
         }
     }
 

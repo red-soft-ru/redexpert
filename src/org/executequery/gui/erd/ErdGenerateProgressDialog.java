@@ -65,17 +65,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
         display();
     }
 
-    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent) {
-        super(GUIUtilities.getParentFrame(), "Adding Tables", false);
-
-        this.connection = parent.getDatabaseConnection();
-        this.selectedTables = selectedTables;
-        this.parent = parent;
-
-        init();
-        display();
-    }
-
     public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent, DatabaseConnection connection) {
         super(GUIUtilities.getParentFrame(), "Adding Tables", false);
 
@@ -219,10 +208,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             }
 
             GUIUtilities.showWaitCursor();
-
-            ErdViewerPanel viewerPanel = new ErdViewerPanel(tableInfoList, false);
-            viewerPanel.setDatabaseConnection(connection);
-
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();
             GUIUtilities.showNormalCursor();

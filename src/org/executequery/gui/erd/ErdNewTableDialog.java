@@ -21,7 +21,6 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
@@ -93,7 +92,7 @@ public class ErdNewTableDialog extends BaseDialog
         buttonsPanel.add(createButton, gbh.nextCol().setMinWeightX().fillNone().get());
         buttonsPanel.add(cancelButton, gbh.nextCol().rightGap(5).get());
 
-        createPanel = new CreateTableERDPanel(erdViewerPanel.getDatabaseConnection(), this);
+        createPanel = new CreateTableERDPanel(this);
         createPanel.addButtonsPanel(buttonsPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
 
@@ -203,8 +202,8 @@ public class ErdNewTableDialog extends BaseDialog
 
     public class CreateTableERDPanel extends CreateTablePanel {
 
-        public CreateTableERDPanel(DatabaseConnection dc, ActionContainer dialog) {
-            super(dc, dialog);
+        public CreateTableERDPanel(ActionContainer dialog) {
+            super(null, dialog);
         }
 
         public void setColumnConstraintVector(Vector<ColumnConstraint> ccv) {

@@ -22,16 +22,11 @@ package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.toolscommands.ComparerDBCommands;
-import org.executequery.databasemediators.ConnectionMediator;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.GenerateErdPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.Repository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.toolbar.PanelToolBar;
@@ -39,7 +34,6 @@ import org.underworldlabs.swing.toolbar.PanelToolBar;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 /**
  * @author Takis Diakoumis
@@ -65,8 +59,6 @@ public class ErdToolBarPalette extends JPanel {
     private RolloverButton zoomInButton;
     private RolloverButton zoomOutButton;
 
-    private JComboBox<?> connectionsCombo;
-
     public ErdToolBarPalette(ErdViewerPanel parent) {
         super();
 
@@ -79,16 +71,6 @@ public class ErdToolBarPalette extends JPanel {
     }
 
     private void init() {
-
-        List<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repo instanceof DatabaseConnectionRepository)
-            connections = ((DatabaseConnectionRepository) repo).findAll();
-
-        connectionsCombo = WidgetFactory.createComboBox(
-                "connectionsCombo",
-                connections.toArray()
-        );
 
         createTableButton = WidgetFactory.createRolloverButton(
                 "createTableButton",
@@ -187,18 +169,13 @@ public class ErdToolBarPalette extends JPanel {
                 "icon_zoom_out",
                 e -> parent.zoom(false)
         );
-
-        connections.stream()
-                .filter(DatabaseConnection::isConnected)
-                .findFirst().ifPresent(dc -> connectionsCombo.setSelectedItem(dc));
     }
 
     private void arrange() {
         setLayout(new GridBagLayout());
 
         GridBagHelper gbh = new GridBagHelper().anchorWest().fillHorizontally();
-        add(connectionsCombo, gbh.setWeightX(0.2).get());
-        add(createTableButton, gbh.nextCol().setMinWeightX().get());
+        add(createTableButton, gbh.get());
         add(dropTableButton, gbh.nextCol().get());
         add(createRelationButton, gbh.nextCol().get());
         add(deleteRelationButton, gbh.nextCol().get());
@@ -321,11 +298,17 @@ public class ErdToolBarPalette extends JPanel {
     }
 
     private void updateFromDatabase() {
+
+        if (!ConnectionManager.hasConnections()) {
+            GUIUtilities.displayWarningMessage(bundleString("noActiveConnections"));
+            return;
+        }
+
         try {
             GUIUtilities.showWaitCursor();
 
             BaseDialog dialog = new BaseDialog(GenerateErdPanel.TITLE, false);
-            JPanel panel = new GenerateErdPanel(parent, dialog, getSelectedConnection());
+            JPanel panel = new GenerateErdPanel(parent, dialog);
 
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.setResizable(false);
@@ -367,25 +350,6 @@ public class ErdToolBarPalette extends JPanel {
         }
 
         parent.setPopupMenuScaleValue(selectedScaleIndex);
-    }
-
-    public DatabaseConnection getSelectedConnection() {
-
-        Object selectedItem = connectionsCombo.getSelectedItem();
-        if (selectedItem instanceof DatabaseConnection) {
-
-            DatabaseConnection connection = (DatabaseConnection) selectedItem;
-            if (!connection.isConnected())
-                ConnectionMediator.getInstance().connect(connection, true);
-
-            return connection;
-        }
-
-        return null;
-    }
-
-    public void setSelectedConnection(DatabaseConnection connection) {
-        connectionsCombo.setSelectedItem(connection);
     }
 
     private static String bundleString(String key) {

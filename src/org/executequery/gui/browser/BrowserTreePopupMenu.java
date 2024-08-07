@@ -181,27 +181,32 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         boolean isTable = nodeType == NamedObject.TABLE;
         boolean isIndex = nodeType == NamedObject.INDEX;
         boolean isSeveralSelected = listener.isSelectedSeveralPaths();
+        boolean isViewColumn = nodeType == NamedObject.TABLE_COLUMN
+                && ((DatabaseObjectNode) objectNode.getParent()).getType() == NamedObject.VIEW;
 
         // ---
 
-        if (!isSeveralSelected) {
-            createObject.setText(bundleString("create", labelSingle));
-            add(createObject);
-            addSeparator();
-        }
+        if (!isViewColumn) {
 
-        reloadObject.setText(bundleString("reload", isSeveralSelected ? labelMultiple : labelSingle));
-        add(reloadObject);
+            if (!isSeveralSelected) {
+                createObject.setText(bundleString("create", labelSingle));
+                add(createObject);
+                addSeparator();
+            }
 
-        if (!isSeveralSelected) {
-            editObject.setText(bundleString("edit", labelSingle));
-            add(editObject);
-        }
+            reloadObject.setText(bundleString("reload", isSeveralSelected ? labelMultiple : labelSingle));
+            add(reloadObject);
 
-        if (!isSeveralSelected) {
-            deleteObject.setText(bundleString("delete", labelSingle));
-            add(deleteObject);
-            addSeparator();
+            if (!isSeveralSelected) {
+                editObject.setText(bundleString("edit", labelSingle));
+                add(editObject);
+            }
+
+            if (!isSeveralSelected) {
+                deleteObject.setText(bundleString("delete", labelSingle));
+                add(deleteObject);
+                addSeparator();
+            }
         }
 
         if (isIndex)

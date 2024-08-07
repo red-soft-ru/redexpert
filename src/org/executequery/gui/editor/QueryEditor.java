@@ -43,6 +43,7 @@ import org.executequery.util.UserProperties;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.underworldlabs.sqlParser.SqlParser;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -100,8 +101,8 @@ public class QueryEditor extends DefaultTabView
     private QueryEditorPopupMenu popup;
     private TransactionParametersPanel transactionParametersPanel;
 
-    private OpenConnectionsComboBox connectionsCombo;
     private EQCheckCombox connectionsCheckCombo;
+    private ConnectionsComboBox connectionsCombo;
 
     private JPanel baseEditorPanel;
     private JSplitPane splitPane;
@@ -187,7 +188,7 @@ public class QueryEditor extends DefaultTabView
 
         // --- connection combos ---
 
-        connectionsCombo = new OpenConnectionsComboBox(this, ConnectionManager.getActiveConnections());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         connectionsCombo.setMaximumSize(new Dimension(200, 30));
         connectionsCombo.addItemListener(this::connectionChanged);
         connectionsCombo.setVisible(!useMultipleConnections);
@@ -199,7 +200,7 @@ public class QueryEditor extends DefaultTabView
 
         oldConnection = useMultipleConnections ?
                 getSelectedConnection() :
-                (DatabaseConnection) connectionsCombo.getSelectedItem();
+                connectionsCombo.getSelectedConnection();
 
         // --- transaction parameters panel ---
 
@@ -936,12 +937,9 @@ public class QueryEditor extends DefaultTabView
             return selectedConnections != null && !selectedConnections.isEmpty() ?
                     (DatabaseConnection) selectedConnections.get(0) :
                     null;
-
-        } else {
-            return connectionsCombo.getSelectedIndex() != -1 ?
-                    (DatabaseConnection) connectionsCombo.getSelectedItem() :
-                    null;
         }
+
+        return connectionsCombo.getSelectedConnection();
     }
 
     public void setSelectedConnection(DatabaseConnection databaseConnection) {
@@ -953,8 +951,8 @@ public class QueryEditor extends DefaultTabView
         } else if (useMultipleConnections)
             connectionToSelect = databaseConnection;
 
-        if (connectionsCombo.contains(databaseConnection)) {
-            connectionsCombo.getModel().setSelectedItem(databaseConnection);
+        if (connectionsCombo.hasConnection(databaseConnection)) {
+            connectionsCombo.setSelectedItem(databaseConnection);
 
         } else if (!useMultipleConnections)
             connectionToSelect = databaseConnection;
@@ -1388,29 +1386,21 @@ public class QueryEditor extends DefaultTabView
     public void connected(ConnectionEvent connectionEvent) {
 
         if (!isQueryEditorClosed) {
-
-//            if (connectionsCombo.getModel().getSize() == 0)
-//                connectionsCombo.addElement(null);
-
-            connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
             connectionsCheckCombo.getModel().addElement(connectionEvent.getDatabaseConnection());
 
             DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
             if (databaseConnection == connectionToSelect) {
                 connectionsCheckCombo.getModel().addCheck(databaseConnection);
-                connectionsCombo.getModel().setSelectedItem(databaseConnection);
+                connectionsCombo.setSelectedItem(databaseConnection);
                 connectionToSelect = null;
             }
         }
-
     }
 
     @Override
     public void disconnected(ConnectionEvent connectionEvent) {
-        if (!isQueryEditorClosed) {
+        if (!isQueryEditorClosed)
             connectionsCheckCombo.getModel().removeElement(connectionEvent.getDatabaseConnection());
-            connectionsCombo.removeElement(connectionEvent.getDatabaseConnection());
-        }
     }
 
     // ---------------------------------------------

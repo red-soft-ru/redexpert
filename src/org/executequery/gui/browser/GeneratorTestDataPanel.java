@@ -21,6 +21,7 @@ import org.executequery.gui.browser.generatortestdata.FieldsPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -44,7 +45,7 @@ public class GeneratorTestDataPanel extends JPanel
     // --- GUI components ---
 
     private JComboBox<?> tablesCombo;
-    private JComboBox<?> connectionsCombo;
+    private ConnectionsComboBox connectionsCombo;
 
     private JButton stopButton;
     private JButton startButton;
@@ -88,7 +89,7 @@ public class GeneratorTestDataPanel extends JPanel
         tabbedPane.add(bundleString("Generator"), fieldsPanel);
         tabbedPane.add(bundleString("Output"), logPanel);
 
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", ConnectionManager.getActiveConnections());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         connectionsCombo.setMinimumSize(new Dimension(400, WidgetFactory.defaultHeight()));
         connectionsCombo.addItemListener(this::connectionsComboTriggered);
 
@@ -598,7 +599,7 @@ public class GeneratorTestDataPanel extends JPanel
     }
 
     private DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
+        return connectionsCombo.getSelectedConnection();
     }
 
     // --- TabView impl ---

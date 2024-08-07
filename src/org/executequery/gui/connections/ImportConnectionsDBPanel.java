@@ -5,7 +5,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseConnectionFactory;
 import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
@@ -13,6 +12,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -34,7 +34,7 @@ public class ImportConnectionsDBPanel extends JPanel {
 
     private JButton applyButton;
     private JButton cancelButton;
-    private JComboBox<?> connectionsCombo;
+    private ConnectionsComboBox connectionsCombo;
 
     public ImportConnectionsDBPanel(ActionContainer parent) {
         this.parent = parent;
@@ -46,7 +46,7 @@ public class ImportConnectionsDBPanel extends JPanel {
     }
 
     private void init() {
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", ConnectionManager.getActiveConnections());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         applyButton = WidgetFactory.createButton("applyButton", Bundles.get("common.ok.button"), e -> importConnections());
         cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> finished(false));
     }
@@ -199,7 +199,7 @@ public class ImportConnectionsDBPanel extends JPanel {
     }
 
     private DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
+        return connectionsCombo.getSelectedConnection();
     }
 
     private boolean connectionNameExists(String name, DatabaseConnection databaseConnection) {

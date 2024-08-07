@@ -567,7 +567,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     private void connectionChanged() {
-        DatabaseConnection connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+        DatabaseConnection connection = getSelectedConnection();
 
         // reset meta data
         inputParamsPanel.setDatabaseConnection(connection);

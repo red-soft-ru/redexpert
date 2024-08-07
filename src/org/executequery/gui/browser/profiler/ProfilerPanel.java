@@ -2,13 +2,12 @@ package org.executequery.gui.browser.profiler;
 
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
-import org.executequery.components.TableSelectionCombosGroup;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.DynamicComboBoxModel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.treetable.CCTNode;
@@ -42,8 +41,8 @@ public class ProfilerPanel extends JPanel
 
     // --- GUI objects ---
 
-    private JComboBox<?> connectionsComboBox;
     private JComboBox<?> attachmentsComboBox;
+    private ConnectionsComboBox connectionsComboBox;
 
     private JCheckBox compactViewCheckBox;
     private JCheckBox roundValuesCheckBox;
@@ -64,9 +63,8 @@ public class ProfilerPanel extends JPanel
     private int sessionId;
     private int currentState;
     private boolean dataCollected;
-    private DefaultProfilerExecutor profilerExecutor;
-    private TableSelectionCombosGroup combosGroup;
     private List<ProfilerData> oldDataList;
+    private DefaultProfilerExecutor profilerExecutor;
 
     // ---
 
@@ -100,10 +98,8 @@ public class ProfilerPanel extends JPanel
 
         // --- connections comboBox ---
 
-        connectionsComboBox = WidgetFactory.createComboBox("connectionsComboBox");
-        connectionsComboBox.setModel(new DynamicComboBoxModel(new Vector<>(ConnectionManager.getActiveConnections())));
+        connectionsComboBox = WidgetFactory.createConnectionComboBox("connectionsComboBox", true);
         connectionsComboBox.addActionListener(e -> refreshAttachments());
-        combosGroup = new TableSelectionCombosGroup(connectionsComboBox);
 
         // --- compactView CheckBox ---
 
@@ -236,7 +232,7 @@ public class ProfilerPanel extends JPanel
         }
 
         profilerExecutor = new DefaultProfilerExecutor(
-                combosGroup.getSelectedHost().getDatabaseConnection(),
+                getSelectedConnection(),
                 ((AttachmentData) Objects.requireNonNull(attachmentsComboBox.getSelectedItem())).id
         );
 
@@ -595,7 +591,7 @@ public class ProfilerPanel extends JPanel
         try {
 
             DefaultStatementExecutor executor = new DefaultStatementExecutor();
-            executor.setDatabaseConnection(combosGroup.getSelectedHost().getDatabaseConnection());
+            executor.setDatabaseConnection(getSelectedConnection());
             executor.setKeepAlive(true);
             executor.setCommitMode(false);
 
@@ -657,7 +653,11 @@ public class ProfilerPanel extends JPanel
     }
 
     private boolean isConnected() {
-        return combosGroup.getSelectedHost().isConnected();
+        return getSelectedConnection().isConnected();
+    }
+
+    private DatabaseConnection getSelectedConnection() {
+        return connectionsComboBox.getSelectedConnection();
     }
 
     @Override

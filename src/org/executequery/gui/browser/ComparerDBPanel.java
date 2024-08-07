@@ -12,6 +12,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.LoggingOutputPanel;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
@@ -20,10 +21,9 @@ import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -73,7 +73,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private Comparer comparer;
     private List<Integer> scriptGenerationOrder;
     private List<ComparedObject> comparedObjectList;
-    private List<DatabaseConnection> databaseConnectionList;
     private static final List<DatabaseConnection> busyConnectionList = new ArrayList<>();
 
     private boolean isComparing;
@@ -83,8 +82,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     // --- panel components ---
 
-    private JComboBox<String> dbMasterComboBox;
-    private JComboBox<String> dbTargetComboBox;
+    private ConnectionsComboBox dbMasterComboBox;
+    private ConnectionsComboBox dbTargetComboBox;
+
     private JButton compareButton;
     private JButton saveScriptButton;
     private JButton executeScriptButton;
@@ -120,29 +120,31 @@ public class ComparerDBPanel extends JPanel implements TabView {
     public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
         isErd = true;
         isExtractMetadata = databaseConnection == null;
+
         this.erdTables = new ArrayList<>();
-        for (ErdTable erd : tables) {
+        for (ErdTable erd : tables)
             erdTables.add(new DefaultDatabaseTable(erd));
-        }
+
         init();
 
         if (databaseConnection != null) {
-            dbTargetComboBox.setSelectedItem(databaseConnection.getName());
-            dbMasterComboBox.setSelectedItem(databaseConnection.getName());
+            dbTargetComboBox.setSelectedItem(databaseConnection);
+            dbMasterComboBox.setSelectedItem(databaseConnection);
         }
+
         if (databaseConnection != null)
             attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }
 
-    public ComparerDBPanel(DatabaseConnection dc) {
+    public ComparerDBPanel(DatabaseConnection databaseConnection) {
 
         isExtractMetadata = true;
         isErd = false;
         init();
 
-        if (dc != null) {
-            dbTargetComboBox.setSelectedItem(dc.getName());
-            dbMasterComboBox.setSelectedItem(dc.getName());
+        if (databaseConnection != null) {
+            dbTargetComboBox.setSelectedItem(databaseConnection);
+            dbMasterComboBox.setSelectedItem(databaseConnection);
         }
 
         attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
@@ -150,11 +152,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private void init() {
 
-        databaseConnectionList = new ArrayList<>();
-        comparedObjectList = new ArrayList<>();
-
         isComparing = false;
         isReverseOrder = false;
+        comparedObjectList = new ArrayList<>();
 
         // --- script generation order defining ---
 
@@ -232,8 +232,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- comboBoxes defining ---
 
-        dbTargetComboBox = new JComboBox<>();
-        dbMasterComboBox = new JComboBox<>();
+        dbTargetComboBox = WidgetFactory.createConnectionComboBox("dbTargetComboBox", false);
+        dbMasterComboBox = WidgetFactory.createConnectionComboBox("dbMasterComboBox", false);
         dbMasterComboBox.setVisible(!isExtractMetadata);
 
         // --- db components tree view ---
@@ -277,7 +277,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // ---
 
         arrangeComponents();
-        getConnections();
     }
 
     private void arrangeComponents() {
@@ -414,19 +413,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     }
 
-    private void getConnections() {
-
-        List<DatabaseConnection> connections =
-                ((DatabaseConnectionRepository) Objects.requireNonNull(
-                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
-
-        for (DatabaseConnection dc : connections) {
-            databaseConnectionList.add(dc);
-            dbTargetComboBox.addItem(dc.getName());
-            dbMasterComboBox.addItem(dc.getName());
-        }
-    }
-
     private boolean prepareComparer() {
         if (isErd && isExtractMetadata) {
             comparer = new Comparer(this, null, new boolean[]{
@@ -440,8 +426,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     !isPropertySelected(IGNORE_FIELDS_POSITIONS));
             return true;
         }
-        DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
-        DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
+
+        DatabaseConnection masterConnection = dbMasterComboBox.getSelectedConnection();
+        DatabaseConnection targetConnection = dbTargetComboBox.getSelectedConnection();
 
         if (busyConnectionList.contains(masterConnection) || busyConnectionList.contains(targetConnection)) {
             GUIUtilities.displayWarningMessage(isExtractMetadata ?
@@ -500,8 +487,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         try {
 
-            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
-            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex()));
+            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(dbMasterComboBox.getSelectedConnection());
+            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(dbTargetComboBox.getSelectedConnection());
 
             if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
                     (!isExtractMetadata && !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase"))) {
@@ -707,8 +694,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         if (!isExtractMetadata) {
 
-            if (databaseConnectionList.size() < 2 ||
-                    dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+            if (Objects.equals(dbTargetComboBox.getSelectedConnection(), dbMasterComboBox.getSelectedConnection())) {
                 GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
                 return;
             }
@@ -893,7 +879,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     }
 
     private void switchTargetSource() {
-        Object sourceConnection = dbMasterComboBox.getSelectedItem();
+        DatabaseConnection sourceConnection = dbMasterComboBox.getSelectedConnection();
         dbMasterComboBox.setSelectedItem(dbTargetComboBox.getSelectedItem());
         dbTargetComboBox.setSelectedItem(sourceConnection);
     }

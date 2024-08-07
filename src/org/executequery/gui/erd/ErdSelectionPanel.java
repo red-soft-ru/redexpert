@@ -23,12 +23,11 @@ package org.executequery.gui.erd;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.ListSelectionPanel;
 
@@ -49,12 +48,7 @@ public class ErdSelectionPanel extends JPanel
     /**
      * The connection combo selection
      */
-    protected JComboBox connectionsCombo;
-
-    /**
-     * The connections combo box model
-     */
-    protected DynamicComboBoxModel connectionsModel;
+    protected ConnectionsComboBox connectionsCombo;
 
     /**
      * The add/remove table selections panel
@@ -82,10 +76,7 @@ public class ErdSelectionPanel extends JPanel
 
         listPanel = new ListSelectionPanel(bundleString("availableTables"), bundleString("selected Tables"));
 
-        // combo boxes
-        Vector connections = ConnectionManager.getActiveConnections();
-        connectionsModel = new DynamicComboBoxModel(connections);
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connectionsModel);
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         connectionsCombo.addItemListener(this);
 
         setBorder(BorderFactory.createEtchedBorder());
@@ -112,9 +103,7 @@ public class ErdSelectionPanel extends JPanel
         gbc.fill = GridBagConstraints.BOTH;
         add(listPanel, gbc);
 
-        if (connections.isEmpty())
-            connectionsCombo.setEnabled(false);
-        else
+        if (connectionsCombo.getItemCount() > 0)
             connectionChanged();
 
         setPreferredSize(new Dimension(700, 380));
@@ -135,7 +124,7 @@ public class ErdSelectionPanel extends JPanel
     }
 
     private void connectionChanged() {
-        databaseConnection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+        databaseConnection = getSelectedConnection();
 
         try {
             List<String> tables = ConnectionsTreePanel.getPanelFromBrowser()
@@ -171,8 +160,12 @@ public class ErdSelectionPanel extends JPanel
 
     public DatabaseConnection getDatabaseConnection() {
         if (databaseConnection == null)
-            return (DatabaseConnection) connectionsCombo.getSelectedItem();
+            return getSelectedConnection();
         return databaseConnection;
+    }
+
+    private DatabaseConnection getSelectedConnection() {
+        return connectionsCombo.getSelectedConnection();
     }
 
     private String bundleString(String key) {

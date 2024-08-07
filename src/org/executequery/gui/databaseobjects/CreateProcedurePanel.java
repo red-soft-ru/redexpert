@@ -52,7 +52,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
         String fullProcedureBody = null;
 
         try {
-            DatabaseConnection connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+            DatabaseConnection connection = getSelectedConnection();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData databaseMetadata = ((PooledDatabaseMetaData) host.getDatabaseMetaData()).getInner();
 

@@ -594,7 +594,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
 
     @Override
     public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) connectionsCombo.getSelectedItem();
+        return super.getSelectedConnection();
     }
 
     @Override

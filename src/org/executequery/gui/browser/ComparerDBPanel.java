@@ -116,6 +116,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         this.isErd = false;
 
         init();
+        arrange();
     }
 
     public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
@@ -127,6 +128,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             erdTables.add(new DefaultDatabaseTable(erd));
 
         init();
+        arrange();
 
         if (databaseConnection != null) {
             dbTargetComboBox.setSelectedItem(databaseConnection);
@@ -142,6 +144,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         this.isErd = false;
 
         init();
+        arrange();
 
         if (databaseConnection != null) {
             dbTargetComboBox.setSelectedItem(databaseConnection);
@@ -199,6 +202,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 "<html><p style=\"font-size:20pt\">&#x21C5;</p>",
                 e -> switchTargetSource());
         switchTargetSourceButton.setVisible(!isExtractMetadata);
+        switchTargetSourceButton.setHorizontalTextPosition(SwingConstants.LEFT);
 
         // --- attributes checkBox defining ---
 
@@ -279,6 +283,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         loggingOutputPanel = new LoggingOutputPanel();
         loggingOutputPanel.append(bundleString("WelcomeText"));
+        loggingOutputPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
@@ -286,54 +291,42 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         sqlTextPanel = new SimpleSqlTextPanel();
         differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"), !isExtractMetadata);
-
-        // ---
-
-        arrangeComponents();
     }
 
-    private void arrangeComponents() {
-
-        GridBagHelper gridBagHelper;
+    private void arrange() {
+        GridBagHelper gbh;
 
         // --- connections selector panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel connectionsSelectorPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        if (!isExtractMetadata)
-            gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                    bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        connectionsSelectorPanel.add(new JLabel(bundleString("CompareDatabaseLabel")), gbh.topGap(3).setMinWeightX().get());
+        connectionsSelectorPanel.add(dbTargetComboBox, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        if (!isExtractMetadata) {
+            connectionsSelectorPanel.add(new JLabel(bundleString("MasterDatabaseLabel")), gbh.nextRowFirstCol().topGap(8).leftGap(0).setMinWeightX().get());
+            connectionsSelectorPanel.add(dbMasterComboBox, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        }
 
         // --- connections panel ---
-
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
-        connectionsPanel.add(connectionsSelectorPanel, gridBagHelper.setMaxWeightX().get());
-        connectionsPanel.add(switchTargetSourceButton, gridBagHelper.nextCol().setMinWeightX().fillVertical().get());
-        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().setWidth(2).fillHorizontally().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        connectionsPanel.add(connectionsSelectorPanel, gbh.setMaxWeightX().get());
+        connectionsPanel.add(switchTargetSourceButton, gbh.nextCol().leftGap(0).setMinWeightX().fillVertical().get());
+        connectionsPanel.add(compareButton, gbh.nextRowFirstCol().leftGap(5).topGap(0).fillHorizontally().spanX().get());
 
         // --- attributes panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel attributesPanel = new JPanel(new GridBagLayout());
 
-        attributesPanel.add(selectAllAttributesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
+        attributesPanel.add(selectAllAttributesButton, gbh.get());
         for (JCheckBox checkBox : attributesCheckBoxMap.values())
-            attributesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
-        attributesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
-
-        attributesPanel.add(new JScrollPane());
+            attributesPanel.add(checkBox, gbh.nextRowFirstCol().get());
+        attributesPanel.add(new JPanel(), gbh.nextRowFirstCol().bottomGap(5).setMaxWeightY().spanY().get());
 
         JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -343,15 +336,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- properties panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel propertiesPanel = new JPanel(new GridBagLayout());
 
-        propertiesPanel.add(selectAllPropertiesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
+        propertiesPanel.add(selectAllPropertiesButton, gbh.get());
         for (JCheckBox checkBox : propertiesCheckBoxMap.values())
-            propertiesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
-        propertiesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+            propertiesPanel.add(checkBox, gbh.nextRowFirstCol().get());
+        propertiesPanel.add(new JPanel(), gbh.nextRowFirstCol().bottomGap(5).setMaxWeightY().spanY().get());
 
         JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -361,21 +352,20 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- SQL panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
-
         JPanel sqlPanel = new JPanel(new GridBagLayout());
 
-        sqlPanel.add(sqlTextPanel, gridBagHelper.setWidth(3).setMaxWeightY().spanX().get());
-        sqlPanel.add(saveScriptButton, gridBagHelper.setLabelDefault().nextRowFirstCol().get());
-        sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
-        sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
+        gbh = new GridBagHelper().setInsets(0, 5, 0, 5).anchorNorthWest().fillBoth();
+        sqlPanel.add(sqlTextPanel, gbh.setMaxWeightY().spanX().get());
+        sqlPanel.add(saveScriptButton, gbh.nextRowFirstCol().setLabelDefault().topGap(0).bottomGap(6).get());
+        sqlPanel.add(executeScriptButton, gbh.nextCol().leftGap(5).get());
+        sqlPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().get());
 
         // --- view panel ---
 
         JScrollPane dbComponentsTreePanel = new JScrollPane(dbComponentsTree,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        dbComponentsTreePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 5));
 
         JSplitPane viewPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         viewPanel.setResizeWeight(0.25);
@@ -385,39 +375,36 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- tabbed pane ---
 
         tabPane = new JTabbedPane();
-
         tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
         tabPane.add(bundleString("TreeView"), viewPanel);
         tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
-
         JPanel comparePanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
         if (!isErd) {
+            comparePanel.add(connectionsPanel, gbh.spanX().get());
+            comparePanel.add(attributesPanelWithScrolls, gbh.nextRowFirstCol().setMaxWeightY().setWidth(1).spanY().get());
+            gbh.nextCol().leftGap(5);
 
-            comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
-
-            comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
         } else {
-            comparePanel.add(compareButton, gridBagHelper.setLabelDefault().get());
-            gridBagHelper.nextRowFirstCol();
-            gridBagHelper.previousCol();
+            comparePanel.add(compareButton, gbh.spanX().get());
+            gbh.nextRow().setMaxWeightY().spanY();
         }
-        comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
+        comparePanel.add(propertiesPanelWithScrolls, gbh.get());
 
         // --- main panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        gbh = new GridBagHelper();
+        gbh.setLabelDefault().setInsets(0, 5, 5, 5).anchorNorthWest().fillBoth();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(comparePanel, gridBagHelper.setMaxWeightY().get());
-        mainPanel.add(tabPane, gridBagHelper.nextCol().spanX().get());
-        mainPanel.add(progressBar, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
+        mainPanel.add(comparePanel, gbh.setMaxWeightY().get());
+        mainPanel.add(tabPane, gbh.nextCol().bottomGap(1).spanX().get());
+        mainPanel.add(progressBar, gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
 
         // --- layout configure ---
 

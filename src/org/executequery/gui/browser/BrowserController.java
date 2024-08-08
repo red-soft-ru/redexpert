@@ -178,10 +178,13 @@ public class BrowserController {
      */
     public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection, boolean updatePropertiesPanel) {
 
+        if (!isNodeObjectEditable(node))
+            return;
+
         treePanel.setInProcess(true);
         try {
 
-            FormObjectView panel = buildPanelView(node,updatePropertiesPanel);
+            FormObjectView panel = buildPanelView(node, updatePropertiesPanel);
             if (panel == null)
                 return;
 
@@ -189,9 +192,6 @@ public class BrowserController {
             String type = "";
 
             int nodeType = node.getType();
-            if (NamedObject.isTableFolder(nodeType))
-                return;
-
             if (nodeType < NamedObject.META_TYPES.length)
                 type = NamedObject.META_TYPES[node.getType()];
 
@@ -469,6 +469,20 @@ public class BrowserController {
             hostPanel = (HostPanel) viewPanel.getFormObjectView(HostPanel.NAME);
 
         return hostPanel;
+    }
+
+    private static boolean isNodeObjectEditable(DatabaseObjectNode node) {
+
+        int nodeType = node.getType();
+        if (NamedObject.isTableFolder(nodeType))
+            return false;
+
+        if (nodeType == NamedObject.TABLE_COLUMN) {
+            int parentType = ((DatabaseObjectNode) node.getParent()).getType();
+            return parentType != NamedObject.VIEW;
+        }
+
+        return true;
     }
 
     /**

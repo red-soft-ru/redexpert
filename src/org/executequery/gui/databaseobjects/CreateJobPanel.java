@@ -100,6 +100,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
         simpleCommentPanel.setDatabaseObject(job);
         nameField.setEditable(false);
+        jobTypeCombo.setSelectedIndex(job.getJobType());
         tabbedPane.addTab(bundleString("Log"), new JobsLogPanel(job));
         addCreateSqlTab(job);
     }

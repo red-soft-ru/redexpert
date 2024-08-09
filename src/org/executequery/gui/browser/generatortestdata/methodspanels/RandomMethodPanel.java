@@ -1,10 +1,12 @@
 package org.executequery.gui.browser.generatortestdata.methodspanels;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import org.apache.commons.lang.RandomStringUtils;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.T;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SimpleTextArea;
+import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
@@ -12,12 +14,16 @@ import org.underworldlabs.swing.celleditor.picker.ZonedTimestampPicker;
 import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.swing.celleditor.picker.ZonedTimePicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.time.*;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 
 public class RandomMethodPanel extends AbstractMethodPanel {
 
@@ -43,6 +49,7 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     private ZonedTimestampPicker minDateTimezone;
     private ZonedTimestampPicker maxDateTimezone;
 
+    private JComboBox<?> charsetCombo;
     private JCheckBox useSelectedCharsetCheck;
     private SimpleTextArea useSelectedCharsetField;
 
@@ -147,8 +154,16 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         minField.setEnableNegativeNumbers(false);
         minField.setText("0");
 
+        JLabel charsetLabel = new JLabel(bundleString("Charset"));
+        charsetCombo = WidgetFactory.createComboBox("charsetCombo", getLoadCharsets().toArray());
+
         useSelectedCharsetField = new SimpleTextArea();
         useSelectedCharsetCheck = WidgetFactory.createCheckBox("useSelectedCharsetCheck", bundleString("UseOnlyThisSymbols"));
+        useSelectedCharsetCheck.addActionListener(e -> {
+            boolean enabled = !useSelectedCharsetCheck.isSelected();
+            charsetLabel.setEnabled(enabled);
+            charsetCombo.setEnabled(enabled);
+        });
 
         // --- arrange ---
 
@@ -157,6 +172,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
         settingsPanel.add(minField, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
         settingsPanel.add(new JLabel(bundleString("MaxLength")), gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
         settingsPanel.add(maxField, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        settingsPanel.add(charsetLabel, gbh.nextRowFirstCol().leftGap(3).topGap(8).setMinWeightX().get());
+        settingsPanel.add(charsetCombo, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
         settingsPanel.add(useSelectedCharsetCheck, gbh.nextRowFirstCol().leftGap(0).spanX().get());
         settingsPanel.add(useSelectedCharsetField, gbh.nextRowFirstCol().setMaxWeightY().fillBoth().spanY().get());
     }
@@ -354,6 +371,8 @@ public class RandomMethodPanel extends AbstractMethodPanel {
 
         StringBuilder value = new StringBuilder();
         long valueLength = getRandomValue(max, min);
+        String encoding = charsetCombo != null ? (String) charsetCombo.getSelectedItem() : null;
+
         if (useSelectedCharsetCheck.isSelected()) {
 
             String charset = useSelectedCharsetField.getTextAreaComponent().getText();
@@ -365,10 +384,12 @@ public class RandomMethodPanel extends AbstractMethodPanel {
             }
 
         } else {
-            for (int i = 0; i < valueLength; i++) {
-                int x = new Random().nextInt(127);
-                value.append((char) x);
-            }
+
+            String randomString = RandomStringUtils.random((int) valueLength, true, true);
+            if (!MiscUtils.isNull(encoding) && !Objects.equals(encoding, "NONE"))
+                randomString = new String(randomString.getBytes(), Charset.forName(encoding));
+
+            value.append(randomString);
         }
 
         return value.toString();
@@ -456,6 +477,24 @@ public class RandomMethodPanel extends AbstractMethodPanel {
     }
 
     // ---
+
+    private List<String> getLoadCharsets() {
+
+        List<String> charsets = new LinkedList<>();
+        try {
+            String loadedResource = FileUtils.loadResource("org/executequery/charsets.properties");
+            Arrays.stream(loadedResource.split("\n"))
+                    .filter(line -> !line.isEmpty())
+                    .filter(line -> !line.startsWith("#"))
+                    .sorted().forEach(charsets::add);
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        charsets.add(0, "NONE");
+        return charsets;
+    }
 
     private static long getRandomValue(long max, long min) {
 

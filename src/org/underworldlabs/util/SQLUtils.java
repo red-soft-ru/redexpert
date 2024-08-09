@@ -802,8 +802,12 @@ public final class SQLUtils {
         DefaultDatabaseHost databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection);
         List<NamedObject> databaseObjects = databaseHost.getDatabaseObjectsForMetaTag(type);
         if (Objects.equals(type, META_TYPES[TRIGGER])) {
-            databaseObjects.addAll(databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DATABASE_TRIGGER]));
-            databaseObjects.addAll(databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DDL_TRIGGER]));
+            List<NamedObject> dbo = databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DATABASE_TRIGGER]);
+            if (dbo != null)
+                databaseObjects.addAll(dbo);
+            dbo = databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DDL_TRIGGER]);
+            if (dbo != null)
+                databaseObjects.addAll(dbo);
         }
 
         if (databaseObjects == null)

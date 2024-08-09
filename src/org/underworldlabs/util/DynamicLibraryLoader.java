@@ -133,12 +133,6 @@ public class DynamicLibraryLoader extends URLClassLoader {
         return odb;
     }
 
-    public static Object loadingObjectFromClassLoaderWithParams(int jaybirdVersion, Object unwrapObject, String shortClassName, Parameter... params)
-            throws ClassNotFoundException {
-        return loadingObjectFromClassLoaderWithParams(unwrapObject, "biz.redsoft."
-                + shortClassName, getFbPluginImplPath(jaybirdVersion), params);
-    }
-
     public static String getFbPluginImplPath(int jaybirdVersion) {
         String jarPath = "./lib/fbplugin-impl.jar;../lib/fbplugin-impl.jar";
         if (jaybirdVersion >= 5)

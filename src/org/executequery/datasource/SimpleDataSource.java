@@ -158,42 +158,45 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
                     // Checking for original jaybird or rdb jaybird...
                     try {
-                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+                        driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
                     } catch (ClassNotFoundException e) {
-                        Class<?> aClass = driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
+                        driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
                     }
 
+                    String jarPath = databaseConnection.getJDBCDriver().getPath();
+                    jarPath = jarPath.replace("../", "./") + ";" + jarPath.replace("./", "../");
+                    jarPath = jarPath.replace(".../", "../");
+                    jarPath += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
 
-                    // ...rdb jaybird
-                    // in multifactor authentication case, need to initialize crypto plugin,
-                    // otherwise get a message, that multifactor authentication will be unavailable
                     if (cryptoPlugin == null) {
                         try {
-                            String path = databaseConnection.getJDBCDriver().getPath();
-                            path = path.replace("../", "./") + ";" + path.replace("./", "../");
-                            path = path.replace(".../", "../");
-                            path += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
-                            Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(driver,
+                            Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(
+                                    driver,
                                     "biz.redsoft.FBCryptoPluginInitImpl",
-                                    path);
-                            cryptoPlugin = (IFBCryptoPluginInit) odb;
-                            // try to initialize crypto plugin
-                            cryptoPlugin.init();
+                                    jarPath
+                            );
 
+                            cryptoPlugin = (IFBCryptoPluginInit) odb;
+                            cryptoPlugin.init();
 
                         } catch (Throwable e) {
                             Log.warning("Unable to initialize cryptographic plugin. " +
                                     "Authentication using cryptographic mechanisms will not be available. " +
-                                    "Please install the crypto pro library to enable cryptographic modules.");
+                                    "Please install the crypto pro library to enable cryptographic modules."
+                            );
                             advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
                         }
                     }
 
                     if (databaseConnection.useNewAPI()) {
                         try {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), driver,
-                                    "FBDataSourceImpl",
-                                    new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE"));
+                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
+                                    driver,
+                                    "biz.redsoft.FBDataSourceImpl",
+                                    jarPath,
+                                    new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE")
+                            );
+
                         } catch (ClassNotFoundException e) {
                             dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
                                     "FBDataSourceImpl");

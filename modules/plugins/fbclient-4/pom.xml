@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.executequery</groupId>
+        <artifactId>RedExpert-parent</artifactId>
+        <version>2024.07</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>fbclient-4</artifactId>
+    <version>4.0.0</version>
+    <packaging>jar</packaging>
+
+    <inceptionYear>2019</inceptionYear>
+    <developers>
+        <developer>
+            <id>mrotteveel</id>
+            <name>Mark Rotteveel</name>
+            <email>mark@lawinegevaar.nl</email>
+            <roles>
+                <role>Administrator</role>
+            </roles>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Initial Developer's Public License Version 1.0</name>
+            <url>https://firebirdsql.org/en/initial-developer-s-public-license-version-1-0/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+</project>

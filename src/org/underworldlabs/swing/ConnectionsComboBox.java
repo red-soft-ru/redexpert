@@ -6,9 +6,13 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
+import org.executequery.gui.IconManager;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Objects;
+
+import static org.executequery.gui.browser.BrowserConstants.*;
 
 public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         implements ConnectionListener {
@@ -21,10 +25,13 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
                 ConnectionManager.getAllConnections()
         ));
 
-        if (showOnlyActiveConnections)
+        if (showOnlyActiveConnections) {
             EventMediator.registerListener(this);
-        else
+
+        } else {
+            setRenderer(new ConnectionsComboRenderer());
             selectFirstActiveConnection();
+        }
     }
 
     public DatabaseConnection getSelectedConnection() {
@@ -112,5 +119,21 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
     }
 
     // ---
+
+    private static class ConnectionsComboRenderer extends DefaultListCellRenderer {
+
+        private static final Icon CONNECTED_ICON = IconManager.getIcon(GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
+        private static final Icon NOT_CONNECTED_ICON = IconManager.getIcon(FIELD_GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            component.setIcon(((DatabaseConnection) value).isConnected() ? CONNECTED_ICON : NOT_CONNECTED_ICON);
+
+            return component;
+        }
+
+    } // ConnectionsComboRenderer class
 
 }

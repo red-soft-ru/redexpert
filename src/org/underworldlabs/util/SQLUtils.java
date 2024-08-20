@@ -1170,7 +1170,7 @@ public final class SQLUtils {
             }
         }
 
-        if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
+        if (!Arrays.equals(constraints, new boolean[]{true, true, true, true})) {
 
             List<org.executequery.databaseobjects.impl.ColumnConstraint> thisConstraints = thisTable.getConstraints();
             List<org.executequery.databaseobjects.impl.ColumnConstraint> comparingConstraints = comparingTable.getConstraints();

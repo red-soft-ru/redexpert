@@ -1197,10 +1197,10 @@ public final class SQLUtils {
             //check for ADD CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints) {
 
-                if ((comparingConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
-                        (comparingConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
-                        (comparingConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
-                        (comparingConstraint.getType() == CHECK_KEY && !constraints[3]))
+                if ((comparingConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (comparingConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (comparingConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (comparingConstraint.getType() == CHECK_KEY && constraints[3]))
                     continue;
 
                 int addCheck = 0;

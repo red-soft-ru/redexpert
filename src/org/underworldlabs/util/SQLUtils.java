@@ -1178,10 +1178,10 @@ public final class SQLUtils {
             //check for DROP CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
 
-                if ((thisConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
-                        (thisConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
-                        (thisConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
-                        (thisConstraint.getType() == CHECK_KEY && !constraints[3]))
+                if ((thisConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (thisConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (thisConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (thisConstraint.getType() == CHECK_KEY && constraints[3]))
                     continue;
 
                 int dropCheck = 0;

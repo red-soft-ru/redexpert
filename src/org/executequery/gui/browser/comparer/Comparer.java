@@ -220,7 +220,7 @@ public class Comparer {
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            if (!sqlScript.contains("there are no changes")) {
+            if (!sqlScript.contains(SQLUtils.THERE_ARE_NO_CHANGES)) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, TABLE, obj);
                 panel.addComparedObject(new ComparedObject(TABLE, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
@@ -390,7 +390,7 @@ public class Comparer {
             loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            if (!sqlScript.contains("there are no changes") && !sqlScript.contains("ALTER CONSTRAINTS")) {
+            if (!sqlScript.contains(SQLUtils.THERE_ARE_NO_CHANGES) && !sqlScript.equals(SQLUtils.ALTER_CONSTRAINTS)) {
 
                 if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
                     stubsOnAlter.get(type).add(compareObject);
@@ -401,7 +401,7 @@ public class Comparer {
                 panel.addToLog("\t" + obj.getName());
                 isHeaderNeeded = true;
                 counter[2]++;
-            } else if (sqlScript.contains("ALTER CONSTRAINTS")) {
+            } else if (sqlScript.equals(SQLUtils.ALTER_CONSTRAINTS)) {
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
                 panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
@@ -675,7 +675,7 @@ public class Comparer {
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection, true) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -870,7 +870,7 @@ public class Comparer {
                 AbstractDatabaseObject masterAbstractObject = (AbstractDatabaseObject) masterObject;
                 loadingObjectsHelperMaster.preparingLoadForObjectCols(masterAbstractObject);
                 if (Objects.equals(masterObject.getName(), compareObject.getName()))
-                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes"))
+                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains(SQLUtils.THERE_ARE_NO_CHANGES))
                         checkConstraintsPair(masterObject, compareObject, droppedConstraints);
                 loadingObjectsHelperMaster.postProcessingLoadForObjectForCols(masterAbstractObject);
 

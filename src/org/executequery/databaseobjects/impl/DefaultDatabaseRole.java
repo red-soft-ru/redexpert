@@ -2,7 +2,6 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -45,7 +44,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return "/* there are no changes */\n";
+        return SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     @Override

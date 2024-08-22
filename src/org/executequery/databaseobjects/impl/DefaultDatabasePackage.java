@@ -130,7 +130,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
     protected final static String PACKAGE_HEADER_SOURCE = "PACKAGE_HEADER_SOURCE";
     protected final static String PACKAGE_BODY_SOURCE = "PACKAGE_BODY_SOURCE";

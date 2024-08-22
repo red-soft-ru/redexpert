@@ -24,6 +24,8 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
+    public static final String THERE_ARE_NO_CHANGES = "/* there are no changes */\n";
+    public static final String ALTER_CONSTRAINTS = "/* ALTER CONSTRAINTS */\n";
 
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
@@ -1040,7 +1042,7 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
     }
 
     public static String generateAlterDomain(ColumnData columnData, String domainName) {
@@ -1083,7 +1085,8 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
+
     }
 
 
@@ -1186,19 +1189,25 @@ public final class SQLUtils {
 
 
                 for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints)
-                    if (Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))
-                        if (thisConstraint.getType() != comparingConstraint.getType()
-                                || thisConstraint.getColumnName() != comparingConstraint.getColumnName()
-                                || thisConstraint.getCheck() != comparingConstraint.getCheck()
-                                || thisConstraint.getReferencedTable() != comparingConstraint.getReferencedTable()
-                                || !Objects.equals(thisConstraint.getColumnDisplayList(), comparingConstraint.getColumnDisplayList())
-                                || !Objects.equals(thisConstraint.getReferenceColumnDisplayList(), comparingConstraint.getReferenceColumnDisplayList())
-                                || thisConstraint.getUpdateRule() != comparingConstraint.getUpdateRule()
-                                || thisConstraint.getDeleteRule() != comparingConstraint.getDeleteRule()
-                        ) {
+                    if (Objects.equals(thisConstraint.getName(), comparingConstraint.getName())) {
+                        boolean[] flags = new boolean[8];
+                        flags[0] = thisConstraint.getType() != comparingConstraint.getType();
+                        flags[1] = !Objects.equals(thisConstraint.getColumnName(), comparingConstraint.getColumnName());
+                        flags[2] = !Objects.equals(thisConstraint.getCheck(), comparingConstraint.getCheck());
+                        flags[3] = !Objects.equals(thisConstraint.getReferencedTable(), comparingConstraint.getReferencedTable());
+                        flags[4] = !Objects.equals(thisConstraint.getColumnDisplayList(), comparingConstraint.getColumnDisplayList());
+                        flags[5] = !Objects.equals(thisConstraint.getReferenceColumnDisplayList(), comparingConstraint.getReferenceColumnDisplayList());
+                        flags[6] = !Objects.equals(thisConstraint.getUpdateRule(), comparingConstraint.getUpdateRule());
+                        flags[7] = !Objects.equals(thisConstraint.getDeleteRule(), comparingConstraint.getDeleteRule());
+                        boolean notEquals = false;
+                        for (boolean flag : flags) {
+                            notEquals = notEquals || flag;
+                        }
+                        if (notEquals) {
                             alterConstraints = true;
                             break;
                         }
+                    }
             }
 
             //check for DROP CONSTRAINT
@@ -1266,9 +1275,9 @@ public final class SQLUtils {
 
         if (sb.toString().isEmpty())
             if (alterConstraints)
-                return "/* ALTER CONSTRAINTS */\n";
+                return ALTER_CONSTRAINTS;
             else
-                return "/* there are no changes */\n";
+                return THERE_ARE_NO_CHANGES;
         return sb.toString();
     }
 
@@ -1292,7 +1301,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().trim().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().trim().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterSequence(
@@ -1310,7 +1319,7 @@ public final class SQLUtils {
         }
 
         if (noChangesCheckString.contentEquals(sb))
-            return "/* there are no changes */\n";
+            return THERE_ARE_NO_CHANGES;
         return sb.append(";\n").toString();
     }
 
@@ -1344,7 +1353,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterIndex(
@@ -1391,7 +1400,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
@@ -1447,7 +1456,7 @@ public final class SQLUtils {
             sb.append(generateComment(thisUser.getName(), "USER", compareUser.getRemarks(), thisUser.getPlugin(), ";", false, thisUser.getHost().getDatabaseConnection()));
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
     }
 
 
@@ -1480,7 +1489,7 @@ public final class SQLUtils {
             ));
         }
 
-        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterTablespace(String name, String file, String comment, boolean commentNeed, DatabaseConnection dc) {
@@ -2061,7 +2070,7 @@ public final class SQLUtils {
             sb.append("^").append(generateComment(thisJob.getName(), "JOB", compareJob.getRemarks(), "", false, thisJob.getHost().getDatabaseConnection()));
 
         if (noChangesCheckString.contentEquals(sb))
-            return "/* there are no changes */\n";
+            return THERE_ARE_NO_CHANGES;
         return sb.append("^\nSET TERM ;^\n").toString();
     }
 

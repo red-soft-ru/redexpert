@@ -168,7 +168,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     protected static final String FA = "FA_";

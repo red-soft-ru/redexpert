@@ -22,7 +22,6 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
@@ -145,7 +144,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     @Override

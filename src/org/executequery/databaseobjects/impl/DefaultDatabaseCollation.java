@@ -226,7 +226,7 @@ public class DefaultDatabaseCollation extends AbstractDatabaseObject {
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         String comparingSqlQuery = databaseObject.getCompareCreateSQL();
         return !Objects.equals(this.getCompareCreateSQL(), comparingSqlQuery) ?
-                getDropSQL() + comparingSqlQuery : "/* there are no changes */\n";
+                getDropSQL() + comparingSqlQuery : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
 }

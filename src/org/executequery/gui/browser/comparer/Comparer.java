@@ -1032,10 +1032,10 @@ public class Comparer {
             if (panel.isCanceled())
                 break;
 
-            if ((comparingCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
-                    (comparingCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
-                    (comparingCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
-                    (comparingCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+            if ((comparingCC.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
+                    (comparingCC.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
+                    (comparingCC.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
+                    (comparingCC.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
                 continue;
 
             long addCheck = masterConstraints.stream()

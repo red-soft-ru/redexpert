@@ -1093,6 +1093,7 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder columnComments = new StringBuilder();
+        boolean alterConstraints = false;
 
         if (temporary)
             sb.append("ALTER GLOBAL TEMPORARY TABLE ");
@@ -1174,6 +1175,31 @@ public final class SQLUtils {
 
             List<org.executequery.databaseobjects.impl.ColumnConstraint> thisConstraints = thisTable.getConstraints();
             List<org.executequery.databaseobjects.impl.ColumnConstraint> comparingConstraints = comparingTable.getConstraints();
+            //check for ALTER CONSTRAINT
+            for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
+
+                if ((thisConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (thisConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (thisConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (thisConstraint.getType() == CHECK_KEY && constraints[3]))
+                    continue;
+
+
+                for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints)
+                    if (Objects.equals(thisConstraint.getName(), comparingConstraint.getName()))
+                        if (thisConstraint.getType() != comparingConstraint.getType()
+                                || thisConstraint.getColumnName() != comparingConstraint.getColumnName()
+                                || thisConstraint.getCheck() != comparingConstraint.getCheck()
+                                || thisConstraint.getReferencedTable() != comparingConstraint.getReferencedTable()
+                                || !Objects.equals(thisConstraint.getColumnDisplayList(), comparingConstraint.getColumnDisplayList())
+                                || !Objects.equals(thisConstraint.getReferenceColumnDisplayList(), comparingConstraint.getReferenceColumnDisplayList())
+                                || thisConstraint.getUpdateRule() != comparingConstraint.getUpdateRule()
+                                || thisConstraint.getDeleteRule() != comparingConstraint.getDeleteRule()
+                        ) {
+                            alterConstraints = true;
+                            break;
+                        }
+            }
 
             //check for DROP CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
@@ -1239,7 +1265,10 @@ public final class SQLUtils {
         }
 
         if (sb.toString().isEmpty())
-            return "/* there are no changes */\n";
+            if (alterConstraints)
+                return "/* ALTER CONSTRAINTS */\n";
+            else
+                return "/* there are no changes */\n";
         return sb.toString();
     }
 

@@ -390,12 +390,18 @@ public class Comparer {
             loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            if (!sqlScript.contains("there are no changes")) {
+            if (!sqlScript.contains("there are no changes") && !sqlScript.contains("ALTER CONSTRAINTS")) {
 
                 if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
                     stubsOnAlter.get(type).add(compareObject);
 
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
+                panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[2]++;
+            } else if (sqlScript.contains("ALTER CONSTRAINTS")) {
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
                 panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());

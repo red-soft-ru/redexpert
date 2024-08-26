@@ -60,6 +60,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -191,9 +192,9 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     @SuppressWarnings("unchecked")
     protected String generateQuery() {
 
-        String tablespace = null;
-        if (tablespacesCombo.getSelectedItem() != null)
-            tablespace = ((NamedObject) tablespacesCombo.getSelectedItem()).getName();
+        String tablespace = (String) tablespacesCombo.getSelectedItem();
+        if (Objects.equals(tablespace, PRIMARY.trim()))
+            tablespace = null;
 
         String adapter = null;
         String externalFile = null;
@@ -435,10 +436,12 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
             return;
         }
 
-        Vector<NamedObject> vector = new Vector<>();
-        vector.add(null);
-        vector.addAll(tablespacesList);
-        tablespaceComboModel.setElements(vector);
+        List<String> tablespacesNames = new LinkedList<>();
+        tablespacesNames.add(PRIMARY.trim());
+        for (NamedObject namedObject : tablespacesList)
+            tablespacesNames.add(namedObject.getName());
+
+        tablespaceComboModel.setElements(tablespacesNames);
     }
 
     private void populateDataTypes(final String[] dataTypes, final int[] intDataTypes) {

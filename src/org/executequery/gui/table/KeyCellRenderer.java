@@ -20,8 +20,8 @@
 
 package org.executequery.gui.table;
 
-import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ColumnData;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
@@ -31,96 +31,62 @@ import java.awt.*;
  * @author Takis Diakoumis
  */
 public class KeyCellRenderer extends JLabel
-        implements TableCellRenderer {
+        implements TableCellRenderer,
+        ColumnKeyStates {
 
-    private static ImageIcon fkImage;
-    private static ImageIcon pkImage;
-    private static ImageIcon pkfkImage;
-    private static ImageIcon deleteImage;
-    private static ImageIcon newImage;
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
-//    private static final String PRIMARY = "PK";
-//    private static final String FOREIGN = "FK";
-//    private static final String PRIMARY_AND_FOREIGN = "PKFK";
+        Icon icon = null;
+        String tooltip = null;
 
-    static {
-        deleteImage = IconManager.getIcon("icon_mark_delete");
-        newImage = IconManager.getIcon("icon_mark_new");
-        fkImage = IconManager.getIcon("icon_key_foreign");
-        pkImage = IconManager.getIcon("icon_key_primary");
-        pkfkImage = IconManager.getIcon("icon_key_mixed");
-    }
+        if (value instanceof ColumnData) {
+            ColumnData formattedValue = (ColumnData) value;
 
-    public KeyCellRenderer() {
-    }
+            if (formattedValue.isMarkedDeleted()) {
+                tooltip = deleteTooltip;
+                icon = deleteImage;
 
-    public Component getTableCellRendererComponent(JTable table,
-                                                   Object value, boolean isSelected, boolean hasFocus,
-                                                   int row, int column) {
+            } else if (formattedValue.isNewColumn()) {
+                tooltip = newTooltip;
+                icon = newImage;
 
-        if (value != null) {
-            if (value instanceof ColumnData) {
-                ColumnData columnData = (ColumnData) value;
-                if (columnData.isMarkedDeleted()) {
-                    setIcon(deleteImage);
-                    setToolTipText("This column marked to be dropped");
-                } else if (columnData.isNewColumn()) {
-                    setIcon(newImage);
-                    setToolTipText("This column marked new");
-                } else if (columnData.isPrimaryKey()) {
+            } else if (formattedValue.isPrimaryKey()) {
+                if (formattedValue.isForeignKey()) {
+                    tooltip = primaryForeignTooltip;
+                    icon = primaryForeignImage;
 
-                    if (columnData.isForeignKey()) {
-                        setIcon(pkfkImage);
-                        setToolTipText("Primary Key/Foreign Key");
-                    } else {
-                        setIcon(pkImage);
-                        setToolTipText("Primary Key");
-                    }
-
-                } else if (columnData.isForeignKey()) {
-                    setIcon(fkImage);
-                    setToolTipText("Foreign Key");
                 } else {
-                    setIcon(null);
+                    tooltip = primaryTooltip;
+                    icon = primaryImage;
                 }
-            } else if (value instanceof String) {
-                String svalue = (String) value;
-                if (svalue.trim().equals("PRIMARY KEY")) {
-                    setIcon(pkImage);
-                    setToolTipText("Primary Key");
-                } else if (svalue.trim().equals("FOREIGN KEY")) {
-                    setIcon(fkImage);
-                    setToolTipText("Foreign Key");
-                } else {
-                    setIcon(null);
-                }
+
+            } else if (formattedValue.isForeignKey()) {
+                tooltip = foreignTooltip;
+                icon = foreignImage;
             }
-        }else setIcon(null);
 
+        } else if (value instanceof String) {
+            String formattedValue = (String) value;
+
+            if (formattedValue.trim().equals("PRIMARY KEY")) {
+                tooltip = primaryTooltip;
+                icon = primaryImage;
+
+            } else if (formattedValue.trim().equals("FOREIGN KEY")) {
+                tooltip = foreignTooltip;
+                icon = foreignImage;
+            }
+        }
+
+        setIcon(icon);
+        setToolTipText(tooltip);
         setHorizontalAlignment(JLabel.CENTER);
-        
-        /*
-        if (keyValue.equals(PRIMARY_AND_FOREIGN)) {
-            setIcon(pkfkImage);
-        }
-        else if (keyValue.equals(FOREIGN)) {
-            setIcon(fkImage);
-        }
-        else if (keyValue.equals(PRIMARY)) {
-            setIcon(pkImage);
-        }
-        else {
-            setIcon(null);
-        }
-         */
         return this;
     }
 
+    public static String bundleString(String key, Object... args) {
+        return Bundles.get(KeyCellRenderer.class, key, args);
+    }
+
 }
-
-
-
-
-
-
-

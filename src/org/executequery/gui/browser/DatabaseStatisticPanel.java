@@ -275,54 +275,74 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 }
             }
         });
-        itemListener = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
+
+        itemListener = e -> {
+
+            if (e.getSource() == onlySelectTablesBox) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    if (e.getSource() == defaultStatCheckBox) {
-                        tableStatBox.setSelected(false);
-                        indexStatBox.setSelected(false);
-                        recordVersionsStatBox.setSelected(false);
-                        systemTableStatBox.setSelected(false);
-                        headerPageStatBox.setSelected(false);
-                        onlySelectTablesBox.setSelected(false);
-                        tablesField.setEnabled(false);
-                    } else if (e.getSource() == headerPageStatBox) {
-                        tableStatBox.setSelected(false);
-                        indexStatBox.setSelected(false);
-                        recordVersionsStatBox.setSelected(false);
-                        systemTableStatBox.setSelected(false);
-                        defaultStatCheckBox.setSelected(false);
-                        onlySelectTablesBox.setSelected(false);
-                        tablesField.setEnabled(false);
-                    } else if (e.getSource() == tableStatBox || e.getSource() == indexStatBox || e.getSource() == recordVersionsStatBox || e.getSource() == systemTableStatBox) {
-                        headerPageStatBox.setSelected(false);
-                        onlySelectTablesBox.setSelected(false);
-                        defaultStatCheckBox.setSelected(false);
-                        tablesField.setEnabled(false);
-                    } else if (e.getSource() == onlySelectTablesBox) {
-                        tableStatBox.setSelected(false);
-                        indexStatBox.setSelected(false);
-                        recordVersionsStatBox.setSelected(false);
-                        systemTableStatBox.setSelected(false);
-                        defaultStatCheckBox.setSelected(false);
-                        headerPageStatBox.setSelected(false);
-                        tablesField.setEnabled(true);
-                        SwingWorker sw = new SwingWorker("displayDialog") {
-                            @Override
-                            public Object construct() {
-                                BaseDialog dialog = new BaseDialog(bundleString("selectTableDialogTitle"), true);
-                                dialog.addDisplayComponent(new DialogPanel());
-                                dialog.setResizable(false);
-                                dialog.display();
-                                return null;
-                            }
-                        };
-                        sw.start();
-                    }
+
+                    tableStatBox.setSelected(false);
+                    indexStatBox.setSelected(false);
+                    recordVersionsStatBox.setSelected(false);
+                    systemTableStatBox.setSelected(false);
+                    defaultStatCheckBox.setSelected(false);
+                    headerPageStatBox.setSelected(false);
+                    tablesField.setEnabled(true);
+
+                    SwingWorker sw = new SwingWorker("displayDialog") {
+                        @Override
+                        public Object construct() {
+                            BaseDialog dialog = new BaseDialog(bundleString("selectTableDialogTitle"), true);
+                            dialog.addDisplayComponent(new DialogPanel());
+                            dialog.setResizable(false);
+                            dialog.display();
+                            return null;
+                        }
+                    };
+                    sw.start();
+
+                } else {
+                    tablesStatPanel.removeAllAction();
+                    tablesField.setEnabled(false);
+                    tablesField.setText(null);
                 }
+
+                return;
+            }
+
+            if (e.getStateChange() != ItemEvent.SELECTED)
+                return;
+
+            if (e.getSource() == defaultStatCheckBox) {
+                tableStatBox.setSelected(false);
+                indexStatBox.setSelected(false);
+                recordVersionsStatBox.setSelected(false);
+                systemTableStatBox.setSelected(false);
+                headerPageStatBox.setSelected(false);
+                onlySelectTablesBox.setSelected(false);
+                tablesField.setEnabled(false);
+
+            } else if (e.getSource() == headerPageStatBox) {
+                tableStatBox.setSelected(false);
+                indexStatBox.setSelected(false);
+                recordVersionsStatBox.setSelected(false);
+                systemTableStatBox.setSelected(false);
+                defaultStatCheckBox.setSelected(false);
+                onlySelectTablesBox.setSelected(false);
+                tablesField.setEnabled(false);
+
+            } else if (e.getSource() == tableStatBox
+                    || e.getSource() == indexStatBox
+                    || e.getSource() == recordVersionsStatBox
+                    || e.getSource() == systemTableStatBox) {
+
+                headerPageStatBox.setSelected(false);
+                onlySelectTablesBox.setSelected(false);
+                defaultStatCheckBox.setSelected(false);
+                tablesField.setEnabled(false);
             }
         };
+
         defaultStatCheckBox = WidgetFactory.createCheckBox("defaultStatCheckBox", bundleString("default"));
         defaultStatCheckBox.setSelected(true);
         defaultStatCheckBox.addItemListener(itemListener);

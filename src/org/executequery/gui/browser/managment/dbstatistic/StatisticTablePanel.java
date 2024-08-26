@@ -6,14 +6,19 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Vector;
 
@@ -25,6 +30,7 @@ public class StatisticTablePanel extends AbstractPanel {
     JTable table;
     protected StatisticTableModel model;
     protected HeaderTableModel headerModel;
+    protected TableModelObject tableModelObject;
     protected List rows;
     protected JTable headerRows;
     JScrollPane scrollPane;
@@ -115,7 +121,6 @@ public class StatisticTablePanel extends AbstractPanel {
     }
 
     public void initModel(int type) {
-        TableModelObject tableModelObject;
         switch (type) {
             case DATABASE:
                 tableModelObject = new StatDatabase();
@@ -134,6 +139,8 @@ public class StatisticTablePanel extends AbstractPanel {
         }
         model = new StatisticTableModel(tableModelObject);
         table.setModel(model);
+        table.setTableHeader(new StatisticTableHeader(table.getColumnModel()));
+
         headerModel = new HeaderTableModel(tableModelObject);
         headerRows.setModel(headerModel);
         headerRows.getColumnModel().getColumn(0).setPreferredWidth(200);
@@ -318,4 +325,43 @@ public class StatisticTablePanel extends AbstractPanel {
             } else return value + result;
         }
     }
+
+    private class StatisticTableHeader extends JTableHeader {
+        private List<String> columnToolTips;
+
+        public StatisticTableHeader(TableColumnModel columnModel) {
+            super(columnModel);
+        }
+
+        @Override
+        public String getToolTipText(MouseEvent e) {
+            loadColumnsToolTips();
+
+            String tooltip = null;
+            try {
+                int index = columnModel.getColumnIndexAtX(e.getPoint().x);
+                int realIndex = columnModel.getColumn(index).getModelIndex();
+                tooltip = columnToolTips.get(realIndex);
+
+            } catch (ArrayIndexOutOfBoundsException ignored) {
+            }
+
+            return tooltip;
+        }
+
+        private void loadColumnsToolTips() {
+
+            if (!MiscUtils.isEmpty(columnToolTips))
+                return;
+
+            columnToolTips = tableModelObject.getToolTips();
+            columnToolTips.add(Bundles.get("TableModelObject.range_20"));
+            columnToolTips.add(Bundles.get("TableModelObject.range_40"));
+            columnToolTips.add(Bundles.get("TableModelObject.range_60"));
+            columnToolTips.add(Bundles.get("TableModelObject.range_80"));
+            columnToolTips.add(Bundles.get("TableModelObject.range_100"));
+        }
+
+    } // StatisticTableHeader class
+
 }

@@ -828,13 +828,21 @@ public class QueryEditor extends DefaultTabView
 
             return false;
         }
+
         if (delegate.getIDTransaction() != -1) {
-            int result = GUIUtilities.displayConfirmCancelDialog(bundleString("requestTransactionMessage"));
+
+            int result = GUIUtilities.displayYesNoCancelDialog(
+                    bundleString("requestTransactionMessage"),
+                    bundleString("requestTransactionTitle")
+            );
+
             if (result == JOptionPane.YES_OPTION)
                 delegate.commit(false);
             else if (result == JOptionPane.NO_OPTION)
                 delegate.rollback(false);
-            else return false;
+            else
+                return false;
+
             return tabViewClosing();
         }
 

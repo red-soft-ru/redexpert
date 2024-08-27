@@ -22,7 +22,6 @@ package org.executequery.gui.console.commands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.console.Console;
-import org.executequery.gui.console.ConsolePanel;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -36,28 +35,28 @@ import javax.swing.*;
 
 /**
  * This command exits from the console and closes current window.
- */
-
-/**
+ *
  * @author Takis Diakoumis
  */
 public class ExitCommand extends Command {
 
     private static final String COMMAND_NAME = "exit";
 
+    @Override
     public String getCommandName() {
         return COMMAND_NAME;
     }
 
+    @Override
     public String getCommandSummary() {
         return SystemProperties.getProperty("console", "console.exit.command.help");
     }
 
+    @Override
     public boolean handleCommand(Console console, String command) {
 
         if (command.equals(COMMAND_NAME)) {
-            GUIUtilities.closeDockedComponent(ConsolePanel.TITLE, SwingConstants.SOUTH);
-            //GUIUtilities.closeInternalFrame(ConsolePanel.TITLE);
+            GUIUtilities.closeDockedComponent(console.getFrameTitle(), SwingConstants.SOUTH);
             return true;
         }
 
@@ -65,18 +64,3 @@ public class ExitCommand extends Command {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

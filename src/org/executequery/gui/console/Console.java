@@ -54,6 +54,7 @@ public class Console extends JScrollPane {
     public static final int WINDOWS_OS = 0;
     public static final int UNIX_OS = 1;
     public static final int MAC_OS = 2;
+    private final String title;
 
     private int osType;
 
@@ -115,19 +116,20 @@ public class Console extends JScrollPane {
      * Instanciates a new console without displaying prompt.
      */
     public Console() {
-        this(true);
+        this(true, null);
     }
 
     /**
      * Creates a new console, embedding it in a <code>JScrollPane</code>.
-     * By default console help is displayed.
+     * By default, console help is displayed.
      *
      * @param display If set on true, prompt is displayed
      */
-    public Console(boolean display) {
+    public Console(boolean display, String title) {
 
         super(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        this.title = title;
 
         // check we have the console properties loaded
         if (SystemProperties.getProperties("console") == null) {
@@ -904,6 +906,10 @@ public class Console extends JScrollPane {
 
         if (process == null)
             displayPrompt();
+    }
+
+    public String getFrameTitle() {
+        return title;
     }
 
     class StdoutThread extends Thread {

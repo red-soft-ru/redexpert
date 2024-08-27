@@ -178,9 +178,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
                             if (databaseConnection == null)
                                 databaseConnection = currentObjectView.getHost().getDatabaseConnection();
 
-                            BaseDialog dialog = new BaseDialog("Edit View", true);
+                            BaseDialog dialog = new BaseDialog(CreateViewPanel.EDIT_TITLE, false);
                             CreateViewPanel panel = new CreateViewPanel(databaseConnection, dialog, (DefaultDatabaseView) currentObjectView);
-                            dialog.addDisplayComponent(panel);
+                            dialog.addDisplayComponentWithEmptyBorder(panel);
                             dialog.display();
                         }
                     }

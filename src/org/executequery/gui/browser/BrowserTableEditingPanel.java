@@ -594,7 +594,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
             InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
 
-            dialog.addDisplayComponent(panel);
+            dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
             table.reset();
             reloadView();

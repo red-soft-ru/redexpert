@@ -261,7 +261,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateGeneratorPanel(dc, null, (DefaultDatabaseSequence) databaseObject);
 
             case NamedObject.PACKAGE:
-                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject);
+                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject, false);
+
+            case NamedObject.SYSTEM_PACKAGE:
+                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject, true);
 
             case NamedObject.EXCEPTION:
                 return new CreateExceptionPanel(dc, null, (DefaultDatabaseException) databaseObject);

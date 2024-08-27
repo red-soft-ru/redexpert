@@ -292,6 +292,7 @@ public class BrowserController {
                 case NamedObject.ROLE:
                 case NamedObject.SYSTEM_DOMAIN:
                 case NamedObject.SYSTEM_ROLE:
+                case NamedObject.SYSTEM_PACKAGE:
                 case NamedObject.SYSTEM_FUNCTION: {
 
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
@@ -318,20 +319,6 @@ public class BrowserController {
 
                     triggerPanel.setValues((DefaultDatabaseTrigger) databaseObject);
                     return triggerPanel;
-                }
-
-                case NamedObject.SYSTEM_PACKAGE: {
-
-                    BrowserPackagePanel packagePanel;
-                    if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
-                        packagePanel = new BrowserPackagePanel(this);
-                        viewPanel.addToLayout(packagePanel);
-
-                    } else
-                        packagePanel = (BrowserPackagePanel) viewPanel.getFormObjectView(BrowserPackagePanel.NAME);
-
-                    packagePanel.setValues((DefaultDatabasePackage) databaseObject);
-                    return packagePanel;
                 }
 
                 case NamedObject.SYSTEM_SEQUENCE: {

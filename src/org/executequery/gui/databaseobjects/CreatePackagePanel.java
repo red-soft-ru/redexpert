@@ -19,11 +19,14 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     private DefaultDatabasePackage databasePackage;
 
     public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog) {
-        this(dc, dialog, null);
+        this(dc, dialog, null, false);
     }
 
-    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabasePackage databaseObject) {
+    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabasePackage databaseObject, boolean isSystem) {
         super(dc, dialog, databaseObject);
+
+        if (isSystem)
+            hideButtons();
     }
 
     @Override
@@ -120,6 +123,13 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
                         "PACKAGE BODY " + getFormattedName().replace("$", "\\$"))
                 .replace("PACKAGE BODY " + getFormattedName().replace("$", "\\$"), "PACKAGE BODY " + getFormattedName());
         bodyPanel.setSQLText(sqlText);
+    }
+
+    private void hideButtons() {
+        editButton.setVisible(false);
+        actionButton.setVisible(false);
+        submitButton.setVisible(false);
+        cancelButton.setVisible(false);
     }
 
 }

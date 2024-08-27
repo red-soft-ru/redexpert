@@ -114,8 +114,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         DatabaseObjectNode objectNode = (DatabaseObjectNode) treeNode;
         int nodeType = objectNode.getType();
 
-        String labelMultiple = Bundles.get(NamedObject.class, getMetaTag(objectNode)).toLowerCase();
-        String labelSingle = Bundles.get(BrowserTreePopupMenu.class, getMetaTag(objectNode)).toLowerCase();
+        String labelSingle = bundleString(getMetaTag(objectNode));
+        String labelMultiple = bundleString(getMetaTag(objectNode) + ".multiple");
 
         // --- system objects popup ---
 

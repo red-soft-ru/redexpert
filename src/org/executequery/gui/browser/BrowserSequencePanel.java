@@ -99,7 +99,7 @@ public class BrowserSequencePanel extends AbstractFormObjectViewPanel {
 
         sqlPanel.add(sqlPane, BorderLayout.CENTER);
 
-        tabs.add("Sql", sqlPanel);
+        tabs.add("SQL", sqlPanel);
         tabs.add(Bundles.getCommon("dependencies"), dependenciesPanel);
 
         objectNameLabel = new JLabel();

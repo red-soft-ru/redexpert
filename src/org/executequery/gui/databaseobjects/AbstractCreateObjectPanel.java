@@ -413,6 +413,13 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         return Bundles.get(BrowserTreePopupMenu.class, "edit", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
     }
 
+    protected void hideButtons() {
+        editButton.setVisible(false);
+        actionButton.setVisible(false);
+        submitButton.setVisible(false);
+        cancelButton.setVisible(false);
+    }
+
     protected DatabaseConnection getSelectedConnection() {
         return connectionsCombo.getSelectedConnection();
     }

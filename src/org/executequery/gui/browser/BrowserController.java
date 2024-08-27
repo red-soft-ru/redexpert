@@ -335,6 +335,20 @@ public class BrowserController {
                     return sequencePanel;
                 }
 
+                case NamedObject.SYSTEM_INDEX: {
+                    try {
+
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog = new BaseDialog(CreateIndexPanel.ALTER_TITLE, true);
+                        CreateIndexPanel createObjectPanel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) databaseObject, true);
+                        showDialogCreateObject(createObjectPanel, dialog);
+
+                    } finally {
+                        GUIUtilities.showNormalCursor();
+                    }
+                    return null;
+                }
+
                 case NamedObject.TABLE_INDEX:
                 case NamedObject.INDEX: {
                     try {
@@ -348,20 +362,6 @@ public class BrowserController {
                         GUIUtilities.showNormalCursor();
                     }
                     return null;
-                }
-
-                case NamedObject.SYSTEM_INDEX: {
-
-                    BrowserIndexPanel browserIndexPanel;
-                    if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
-                        browserIndexPanel = new BrowserIndexPanel(this);
-                        viewPanel.addToLayout(browserIndexPanel);
-
-                    } else
-                        browserIndexPanel = (BrowserIndexPanel) viewPanel.getFormObjectView(BrowserIndexPanel.NAME);
-
-                    browserIndexPanel.setValues((DefaultDatabaseIndex) databaseObject);
-                    return browserIndexPanel;
                 }
 
                 case NamedObject.TABLE:

@@ -125,11 +125,4 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         bodyPanel.setSQLText(sqlText);
     }
 
-    private void hideButtons() {
-        editButton.setVisible(false);
-        actionButton.setVisible(false);
-        submitButton.setVisible(false);
-        cancelButton.setVisible(false);
-    }
-
 }

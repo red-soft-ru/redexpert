@@ -4,7 +4,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Types;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.browser.ColumnData;
@@ -60,6 +59,12 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index) {
         super(dc, dialog, index);
+    }
+
+    public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index, boolean isSystem) {
+        super(dc, dialog, index);
+        if (isSystem)
+            hideButtons();
     }
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index, String tableName) {
@@ -148,8 +153,6 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     protected void initEdited() {
 
         nameField.setText(databaseIndex.getName().trim());
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseIndex.getHost(), NamedObject.META_TYPES[NamedObject.INDEX]);
-        databaseIndex = metaTag.getIndexFromName(databaseIndex.getName());
         nameField.setEditable(false);
 
         simpleCommentPanel.setDatabaseObject(databaseIndex);

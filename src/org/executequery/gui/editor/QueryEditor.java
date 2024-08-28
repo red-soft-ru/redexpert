@@ -56,6 +56,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.print.Printable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -75,7 +77,8 @@ public class QueryEditor extends DefaultTabView
         QueryShortcutListener,
         UserPreferenceListener,
         TextEditor,
-        FocusablePanel {
+        FocusablePanel,
+        PropertyChangeListener {
 
     public static final String TITLE = Bundles.get(QueryEditor.class, "title");
     public static final String FRAME_ICON = "icon_query_editor";
@@ -134,14 +137,14 @@ public class QueryEditor extends DefaultTabView
     private boolean executeToFile;
 
     public QueryEditor() {
-        this(null, null);
+        this(null, null, -1);
     }
 
     public QueryEditor(String text) {
-        this(text, null);
+        this(text, null, -1);
     }
 
-    public QueryEditor(String text, String absolutePath) {
+    public QueryEditor(String text, String absolutePath, int splitDividerLocation) {
         super(new GridBagLayout());
 
         init();
@@ -163,7 +166,11 @@ public class QueryEditor extends DefaultTabView
             editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         }
 
-        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber);
+        if (splitDividerLocation > 0)
+            splitPane.setDividerLocation(splitDividerLocation);
+
+        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber, splitPane.getDividerLocation());
+        splitPane.addPropertyChangeListener("dividerLocation", this);
         isContentChanged = false;
 
         if (text != null)
@@ -866,7 +873,7 @@ public class QueryEditor extends DefaultTabView
                     QueryEditorHistory.removeFile(oldPath);
 
                 scriptFile.setAbsolutePath(newPath);
-                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1);
+                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1, splitPane.getDividerLocation());
 
             } else
                 return false;
@@ -1317,7 +1324,7 @@ public class QueryEditor extends DefaultTabView
                     getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
             QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
             QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number);
+            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
         }
         return SaveFunction.SAVE_COMPLETE;
     }
@@ -1542,6 +1549,20 @@ public class QueryEditor extends DefaultTabView
         oldConnection = getSelectedConnection();
         editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         transactionParametersPanel.setDatabaseConnection(getSelectedConnection());
+    }
+
+    // --- PropertyChangeListener impl ---
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+        DatabaseConnection dc = getSelectedConnection();
+        String oldAbsolutePath = scriptFile.getAbsolutePath();
+        String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
+
+        QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
+        QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
+        QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
     }
 
 }

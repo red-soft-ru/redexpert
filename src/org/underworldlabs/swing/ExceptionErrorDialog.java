@@ -145,7 +145,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
 
         gbh = new GridBagHelper().setInsets(5, 5, 20, 0);
         mainPanel.add(new JLabel(errorIcon), gbh.get());
-        mainPanel.add(new JLabel(getExceptionMessage()), gbh.nextCol().rightGap(5).leftGap(0).setMaxWeightX().fillHorizontally().spanX().get());
+        mainPanel.add(new JLabel(formatMessage(message)), gbh.nextCol().rightGap(5).leftGap(0).setMaxWeightX().fillHorizontally().spanX().get());
         mainPanel.add(buttonPanel, gbh.anchorEast().fillNone().leftGap(5).bottomGap(5).nextRowFirstCol().spanX().get());
         mainPanel.add(stackTracePanel, gbh.nextRowFirstCol().topGap(0).setMaxWeightY().fillBoth().get());
 
@@ -195,13 +195,30 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         }
     }
 
-    private String getExceptionMessage() {
+    private String formatMessage(String message) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><table border=\"0\" cellpadding=\"2\">");
+        String singleExceptionTemplate = "<tr><td><div class=message>%s</div></td></tr>\n";
+        String fullMessageTemplate = String.join("\n",
+                "<html>",
+                "  <head>",
+                "    <style>",
+                "      .message {",
+                "        width:500px;",
+                "        overflow:hidden;",
+                "      }",
+                "    </style>",
+                "  </head>",
+                "  <body>",
+                "    <table border=\"0\" cellpadding=\"2\">",
+                "%s", // <tr><td><div class=message>%s</div></td></tr>
+                "    </table>",
+                "  </body>",
+                "</html>"
+        );
 
         String lineBreak = "\n";
         boolean hasLineBreak = true;
+        StringBuilder sb = new StringBuilder();
 
         StringTokenizer tokenizer = new StringTokenizer(message, lineBreak, true);
         while (tokenizer.hasMoreTokens()) {
@@ -209,19 +226,17 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
 
             if (lineBreak.equals(token)) {
                 if (hasLineBreak)
-                    sb.append("<tr><td></td></tr>");
+                    sb.append(String.format(singleExceptionTemplate, ""));
 
                 hasLineBreak = true;
                 continue;
             }
 
-            sb.append("<tr><td>").append(token).append("</td></tr>");
+            sb.append(String.format(singleExceptionTemplate, token));
             hasLineBreak = false;
         }
 
-        sb.append("</table></html>");
-
-        return sb.toString();
+        return String.format(fullMessageTemplate, sb);
     }
 
     /**

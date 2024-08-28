@@ -21,6 +21,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -38,6 +39,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implements TabView {
 
@@ -98,72 +100,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
                 loadFromFile(fileChooser, fileStatButton);
             }
         });
-        compareButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                BaseDialog dialog = new BaseDialog(bundleString("selectStatsDialogTitle"), true);
-                JComboBox comboBox1 = WidgetFactory.createComboBox("combobox1");
-                DynamicComboBoxModel model1 = new DynamicComboBoxModel();
-                model1.setElements(statDatabaseList);
-                comboBox1.setModel(model1);
-                JComboBox comboBox2 = WidgetFactory.createComboBox("combobox2");
-                DynamicComboBoxModel model2 = new DynamicComboBoxModel();
-                model2.setElements(statDatabaseList);
-                comboBox2.setModel(model2);
-                ActionListener actionListener = new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        GUIUtilities.closeSelectedDialog();
-                        SwingWorker sw = new SwingWorker("compareStatistics") {
-                            @Override
-                            public Object construct() {
-                                StatDatabase compareDB = new StatDatabase();
-                                StatDatabase db1 = (StatDatabase) comboBox1.getSelectedItem();
-                                StatDatabase db2 = (StatDatabase) comboBox2.getSelectedItem();
-                                compareDB = compareDBS(db1, db2);
-                                CompareStatPanel compareStatPanel = new CompareStatPanel(compareDB, db1, db2);
-                                tabPane.addTab(null, null, compareStatPanel, db1 + " vs " + db2);
-                                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), null, compareStatPanel));
-                                tabPane.setSelectedComponent(compareStatPanel);
-                                return null;
-                            }
-
-                            @Override
-                            public void finished() {
-                                GUIUtilities.showNormalCursor();
-                            }
-                        };
-                        sw.start();
-                        GUIUtilities.showWaitCursor();
-                    }
-                };
-                BottomButtonPanel bottomButtonPanel = new BottomButtonPanel(actionListener, "OK", null, true);
-                bottomButtonPanel.setHelpButtonVisible(false);
-                AbstractPanel panel = new AbstractPanel() {
-                    @Override
-                    protected void initComponents() {
-
-                    }
-
-                    @Override
-                    protected void arrangeComponents() {
-                        add(comboBox1, gbh.setInsets(10,10,10,0).fillHorizontally().spanX().get());
-                        add(comboBox2, gbh.nextRowFirstCol().topGap(5).fillHorizontally().spanX().get());
-                        add(bottomButtonPanel, gbh.nextRowFirstCol().bottomGap(10).rightGap(5).spanX().get());
-                    }
-
-                    @Override
-                    protected void postInitActions() {
-
-                    }
-                };
-                dialog.setContentPane(panel);
-                dialog.setPreferredSize(new Dimension(300, 120));
-                dialog.setResizable(false);
-                dialog.display();
-
-            }
-        });
+        compareButton.addActionListener(e -> showCompareDialog());
         progressBar = new IndeterminateProgressBar(true);
         toolBar.add(progressBar);
         getStatButton = WidgetFactory.createButton("getStatButton", bundleString("Start"));
@@ -380,6 +317,72 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
             }
         };
 
+    }
+
+    private void showCompareDialog() {
+
+        BaseDialog dialog = new BaseDialog(bundleString("selectStatsDialogTitle"), true);
+        AbstractPanel panel = new AbstractPanel() {
+            private JButton okButton;
+            private JButton cancelButton;
+            private JComboBox<?> comboBox1;
+            private JComboBox<?> comboBox2;
+
+            @Override
+            protected void initComponents() {
+                comboBox1 = WidgetFactory.createComboBox("comboBox1", new Vector<>(statDatabaseList));
+                comboBox2 = WidgetFactory.createComboBox("comboBox2", new Vector<>(statDatabaseList));
+                okButton = WidgetFactory.createButton("okButton", Bundles.get("common.ok.button"), e -> doCompare());
+                cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> dialog.dispose());
+            }
+
+            @Override
+            protected void arrangeComponents() {
+                gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorCenter().fillHorizontally();
+                add(comboBox1, gbh.spanX().get());
+                add(comboBox2, gbh.nextRow().topGap(0).get());
+                add(okButton, gbh.nextRow().setWidth(1).topGap(5).get());
+                add(cancelButton, gbh.nextCol().leftGap(0).get());
+            }
+
+            @Override
+            protected void postInitActions() {
+            }
+
+            private void doCompare() {
+                StatDatabase db1 = (StatDatabase) comboBox1.getSelectedItem();
+                StatDatabase db2 = (StatDatabase) comboBox2.getSelectedItem();
+                compareStatistics(db1, db2);
+            }
+
+        };
+
+        dialog.setContentPane(panel);
+        dialog.setPreferredSize(new Dimension(300, dialog.getPreferredSize().height));
+        dialog.setResizable(false);
+        dialog.display();
+    }
+
+    private void compareStatistics(StatDatabase db1, StatDatabase db2) {
+        GUIUtilities.closeSelectedDialog();
+        SwingWorker sw = new SwingWorker("compareStatistics") {
+            @Override
+            public Object construct() {
+                StatDatabase compareDB = new StatDatabase();
+                CompareStatPanel compareStatPanel = new CompareStatPanel(compareDB, db1, db2);
+                tabPane.addTab(null, null, compareStatPanel, db1 + " vs " + db2);
+                tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), null, compareStatPanel));
+                tabPane.setSelectedComponent(compareStatPanel);
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                GUIUtilities.showNormalCursor();
+            }
+        };
+        sw.start();
+        GUIUtilities.showWaitCursor();
     }
 
     protected void loadFromFile(FileChooserDialog fileChooser, JButton fileStatButton) {

@@ -28,12 +28,8 @@ import org.executequery.event.ConnectionListener;
 import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.QueryEditorHistory;
-import org.executequery.log.Log;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -62,19 +58,6 @@ public class OpenEditorConnectionListener implements ConnectionListener {
                             null,
                             true
                     );
-
-                    File file = new File(queryEditor.getAbsolutePath());
-                    if (file.exists()) {
-                        try {
-                            queryEditor.setEditorText(FileUtils.loadFile(
-                                    file,
-                                    SystemProperties.getProperty("user", "system.file.encoding")
-                            ));
-
-                        } catch (IOException e) {
-                            Log.error(e.getMessage(), e);
-                        }
-                    }
                 }
 
                 queryEditor.setSelectedConnection(connection);

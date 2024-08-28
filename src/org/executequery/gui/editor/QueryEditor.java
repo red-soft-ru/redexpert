@@ -881,13 +881,15 @@ public class QueryEditor extends DefaultTabView
                     "\n\nThe system returned:\n" + e.getMessage(), e, this.getClass());
         }
 
-        String connectionID = (getSelectedConnection() != null) ?
-                getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
-
         try {
-            QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+            DatabaseConnection dc = getSelectedConnection();
+            if (dc == null || dc.isConnected()) {
+                String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
+                QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+            }
+
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            Log.error(e.getMessage(), e);
         }
 
         return true;

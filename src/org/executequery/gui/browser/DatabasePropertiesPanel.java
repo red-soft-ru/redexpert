@@ -52,6 +52,7 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
         model = new PropertyWrapperModel();
 
         table = new SortableColumnsTable(model);
+        table.setEnabled(false);
         setTableProperties(table);
 
         add(new JScrollPane(table), new GridBagHelper().fillBoth().spanX().spanY().get());

@@ -44,6 +44,12 @@ echo "Start testing"
 cd re-tests-robot
 $PYTHON -m robot -x results.xml --nostatusrc ./tests
 
+if [ $COVERAGE == true ]; then
+    echo "Start generate coverage results"
+    mkdir "${WORKSPACE}/coverage-results/"
+    java -jar ./lib/jacococli.jar report ./results/jacoco.exec --classfiles "${DIST}/classes" --sourcefiles ../src --html "${WORKSPACE}/coverage-results/"
+fi
+
 echo "Copy test results"
 mkdir "${WORKSPACE}/test-results/"
 cp results.xml "${WORKSPACE}/test-results/${DISTRO}-${DBMS}-${ARCH}.xml"

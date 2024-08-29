@@ -11,6 +11,7 @@ stages:
   - test
   - repackage
   - deploy
+  - report
 
 variables:
   RELEASE_HUB_PROJECT: red_expert
@@ -152,6 +153,7 @@ build:linux:
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
     - cp -r "${CI_PROJECT_DIR}"/dist/guide/ "${DIST}"
+    - mv modules/redexpert/target/classes "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
@@ -320,6 +322,10 @@ test:linux-robot:
    - $PYTHON ./ci/download_dbms.py ${DBMS} ${ARCH} linux
    - chmod +x ./ci/install_dbms.sh
    - ./ci/install_dbms.sh
+   - |
+      if [ $ARCH == "x86_64" ] && [ $DBMS == "rdb50" ]; then
+        export COVERAGE=true
+      fi
   script:
    - chmod +x ./ci/test_robot.sh
    - ./ci/test_robot.sh
@@ -371,3 +377,35 @@ deploy:
   only:
     variables:
       - "$RELEASE_HUB_KEY"
+
+report:coverage:
+  stage: report
+  tags: ["docker", "x86_64"]
+  image: registry.red-soft.biz:5000/docker-images/rdbbuildenv:rdb5-8
+  before_script:
+    - test -e ${CI_PROJECT_DIR}/coverage-results || (echo No coverage data found; exit 0)
+  script:
+    - echo "Uploading report"
+    - mc alias set minio ${MINIO_SERVER} ${MINIO_USER} ${MINIO_PASSWORD}
+    - |
+      if [ "${CI_COMMIT_TAG}" ]; then
+        REPORT_NAME=${VERSION}
+      elif [ "${CI_COMMIT_REF_NAME}" = "$TAG_BRANCH" ]; then
+        REPORT_NAME=${TAG_BRANCH}
+      fi
+    - |
+      if [ "${REPORT_NAME}" ]; then
+        mc rm -r --force minio/reports/coverage/red-expert/${REPORT_NAME}
+        mc cp -r coverage-results/ minio/reports/coverage/red-expert/${REPORT_NAME}
+        echo Report ${MINIO_SERVER}reports/coverage/red-expert/${REPORT_NAME}/index.html
+      else
+        mc cp -r coverage-results/ minio/reports/temp/coverage/red-expert/${VERSION}
+        echo Report ${MINIO_SERVER}reports/temp/coverage/red-expert/${VERSION}/index.html
+      fi
+  # coverage: /^\s*lines:\s*\d+.\d+\%/
+  only:
+    variables:
+      - $CI_COMMIT_TAG
+      - $CONTEXT == "weekly"
+      - $FORCE_COVERAGE == "1"
+  allow_failure: true

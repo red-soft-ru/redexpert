@@ -251,6 +251,20 @@ public final class WidgetFactory {
     /**
      * Create named JTextField class instance
      *
+     * @param name     the component's name
+     * @param editable the boolean to be set
+     */
+    public static JTextField createTextField(String name, boolean editable) {
+
+        JTextField textField = createTextField(name);
+        textField.setEditable(editable);
+
+        return textField;
+    }
+
+    /**
+     * Create named JTextField class instance
+     *
      * @param name the component's name
      * @param text the text to be set
      */
@@ -437,7 +451,7 @@ public final class WidgetFactory {
      */
     public static JPanel createPanel(String name) {
 
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setName(name);
 
         return panel;

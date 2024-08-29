@@ -2,181 +2,153 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import biz.redsoft.IFBTraceManager;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.browser.TraceManagerPanel;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.net.SessionInfo;
-import org.underworldlabs.swing.DefaultButton;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
 
 public class SessionManagerPanel extends JPanel {
-    private DynamicComboBoxModel sessionBoxModel;
-    private JList sessionBox;
-    private JTextField nameField;
-    private JTextField idField;
-    private JTextArea flagsField;
-    private JTextField userField;
-    private JTextField datetimeField;
-    private JButton stopButton;
-    private JButton refreshButton;
+
     private boolean refreshFlag;
     private IFBTraceManager fbTraceManager;
-    private JTextField sessionField;
+
+    // --- GUI components ---
+
+    private JList<SessionInfo> sessionsList;
+    private DynamicComboBoxModel sessionModel;
+
+    private JTextField sessionIdField;
+    private JTextArea flagsField;
+    private JTextField nameField;
+    private JTextField userField;
+    private JTextField timestampField;
+    private final JTextField sessionField;
+
+    private JButton stopButton;
+    private JButton refreshButton;
+
+    // ---
 
     public SessionManagerPanel(IFBTraceManager fbTraceManager, JTextField sessionField) {
         this.fbTraceManager = fbTraceManager;
         this.sessionField = sessionField;
+
+        setRefreshFlag(true);
         init();
+        arrange();
     }
 
     private void init() {
-        setLayout(new GridBagLayout());
-        setRefreshFlag(true);
-        sessionBoxModel = new DynamicComboBoxModel();
-        sessionBox = new JList(sessionBoxModel);
-        sessionBox.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (sessionBox.getSelectedValue() != null) {
-                    SessionInfo sessionInfo = (SessionInfo) sessionBox.getSelectedValue();
-                    idField.setText(sessionInfo.getId());
-                    nameField.setText(sessionInfo.getName());
-                    userField.setText(sessionInfo.getUser());
-                    datetimeField.setText(sessionInfo.getDatetime());
-                    flagsField.setText(sessionInfo.getFlags());
-                }
-            }
-        });
-        JScrollPane scrollPane = new JScrollPane(sessionBox);
-        nameField = new JTextField();
-        nameField.setEditable(false);
-        idField = new JTextField();
-        idField.setEditable(false);
+
+        sessionModel = new DynamicComboBoxModel();
+        sessionsList = new JList<>(sessionModel);
+        sessionsList.setBorder(BorderFactory.createTitledBorder(bundleString("Sessions")));
+        sessionsList.addListSelectionListener(e -> sessionChanged());
+
         flagsField = new JTextArea();
+        flagsField.setBorder(BorderFactory.createTitledBorder(bundleString("Flags")));
         flagsField.setFont(UIManager.getDefaults().getFont("Label.font"));
         flagsField.setEditable(false);
-        userField = new JTextField();
-        userField.setEditable(false);
-        datetimeField = new JTextField();
-        datetimeField.setEditable(false);
-        stopButton = new DefaultButton(TraceManagerPanel.bundleString("Stop"));
-        stopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (sessionBox.getSelectedValue() != null)
-                    try {
-                        SessionInfo sessionInfo = (SessionInfo) sessionBox.getSelectedValue();
-                        if (sessionField.getText().contentEquals(sessionInfo.getName())) {
-                            int res = GUIUtilities.displayConfirmDialog("this session may be current session.Do you want continue?");
-                            if (res == JOptionPane.YES_OPTION) {
-                                fbTraceManager.stopTraceSession(Integer.parseInt(sessionInfo.getId()));
-                                refresh();
-                            }
-                        } else {
-                            fbTraceManager.stopTraceSession(Integer.parseInt(sessionInfo.getId()));
-                            refresh();
-                        }
-                    } catch (SQLException e1) {
-                        GUIUtilities.displayExceptionErrorDialog("Error stop session", e1, this.getClass());
-                    }
-            }
-        });
 
-        refreshButton = new DefaultButton(TraceManagerPanel.bundleString("Refresh"));
-        refreshButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                refresh();
-            }
-        });
+        userField = WidgetFactory.createTextField("userField", false);
+        nameField = WidgetFactory.createTextField("nameField", false);
+        sessionIdField = WidgetFactory.createTextField("sessionIdField", false);
+        timestampField = WidgetFactory.createTextField("timestampField", false);
 
-        JLabel label = new JLabel(TraceManagerPanel.bundleString("Sessions"));
-        add(label, new GridBagConstraints(0, 0,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
-        add(scrollPane, new GridBagConstraints(0, 1,
-                1, 4, 1, 1,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
+        stopButton = WidgetFactory.createButton("stopButton", bundleString("Stop"), e -> stop());
+        refreshButton = WidgetFactory.createButton("refreshButton", bundleString("Refresh"), e -> refresh());
+    }
 
-        label = new JLabel(TraceManagerPanel.bundleString("ID"));
-        add(label, new GridBagConstraints(1, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+    private void arrange() {
+        GridBagHelper gbh;
 
-        add(idField, new GridBagConstraints(2, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        // --- buttons panel ---
 
-        label = new JLabel(TraceManagerPanel.bundleString("Name"));
-        add(label, new GridBagConstraints(3, 1,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        JPanel buttonsPanel = WidgetFactory.createPanel("buttonsPanel");
 
-        add(nameField, new GridBagConstraints(4, 1,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        buttonsPanel.add(refreshButton, gbh.nextCol().get());
+        buttonsPanel.add(stopButton, gbh.nextCol().leftGap(5).get());
 
-        label = new JLabel(TraceManagerPanel.bundleString("User"));
-        add(label, new GridBagConstraints(1, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        // --- info panel ---
 
-        add(userField, new GridBagConstraints(2, 2,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        JPanel infoPanel = WidgetFactory.createPanel("infoPanel");
 
-        label = new JLabel(TraceManagerPanel.bundleString("Date"));
-        add(label, new GridBagConstraints(3, 2,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        infoPanel.add(new JLabel(bundleString("SessionId")), gbh.setMinWeightX().topGap(3).get());
+        infoPanel.add(sessionIdField, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(0).get());
+        infoPanel.add(new JLabel(bundleString("Name")), gbh.nextCol().setMinWeightX().leftGap(10).topGap(3).get());
+        infoPanel.add(nameField, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(0).get());
+        infoPanel.add(new JLabel(bundleString("User")), gbh.nextRowFirstCol().setMinWeightX().leftGap(0).topGap(8).get());
+        infoPanel.add(userField, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(5).get());
+        infoPanel.add(new JLabel(bundleString("Date")), gbh.nextCol().setMinWeightX().leftGap(10).topGap(8).get());
+        infoPanel.add(timestampField, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(5).get());
+        infoPanel.add(flagsField, gbh.nextRowFirstCol().leftGap(0).setMaxWeightY().fillBoth().spanX().spanY().get());
 
-        add(datetimeField, new GridBagConstraints(4, 2,
-                1, 1, 1, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5),
-                0, 0));
+        // --- main panel ---
 
-        label = new JLabel(TraceManagerPanel.bundleString("Flags"));
-        add(label, new GridBagConstraints(1, 3,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
 
-        add(flagsField, new GridBagConstraints(2, 3,
-                3, 1, 1, 1,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5),
-                0, 0));
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth();
+        mainPanel.add(sessionsList, gbh.setWeightX(0.15).setMaxWeightY().get());
+        mainPanel.add(buttonsPanel, gbh.nextRow().setMinWeightY().topGap(5).fillHorizontally().get());
+        mainPanel.add(infoPanel, gbh.nextCol().previousRow().leftGap(5).topGap(0).fillBoth().spanY().spanX().get());
 
-        add(stopButton, new GridBagConstraints(1, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        // --- base ---
 
-        add(refreshButton, new GridBagConstraints(2, 4,
-                1, 1, 0, 0,
-                GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5),
-                0, 0));
+        setLayout(new GridBagLayout());
 
+        gbh = new GridBagHelper().topGap(5).anchorNorthWest().fillBoth();
+        add(mainPanel, gbh.spanX().spanY().get());
+    }
 
+    private void stop() {
+
+        if (sessionsList.getSelectedValue() == null)
+            return;
+
+        try {
+
+            SessionInfo sessionInfo = sessionsList.getSelectedValue();
+            if (sessionField.getText().contentEquals(sessionInfo.getName())) {
+                int confirmResult = GUIUtilities.displayConfirmDialog(bundleString("SessionManagerPanel.SessionsEquals"));
+                if (confirmResult == JOptionPane.YES_OPTION)
+                    stopAndRefresh(sessionInfo);
+
+            } else
+                stopAndRefresh(sessionInfo);
+
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ErrorStopping", e.getMessage()), e, this.getClass());
+        }
+    }
+
+    private void stopAndRefresh(SessionInfo sessionInfo) throws SQLException {
+        fbTraceManager.stopTraceSession(Integer.parseInt(sessionInfo.getId()));
+        refresh();
+    }
+
+    private void sessionChanged() {
+
+        if (sessionsList.getSelectedValue() == null)
+            return;
+
+        SessionInfo sessionInfo = sessionsList.getSelectedValue();
+        sessionIdField.setText(sessionInfo.getId());
+        nameField.setText(sessionInfo.getName());
+        userField.setText(sessionInfo.getUser());
+        timestampField.setText(sessionInfo.getDatetime());
+        flagsField.setText(sessionInfo.getFlags());
     }
 
     public void setSessions(List<SessionInfo> sessions) {
-        sessionBoxModel.setElements(sessions);
+        sessionModel.setElements(sessions);
     }
 
     public boolean isRefreshFlag() {
@@ -191,13 +163,17 @@ public class SessionManagerPanel extends JPanel {
         setRefreshFlag(true);
         try {
             fbTraceManager.listTraceSessions();
-        } catch (SQLException e1) {
-            GUIUtilities.displayExceptionErrorDialog("Error refresh", e1, this.getClass());
+        } catch (SQLException e) {
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
         }
     }
 
     public void setFbTraceManager(IFBTraceManager fbTraceManager) {
         this.fbTraceManager = fbTraceManager;
+    }
+
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(SessionManagerPanel.class, key, args);
     }
 
 }

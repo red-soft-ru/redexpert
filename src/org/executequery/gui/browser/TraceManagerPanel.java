@@ -470,11 +470,9 @@ public class TraceManagerPanel extends AbstractServiceManagerPanel implements Ta
 
         add(topPanel, gbh.fillBoth().spanX().setMaxWeightY().topGap(5).get());
 
-
-        add(startStopSessionButton, gbh.nextRowFirstCol().setLabelDefault().get());
-
-        add(clearTableButton, gbh.nextCol().setLabelDefault().get());
-
+        add(new JPanel(), gbh.nextRowFirstCol().setLabelDefault().setMaxWeightX().get());
+        add(startStopSessionButton, gbh.nextCol().setMinWeightX().get());
+        add(clearTableButton, gbh.nextCol().get());
 
         tabPane.add(bundleString("Connection"), connectionPanel);
         //tabPane.add(bundleString("BuildConfigurationFile"), new JScrollPane(confPanel));

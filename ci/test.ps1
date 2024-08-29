@@ -21,6 +21,9 @@ $DISTRO=$env:DISTRO
 if (-Not (Test-Path env:\DBMS)) { die("DBMS not defined") }
 $DBMS=$env:DBMS
 
+if (-Not (Test-Path env:\BUILD)) { die("BUILD not defined") }
+$BUILD=$env:BUILD
+
 echo "Downloading tests"
 git clone -q http://git.red-soft.biz/red-database/re-tests.git -b new_ui
 git clone -q http://git.red-soft.biz/red-database/python/lackey.git
@@ -30,6 +33,12 @@ start-process "${PYTHON}" "-m pip install pytest pyautogui" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install -e .\lackey" -wait -nonewwindow
 start-process "${PYTHON}" "-m pip install -e .\re-tests" -wait -nonewwindow
+
+echo "Set .xml"
+$BUILD_PATH="$env:USERPROFILE\.redexpert\${BUILD}"
+mkdir "${BUILD_PATH}"
+copy ".\re-tests\files\xml\savedconnections.xml" "${BUILD_PATH}"
+copy ".\re-tests\files\xml\eq.user.properties" "${BUILD_PATH}"
 
 echo "Start testing"
 cd re-tests

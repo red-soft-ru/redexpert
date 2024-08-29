@@ -20,6 +20,7 @@ check_variable WORKSPACE
 check_variable DISTRO
 check_variable PYTHON
 check_variable DBMS
+check_variable BUILD
 
 echo "Downloading tests"
 git clone -q http://git.red-soft.biz/red-database/re-tests-robot
@@ -33,6 +34,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/RedDatabase/lib
 export PYTHONPATH=$PYTHONPATH:/root/remoteswinglibrary-2.3.3.jar
 export DISPLAY=:0
 su reduser -c 'xhost +'
+
+echo "Set .xml"
+BUILD_PATH="/root/.redexpert/${BUILD}"
+mkdir "${BUILD_PATH}"
+cp "./re-tests-robot/files/xml/savedconnections.xml" "${BUILD_PATH}"
 
 echo "Start testing"
 cd re-tests-robot

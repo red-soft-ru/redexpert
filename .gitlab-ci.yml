@@ -56,8 +56,10 @@ prepare:
         CONTEXT=commit
         STAGE=snapshot
       fi
+    - BUILD=$(awk -F'=' '/^eq.build=/ {print $2}' ./src/org/executequery/eq.system.properties)
     - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
     - echo VERSION=${VERSION} > vars.env
+    - echo BUILD=${BUILD} >> vars.env
     - echo BRANCH=${BRANCH} >> vars.env
     - echo CONTEXT=${CONTEXT} >> vars.env
     - echo STAGE=${STAGE} >> vars.env
@@ -221,6 +223,7 @@ test:windows:
     - proxmox
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-windows-7
     JAVA_HOME: c:\Program Files\Java\jdk8
     ErrorActionPreference: STOP
@@ -259,6 +262,7 @@ test:windows-robot:
     - proxmox
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-windows-7
     ErrorActionPreference: STOP
     DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
@@ -297,6 +301,7 @@ test:linux-robot:
     - red_expert 
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-ubuntu-20
     ErrorActionPreference: STOP
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}

@@ -76,6 +76,36 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
+    protected String getUpperScript() {
+        Vector<ColumnData> variables = null;
+        if (isParseVariables()) {
+            variables = new Vector<>();
+            variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            variables.addAll(cursorsPanel.getCursorsVector());
+            variables.addAll(subProgramPanel.getSubProgsVector());
+        }
+        return SQLUtils.generateUpperCreateProcedureScript(nameField.getText(),
+                externalField.getText(),
+                engineField.getText(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                outputParamsPanel.getProcedureParameterModel().getTableVector(),
+                variables,
+                (String) securityCombo.getSelectedItem(),
+                (String) authidCombo.getSelectedItem(),
+                getDatabaseConnection());
+    }
+
+    @Override
+    protected String getDownScript() {
+        return SQLUtils.generateDownCreateProcedureScript(nameField.getText(),
+                simpleCommentPanel.getComment(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                outputParamsPanel.getProcedureParameterModel().getTableVector(),
+                true,
+                connection);
+    }
+
+    @Override
     protected void loadParameters() {
         inputParamsPanel.clearRows();// remove first empty row
         outputParamsPanel.clearRows(); // remove first empty row
@@ -103,6 +133,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
             Vector<ColumnData> vars = new Vector<>();
             vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             vars.addAll(cursorsPanel.getCursorsVector());
+            vars.addAll(subProgramPanel.getSubProgsVector());
 
             return SQLUtils.generateCreateProcedure(
                     nameField.getText(),

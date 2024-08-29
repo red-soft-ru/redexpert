@@ -362,6 +362,83 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateDownCreateProcedureScript(String name, String comment, Vector<ColumnData> inputParameters,
+                                                           Vector<ColumnData> outputParameters, boolean setComment, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n^\n");
+
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
+            sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
+            sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+        }
+        return sb.toString();
+    }
+
+    public static String generateDownCreateFunctionScript(String name, String comment, Vector<ColumnData> inputArguments, boolean setComment, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n^\n");
+
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
+            sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+        }
+
+
+        return sb.toString();
+    }
+
+    public static String generateUpperCreateProcedureScript(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
+            Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String sqlSecurity, String authid, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+        String body = null;
+        if (variables != null)
+            body = formattedParameters(variables, true);
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid, dc));
+
+        String output = formattedParameters(outputParameters, false);
+        if (!MiscUtils.isNull(output.trim()))
+            sb.append("\nRETURNS (\n").append(output).append(")");
+
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        sb.append("\nAS\n");
+        if (body != null && !body.isEmpty())
+            sb.append(body);
+
+        return sb.toString();
+    }
+
+    public static String generateUpperCreateFunctionScript(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> variables, String sqlSecurity, ColumnData returnType, boolean deterministic, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+        String body = null;
+        if (variables != null)
+            body = formattedParameters(variables, true);
+
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[FUNCTION], null, dc));
+        sb.append("\nRETURNS ").append(formattedReturnType(returnType, deterministic));
+
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        sb.append("\nAS\n");
+        if (body != null && !body.isEmpty())
+            sb.append(body);
+
+        return sb.toString();
+    }
+
     public static String generateCommentForColumns(
             String relationName, List<ColumnData> cols, String metaTag, String delimiter) {
 
@@ -675,7 +752,10 @@ public final class SQLUtils {
         for (int i = 0, k = tableVector.size(); i < k; i++) {
 
             ColumnData cd = tableVector.elementAt(i);
-
+            if (cd.getTypeName() == "PROCEDURE" || cd.getTypeName() == "FUNCTION") {
+                sb.append(cd.getSelectOperator());
+                continue;
+            }
             if (!MiscUtils.isNull(cd.getColumnName())) {
 
                 if (variable)

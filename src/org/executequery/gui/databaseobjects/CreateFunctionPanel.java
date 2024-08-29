@@ -60,7 +60,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
         // --- return type components ---
 
         deterministicCheck = WidgetFactory.createCheckBox("deterministicCheck", bundleStaticString("deterministic"));
-        deterministicCheck.addActionListener(e -> generateDdlScript());
+        deterministicCheck.addActionListener(e -> generateDdlScript(false));
 
         useDomainTypeCheck = WidgetFactory.createCheckBox("useDomainTypeCheck", bundledString("useDomainTypeCheck"));
         useDomainTypeCheck.addActionListener(e -> domainCheckTriggered());
@@ -153,6 +153,35 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
+    protected String getUpperScript() {
+        Vector<ColumnData> variables = null;
+        if (isParseVariables()) {
+            variables = new Vector<>();
+            variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            variables.addAll(cursorsPanel.getCursorsVector());
+            variables.addAll(subProgramPanel.getSubProgsVector());
+        }
+        return SQLUtils.generateUpperCreateFunctionScript(nameField.getText(),
+                externalField.getText(),
+                engineField.getText(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                variables,
+                (String) securityCombo.getSelectedItem(),
+                returnType,
+                deterministicCheck != null && deterministicCheck.isSelected(),
+                connection);
+    }
+
+    @Override
+    protected String getDownScript() {
+        return SQLUtils.generateDownCreateFunctionScript(nameField.getText(),
+                simpleCommentPanel.getComment(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                true,
+                connection);
+    }
+
+    @Override
     protected void loadParameters() {
         try {
             inputParamsPanel.clearRows();
@@ -182,6 +211,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             Vector<ColumnData> variables = new Vector<>();
             variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             variables.addAll(cursorsPanel.getCursorsVector());
+            variables.addAll(subProgramPanel.getSubProgsVector());
 
             return SQLUtils.generateCreateFunction(
                     nameField.getText(),
@@ -276,7 +306,7 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             returnType.setDomain(selectedDomain.getName());
 
         typePanel.refresh(false);
-        generateDdlScript();
+        generateDdlScript(false);
     }
 
     private List<NamedObject> getDomains() {

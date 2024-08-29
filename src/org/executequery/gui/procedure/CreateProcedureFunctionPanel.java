@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author vasiliy
@@ -76,6 +74,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected ProcedureDefinitionPanel variablesPanel;
     protected SimpleSqlTextPanel ddlTextPanel;
     protected CursorsPanel cursorsPanel;
+    protected SubProgramPanel subProgramPanel;
 
     // ---
 
@@ -98,11 +97,11 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     protected void init() {
         stateProperties = new PanelsStateProperties(CreateProcedureFunctionPanel.class.getName());
 
-        changeActionListener = e -> generateDdlScript();
+        changeActionListener = e -> generateDdlScript(false);
         changeKeyListener = new KeyListener() {
             @Override
             public void keyReleased(KeyEvent e) {
-                generateDdlScript();
+                generateDdlScript(false);
             }
 
             @Override
@@ -121,6 +120,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         // ---
 
         cursorsPanel = new CursorsPanel();
+        subProgramPanel = new SubProgramPanel();
 
         inputParamsPanel = new ProcedureDefinitionPanel(ColumnData.INPUT_PARAMETER);
         inputParamsPanel.setDataTypes(connection.getDataTypesArray(), connection.getIntDataTypesArray());
@@ -140,12 +140,19 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         ddlTextPanel = new SimpleSqlTextPanel(false, true, "DDL");
         ddlTextPanel.setMinimumSize(new Dimension(500, ddlTextPanel.getPreferredSize().height));
         ddlTextPanel.getTextPane().setDatabaseConnection(connection);
+        ddlTextPanel.getTextPane().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                procedureBody = extractProcedureBody(ddlTextPanel.getSQLText());
+            }
+        });
 
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabbedPane.add(bundleString("InputParameters"), inputParamsPanel);
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
+        tabbedPane.add(bundleString("Subprograms"), subProgramPanel);
         addCommentTab(null);
 
         showHelpersCheck = WidgetFactory.createCheckBox("showHelpersCheck", bundleString("showHelpersCheck"));
@@ -160,7 +167,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             showHelpersCheckTriggered();
 
         try {
-            generateDdlScript();
+            generateDdlScript(true);
         } catch (Exception ignored) {
         }
 
@@ -198,7 +205,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         reset();
         addListeners();
-        generateDdlScript();
+        generateDdlScript(true);
     }
 
     private void arrange() {
@@ -249,6 +256,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         externalField.addKeyListener(changeKeyListener);
         authidCombo.addActionListener(changeActionListener);
         cursorsPanel.addChangesListener(changeActionListener);
+        subProgramPanel.addChangesListener(changeActionListener);
         securityCombo.addActionListener(changeActionListener);
         variablesPanel.addChangesListener(changeActionListener);
         useExternalCheck.addActionListener(changeActionListener);
@@ -269,50 +277,58 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
     }
 
     @SuppressWarnings("DataFlowIssue")
-    protected void generateDdlScript() {
+    protected void generateDdlScript(boolean extractBody) {
 
-        TreeSet<String> variables = new TreeSet<>();
-        variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
-        variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
+        if (isParseVariables()) {
+            TreeSet<String> variables = new TreeSet<>();
+            variables = fillTreeSetFromTableVector(variables, variablesPanel.tableVector);
+            variables = fillTreeSetFromTableVector(variables, cursorsPanel.getCursorsVector());
+            variables = fillTreeSetFromTableVector(variables, subProgramPanel.getSubProgsVector());
+            ddlTextPanel.getTextPane().setVariables(variables);
+        }
 
         TreeSet<String> parameters = new TreeSet<>();
         parameters = fillTreeSetFromTableVector(parameters, inputParamsPanel.tableVector);
         parameters = fillTreeSetFromTableVector(parameters, outputParamsPanel.tableVector);
 
-        ddlTextPanel.getTextPane().setVariables(variables);
+
         ddlTextPanel.getTextPane().setParameters(parameters);
-        procedureBody = extractProcedureBody(ddlTextPanel.getSQLText());
+        if (extractBody)
+            procedureBody = extractProcedureBody(ddlTextPanel.getSQLText());
         ddlTextPanel.setSQLText(generateQuery());
     }
+
+    protected abstract String getUpperScript();
+
+    protected abstract String getDownScript();
+
 
     private String extractProcedureBody(String sqlText) {
 
         if (MiscUtils.isNull(sqlText))
             return procedureBody;
-
-        int beginIndex = -1;
-        int endIndex = -1;
-        sqlText = sqlText.toUpperCase().trim();
-
-        Pattern pattern = Pattern.compile("\\bBEGIN\\b");
-        Matcher matcher = pattern.matcher(sqlText);
-        if (matcher.find())
-            beginIndex = matcher.start();
-
-        pattern = Pattern.compile("\\bEND\\b");
-        matcher = pattern.matcher(sqlText);
-        while (matcher.find())
-            endIndex = matcher.end();
-
-        procedureBody = sqlText.substring(beginIndex, endIndex);
+        String upScript = getUpperScript();
+        String[] upLines = upScript.split("\n");
+        String downScript = getDownScript();
+        String[] downLines = downScript.split("\n");
+        String[] allLines = sqlText.split("\n");
+        if (allLines.length > upLines.length + downLines.length) {
+            procedureBody = "";
+            int n = allLines.length - downLines.length + 1;
+            for (int i = upLines.length; i < n; i++) {
+                procedureBody += allLines[i];
+                if (i < n - 1)
+                    procedureBody += "\n";
+            }
+        }
         return procedureBody;
     }
-
     private void loadVariables() {
 
         // remove first empty row
         variablesPanel.clearRows();
         cursorsPanel.clearRows();
+        subProgramPanel.clearRows();
 
         String fullProcedureBody = getFullSourceBody();
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty()) {
@@ -470,6 +486,68 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                             }
                         }
                     }
+                    List<ProcedureParserParser.Declare_procedure_stmtContext> procedures = ctx.declare_procedure_stmt();
+                    if (!procedures.isEmpty()) {
+                        boolean firstProc = true;
+                        for (ProcedureParserParser.Declare_procedure_stmtContext var : procedures) {
+                            ColumnData cursor = new ColumnData(connection);
+                            cursor.setTypeName("PROCEDURE");
+
+                            if (var.procedure_name() != null)
+                                cursor.setColumnName(var.procedure_name().getText());
+                            cursor.setSelectOperator(var.getText());
+
+                        /*if (var.comment() != null) {
+
+                            String description = var.comment().getText();
+                            if (description.startsWith("--")) {
+                                description = description.substring(2);
+                                cursor.setRemarkAsSingleComment(true);
+
+                            } else if (description.startsWith("/*"))
+                                description = description.substring(2, description.length() - 2);
+
+                            cursor.setRemarks(description);
+                        }*/
+
+                            if (firstProc)
+                                subProgramPanel.deleteEmptyRow();
+
+                            firstProc = false;
+                            subProgramPanel.addRow(cursor);
+                        }
+                    }
+                    List<ProcedureParserParser.Declare_function_stmtContext> functions = ctx.declare_function_stmt();
+                    if (!functions.isEmpty()) {
+                        boolean firstProc = true;
+                        for (ProcedureParserParser.Declare_function_stmtContext var : functions) {
+                            ColumnData cursor = new ColumnData(connection);
+                            cursor.setTypeName("FUNCTION");
+
+                            if (var.procedure_name() != null)
+                                cursor.setColumnName(var.procedure_name().getText());
+                            cursor.setSelectOperator(var.getText());
+
+                        /*if (var.comment() != null) {
+
+                            String description = var.comment().getText();
+                            if (description.startsWith("--")) {
+                                description = description.substring(2);
+                                cursor.setRemarkAsSingleComment(true);
+
+                            } else if (description.startsWith("/*"))
+                                description = description.substring(2, description.length() - 2);
+
+                            cursor.setRemarks(description);
+                        }*/
+
+                            if (firstProc)
+                                subProgramPanel.deleteEmptyRow();
+
+                            firstProc = false;
+                            subProgramPanel.addRow(cursor);
+                        }
+                    }
 
                 }
             }, tree);
@@ -494,6 +572,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
                 tabbedPane.remove(variablesPanel);
                 tabbedPane.remove(cursorsPanel);
+                tabbedPane.remove(subProgramPanel);
             }
 
         } else {
@@ -651,6 +730,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
                 tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
                 tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 4);
+                tabbedPane.insertTab(bundleString("Subprograms"), null, cursorsPanel, null, 5);
             }
             loadVariables();
 
@@ -659,6 +739,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             if (tabbedPane.indexOfComponent(variablesPanel) > 0) {
                 tabbedPane.remove(variablesPanel);
                 tabbedPane.remove(cursorsPanel);
+                tabbedPane.remove(subProgramPanel);
             }
 
             if (procedureName != null)

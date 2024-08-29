@@ -88,8 +88,6 @@ sources:
     paths:
       - dist-src/
 
-
-
 build_docs:
   stage: build_docs
   artifacts:
@@ -100,13 +98,15 @@ build_docs:
     - docker
     - builder
     - x86_64
-  image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
+  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2022-2023-03-12-full
   before_script:
-    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+    - apt update && apt install -y python3-venv python3-pip
+    - mkdir -p dist/guide
   script:
-    - cd RedExpert-$VERSION && ./ci/build_docs.sh && cd ..
-    - mv RedExpert-$VERSION/dist .
-
+    - cd guide_rst
+    - make bootstrap
+    - make latexpdf
+    - cp build/latex/Red_Expert.pdf ../dist/guide/RedExpert_Guide-ru.pdf
 
 .build_template:
   stage: build

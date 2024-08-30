@@ -4,7 +4,6 @@ import biz.redsoft.IFBStatisticManager;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
-import org.executequery.components.BottomButtonPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
@@ -691,27 +690,49 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     }
 
-    class DialogPanel extends AbstractPanel {
+    private class DialogPanel extends AbstractPanel {
 
-        BottomButtonPanel bottomButtonPanel;
+        private JButton okButton;
+        private JButton cancelButton;
 
         @Override
         protected void initComponents() {
-            bottomButtonPanel = new BottomButtonPanel(okListener, "OK", "help", true);
-            bottomButtonPanel.setHelpButtonVisible(false);
+
+            okButton = WidgetFactory.createButton(
+                    "okButton",
+                    Bundles.get("common.ok.button"),
+                    okListener
+            );
+
+            cancelButton = WidgetFactory.createButton(
+                    "cancelButton",
+                    Bundles.get("common.cancel.button"),
+                    e -> GUIUtilities.closeSelectedDialog()
+            );
         }
 
         @Override
         protected void arrangeComponents() {
+
+            // --- button panel ---
+
+            JPanel buttonPanel = WidgetFactory.createPanel("buttonPanel");
+
+            GridBagHelper tempGbh = new GridBagHelper().fillHorizontally();
+            buttonPanel.add(okButton, tempGbh.get());
+            buttonPanel.add(cancelButton, tempGbh.nextCol().leftGap(5).get());
+
+            // --- base ---
+
             add(tablesStatPanel, gbh.fillBoth().topGap(10).spanX().setMaxWeightY().get());
-            add(bottomButtonPanel, gbh.fillHorizontally().spanX().nextRowFirstCol().get());
+            add(buttonPanel, gbh.fillHorizontally().spanX().nextRowFirstCol().get());
         }
 
         @Override
         protected void postInitActions() {
-
         }
-    }
+
+    } // DialogPanel class
 
     class CheckBoxPanel extends AbstractPanel {
 

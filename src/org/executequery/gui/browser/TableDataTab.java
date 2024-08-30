@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.UserPreferencesManager;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
@@ -511,6 +512,7 @@ public class TableDataTab extends JPanel
             table.setModel(sorter);
             tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
+            ((ResultSetTableModel) sorter.getReferencedTableModel()).setCellsEditable(!UserPreferencesManager.doubleClickOpenItemView());
 
             boolean showLineLumbers = SystemProperties.getBooleanProperty("user", "results.table.row.numbers");
             if (showLineLumbers) {
@@ -1091,7 +1093,7 @@ public class TableDataTab extends JPanel
 
                     Arrays.stream(table.getSelectedRows())
                             .filter(row -> row >= 0)
-                            .forEach(row ->  {
+                            .forEach(row -> {
                                 tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
                             });
 

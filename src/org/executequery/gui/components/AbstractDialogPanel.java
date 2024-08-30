@@ -1,46 +1,69 @@
 package org.executequery.gui.components;
 
-import org.executequery.components.BottomButtonPanel;
 import org.executequery.gui.BaseDialog;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Objects;
 
 public abstract class AbstractDialogPanel extends JPanel {
-    BottomButtonPanel bottomButtonPanel;
-
-    BaseDialog dialog;
-
-    boolean success = false;
 
     protected JPanel mainPanel;
+    protected BaseDialog dialog;
+    protected boolean success = false;
+
+    private JButton applyButton;
+    private JButton cancelButton;
+
+    protected abstract void apply();
 
     public AbstractDialogPanel() {
         init();
+        arrange();
     }
 
     private void init() {
-        mainPanel = new JPanel();
-        ActionListener bottomButtonListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (Objects.equals(e.getActionCommand(), "ok")) {
-                    ok();
-                    success = true;
-                    dialog.dispose();
-                }
-            }
-        };
-        bottomButtonPanel = new BottomButtonPanel(bottomButtonListener, "OK", "", "ok", true);
+        mainPanel = WidgetFactory.createPanel("mainPanel");
+
+        applyButton = WidgetFactory.createButton(
+                "applyButton",
+                Bundles.get("common.ok.button"),
+                e -> applyAndDispose()
+        );
+
+        cancelButton = WidgetFactory.createButton(
+                "cancelButton",
+                Bundles.get("common.cancel.button"),
+                e -> dialog.dispose()
+        );
+    }
+
+    private void arrange() {
+        GridBagHelper gbh;
+
+        // --- button panel ---
+
+        JPanel buttonPanel = WidgetFactory.createPanel("buttonPanel");
+
+        gbh = new GridBagHelper().fillHorizontally();
+        buttonPanel.add(applyButton, gbh.get());
+        buttonPanel.add(cancelButton, gbh.nextCol().leftGap(5).get());
+
+        // --- base ---
+
         setLayout(new GridBagLayout());
-        GridBagHelper gbh = new GridBagHelper();
-        gbh.setDefaultsStatic().defaults();
-        add(mainPanel, gbh.fillBoth().spanX().setMaxWeightY().get());
-        add(bottomButtonPanel, gbh.nextRowFirstCol().fillHorizontally().spanX().spanY().get());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
+        add(mainPanel, gbh.setMaxWeightY().spanX().get());
+        add(buttonPanel, gbh.nextRowFirstCol().setMinWeightY().bottomGap(5).fillHorizontally().spanY().get());
+    }
+
+    private void applyAndDispose() {
+        apply();
+        success = true;
+        dialog.dispose();
     }
 
     public BaseDialog getDialog() {
@@ -55,9 +78,8 @@ public abstract class AbstractDialogPanel extends JPanel {
         success = false;
     }
 
-    protected abstract void ok();
-
     public boolean isSuccess() {
         return success;
     }
+
 }

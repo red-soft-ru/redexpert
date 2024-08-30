@@ -21,8 +21,7 @@ public class TransactionTablesTable extends AbstractDialogPanel {
     }
 
     @Override
-    protected void ok() {
-
+    protected void apply() {
     }
 
     private void init() {

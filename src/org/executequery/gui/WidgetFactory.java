@@ -485,6 +485,36 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named JProgressBar class instance
+     *
+     * @param name  the component's name
+     * @param model the <code>ListModel</code> that provides the list of items for display
+     */
+    public static JList<?> createList(String name, ListModel<?> model) {
+
+        JList list = new JList();
+        list.setModel(model);
+        list.setName(name);
+
+        return list;
+    }
+
+    /**
+     * Create named JProgressBar class instance
+     *
+     * @param name    the component's name
+     * @param model   the <code>ListModel</code> that provides the list of items for display
+     * @param tooltip the string to display
+     */
+    public static JList<?> createList(String name, ListModel<?> model, String tooltip) {
+
+        JList list = createList(name, model);
+        list.setToolTipText(tooltip);
+
+        return list;
+    }
+
+    /**
      * Create JLabel class instance
      *
      * @param text     text to be displayed by the label

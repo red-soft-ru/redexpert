@@ -58,7 +58,6 @@ public class CreateDriverDialog extends ActionDialog {
         isNewDriver = Objects.equals(title, bundleString("title"));
 
         panel = new DriverFieldsPanel(driver);
-        panel.setBorder(BorderFactory.createEtchedBorder());
 
         JPanel base = new JPanel(new BorderLayout());
         base.add(panel, BorderLayout.CENTER);
@@ -134,10 +133,6 @@ public class CreateDriverDialog extends ActionDialog {
 
         private DriverFieldsPanel(DatabaseDriver driver) {
             setDriver(driver);
-        }
-
-        @Override
-        public void driverNameChanged() {
         }
 
         @Override

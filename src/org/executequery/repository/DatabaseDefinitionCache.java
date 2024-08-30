@@ -35,6 +35,7 @@ import java.io.CharArrayWriter;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Database definition loader and cache.
@@ -62,10 +63,10 @@ public class DatabaseDefinitionCache {
     /**
      * Returns the database definitions within a collection.
      */
-    public static List<DatabaseDefinition> getDatabaseDefinitions() {
+    public static Vector<DatabaseDefinition> getDatabaseDefinitions() {
         if (databaseDefinitions == null)
             load();
-        return databaseDefinitions;
+        return new Vector<>(databaseDefinitions);
     }
 
     /**

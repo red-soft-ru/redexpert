@@ -214,6 +214,7 @@ build:windows:
     expire_in: 1 day
     paths:
       - test-results/
+      - coverage-results/
   except:
     variables:
       - $SKIP_TESTS == "1"

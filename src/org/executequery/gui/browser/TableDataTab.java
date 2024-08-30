@@ -25,7 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.components.CancelButton;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
@@ -36,6 +35,7 @@ import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -942,20 +942,8 @@ public class TableDataTab extends JPanel
         gbc.gridy++;
         gbcLabel.weightx = 0;
         gbcLabel.fill = GridBagConstraints.HORIZONTAL;
-        JButton b_cancel = new DefaultButton("Cancel");
-        b_cancel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                dialog.finished();
-            }
-        });
-        JButton b_ok = new DefaultButton("Ok");
-        b_ok.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                insert_record(components, types, rschs, dialog);
-            }
-        });
+        JButton b_cancel = WidgetFactory.createButton("b_cancel", "Cancel", e -> dialog.finished());
+        JButton b_ok = WidgetFactory.createButton("b_ok", "Ok", e -> insert_record(components, types, rschs, dialog));
         panel.add(b_cancel, gbcLabel);
         panel.add(b_ok, gbc);
         dialog.display();
@@ -1444,7 +1432,7 @@ public class TableDataTab extends JPanel
             progressBar = ProgressBarFactory.create();
             ((JComponent) progressBar).setPreferredSize(new Dimension(260, 18));
 
-            JButton cancelButton = new CancelButton();
+            JButton cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"));
             cancelButton.addActionListener(this);
 
             GridBagConstraints gbc = new GridBagConstraints();

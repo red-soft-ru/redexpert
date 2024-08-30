@@ -26,7 +26,6 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
@@ -213,17 +212,23 @@ public class CreateDatabasePanel extends ActionPanel
         hostField.setText("localhost");
         portField.setText("3050");
 
-        savePwdCheck = ActionUtilities.createCheckBox(bundledString("StorePassword"), "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox(bundledString("EncryptPassword"), "setEncryptPassword");
-
+        savePwdCheck = WidgetFactory.createCheckBox("savePwdCheck", bundledString("StorePassword"));
+        savePwdCheck.setActionCommand("setStorePassword");
         savePwdCheck.addActionListener(this);
+
+        encryptPwdCheck = WidgetFactory.createCheckBox("encryptPwdCheck", bundledString("EncryptPassword"));
+        encryptPwdCheck.setActionCommand("setEncryptPassword");
         encryptPwdCheck.addActionListener(this);
 
         certificateFileField = createMatchedWidthTextField();
         containerPasswordField = createPasswordField("containerPasswordField");
-        saveContPwdCheck = ActionUtilities.createCheckBox(bundledString("Store-container-password"), "setStoreContainerPassword");
+
+        saveContPwdCheck = WidgetFactory.createCheckBox("saveContPwdCheck", bundledString("Store-container-password"));
+        saveContPwdCheck.setActionCommand("setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
-        verifyServerCertCheck = ActionUtilities.createCheckBox(bundledString("Verify-server-certificate"), "setVerifyServerCertCheck");
+
+        verifyServerCertCheck = WidgetFactory.createCheckBox("verifyServerCertCheck", bundledString("Verify-server-certificate"));
+        verifyServerCertCheck.setActionCommand("setVerifyServerCertCheck");
         verifyServerCertCheck.addActionListener(this);
 
         // retrieve the drivers
@@ -434,7 +439,8 @@ public class CreateDatabasePanel extends ActionPanel
         advPropsPanel.add(scroller, gbh.get());
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createInlineFieldButton("txApplyButton", Bundles.get("common.apply.button"), "transactionLevelChanged");
+        txApplyButton = WidgetFactory.createButton("txApplyButton", Bundles.get("common.apply.button"));
+        txApplyButton.setActionCommand("transactionLevelChanged");
         txApplyButton.setToolTipText(bundledString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
@@ -1587,13 +1593,9 @@ public class CreateDatabasePanel extends ActionPanel
 
             super(checkBox);
             this.table = table;
-            button = new DefaultButton();
+            button = WidgetFactory.createButton("button", null);
+            button.addActionListener(e -> fireEditingStopped());
             button.setOpaque(true);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                }
-            });
         }
 
         public Component getTableCellEditorComponent(JTable table,

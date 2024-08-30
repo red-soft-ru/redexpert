@@ -45,7 +45,6 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -263,19 +262,30 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         certificateFileField = createMatchedWidthTextField();
         containerPasswordField = createPasswordField("containerPasswordField");
-        saveContPwdCheck = ActionUtilities.createCheckBox(bundleString("Store-container-password"), "setStoreContainerPassword");
+
+        saveContPwdCheck = WidgetFactory.createCheckBox("saveContPwdCheck", bundleString("Store-container-password"));
+        saveContPwdCheck.setActionCommand("setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
-        verifyServerCertCheck = ActionUtilities.createCheckBox(bundleString("Verify-server-certificate"), "setVerifyServerCertCheck");
+
+        verifyServerCertCheck = WidgetFactory.createCheckBox("verifyServerCertCheck", bundleString("Verify-server-certificate"));
+        verifyServerCertCheck.setActionCommand("setVerifyServerCertCheck");
         verifyServerCertCheck.addActionListener(this);
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
 
-        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
-        namesToUpperBox = ActionUtilities.createCheckBox(bundleString("namesToUpperCase"), "namesToUpperCase");
+        savePwdCheck = WidgetFactory.createCheckBox("savePwdCheck", bundleString("StorePassword"));
+        verifyServerCertCheck.setActionCommand("setStorePassword");
+
+        encryptPwdCheck = WidgetFactory.createCheckBox("encryptPwdCheck", bundleString("EncryptPassword"));
+        verifyServerCertCheck.setActionCommand("setEncryptPassword");
+
+        namesToUpperBox = WidgetFactory.createCheckBox("namesToUpperBox", bundleString("namesToUpperCase"));
+        namesToUpperBox.setActionCommand("namesToUpperCase");
         namesToUpperBox.setSelected(true);
-        useNewAPI = ActionUtilities.createCheckBox(bundleString("UseNewAPI"), "setNewAPI");
+
+        useNewAPI = WidgetFactory.createCheckBox("useNewAPI", bundleString("UseNewAPI"));
         useNewAPI.setToolTipText(bundleString("UseNewAPI.tool-tip"));
+        useNewAPI.setActionCommand("setNewAPI");
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
@@ -1735,7 +1745,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             this.table = table;
 
-            button = new DefaultButton();
+            button = WidgetFactory.createButton("button", null);
             button.setOpaque(true);
             button.addActionListener(e -> fireEditingStopped());
         }

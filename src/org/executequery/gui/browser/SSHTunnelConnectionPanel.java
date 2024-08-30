@@ -30,7 +30,6 @@ import org.underworldlabs.swing.ComponentTitledPanel;
 import org.underworldlabs.swing.DefaultFieldLabel;
 import org.underworldlabs.swing.LinkButton;
 import org.underworldlabs.swing.NumberTextField;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -97,7 +96,8 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         gbh.addLabelFieldPair(mainPanel, bundleString("passwordField"), passwordField,
                 bundleString("passwordField"));
 
-        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
+        savePwdCheck = WidgetFactory.createCheckBox("savePwdCheck", bundleString("StorePassword"));
+        savePwdCheck.setActionCommand("setStorePassword");
 
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
@@ -117,7 +117,10 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.setBorder(null);
 
-        useSshCheckbox = ActionUtilities.createCheckBox(this, bundleString("borderTitle"), "useSshSelected");
+        useSshCheckbox = WidgetFactory.createCheckBox("useSshCheckbox", bundleString("borderTitle"));
+        useSshCheckbox.setActionCommand("useSshSelected");
+        useSshCheckbox.addActionListener(this);
+
         ComponentTitledPanel titledPanel = new ComponentTitledPanel(useSshCheckbox);
 
         JPanel panel = titledPanel.getContentPane();

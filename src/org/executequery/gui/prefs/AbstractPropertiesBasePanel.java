@@ -58,13 +58,13 @@ abstract class AbstractPropertiesBasePanel extends JPanel
     private void init() {
         listeners = new ArrayList<>();
 
-        applyButton = WidgetFactory.createDefaultButton(
+        applyButton = WidgetFactory.createButton(
                 "applyButton",
                 Bundles.get("AbstractPropertiesBasePanel.apply"),
                 e -> parent.save(true)
         );
 
-        restoreButton = WidgetFactory.createDefaultButton(
+        restoreButton = WidgetFactory.createButton(
                 "restoreButton",
                 Bundles.get("AbstractPropertiesBasePanel.restoreDefaults"),
                 e -> this.restoreDefaults()

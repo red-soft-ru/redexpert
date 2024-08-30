@@ -108,11 +108,10 @@ public abstract class AbstractDriverPanel extends JPanel
         );
 
         jarPathModel = new DefaultListModel<>();
-        jarPathList = WidgetFactory.createList("jarPathList", jarPathModel, bundleString("pathToolTip"));
+        jarPathList = WidgetFactory.createList("jarPathList", jarPathModel);
 
         classComboModel = new DynamicComboBoxModel();
         classCombo = WidgetFactory.createComboBox("classField", classComboModel);
-        classCombo.setToolTipText(bundleString("classNameToolTip"));
         classCombo.setEditable(true);
 
         urlComboModel = new DynamicComboBoxModel();
@@ -121,15 +120,12 @@ public abstract class AbstractDriverPanel extends JPanel
         driverUrlCombo.setEditable(true);
 
         databaseCombo = WidgetFactory.createComboBox("databaseNameCombo", DatabaseDefinitionCache.getDatabaseDefinitions());
-        databaseCombo.setToolTipText(bundleString("databaseToolTip"));
         databaseCombo.addItemListener(this);
 
         nameField = WidgetFactory.createTextField("nameField");
-        nameField.setToolTipText(bundleString("driverNameToolTip"));
         nameField.addFocusListener(this);
 
-        descriptionField = WidgetFactory.createTextField("descriptionField");
-        descriptionField.setToolTipText(bundleString("descriptionToolTip"));
+        descriptionField = WidgetFactory.createTextField("descField");
     }
 
     private void arrange() {
@@ -159,7 +155,7 @@ public abstract class AbstractDriverPanel extends JPanel
         mainPanel.add(driverUrlCombo, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(5).spanX().get());
         mainPanel.add(new JLabel(bundleString("pathLabel")), gbh.setWidth(1).nextRowFirstCol().setMinWeightX().leftGap(0).topGap(8).get());
         mainPanel.add(libraryPanel, gbh.nextCol().setMaxWeightX().setMaxWeightY().leftGap(5).topGap(5).fillBoth().spanX().get());
-        mainPanel.add(new JLabel(bundleString("classNameLabel")), gbh.setWidth(1).nextRowFirstCol().setMinWeightX().leftGap(0).topGap(8).fillHorizontally().get());
+        mainPanel.add(new JLabel(bundleString("classNameLabel")), gbh.setWidth(1).nextRowFirstCol().setMinWeightX().setMinWeightY().leftGap(0).topGap(8).fillHorizontally().get());
         mainPanel.add(classCombo, gbh.nextCol().setMaxWeightX().leftGap(5).topGap(5).get());
         mainPanel.add(findButton, gbh.nextCol().setMinWeightX().get());
 

@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import org.executequery.Constants;
-import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.*;
 
 import javax.swing.*;
@@ -550,86 +549,6 @@ public final class WidgetFactory {
     }
 
     /**
-     * Create named DefaultInlineFieldButton class instance
-     *
-     * @param name the component's name
-     * @param text the displayed button text
-     */
-    public static JButton createInlineFieldButton(String name, String text) {
-
-        JButton button = new DefaultInlineFieldButton(text);
-        button.setName(name);
-
-        return button;
-    }
-
-    /**
-     * Create named DefaultInlineFieldButton class instance
-     *
-     * @param name          the component's name
-     * @param text          the displayed button text
-     * @param actionCommand the action command for this button
-     */
-    public static JButton createInlineFieldButton(String name, String text, String actionCommand) {
-
-        JButton button = createInlineFieldButton(name, text);
-        button.setActionCommand(actionCommand);
-
-        return button;
-    }
-
-    /**
-     * Create named DefaultPanelButton class instance
-     *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param toolTip        the tool tip text for this component
-     * @param actionListener the ActionListener to be added
-     */
-    public static JButton createPanelButton(String name, String text, String toolTip, ActionListener actionListener) {
-
-        JButton button = new DefaultPanelButton(text);
-        button.addActionListener(actionListener);
-        button.setToolTipText(toolTip);
-        button.setName(name);
-
-        return button;
-    }
-
-    /**
-     * Create named DefaultPanelButton class instance
-     *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param toolTip        the tool tip text for this component
-     * @param actionListener the ActionListener to be added
-     * @param actionCommand  the action command for this button
-     */
-    public static JButton createPanelButton(String name, String text, String toolTip, ActionListener actionListener, String actionCommand) {
-
-        JButton button = createPanelButton(name, text, toolTip, actionListener);
-        button.setActionCommand(actionCommand);
-
-        return button;
-    }
-
-    /**
-     * Create named DefaultButton class instance
-     *
-     * @param name     the component's name
-     * @param text     the displayed button text
-     * @param listener the ActionListener to be added
-     */
-    public static JButton createDefaultButton(String name, String text, ActionListener listener) {
-
-        DefaultButton button = new DefaultButton(listener, text, null);
-        button.setFocusPainted(false);
-        button.setName(name);
-
-        return button;
-    }
-
-    /**
      * Create named RolloverButton class instance
      *
      * @param name    the component's name
@@ -771,6 +690,7 @@ public final class WidgetFactory {
      * @param items the data array to insert into the combo box
      */
     public static EQCheckCombox createCheckComboBox(String name, Object[] items) {
+
         EQCheckCombox checkCombox = createCheckComboBox(name);
         Arrays.stream(items).forEach(e -> checkCombox.getModel().addElement(e));
 

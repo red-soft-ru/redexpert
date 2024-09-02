@@ -23,7 +23,7 @@ import org.executequery.sql.SqlStatementResult;
 import org.executequery.sql.sqlbuilder.*;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
-import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.DefaultCheckComboBox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -90,7 +90,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
     private RolloverButton refreshButton;
     private RolloverButton cancelButton;
     private JCheckBox systemCheck;
-    private EQCheckCombox objectTypeBox;
+    private DefaultCheckComboBox objectTypeBox;
     private DefaultStatementExecutor querySender;
     private GrantManagerPanel grantManagerPanel;
 
@@ -172,7 +172,7 @@ public class PrivilegesTablePanel extends JPanel implements ActionListener {
         col_usage = grants.indexOf("G") + firstGrantColumn;
         if (col_usage < firstGrantColumn)
             col_usage = -1;
-        objectTypeBox = new EQCheckCombox();
+        objectTypeBox = new DefaultCheckComboBox();
 
         fillObjectBox();
 

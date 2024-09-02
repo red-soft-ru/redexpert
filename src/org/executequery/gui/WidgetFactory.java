@@ -655,31 +655,31 @@ public final class WidgetFactory {
     }
 
     /**
-     * Create named EQCheckCombox class instance
+     * Create named DefaultCheckComboBox class instance
      *
      * @param name the component's name
      */
-    public static EQCheckCombox createCheckComboBox(String name) {
+    public static DefaultCheckComboBox createCheckComboBox(String name) {
 
-        EQCheckCombox checkCombox = new EQCheckCombox();
-        checkCombox.setPreferredSize(getPreferredSize(checkCombox));
-        checkCombox.setName(name);
+        DefaultCheckComboBox checkComboBox = new DefaultCheckComboBox();
+        checkComboBox.setPreferredSize(getPreferredSize(checkComboBox));
+        checkComboBox.setName(name);
 
-        return checkCombox;
+        return checkComboBox;
     }
 
     /**
-     * Create named EQCheckCombox class instance
+     * Create named DefaultCheckComboBox class instance
      *
      * @param name  the component's name
      * @param items the data array to insert into the combo box
      */
-    public static EQCheckCombox createCheckComboBox(String name, Object[] items) {
+    public static DefaultCheckComboBox createCheckComboBox(String name, Object[] items) {
 
-        EQCheckCombox checkCombox = createCheckComboBox(name);
-        Arrays.stream(items).forEach(e -> checkCombox.getModel().addElement(e));
+        DefaultCheckComboBox checkComboBox = createCheckComboBox(name);
+        Arrays.stream(items).forEach(e -> checkComboBox.getModel().addElement(e));
 
-        return checkCombox;
+        return checkComboBox;
     }
 
     /**

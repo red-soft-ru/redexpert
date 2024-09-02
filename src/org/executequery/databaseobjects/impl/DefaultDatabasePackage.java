@@ -7,7 +7,6 @@ import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import java.sql.ResultSet;
@@ -58,8 +57,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         if (isMarkedForReload())
             getObjectInfo();
 
-        return "CREATE OR ALTER PACKAGE  " + getName() +
-                "\nAS\n" + this.headerSource;
+        return this.headerSource;
     }
 
     public void setHeaderSource(String headerSource) {
@@ -67,8 +65,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
-        return "RECREATE PACKAGE BODY " + getName() +
-                "\nAS\n" + this.bodySource;
+        return this.bodySource;
     }
 
     public String getOriginalBodySource() {
@@ -108,7 +105,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         return SQLUtils.generateCreatePackage(
                 getName(),
                 getHeaderSource(),
-                MiscUtils.isNull(getOriginalBodySource()) ? getBodySource() + "BEGIN\n\nEND" : getBodySource(),
+                getBodySource(),
                 getRemarks(),
                 getHost().getDatabaseConnection()
         );

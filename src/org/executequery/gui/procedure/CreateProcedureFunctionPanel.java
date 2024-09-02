@@ -167,7 +167,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             showHelpersCheckTriggered();
 
         try {
-            generateDdlScript(true);
+            generateDdlScript(isParseVariables());
         } catch (Exception ignored) {
         }
 
@@ -205,7 +205,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         reset();
         addListeners();
-        generateDdlScript(true);
+        generateDdlScript(isParseVariables());
     }
 
     private void arrange() {
@@ -730,7 +730,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
                 tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
                 tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 4);
-                tabbedPane.insertTab(bundleString("Subprograms"), null, cursorsPanel, null, 5);
+                tabbedPane.insertTab(bundleString("Subprograms"), null, subProgramPanel, null, 5);
             }
             loadVariables();
 

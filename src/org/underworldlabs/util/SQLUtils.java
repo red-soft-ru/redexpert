@@ -1730,8 +1730,9 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         sb.append("SET TERM ^ ;");
-        sb.append("\n").append(headerSource);
-        sb.append("^\n").append(bodySource);
+        sb.append("\n").append("CREATE OR ALTER PACKAGE  ").append(name).append("\nAS\n").append(headerSource);
+        if (!MiscUtils.isNull(bodySource))
+            sb.append("^\n").append("RECREATE PACKAGE BODY ").append(name).append("\nAS\n").append(bodySource);
         sb.append("^\n").append("SET TERM ; ^").append("\n");
 
         if (description != null && !description.isEmpty())

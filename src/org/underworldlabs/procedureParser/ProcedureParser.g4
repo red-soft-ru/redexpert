@@ -68,7 +68,7 @@ declare_function_block
 
  declare_block
  : ('(' input_parameter (',' input_parameter)*')')?
-       (K_RETURNS '('  output_parameter (',' output_parameter)*')')?
+       (spases_or_comment? K_RETURNS '('  output_parameter (',' output_parameter)*')')?
        spases_or_comment? K_AS spases_or_comment
        (declare_procedure_stmt|local_variable)*
        K_BEGIN

@@ -13,7 +13,6 @@ import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
-import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
@@ -202,7 +201,7 @@ public class CreateDatabasePanel extends ActionPanel
         passwordField.setName("passwordField");
         hostField = new DefaultTextField();
         hostField.setName("hostField");
-        portField = new DefaultNumberTextField();
+        portField = new NumberTextField();
         portField.setName("portField");
         sourceField = createMatchedWidthTextField();
         sourceField.setName("sourceField");

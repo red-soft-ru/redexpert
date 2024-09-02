@@ -31,7 +31,6 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
-import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
@@ -245,7 +244,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         hostField = new DefaultTextField();
         addCheckEmptyField(hostField);
         hostField.setText("localhost");
-        portField = new DefaultNumberTextField();
+        portField = new NumberTextField();
         addCheckEmptyField(portField);
         portField.setText("3050");
         sourceField = createMatchedWidthTextField();

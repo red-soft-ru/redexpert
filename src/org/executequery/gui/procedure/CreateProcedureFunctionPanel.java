@@ -728,9 +728,9 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         if (isParseVariables()) {
 
             if (tabbedPane.indexOfComponent(variablesPanel) < 0) {
-                tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 3);
-                tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 4);
-                tabbedPane.insertTab(bundleString("Subprograms"), null, subProgramPanel, null, 5);
+                tabbedPane.insertTab(bundleString("Variables"), null, variablesPanel, null, 2);
+                tabbedPane.insertTab(bundleString("Cursors"), null, cursorsPanel, null, 3);
+                tabbedPane.insertTab(bundleString("Subprograms"), null, subProgramPanel, null, 4);
             }
             loadVariables();
 

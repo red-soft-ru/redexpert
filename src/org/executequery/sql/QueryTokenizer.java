@@ -285,7 +285,7 @@ public class QueryTokenizer {
                         beginCount--;
                         if (beginCount <= 0) {
                             beginEndBlockTokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, startIndex, antlrToken.getStopIndex()));
-                            state = NORMAL;
+                            state = AS;
                         }
                     }
                 }

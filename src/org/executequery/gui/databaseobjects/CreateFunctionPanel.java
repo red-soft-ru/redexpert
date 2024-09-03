@@ -21,6 +21,7 @@ import java.awt.*;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
@@ -212,6 +213,12 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
             variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             variables.addAll(cursorsPanel.getCursorsVector());
             variables.addAll(subProgramPanel.getSubProgsVector());
+            variables.sort(new Comparator<ColumnData>() {
+                @Override
+                public int compare(ColumnData o1, ColumnData o2) {
+                    return Integer.compare(o1.getColumnPosition(), o2.getColumnPosition());
+                }
+            });
 
             return SQLUtils.generateCreateFunction(
                     nameField.getText(),

@@ -353,202 +353,178 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
                     ProcedureParserParser.Full_bodyContext bodyContext = ctx.full_body();
                     procedureBody = bodyContext.getText();
 
-                    List<ProcedureParserParser.Local_variableContext> vars = ctx.local_variable();
+                    List<ProcedureParserParser.Declare_stmtContext> vars = ctx.declare_stmt();
                     if (!vars.isEmpty()) {
 
                         boolean firstVar = true;
                         boolean firstCursor = true;
+                        boolean firstProc = true;
+                        int order = 0;
 
-                        for (ProcedureParserParser.Local_variableContext var : vars) {
-                            if (var.cursor() == null) {
+                        for (ProcedureParserParser.Declare_stmtContext dstmt : vars) {
+                            if (dstmt.local_variable() != null) {
+                                ProcedureParserParser.Local_variableContext var = dstmt.local_variable();
+                                if (var.cursor() == null) {
 
-                                ProcedureParameter variable = new ProcedureParameter(
-                                        var.variable_name().getText(),
-                                        DatabaseMetaData.procedureColumnUnknown,
-                                        0,
-                                        "",
-                                        0,
-                                        0
-                                );
+                                    ProcedureParameter variable = new ProcedureParameter(
+                                            var.variable_name().getText(),
+                                            DatabaseMetaData.procedureColumnUnknown,
+                                            0,
+                                            "",
+                                            0,
+                                            0
+                                    );
+                                    variable.setPosition(order);
 
-                                ProcedureParserParser.DatatypeContext type = var.datatype();
-                                if (type != null && !type.isEmpty()) {
+                                    ProcedureParserParser.DatatypeContext type = var.datatype();
+                                    if (type != null && !type.isEmpty()) {
 
-                                    if (type.domain_name() != null && !type.domain_name().isEmpty()) {
+                                        if (type.domain_name() != null && !type.domain_name().isEmpty()) {
 
-                                        String domain = type.domain_name().getText();
-                                        if (!domain.startsWith("\""))
-                                            domain = domain.toUpperCase();
+                                            String domain = type.domain_name().getText();
+                                            if (!domain.startsWith("\""))
+                                                domain = domain.toUpperCase();
 
-                                        variable.setDomain(domain);
-                                    }
-
-                                    if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
-
-                                        List<ParseTree> children = type.datatypeSQL().children;
-                                        variable.setSqlType(children.get(0).getText());
-
-                                        if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty())
-                                            variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
-
-                                        if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty())
-                                            variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText().trim()));
-
-                                        if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
-
-                                            if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty())
-                                                variable.setSubType(1);
-
-                                            if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty())
-                                                variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText().trim()));
+                                            variable.setDomain(domain);
                                         }
 
-                                        if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty())
-                                            variable.setEncoding(type.datatypeSQL().charset_name().getText());
-                                    }
+                                        if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
 
-                                    if (type.type_of() != null && !type.type_of().isEmpty()) {
+                                            List<ParseTree> children = type.datatypeSQL().children;
+                                            variable.setSqlType(children.get(0).getText());
 
-                                        if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
-                                            variable.setDomain(type.type_of().domain_name().getText());
-                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                            if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty())
+                                                variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
+
+                                            if (type.datatypeSQL().scale() != null && !type.datatypeSQL().scale().isEmpty())
+                                                variable.setScale(Integer.parseInt(type.datatypeSQL().scale().getText().trim()));
+
+                                            if (type.datatypeSQL().subtype() != null && !type.datatypeSQL().subtype().isEmpty()) {
+
+                                                if (type.datatypeSQL().subtype().any_name() != null && !type.datatypeSQL().subtype().any_name().isEmpty())
+                                                    variable.setSubType(1);
+
+                                                if (type.datatypeSQL().subtype().int_number() != null && !type.datatypeSQL().subtype().int_number().isEmpty())
+                                                    variable.setSubType(Integer.parseInt(type.datatypeSQL().subtype().int_number().getText().trim()));
+                                            }
+
+                                            if (type.datatypeSQL().charset_name() != null && !type.datatypeSQL().charset_name().isEmpty())
+                                                variable.setEncoding(type.datatypeSQL().charset_name().getText());
                                         }
 
-                                        if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
-                                            variable.setRelationName(type.type_of().table_name().getText());
-                                            variable.setFieldName(type.type_of().column_name().getText());
-                                            variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                        if (type.type_of() != null && !type.type_of().isEmpty()) {
+
+                                            if (type.type_of().domain_name() != null && !type.type_of().domain_name().isEmpty()) {
+                                                variable.setDomain(type.type_of().domain_name().getText());
+                                                variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_DOMAIN);
+                                            }
+
+                                            if (type.type_of().column_name() != null && !type.type_of().column_name().isEmpty()) {
+                                                variable.setRelationName(type.type_of().table_name().getText());
+                                                variable.setFieldName(type.type_of().column_name().getText());
+                                                variable.setTypeOfFrom(ColumnData.TYPE_OF_FROM_COLUMN);
+                                            }
                                         }
                                     }
+
+                                    if (var.notnull() != null && !var.notnull().isEmpty())
+                                        variable.setNullable(0);
+                                    else
+                                        variable.setNullable(1);
+
+                                    if (var.default_statement() != null)
+                                        variable.setDefaultValue(var.default_statement().getText());
+
+                                    if (var.comment() != null) {
+
+                                        String description = var.comment().getText();
+                                        if (description.startsWith("--")) {
+                                            description = description.substring(2);
+                                            variable.setDescriptionAsSingleComment(true);
+
+                                        } else if (description.startsWith("/*"))
+                                            description = description.substring(2, description.length() - 2);
+
+                                        variable.setDescription(description);
+                                    }
+
+                                    if (firstVar)
+                                        variablesPanel.deleteEmptyRow();
+
+                                    firstVar = false;
+                                    variablesPanel.addRow(variable);
+
+                                } else {
+
+                                    ColumnData cursor = new ColumnData(connection);
+                                    cursor.setColumnPosition(order);
+                                    cursor.setCursor(true);
+
+                                    if (var.variable_name() != null)
+                                        cursor.setColumnName(var.variable_name().getText());
+
+                                    if (var.cursor().scroll() != null)
+                                        cursor.setScroll(var.cursor().scroll().getText().contentEquals("SCROLL"));
+                                    else
+                                        cursor.setScroll(false);
+
+                                    if (var.cursor().operator_select() != null)
+                                        cursor.setSelectOperator(var.cursor().operator_select().operator_select_in().getText());
+
+                                    if (var.comment() != null) {
+
+                                        String description = var.comment().getText();
+                                        if (description.startsWith("--")) {
+                                            description = description.substring(2);
+                                            cursor.setRemarkAsSingleComment(true);
+
+                                        } else if (description.startsWith("/*"))
+                                            description = description.substring(2, description.length() - 2);
+
+                                        cursor.setRemarks(description);
+                                    }
+
+                                    if (firstCursor)
+                                        cursorsPanel.deleteEmptyRow();
+
+                                    firstCursor = false;
+                                    cursorsPanel.addRow(cursor);
                                 }
-
-                                if (var.notnull() != null && !var.notnull().isEmpty())
-                                    variable.setNullable(0);
-                                else
-                                    variable.setNullable(1);
-
-                                if (var.default_statement() != null)
-                                    variable.setDefaultValue(var.default_statement().getText());
-
-                                if (var.comment() != null) {
-
-                                    String description = var.comment().getText();
-                                    if (description.startsWith("--")) {
-                                        description = description.substring(2);
-                                        variable.setDescriptionAsSingleComment(true);
-
-                                    } else if (description.startsWith("/*"))
-                                        description = description.substring(2, description.length() - 2);
-
-                                    variable.setDescription(description);
-                                }
-
-                                if (firstVar)
-                                    variablesPanel.deleteEmptyRow();
-
-                                firstVar = false;
-                                variablesPanel.addRow(variable);
-
-                            } else {
-
+                            } else if (dstmt.declare_procedure_stmt() != null) {
+                                ProcedureParserParser.Declare_procedure_stmtContext var = dstmt.declare_procedure_stmt();
                                 ColumnData cursor = new ColumnData(connection);
-                                cursor.setCursor(true);
+                                cursor.setColumnPosition(order);
+                                cursor.setTypeName("PROCEDURE");
 
-                                if (var.variable_name() != null)
-                                    cursor.setColumnName(var.variable_name().getText());
+                                if (var.procedure_name() != null)
+                                    cursor.setColumnName(var.procedure_name().getText());
+                                cursor.setSelectOperator(var.getText());
+                                if (firstProc)
+                                    subProgramPanel.deleteEmptyRow();
 
-                                if (var.cursor().scroll() != null)
-                                    cursor.setScroll(var.cursor().scroll().getText().contentEquals("SCROLL"));
-                                else
-                                    cursor.setScroll(false);
+                                firstProc = false;
+                                subProgramPanel.addRow(cursor);
 
-                                if (var.cursor().operator_select() != null)
-                                    cursor.setSelectOperator(var.cursor().operator_select().operator_select_in().getText());
+                            } else if (dstmt.declare_function_stmt() != null) {
+                                ProcedureParserParser.Declare_function_stmtContext var = dstmt.declare_function_stmt();
+                                ColumnData cursor = new ColumnData(connection);
+                                cursor.setColumnPosition(order);
+                                cursor.setTypeName("FUNCTION");
 
-                                if (var.comment() != null) {
+                                if (var.procedure_name() != null)
+                                    cursor.setColumnName(var.procedure_name().getText());
+                                cursor.setSelectOperator(var.getText());
 
-                                    String description = var.comment().getText();
-                                    if (description.startsWith("--")) {
-                                        description = description.substring(2);
-                                        cursor.setRemarkAsSingleComment(true);
+                                if (firstProc)
+                                    subProgramPanel.deleteEmptyRow();
 
-                                    } else if (description.startsWith("/*"))
-                                        description = description.substring(2, description.length() - 2);
-
-                                    cursor.setRemarks(description);
-                                }
-
-                                if (firstCursor)
-                                    cursorsPanel.deleteEmptyRow();
-
-                                firstCursor = false;
-                                cursorsPanel.addRow(cursor);
+                                firstProc = false;
+                                subProgramPanel.addRow(cursor);
                             }
+                            order++;
                         }
+
                     }
-                    List<ProcedureParserParser.Declare_procedure_stmtContext> procedures = ctx.declare_procedure_stmt();
-                    if (!procedures.isEmpty()) {
-                        boolean firstProc = true;
-                        for (ProcedureParserParser.Declare_procedure_stmtContext var : procedures) {
-                            ColumnData cursor = new ColumnData(connection);
-                            cursor.setTypeName("PROCEDURE");
-
-                            if (var.procedure_name() != null)
-                                cursor.setColumnName(var.procedure_name().getText());
-                            cursor.setSelectOperator(var.getText());
-
-                        /*if (var.comment() != null) {
-
-                            String description = var.comment().getText();
-                            if (description.startsWith("--")) {
-                                description = description.substring(2);
-                                cursor.setRemarkAsSingleComment(true);
-
-                            } else if (description.startsWith("/*"))
-                                description = description.substring(2, description.length() - 2);
-
-                            cursor.setRemarks(description);
-                        }*/
-
-                            if (firstProc)
-                                subProgramPanel.deleteEmptyRow();
-
-                            firstProc = false;
-                            subProgramPanel.addRow(cursor);
-                        }
-                    }
-                    List<ProcedureParserParser.Declare_function_stmtContext> functions = ctx.declare_function_stmt();
-                    if (!functions.isEmpty()) {
-                        boolean firstProc = true;
-                        for (ProcedureParserParser.Declare_function_stmtContext var : functions) {
-                            ColumnData cursor = new ColumnData(connection);
-                            cursor.setTypeName("FUNCTION");
-
-                            if (var.procedure_name() != null)
-                                cursor.setColumnName(var.procedure_name().getText());
-                            cursor.setSelectOperator(var.getText());
-
-                        /*if (var.comment() != null) {
-
-                            String description = var.comment().getText();
-                            if (description.startsWith("--")) {
-                                description = description.substring(2);
-                                cursor.setRemarkAsSingleComment(true);
-
-                            } else if (description.startsWith("/*"))
-                                description = description.substring(2, description.length() - 2);
-
-                            cursor.setRemarks(description);
-                        }*/
-
-                            if (firstProc)
-                                subProgramPanel.deleteEmptyRow();
-
-                            firstProc = false;
-                            subProgramPanel.addRow(cursor);
-                        }
-                    }
-
                 }
             }, tree);
         }

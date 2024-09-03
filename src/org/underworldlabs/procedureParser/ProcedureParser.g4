@@ -60,7 +60,7 @@ declare_function_block
  : ('(' input_parameter (',' input_parameter)*')')?
        K_RETURNS   output_parameter
        spases_or_comment? K_AS spases_or_comment
-       (declare_procedure_stmt|declare_function_stmt|local_variable)*
+       declare_stmt*
        K_BEGIN
        body
        K_END
@@ -70,20 +70,22 @@ declare_function_block
  : ('(' input_parameter (',' input_parameter)*')')?
        (spases_or_comment? K_RETURNS '('  output_parameter (',' output_parameter)*')')?
        spases_or_comment? K_AS spases_or_comment
-       (declare_procedure_stmt|local_variable)*
+       declare_stmt*
        K_BEGIN
        body
        K_END
        spases_or_comment?
 ;
 
-
+declare_stmt
+:local_variable
+ |declare_procedure_stmt
+ |declare_function_stmt
+ ;
 
 declare_block_without_params
 :spases_or_comment?
-(local_variable
-|declare_procedure_stmt
-|declare_function_stmt)*
+declare_stmt*
 full_body
 ;
 

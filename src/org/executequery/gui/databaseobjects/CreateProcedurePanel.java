@@ -20,6 +20,7 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
@@ -134,6 +135,12 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
             vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             vars.addAll(cursorsPanel.getCursorsVector());
             vars.addAll(subProgramPanel.getSubProgsVector());
+            vars.sort(new Comparator<ColumnData>() {
+                @Override
+                public int compare(ColumnData o1, ColumnData o2) {
+                    return Integer.compare(o1.getColumnPosition(), o2.getColumnPosition());
+                }
+            });
 
             return SQLUtils.generateCreateProcedure(
                     nameField.getText(),

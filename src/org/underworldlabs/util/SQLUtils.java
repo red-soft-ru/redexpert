@@ -866,6 +866,7 @@ public final class SQLUtils {
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
         cd.setRemarkAsSingleComment(parameter.isDescriptionAsSingleComment());
+        cd.setColumnPosition(parameter.getPosition());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {

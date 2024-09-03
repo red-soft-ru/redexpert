@@ -339,6 +339,24 @@ public class MutableValueJList extends JList implements CellEditorListener {
 
     }
 
+    private static class DefaultListCellEditor extends DefaultCellEditor implements ListCellEditor {
+
+        public DefaultListCellEditor(final JTextField textField) {
+            super(textField);
+        }
+
+        @Override
+        public Component getListCellEditorComponent(JList list, Object value, boolean isSelected, int index) {
+            delegate.setValue(value);
+
+            if (getComponent() instanceof JTextField)
+                ((JTextField) getComponent()).selectAll();
+
+            return editorComponent;
+        }
+
+    } // DefaultListCellEditor class
+
 }
 
 

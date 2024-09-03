@@ -164,9 +164,9 @@ public final class WidgetFactory {
      *
      * @param name the component's name
      */
-    public static JComboBox createComboBox(String name) {
+    public static <E> JComboBox<E> createComboBox(String name) {
 
-        JComboBox comboBox = new JComboBox();
+        JComboBox<E> comboBox = new JComboBox<>();
         comboBox.setPreferredSize(getPreferredSize(comboBox));
         comboBox.setName(name);
 
@@ -179,7 +179,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param model the ComboBoxModel that provides the displayed list of items
      */
-    public static JComboBox createComboBox(String name, ComboBoxModel model) {
+    public static <E> JComboBox<E> createComboBox(String name, ComboBoxModel<E> model) {
 
         JComboBox comboBox = createComboBox(name);
         comboBox.setModel(model);
@@ -194,7 +194,7 @@ public final class WidgetFactory {
      * @param model    the ComboBoxModel that provides the displayed list of items
      * @param listener the ItemListener that is to be notified
      */
-    public static JComboBox createComboBox(String name, ComboBoxModel model, ItemListener listener) {
+    public static <E> JComboBox<E> createComboBox(String name, ComboBoxModel<E> model, ItemListener listener) {
 
         JComboBox comboBox = createComboBox(name, model);
         comboBox.addItemListener(listener);
@@ -208,7 +208,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param items the data vector to insert into the combo box
      */
-    public static JComboBox createComboBox(String name, Vector<?> items) {
+    public static <E> JComboBox<E> createComboBox(String name, Vector<E> items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
     }
 
@@ -219,7 +219,7 @@ public final class WidgetFactory {
      * @param items    the data vector to insert into the combo box
      * @param listener the ItemListener that is to be notified
      */
-    public static JComboBox createComboBox(String name, Vector<?> items, ItemListener listener) {
+    public static <E> JComboBox<E> createComboBox(String name, Vector<E> items, ItemListener listener) {
         return createComboBox(name, new DefaultComboBoxModel<>(items), listener);
     }
 
@@ -229,7 +229,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param items an array of objects to insert into the combo box
      */
-    public static JComboBox createComboBox(String name, Object[] items) {
+    public static <E> JComboBox<E> createComboBox(String name, E[] items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
     }
 
@@ -489,7 +489,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param model the <code>ListModel</code> that provides the list of items for display
      */
-    public static JList<?> createList(String name, ListModel<?> model) {
+    public static <E> JList<E> createList(String name, ListModel<E> model) {
 
         JList list = new JList();
         list.setModel(model);

@@ -1,5 +1,69 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <h1>RedExpert Changelog</h1>
+<h2><a name='v2024.09'>Major changes - v2024.09</a></h2>
+<p>Added:</p>
+<ol>
+    <li>fbclient libraries for RDB 3, 4 and 5 version</li>
+    <li>Notification when records count limit is enabled</li>
+    <li>Check for valid exported file path before export table data</li>
+    <li>Ability to delete data from the monitoring tables (MON$...)</li>
+    <li>Indicators of the connected databases in the select connection fields</li>
+    <li>Comment tabs for "Edit Job" and "Edit Tablespace" panels</li>
+    <li>Ability to hide helper tools in the "Edit Procedure" and "Edit Function" panels</li>
+    <li>Displaying Result Set table row numbers by default</li>
+    <li>Tooltips for the table columns in the DB statistics panel</li>
+    <li>Clearing selected tables if the "Only select tables" check disabled in the DB statistics panel</li>
+</ol>
+<p>Improved:</p>
+<ol>
+    <li>ER-diagram editor toolbar</li>
+    <li>"Test Data Generator" tool</li>
+    <li>"Import connections from DB" tool</li>
+    <li>"Add table" dialog in the ERD Editor</li>
+    <li>"Add relationship" dialog in the ERD Editor</li>
+    <li>"Remove relationship" dialog in the ERD Editor</li>
+    <li>Exception message formatting in the error dialog</li>
+    <li>Update databases list for JDBC drivers</li>
+    <li>Update Jaybird drivers to 4.0.30 and 5.0.18</li>
+    <li>Update Java Native Access and Java Native Access Platform package versions</li>
+    <li>Remove showing "setting applied" message when there are no preferences changed</li>
+    <li>Set Monospaced font for the "Trace Manager" SQL panel</li>
+    <li>Set PRIMARY tablespace as default instead of NONE when creating table</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>ER-diagram generation</li>
+    <li>Loading ER-diagram from the file</li>
+    <li>Primary key generation for ER-diagram</li>
+    <li>Editing table constraints in the ER-diagram editor</li>
+    <li>Saving visible columns in the "Trace Manager" tool</li>
+    <li>Editing JOB type displaying</li>
+    <li>Result Set table cell rendering</li>
+    <li>Enabling toolbar for table constraints</li>
+    <li>Freezing when displaying the autocomplete popup</li>
+    <li>Connections tree updating</li>
+    <li>Popup actions for the VIEW columns into the connections tree</li>
+    <li>NPE when open "Edit Function" panel</li>
+    <li>Executing SQL scripts with parameters</li>
+    <li>Executing SQL scripts without "SET TERM" statement</li>
+    <li>OO API tools enabling in the "Test Data Generator" panel</li>
+    <li>Default TRIGGER name generation when create new one</li>
+    <li>Generating SQL drop query for UDFs</li>
+    <li>Generating SQL script for PROCEDUREs and FUNCTIONs</li>
+    <li>Generating SQL script for JOBs and TABLESPACEs with comment</li>
+    <li>Generating SQL script for PACKAGEs without body</li>
+    <li>Generating SQL script for TRIGGERs on the Firebird with version less than 3</li>
+    <li>Generating SQL script for existing FUNCTIONs with the deterministic return type</li>
+    <li>Generating SQL script for table constraints during comparing</li>
+    <li>Loading information for TABLEs, INDEXes and FUNCTIONs during DB comparing</li>
+    <li>Loading information for JOBs while editing them</li>
+    <li>Starting DB compare with version less than 3</li>
+    <li>Saving SQL script after DB comparing with the user changes</li>
+    <li>Generating SQL stubs for PROCEDUREs during DB comparing</li>
+    <li>Generating titles for new "System Console" tool instances</li>
+    <li>Saving Query Editor instances history</li>
+    <li>Data view dialog opening for the first time</li>
+</ol>
 <h2><a name='v2024.07'>Major changes - v2024.07</a></h2>
 <p>Improved:</p>
 <ol>

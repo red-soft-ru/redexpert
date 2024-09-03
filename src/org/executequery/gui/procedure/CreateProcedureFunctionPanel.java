@@ -167,7 +167,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
             showHelpersCheckTriggered();
 
         try {
-            generateDdlScript(isParseVariables());
+            generateDdlScript(false);
         } catch (Exception ignored) {
         }
 
@@ -205,7 +205,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         reset();
         addListeners();
-        generateDdlScript(isParseVariables());
+        generateDdlScript(false);
     }
 
     private void arrange() {

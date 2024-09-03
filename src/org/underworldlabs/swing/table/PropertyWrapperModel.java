@@ -47,6 +47,10 @@ public class PropertyWrapperModel extends AbstractSortableTableModel {
         setValues(values.entrySet(), values.size());
     }
 
+    public PropertyWrapperModel(Map<Object, Object> properties, boolean sort) {
+        setValues(properties, sort);
+    }
+
     public void setValues(Map<Object, Object> values, boolean sort) {
         setValues(values.entrySet(), values.size());
         if (sort)

@@ -22,6 +22,7 @@ package org.executequery.repository;
 
 import org.executequery.ExecuteQuerySystemError;
 import org.executequery.datasource.DatabaseDefinition;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.actions.ActionBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -31,7 +32,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.CharArrayWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,54 +42,29 @@ import java.util.List;
  * @author Takis Diakoumis
  */
 public class DatabaseDefinitionCache {
-
-    /**
-     * database definition cache
-     */
     private static List<DatabaseDefinition> databaseDefinitions;
-
-    private static final DatabaseDefinition nullDatabaseDefinition =
-            new DatabaseDefinition(DatabaseDefinition.INVALID_DATABASE_ID, "");
-
-    private DatabaseDefinitionCache() {
-    }
 
     public static DatabaseDefinition getDatabaseDefinition(int id) {
 
-        if (databaseDefinitions == null) {
+        if (id == -1)
+            return new DatabaseDefinition(DatabaseDefinition.INVALID_DATABASE_ID, "");
 
+        if (databaseDefinitions == null)
             load();
-        }
 
-        if (id == -1) {
+        for (DatabaseDefinition databaseDefinition : databaseDefinitions)
+            if (databaseDefinition.getId() == id)
+                return databaseDefinition;
 
-            return nullDatabaseDefinition;
-        }
-
-        for (int i = 0, n = databaseDefinitions.size(); i < n; i++) {
-            DatabaseDefinition dd = databaseDefinitions.get(i);
-            if (dd.getId() == id) {
-                return dd;
-            }
-        }
-
-        return null;
-    }
-
-    public static DatabaseDefinition getDatabaseDefinitionAt(int index) {
-        if (databaseDefinitions == null) {
-            load();
-        }
-        return databaseDefinitions.get(index);
+        return new DatabaseDefinition(DatabaseDefinition.INVALID_DATABASE_ID, "");
     }
 
     /**
      * Returns the database definitions within a collection.
      */
     public static List<DatabaseDefinition> getDatabaseDefinitions() {
-        if (databaseDefinitions == null) {
+        if (databaseDefinitions == null)
             load();
-        }
         return databaseDefinitions;
     }
 
@@ -97,85 +72,73 @@ public class DatabaseDefinitionCache {
      * Loads the definitions from file.
      */
     public static synchronized void load() {
-        InputStream input = null;
-        ClassLoader cl = ActionBuilder.class.getClassLoader();
+        databaseDefinitions = new ArrayList<>();
 
         String path = "org/executequery/databases.xml";
-        if (cl != null) {
-            input = cl.getResourceAsStream(path);
-        } else {
-            input = ClassLoader.getSystemResourceAsStream(path);
-        }
+        ClassLoader classLoader = ActionBuilder.class.getClassLoader();
 
-        databaseDefinitions = new ArrayList<DatabaseDefinition>();
-        try {
+        try (InputStream input = classLoader != null ?
+                classLoader.getResourceAsStream(path) :
+                ClassLoader.getSystemResourceAsStream(path)) {
+
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
 
             SAXParser parser = factory.newSAXParser();
             DatabaseHandler handler = new DatabaseHandler();
             parser.parse(input, handler);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ExecuteQuerySystemError();
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                }
-            }
-        }
 
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+            throw new ExecuteQuerySystemError(e);
+        }
     }
 
-    static class DatabaseHandler extends DefaultHandler {
+    private static class DatabaseHandler extends DefaultHandler {
 
         private DatabaseDefinition database = new DatabaseDefinition();
-        private CharArrayWriter contents = new CharArrayWriter();
+        private final CharArrayWriter contents = new CharArrayWriter();
 
-        public DatabaseHandler() {
-        }
-
-        public void startElement(String nameSpaceURI, String localName,
-                                 String qName, Attributes attrs) {
+        @Override
+        public void startElement(String nameSpaceURI, String localName, String qName, Attributes attrs) {
             contents.reset();
-            if (localName.equals("database")) {
+            if (localName.equals("database"))
                 database = new DatabaseDefinition();
+        }
+
+        @Override
+        public void endElement(String nameSpaceURI, String localName, String qName) {
+            switch (localName) {
+                case "id":
+                    database.setId(Integer.parseInt(contents.toString()));
+                    break;
+                case "name":
+                    database.setName(contents.toString());
+                    break;
+                case "url":
+                    database.addUrlPattern(contents.toString());
+                    break;
+                case "database":
+                    databaseDefinitions.add(database);
+                    break;
             }
         }
 
-        public void endElement(String nameSpaceURI, String localName,
-                               String qName) {
-            if (localName.equals("id")) {
-                database.setId(Integer.parseInt(contents.toString()));
-            } else if (localName.equals("name")) {
-                database.setName(contents.toString());
-            } else if (localName.equals("url")) {
-                database.addUrlPattern(contents.toString());
-            } else if (localName.equals("database")) {
-                databaseDefinitions.add(database);
-            }
-        }
-
+        @Override
         public void characters(char[] data, int start, int length) {
             contents.write(data, start, length);
         }
 
+        @Override
         public void ignorableWhitespace(char[] data, int start, int length) {
             characters(data, start, length);
         }
 
+        @Override
         public void error(SAXParseException spe) throws SAXException {
             throw new SAXException(spe.getMessage());
         }
-    } // DatabaseHandler
+
+    } // DatabaseHandler class
 
 }
-
-
-
-
-
-
-

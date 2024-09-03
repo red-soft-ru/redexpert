@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2024.07</version>
+        <version>2024.09</version>
     </parent>
 
     <dependencies>
@@ -23,6 +23,24 @@
             <groupId>org.executequery</groupId>
             <artifactId>fbplugin</artifactId>
             <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.executequery</groupId>
+            <artifactId>fbclient-3</artifactId>
+            <version>3.0.15</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.executequery</groupId>
+            <artifactId>fbclient-4</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.executequery</groupId>
+            <artifactId>fbclient-5</artifactId>
+            <version>5.0.0</version>
         </dependency>
 
         <dependency>
@@ -142,7 +160,7 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>5.5.0</version>
+            <version>5.14.0</version>
         </dependency>
 
         <dependency>
@@ -154,7 +172,7 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
-            <version>5.5.0</version>
+            <version>5.14.0</version>
         </dependency>
 
 
@@ -249,28 +267,6 @@
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>com.googlecode.addjars-maven-plugin</groupId>
-                <artifactId>addjars-maven-plugin</artifactId>
-                <version>1.0.5</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>add-jars</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>${pom.basedir}/../../lib</directory>
-                                    <includes>
-                                        <include>**/fbclient.jar</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
@@ -394,6 +390,19 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <excludeArtifactIds>fbclient-3,fbclient-4,fbclient-5</excludeArtifactIds>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-fbclient-libs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <stripVersion>true</stripVersion>
+                            <includeArtifactIds>fbclient-3,fbclient-4,fbclient-5</includeArtifactIds>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>

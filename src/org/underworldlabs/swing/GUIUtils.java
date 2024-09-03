@@ -507,6 +507,23 @@ public class GUIUtils {
                 message, new Object[]{Bundles.getCommon("yes.button"), Bundles.getCommon("no.button")}));
     }
 
+    public static int displayYesNoCancelDialog(Component parent, Object message, String title) {
+        return formatDialogReturnValue(displayDialog(
+                parent,
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                false,
+                "OptionPane.questionIcon",
+                title,
+                message,
+                new Object[]{
+                        Bundles.getCommon("yes.button"),
+                        Bundles.getCommon("no.button"),
+                        Bundles.getCommon("cancel.button")
+                }
+        ));
+    }
+
     public static final int displayConfirmCancelDialog(Component parent, Object message) {
         return formatDialogReturnValue(displayDialog(parent,
                 JOptionPane.YES_NO_CANCEL_OPTION,

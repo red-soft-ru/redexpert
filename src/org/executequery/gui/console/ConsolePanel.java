@@ -23,8 +23,11 @@ package org.executequery.gui.console;
 import org.executequery.ActiveComponent;
 import org.executequery.base.DefaultTabView;
 import org.executequery.gui.NamedView;
+import org.executequery.localization.Bundles;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The system console base panel.
@@ -35,81 +38,63 @@ public class ConsolePanel extends DefaultTabView
         implements ActiveComponent,
         NamedView {
 
-    public static final String TITLE = "System Console ";
     public static final String FRAME_ICON = "icon_console_system";
+    private static final List<String> instances = new ArrayList<>();
 
+    private String title;
     private Console console;
 
-    /**
-     * Constructs a new instance.
-     */
     public ConsolePanel() {
         super(new BorderLayout());
-
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
     }
 
-    /**
-     * Initializes the state of this instance.
-     */
-    private void jbInit() throws Exception {
-        console = new Console(true);
+    private void init() {
+        instances.add(buildUniqueTitle());
+        console = new Console(true, title);
+
         setPreferredSize(new Dimension(600, 400));
         add(console, BorderLayout.CENTER);
     }
 
+    private String buildUniqueTitle() {
+        final String bundledTitle = Bundles.get(ConsolePanel.class, "title");
+
+        int maxIndex = instances.stream()
+                .map(s -> s.replace(bundledTitle, "").trim())
+                .map(Integer::parseInt)
+                .max(Integer::compare).orElse(0);
+
+        title = bundledTitle + " " + (maxIndex + 1);
+        return title;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    // --- ActiveComponent impl ---
+
+    @Override
     public void cleanup() {
         console.cleanup();
     }
 
-    public String toString() {
-        return TITLE;
-    }
+    // --- NamedView impl ----
 
-    /**
-     * the instance counter
-     */
-    private static int count = 1;
-
-    /**
-     * Returns the display name for this view.
-     *
-     * @return the display name
-     */
+    @Override
     public String getDisplayName() {
-        return TITLE + (count++);
+        return title;
     }
 
-    // --------------------------------------------
-    // DockedTabView implementation
-    // --------------------------------------------
+    // --- DockedTabView impl ---
 
-    /**
-     * Indicates the panel is being removed from the pane
-     */
+    @Override
     public boolean tabViewClosing() {
+        instances.remove(title);
         cleanup();
+
         return true;
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

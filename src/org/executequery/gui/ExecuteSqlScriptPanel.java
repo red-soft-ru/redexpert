@@ -28,21 +28,14 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.components.SplitPaneFactory;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.gui.text.TextFileWriter;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.Repository;
-import org.executequery.repository.RepositoryCache;
 import org.executequery.sql.ExecutionController;
 import org.executequery.sql.SqlScriptRunner;
 import org.executequery.sql.SqlStatementResult;
 import org.executequery.util.ThreadUtils;
-import org.underworldlabs.swing.AbstractStatusBarPanel;
-import org.underworldlabs.swing.GUIUtils;
-import org.underworldlabs.swing.ProgressBar;
-import org.underworldlabs.swing.ProgressBarFactory;
+import org.underworldlabs.swing.*;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -55,8 +48,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Takis Diakoumis
@@ -76,7 +67,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     // --- GUI components ---
 
-    private JComboBox<?> connectionsCombo;
+    private ConnectionsComboBox connectionsCombo;
 
     private JCheckBox useConnectionCheck;
     private JCheckBox stopOnErrorCheck;
@@ -105,27 +96,18 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
 
     private SwingWorker swingWorker;
     private SqlScriptRunner sqlScriptRunner;
-    private final Map<String, DatabaseConnection> connections;
 
     public ExecuteSqlScriptPanel() {
         super(new BorderLayout());
-
-        this.connections = new HashMap<>();
-
         init();
         arrange();
     }
 
     private void init() {
 
-        Repository repository = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repository != null)
-            for (DatabaseConnection dc : ((DatabaseConnectionRepository) repository).findAll())
-                connections.put(dc.getName(), dc);
-
         // --- comboBoxes ---
 
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", connections.keySet().toArray());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false);
         connectionsCombo.setEnabled(false);
 
         // --- checkBoxes ---
@@ -430,8 +412,7 @@ public class ExecuteSqlScriptPanel extends DefaultTabViewActionPanel
     }
 
     private DatabaseConnection getSelectedConnection() {
-        Object selectedValue = connectionsCombo.getSelectedItem();
-        return selectedValue != null ? connections.get(selectedValue.toString()) : null;
+        return connectionsCombo.getSelectedConnection();
     }
 
     private boolean fieldsValid() {

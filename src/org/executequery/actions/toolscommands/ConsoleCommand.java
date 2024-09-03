@@ -34,26 +34,15 @@ import java.awt.event.ActionEvent;
  */
 public class ConsoleCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-        GUIUtilities.addDockedTab(ConsolePanel.TITLE,
-                new ConsolePanel(),
+        ConsolePanel consolePanel = new ConsolePanel();
+        GUIUtilities.addDockedTab(
+                consolePanel.getTitle(),
+                consolePanel,
                 SwingConstants.SOUTH,
-                true);
+                true
+        );
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

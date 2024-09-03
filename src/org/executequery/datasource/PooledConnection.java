@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SystemProperties;
 
@@ -263,45 +264,47 @@ public class PooledConnection implements Connection {
         throw e;
     }
 
-    public void checkConnectionToServer()
-    {
+    public void checkConnectionToServer() {
+
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if (databaseConnection.isConnected())
+                    askAndCloseConnection();
+                timerDelay.cancel();
+            }
+        };
+
         try {
-            IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), realConnection, "FBDatabasePerformanceImpl");
+            int driverVersion = databaseConnection.getDriverMajorVersion();
+            Object loadedObject = DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, realConnection, "FBDatabasePerformanceImpl");
+
+            IFBDatabasePerformance db = (IFBDatabasePerformance) loadedObject;
             db.setConnection(realConnection);
-            TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    if (databaseConnection.isConnected()) {
-                        if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
-                            closeDatabaseConnection();
-                            timerDelay.cancel();
-                        }
-                    } else
-                        timerDelay.cancel();
-                }
-            };
-            timerDelay = new Timer("check "+databaseConnection.getName()+ "conToServer");
-            /*StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-            Log.info("---------------------------------Start check----------------------------------\n\n\n");
-            for (int i = 0; i < stack.length - 2; i++)
-                Log.info(stack[stack.length - 1 - i]);*/
+
+            timerDelay = new Timer("check " + databaseConnection.getName() + "connection to the server");
             timerDelay.schedule(task, timeoutShutdown);
-            db.getPerformanceInfo(databaseConnection.getDriverMajorVersion());
-            timerDelay.cancel();
-            //Log.info("---------------------------------Finish check.----------------------------------\n\n\n");
-        } catch (SQLException e)
-        {
+            db.getPerformanceInfo(driverVersion); //todo check (with using OO API throws exceptions from handleException method)
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
             if (databaseConnection.isConnected())
                 closeDatabaseConnection();
-            timerDelay.cancel();
+
         } catch (ClassNotFoundException e) {
-            if (databaseConnection.isConnected()) {
-                if (GUIUtilities.displayConfirmDialog("The server is not responding. Do you want to close the connection?") == JOptionPane.OK_OPTION) {
-                    closeDatabaseConnection();
-                }
-            }
+            Log.error(e.getMessage(), e);
+            if (databaseConnection.isConnected())
+                askAndCloseConnection();
+
+        } finally {
             timerDelay.cancel();
         }
+    }
+
+    private void askAndCloseConnection() {
+        int result = GUIUtilities.displayConfirmDialog(Bundles.get("common.serverNotResponding.closeConnection.ask"));
+        if (result == JOptionPane.OK_OPTION)
+            closeDatabaseConnection();
     }
 
     public Statement createStatement() throws SQLException {

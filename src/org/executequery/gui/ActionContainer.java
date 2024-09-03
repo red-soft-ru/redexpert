@@ -53,6 +53,11 @@ public interface ActionContainer {
      */
     public void finished();
 
+    /**
+     * Sets whether this dialog is resizable by the user
+     */
+    void setResizable(boolean resize);
+
 }
 
 

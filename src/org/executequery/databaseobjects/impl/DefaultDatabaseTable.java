@@ -333,7 +333,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 DefaultDatabaseIndex index1 = metaTag.getIndexFromName(index.getName());
                 index1.getObjectInfo();
                 indexes.add(index1);
-                if (index1.getExpression() != null) {
+                if (!MiscUtils.isNull(index1.getExpression())) {
                     index.setIndexedColumns(null);
                     index.setExpression(index1.getExpression());
                 }
@@ -803,6 +803,28 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return keys != null && !keys.isEmpty();
     }
 
+    String[][] monTables = new String[][]
+            {
+                    {"MON$ATTACHMENTS", "MON$ATTACHMENT_ID"},
+                    {"MON$TRANSACTIONS", "MON$TRANSACTION_ID"},
+                    {"MON$STATEMENTS", "MON$STATEMENT_ID"},
+                    {"MON$CALL_STACK", "MON$CALL_ID"},
+                    {"MON$COMPILED_STATEMENTS", "MON$COMPILED_STATEMENT_ID"},
+                    {"MON$TEMP_SPACES", "MON$TEMP_SPACE_ID"}
+            };
+
+    public String[] getMonField() {
+        for (int i = 0; i < monTables.length; i++)
+            if (monTables[i][0].contentEquals(getName()))
+                return monTables[i];
+        return null;
+    }
+
+    public boolean isMonTable() {
+        return getMonField() != null;
+    }
+
+
     @Override
     public List<ColumnConstraint> getPrimaryKeys() {
 
@@ -1105,6 +1127,19 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public String prepareStatementInMonTable(List<String> columns) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(getNameWithPrefixForQuery()).append(" SET ");
+        for (String column : columns)
+            sb.append(MiscUtils.getFormattedObject(column, getHost().getDatabaseConnection())).append(" = ?,");
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" WHERE ");
+        sb.append(getMonField()[1]).append(" = ?");
+        return sb.toString();
+    }
+
+    @Override
     public String prepareStatementDeletingWithPK() {
 
         StringBuilder sb = new StringBuilder();
@@ -1122,6 +1157,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.deleteCharAt(sb.length() - 1);
 
         return sb.toString();
+    }
+
+    @Override
+    public String prepareStatementDeletingFromMonTable() {
+        String sb = "DELETE FROM " + getNameWithPrefixForQuery() +
+                " WHERE " +
+                getMonField()[1] + " = ?";
+        return sb;
     }
 
     @Override
@@ -1213,7 +1256,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 .appendArgument(conType.getFieldTable() + " <> 'CHECK'")
                 .appendArgument("NULL")
                 .appendArgument(conName.getFieldTable());
-        sb.appendField(getObjectField());
+        sb.appendField(Field.createField(getMainTable(), getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conName.getAlias()));
         compareCheck.setArgument(2, conType.getFieldTable());
         sb.appendField(Field.createField().setStatement(compareCheck.getStatement()).setAlias(conType.getAlias()));
@@ -1233,7 +1276,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
                 .setLogicOperator("OR"));
-        sb.setOrdering("1");
+        sb.setOrdering(getObjectField().getFieldTable());
 
         return sb;
     }

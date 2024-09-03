@@ -22,7 +22,6 @@ package org.executequery.gui.table;
 
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.DatabaseTableColumn;
-import org.executequery.gui.IconManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -31,95 +30,54 @@ import java.awt.*;
 /**
  * @author takisd
  */
-public class ColumnKeyRenderer extends DefaultTableCellRenderer {
+public class ColumnKeyRenderer extends DefaultTableCellRenderer
+        implements ColumnKeyStates {
 
-    /**
-     * foreign key image icon
-     */
-    private ImageIcon fkImage;
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 
-    /**
-     * primary key image icon
-     */
-    private ImageIcon pkImage;
+        if (col > 0)
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
-    /**
-     * primary/foreign key image icon
-     */
-    private ImageIcon pkfkImage;
+        Icon icon = null;
+        String tooltip = null;
 
-    /**
-     * deleted flag icon
-     */
-    private ImageIcon deleteImage;
+        if (value instanceof DatabaseColumn) {
+            DatabaseColumn databaseColumn = (DatabaseColumn) value;
 
-    /**
-     * new column flag icon
-     */
-    private ImageIcon newImage;
+            if (databaseColumn.isPrimaryKey()) {
+                if (databaseColumn.isForeignKey()) {
+                    tooltip = primaryForeignTooltip;
+                    icon = primaryForeignImage;
 
-    public ColumnKeyRenderer() {
-        deleteImage = IconManager.getIcon("icon_mark_delete");
-        newImage = IconManager.getIcon("icon_mark_new");
-        fkImage = IconManager.getIcon("icon_key_foreign");
-        pkImage = IconManager.getIcon("icon_key_primary");
-        pkfkImage = IconManager.getIcon("icon_key_mixed");
-    }
-
-    public Component getTableCellRendererComponent(JTable table,
-                                                   Object value,
-                                                   boolean isSelected,
-                                                   boolean hasFocus,
-                                                   int row, int col) {
-
-        if (col > 0) {
-            return super.getTableCellRendererComponent(
-                    table, value, isSelected, hasFocus, row, col);
-        }
-
-        if (value != null) {
-            DatabaseColumn column = (DatabaseColumn) value;
-            if (column.isPrimaryKey()) {
-                if (column.isForeignKey()) {
-                    setIcon(pkfkImage);
-                    setToolTipText("Primary Key/Foreign Key");
                 } else {
-                    setIcon(pkImage);
-                    setToolTipText("Primary Key");
+                    tooltip = primaryTooltip;
+                    icon = primaryImage;
                 }
-            } else if (column.isForeignKey()) {
-                setIcon(fkImage);
-                setToolTipText("Foreign Key");
-            } else {
-                setIcon(null);
-                setToolTipText(null);
+
+            } else if (databaseColumn.isForeignKey()) {
+                tooltip = foreignTooltip;
+                icon = foreignImage;
             }
 
-            // if its an editable column - check its state
-            // and reset icons and tooltips accordingly
-            if (column instanceof DatabaseTableColumn) {
-                DatabaseTableColumn _column = (DatabaseTableColumn) column;
-                if (_column.isMarkedDeleted()) {
-                    setIcon(deleteImage);
-                    setToolTipText("This column marked to be dropped");
-                } else if (_column.isNewColumn()) {
-                    setIcon(newImage);
-                    setToolTipText("This column marked new");
+            if (databaseColumn instanceof DatabaseTableColumn) {
+                DatabaseTableColumn databaseTableColumn = (DatabaseTableColumn) databaseColumn;
+
+                if (databaseTableColumn.isMarkedDeleted()) {
+                    tooltip = deleteTooltip;
+                    icon = deleteImage;
+
+                } else if (databaseTableColumn.isNewColumn()) {
+                    tooltip = newTooltip;
+                    icon = newImage;
                 }
             }
-
         }
 
+        setIcon(icon);
+        setToolTipText(tooltip);
         setHorizontalAlignment(JLabel.CENTER);
-
         return this;
     }
 
 }
-
-
-
-
-
-
-

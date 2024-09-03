@@ -22,8 +22,6 @@ package org.executequery.gui.editor;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.DefaultList;
-import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
@@ -31,14 +29,11 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.FlatSplitPane;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
@@ -58,273 +53,194 @@ import java.util.regex.Pattern;
  *
  * @author Takis Diakoumis
  */
-public class SQLHistoryDialog extends AbstractBaseDialog
-        implements ActionListener,
-        ListSelectionListener {
+public class SQLHistoryDialog extends AbstractBaseDialog {
 
-    private JList historyList;
+    private static final String TITLE = bundleString("title");
 
-    private Vector<String> data;
-
-    private QueryEditor queryEditor;
-
-    private JTextField searchField;
-
-    private JCheckBox newEditorCheck;
+    // --- GUI components ---
 
     private SQLTextArea textPane;
+    private JTextField searchField;
+    private JCheckBox openNewEditorCheck;
+    private JList<String> historyList;
 
-    /**
-     * Creates a new object with history data
-     * to be set within the specified editor.
-     *
-     * @param - the statement history <code>Vector</code>
-     * @param - the editor
-     */
+    private JButton copyButton;
+    private JButton clearButton;
+    private JButton cancelButton;
+    private JButton selectButton;
+    private JButton insertButton;
+    private JButton searchButton;
+
+    // ---
+
+    private Vector<String> data;
+    private final QueryEditor queryEditor;
+
     public SQLHistoryDialog(Vector<String> data, QueryEditor queryEditor) {
+        super(GUIUtilities.getParentFrame(), TITLE, true);
+        this.queryEditor = queryEditor;
+        this.data = data;
 
-        super(GUIUtilities.getParentFrame(), "SQL Command History", true);
-
-        try {
-
-            this.data = data;
-            this.queryEditor = queryEditor;
-
-            initHistoryList(data);
-
-            init();
-            pack();
-
-            setLocation(GUIUtilities.getLocationForDialog(getSize()));
-            setVisible(true);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
     }
 
-    /**
-     * <p>Initialises the state of this instance
-     * and positions all components.
-     *
-     * @throws Exception
-     */
     private void init() {
 
-        JButton cancelButton = createButton(Bundles.get("common.cancel.button"), null);
-        cancelButton.setActionCommand("Cancel");
-        JButton selectButton = createButton(Bundles.get("common.select.button"),
-                "Pastes the selected queries into the Query Editor");
-        selectButton.setActionCommand("Select");
-        JButton copyButton = createButton(Bundles.get("common.copy.button"),
-                "Copies the selected queries to the system clipboard");
-        copyButton.setActionCommand("Copy");
-        JButton insertAtCursorButton = createButton("Insert at Cursor",
-                "Inserts the selected queries at the cursor position within the Query Editor");
-        JButton clearButton = createButton(Bundles.get("common.clear.button"),
-                "Clears and resets ALL SQL history");
-        clearButton.setActionCommand("Clear");
+        // --- buttons ---
 
-        newEditorCheck = new JCheckBox("Open in new Query Editor");
-        newEditorCheck.setToolTipText("Select to paste the query in a new Query Editor panel");
+        selectButton = WidgetFactory.createButton("selectButton", Bundles.get("common.select.button"), e -> selectQuery());
+        selectButton.setToolTipText(bundleString("selectButton.toolTip"));
 
-        textPane = new SQLTextArea();
-        textPane.setEditable(false);
+        copyButton = WidgetFactory.createButton("copyButton", Bundles.get("common.copy.button"), e -> copyQuery());
+        copyButton.setToolTipText(bundleString("copyButton.toolTip"));
 
-        JSplitPane splitPane = createSplitPane();
-        splitPane.setLeftComponent(new JScrollPane(historyList));
-        splitPane.setRightComponent(new JScrollPane(textPane));
+        clearButton = WidgetFactory.createButton("clearButton", Bundles.get("common.clear.button"), e -> clearHistory());
+        clearButton.setToolTipText(bundleString("clearButton.toolTip"));
 
-        Container c = getContentPane();
-        c.setLayout(new GridBagLayout());
+        insertButton = WidgetFactory.createButton("insertButton", bundleString("insertButton"), e -> insertQuery());
+        insertButton.setToolTipText(bundleString("insertButton.toolTip"));
 
-        searchField = WidgetFactory.createTextField("searchField");
-        searchField.addActionListener(this);
-        JButton searchButton = createButton("Search", null);
+        searchButton = WidgetFactory.createButton("searchButton", Bundles.get("common.search.button"), e -> searchForQuery());
+        searchButton.setToolTipText(bundleString("searchButton.toolTip"));
 
-        JPanel searchPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx++;
-        gbc.insets.right = 5;
-        searchPanel.add(new JLabel("Find:"), gbc);
-        gbc.gridx++;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        searchPanel.add(searchField, gbc);
-        gbc.gridx++;
-        gbc.weightx = 0;
-        gbc.insets.right = 0;
-        searchPanel.add(searchButton, gbc);
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> dispose());
 
-        // layout the components
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets.top = 5;
-        gbc.insets.left = 5;
-        gbc.insets.right = 5;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.insets.bottom = 5;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        c.add(searchPanel, gbc);
-        gbc.gridy++;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.insets.top = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        c.add(splitPane, gbc);
-        gbc.weightx = 0;
-        gbc.insets.left = 5;
-        gbc.insets.bottom = 7;
-        gbc.gridwidth = 1;
-        gbc.gridy++;
-        gbc.gridx = 4;
-        gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        c.add(cancelButton, gbc);
-        gbc.gridx--;
-        gbc.insets.right = 0;
-        c.add(clearButton, gbc);
-        gbc.gridx--;
-        gbc.insets.right = 0;
-        c.add(copyButton, gbc);
-        gbc.gridx--;
-        c.add(insertAtCursorButton, gbc);
-        gbc.gridx--;
-        gbc.weightx = 1.0;
-        c.add(selectButton, gbc);
-        gbc.weightx = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        c.add(newEditorCheck, gbc);
+        // --- history list ---
 
-        historyList.addListSelectionListener(this);
+        historyList = new JList<>(data);
+        historyList.setFixedCellHeight(20);
+        historyList.addListSelectionListener(e -> updateTextPanel());
 
         historyList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
-                historyListMouseClicked(e);
+                if (e.getClickCount() >= 2)
+                    selectQuery();
             }
         });
 
         historyList.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
             public void keyPressed(KeyEvent e) {
-                historyListKeyPressed(e);
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    selectQuery();
             }
         });
 
-        c.setPreferredSize(new Dimension(800, 490));
+        // --- others ---
+
+        openNewEditorCheck = WidgetFactory.createCheckBox("openNewEditorCheck", bundleString("openNewEditorCheck"));
+        openNewEditorCheck.setToolTipText(bundleString("openNewEditorCheck.toolTip"));
+
+        searchField = WidgetFactory.createTextField("searchField");
+        searchField.addActionListener(e -> searchForQuery());
+
+        textPane = new SQLTextArea();
+        textPane.setEditable(false);
+
     }
 
-    private void initHistoryList(Vector<String> data) {
+    private void arrange() {
+        GridBagHelper gbh;
 
-        historyList = new DefaultList(data);
-    }
-
-    private JSplitPane createSplitPane() {
+        // --- split pane ---
 
         JSplitPane splitPane = new FlatSplitPane(JSplitPane.VERTICAL_SPLIT);
-
-        splitPane.setDividerSize(4);
-        splitPane.setResizeWeight(0.5);
+        splitPane.setLeftComponent(new JScrollPane(historyList));
+        splitPane.setRightComponent(new JScrollPane(textPane));
         splitPane.setDividerLocation(0.7);
+        splitPane.setResizeWeight(0.5);
+        splitPane.setDividerSize(4);
 
-        return splitPane;
+        // --- search panel ---
+
+        JPanel searchPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().rightGap(5);
+        searchPanel.add(new JLabel(Bundles.get("common.search")), gbh.topGap(3).get());
+        searchPanel.add(searchField, gbh.nextCol().topGap(0).setMaxWeightX().get());
+        searchPanel.add(searchButton, gbh.nextCol().rightGap(0).setMinWeightX().get());
+
+        // --- button panel ---
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        buttonPanel.add(openNewEditorCheck, gbh.get());
+        buttonPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().get());
+        buttonPanel.add(selectButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
+        buttonPanel.add(insertButton, gbh.nextCol().get());
+        buttonPanel.add(copyButton, gbh.nextCol().get());
+        buttonPanel.add(clearButton, gbh.nextCol().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().rightGap(0).get());
+
+        // --- main panel ---
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth().bottomGap(5);
+        mainPanel.add(searchPanel, gbh.setMinWeightY().spanX().get());
+        mainPanel.add(splitPane, gbh.nextRow().setMaxWeightY().get());
+        mainPanel.add(buttonPanel, gbh.nextRow().bottomGap(0).setMinWeightY().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setPreferredSize(new Dimension(800, 490));
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
+
+        pack();
+        setLocation(GUIUtilities.getLocationForDialog(getSize()));
+        setVisible(true);
     }
 
-    private JButton createButton(String text, String toolTip) {
-
-        JButton button = new DefaultPanelButton(text);
-        if (toolTip != null) {
-
-            button.setToolTipText(toolTip);
-        }
-
-        button.addActionListener(this);
-
-        return button;
+    private void updateTextPanel() {
+        textPane.setText(queryForIndex(historyList.getSelectedIndex()));
     }
 
     /**
      * Sets the statement history data to the <code>JList</code>.
      *
-     * @param - the statement history <code>Vector</code>
+     * @param data the statement history <code>Vector</code>
      */
     public void setHistoryData(Vector<String> data) {
         this.data = data;
         historyList.setListData(data);
     }
 
-    /**
-     * <p>Initiates the action of the "Select" button adding
-     * the selected statement to the open Query Editor.
-     *
-     * @param - the action event
-     */
-    public void actionPerformed(ActionEvent e) {
+    private void searchForQuery() {
 
-        String command = e.getActionCommand();
+        String text = searchField.getText();
+        if (MiscUtils.isNull(text))
+            return;
 
-        if (command.equals("Select")) {
+        int start = historyList.getSelectedIndex();
+        if (start == -1 || start == data.size() - 1)
+            start = 0;
+        else
+            start++;
 
-            selectSQLCommand();
+        search(text, start);
+    }
 
-        } else if (command.equals("Copy")) {
-
-            copySQLCommand();
-
-        } else if (command.equals("Insert at Cursor")) {
-
-            insertAtCursorButton();
-
-        } else if (command.equals("Search") || e.getSource() == searchField) {
-
-            String text = searchField.getText();
-
-            if (MiscUtils.isNull(text)) {
-
-                return;
-            }
-
-            int start = historyList.getSelectedIndex();
-            if (start == -1 || start == data.size() - 1) {
-
-                start = 0;
-
-            } else {
-
-                start++;
-            }
-
-            search(text, start);
-
-        } else if (command.equals("Clear")) {
-
-            sqlCommandHistoryRepository().clearSqlCommandHistory(queryEditor.getSelectedConnection().getId());
-            setHistoryData(new Vector<String>(0));
-
-        } else {
-
-            dispose();
-        }
-
+    private void clearHistory() {
+        sqlCommandHistoryRepository().clearSqlCommandHistory(queryEditor.getSelectedConnection().getId());
+        setHistoryData(new Vector<>(0));
     }
 
     private SqlCommandHistoryRepository sqlCommandHistoryRepository() {
-
-        return (SqlCommandHistoryRepository) RepositoryCache.load(
-                SqlCommandHistoryRepository.REPOSITORY_ID);
+        return (SqlCommandHistoryRepository) RepositoryCache.load(SqlCommandHistoryRepository.REPOSITORY_ID);
     }
 
     private void search(String text, int start) {
-        Pattern pattern = Pattern.compile("\\b" + text,
-                Pattern.CASE_INSENSITIVE);
+
+        Pattern pattern = Pattern.compile("\\b" + text, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(Constants.EMPTY);
 
         for (int i = start, k = data.size(); i < k; i++) {
-
             matcher.reset(data.get(i));
 
             if (matcher.find()) {
@@ -334,50 +250,42 @@ public class SQLHistoryDialog extends AbstractBaseDialog
             }
         }
 
-        GUIUtilities.displayInformationMessage("Search string not found");
+        GUIUtilities.displayInformationMessage(bundleString("stringNotFound"));
     }
 
     private void scrollToSelection(int i) {
-
         historyList.ensureIndexIsVisible(i);
     }
 
-    private boolean validSelection() {
+    private boolean invalidSelection() {
 
-        if (data.isEmpty()) {
-
-            return false;
-        }
+        if (data.isEmpty())
+            return true;
 
         if (historyList.isSelectionEmpty()) {
-
-            GUIUtilities.displayErrorMessage("No selection made.");
-            return false;
+            GUIUtilities.displayErrorMessage(bundleString("noSelection"));
+            return true;
         }
 
-        return true;
+        return false;
     }
 
-    private void copySQLCommand() {
+    private void copyQuery() {
 
-        if (validSelection()) {
+        if (invalidSelection())
+            return;
 
-            String query = queryForIndices(historyList.getSelectedIndices());
-            GUIUtilities.copyToClipBoard(query);
-
-            dispose();
-        }
-
+        String query = queryForIndices(historyList.getSelectedIndices());
+        GUIUtilities.copyToClipBoard(query);
+        dispose();
     }
 
-    private void insertAtCursorButton() {
+    private void insertQuery() {
 
-        if (newEditorCheck.isSelected()) {
-
-            selectSQLCommand();
+        if (openNewEditorCheck.isSelected()) {
+            selectQuery();
 
         } else if (queryEditor != null) {
-
             String query = queryForIndices(historyList.getSelectedIndices());
             queryEditor.insertTextAtCaret(query);
             dispose();
@@ -385,93 +293,45 @@ public class SQLHistoryDialog extends AbstractBaseDialog
     }
 
 
-    private void selectSQLCommand() {
+    private void selectQuery() {
 
-        if (validSelection()) {
+        if (invalidSelection())
+            return;
 
-            String query = queryForIndices(historyList.getSelectedIndices());
-            if (newEditorCheck.isSelected()) {
+        String query = queryForIndices(historyList.getSelectedIndices());
+        if (openNewEditorCheck.isSelected()) {
+            GUIUtilities.addCentralPane(
+                    QueryEditor.TITLE,
+                    QueryEditor.FRAME_ICON,
+                    new QueryEditor(query),
+                    null,
+                    true
+            );
 
-                QueryEditor editor = new QueryEditor(query);
-                GUIUtilities.addCentralPane(QueryEditor.TITLE,
-                        QueryEditor.FRAME_ICON,
-                        editor,
-                        null,
-                        true);
+        } else if (queryEditor != null)
+            queryEditor.setEditorText(query);
 
-            } else if (queryEditor != null) {
-
-                queryEditor.setEditorText(query);
-            }
-
-            dispose();
-        }
+        dispose();
     }
 
     private String queryForIndices(int[] indices) {
 
-        if (indices.length > 0) {
+        if (indices.length < 1)
+            return Constants.EMPTY;
 
-            StringBuilder sb = new StringBuilder();
-            for (int index : indices) {
+        StringBuilder sb = new StringBuilder();
+        for (int index : indices)
+            sb.append(queryForIndex(index).trim()).append("\n\n");
 
-                sb.append(queryForIndex(index).trim());
-                sb.append("\n\n");
-            }
-
-            return sb.toString().trim();
-        }
-
-        return "";
+        return sb.toString().trim();
     }
 
     private String queryForIndex(int index) {
-
-        if (index != -1) {
-
-            return data.get(index);
-        }
-        return "";
+        return index != -1 ? data.get(index) : Constants.EMPTY;
     }
 
-    /**
-     * <p>Initiates the action on the history list after
-     * double clicking a selected statement and propagates
-     * the action to the method <code>selectButton_actionPerformed</code>.
-     *
-     * @param - the mouse event
-     */
-    private void historyListMouseClicked(MouseEvent e) {
-        if (e.getClickCount() >= 2) {
-
-            selectSQLCommand();
-        }
-    }
-
-    public void valueChanged(ListSelectionEvent e) {
-
-        textPane.setText(queryForIndex(historyList.getSelectedIndex()));
-    }
-
-    /**
-     * <p>Initiates the action on the history list after
-     * pressing the ENTER key on a selected statement and propagates
-     * the action to the method <code>selectButton_actionPerformed</code>.
-     *
-     * @param - the key event
-     */
-    private void historyListKeyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            selectSQLCommand();
-        }
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(SQLHistoryDialog.class, key, args);
     }
 
 }
-
-
-
-
-
-
-
-

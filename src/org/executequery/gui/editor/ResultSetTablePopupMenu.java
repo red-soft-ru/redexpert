@@ -102,7 +102,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         // the cell opens checkBox menu-item
         cellOpensDialog = MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
         cellOpensDialog.setText(bundleString("Double-ClickOpensItemView"));
-        cellOpensDialog.setSelected(doubleClickCellOpensDialog());
+        cellOpensDialog.setSelected(doubleClickCellOpensDialog);
         cellOpensDialog.setActionCommand("cellOpensDialog");
 
         // the auto column width menu-item
@@ -422,9 +422,8 @@ public class ResultSetTablePopupMenu extends JPopupMenu
     @Override
     public void mouseClicked(MouseEvent e) {
 
-        if (e.getClickCount() >= 2 &&
-                (doubleClickCellOpensDialog || table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()) instanceof LobRecordDataItem)
-        ) {
+        boolean isLob = table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()) instanceof LobRecordDataItem;
+        if (e.getClickCount() >= 2 && (doubleClickCellOpensDialog || isLob)) {
             lastPopupPoint = e.getPoint();
             openDataItemViewer();
         }

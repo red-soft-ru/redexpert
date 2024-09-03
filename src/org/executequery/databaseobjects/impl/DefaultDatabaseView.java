@@ -22,7 +22,6 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.*;
-import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
@@ -67,7 +66,8 @@ public class DefaultDatabaseView extends AbstractTableObject
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table rels = getMainTable();
         Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
-        sb.appendFields(rels, getFieldName(), SOURCE, DESCRIPTION);
+        sb.appendField(Field.createField(rels, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(rels, SOURCE, DESCRIPTION);
         sb.appendFields(rf, FIELD_NAME);
         sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
@@ -144,7 +144,7 @@ public class DefaultDatabaseView extends AbstractTableObject
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -44,7 +44,7 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
 
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
-        return "/* there are no changes */\n";
+        return SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     @Override
@@ -61,7 +61,8 @@ public class DefaultDatabaseRole extends AbstractDatabaseObject {
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
-        sb.appendFields(table, getFieldName(), DESCRIPTION, OWNER_NAME);
+        sb.appendField(Field.createField(table, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(table, DESCRIPTION, OWNER_NAME);
         sb.appendTable(table);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;

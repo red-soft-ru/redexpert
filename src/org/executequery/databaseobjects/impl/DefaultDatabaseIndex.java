@@ -298,10 +298,11 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
     }
 
     public void setExpression(String expression) {
-        if (MiscUtils.isNull(expression))
-            return;
-        expression = expression.trim().substring(1, expression.trim().length() - 1);
         this.expression = expression;
+        if (!MiscUtils.isNull(expression)) {
+            expression = expression.trim().substring(1, expression.trim().length() - 1);
+            this.expression = expression;
+        }
     }
 
     @Override
@@ -321,7 +322,7 @@ public class DefaultDatabaseIndex extends AbstractDatabaseObject {
         Table constraints = Table.createTable("RDB$RELATION_CONSTRAINTS", "RC");
         Table indexSegments = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT");
 
-        sb.appendField(Field.createField(indicies, getFieldName()));
+        sb.appendField(Field.createField(indicies, getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendField(Field.createField(indicies, RELATION_NAME));
         sb.appendField(Field.createField(indicies, INDEX_TYPE));
         sb.appendField(Field.createField(indicies, UNIQUE_FLAG));

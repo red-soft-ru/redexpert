@@ -125,7 +125,16 @@ public class QueryEditorStatusBar extends AbstractStatusBarPanel {
      * Sets the editor status to the text specified.
      */
     public void setStatus(String text) {
+        setStatus(text, null, null);
+    }
+
+    /**
+     * Sets the editor status to the text specified.
+     */
+    public void setStatus(String text, String toolTip, Icon icon) {
+        setLabelIcon(0, icon);
         setLabelText(0, text);
+        setLabelToolTip(0, toolTip);
     }
 
     /**

@@ -67,7 +67,7 @@ public class SimpleCommentPanel {
         updateCommentButton.setEnabled(currentDatabaseObject != null);
 
         rollbackCommentButton = WidgetFactory.createRolloverButton(
-                "updateCommentButton",
+                "rollbackCommentButton",
                 Bundles.get("common.rollback.button"),
                 "icon_rollback",
                 e -> resetComment()

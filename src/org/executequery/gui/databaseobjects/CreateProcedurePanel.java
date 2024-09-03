@@ -20,6 +20,7 @@ import org.underworldlabs.util.SQLUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 
@@ -52,7 +53,7 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
         String fullProcedureBody = null;
 
         try {
-            DatabaseConnection connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+            DatabaseConnection connection = getSelectedConnection();
             host = new DatabaseObjectFactoryImpl().createDatabaseHost(connection);
             DatabaseMetaData databaseMetadata = ((PooledDatabaseMetaData) host.getDatabaseMetaData()).getInner();
 
@@ -73,6 +74,36 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
         }
 
         return fullProcedureBody;
+    }
+
+    @Override
+    protected String getUpperScript() {
+        Vector<ColumnData> variables = null;
+        if (isParseVariables()) {
+            variables = new Vector<>();
+            variables.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
+            variables.addAll(cursorsPanel.getCursorsVector());
+            variables.addAll(subProgramPanel.getSubProgsVector());
+        }
+        return SQLUtils.generateUpperCreateProcedureScript(nameField.getText(),
+                externalField.getText(),
+                engineField.getText(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                outputParamsPanel.getProcedureParameterModel().getTableVector(),
+                variables,
+                (String) securityCombo.getSelectedItem(),
+                (String) authidCombo.getSelectedItem(),
+                getDatabaseConnection());
+    }
+
+    @Override
+    protected String getDownScript() {
+        return SQLUtils.generateDownCreateProcedureScript(nameField.getText(),
+                simpleCommentPanel.getComment(),
+                inputParamsPanel.getProcedureParameterModel().getTableVector(),
+                outputParamsPanel.getProcedureParameterModel().getTableVector(),
+                true,
+                connection);
     }
 
     @Override
@@ -103,6 +134,13 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
             Vector<ColumnData> vars = new Vector<>();
             vars.addAll(variablesPanel.getProcedureParameterModel().getTableVector());
             vars.addAll(cursorsPanel.getCursorsVector());
+            vars.addAll(subProgramPanel.getSubProgsVector());
+            vars.sort(new Comparator<ColumnData>() {
+                @Override
+                public int compare(ColumnData o1, ColumnData o2) {
+                    return Integer.compare(o1.getColumnPosition(), o2.getColumnPosition());
+                }
+            });
 
             return SQLUtils.generateCreateProcedure(
                     nameField.getText(),

@@ -421,7 +421,7 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
@@ -467,7 +467,8 @@ public class DefaultDatabaseTrigger extends DefaultDatabaseExecutable {
         SelectBuilder sb = SelectBuilder.createSelectBuilder(getHost().getDatabaseConnection());
         Table triggers = getMainTable();
         sb.appendTable(triggers);
-        sb.appendFields(triggers, getFieldName(), TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION, VALID_BLR);
+        sb.appendField(Field.createField(triggers, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(triggers, TRIGGER_SOURCE, RELATION_NAME, TRIGGER_SEQUENCE, TRIGGER_TYPE, TRIGGER_INACTIVE, DESCRIPTION, VALID_BLR);
         sb.appendFields(triggers, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(triggers));
         sb.setOrdering(getObjectField().getFieldTable());

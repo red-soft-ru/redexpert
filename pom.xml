@@ -6,15 +6,18 @@
     <properties>
         <antlr.version>4.7</antlr.version>
         <jaybird3.version>3.0.36</jaybird3.version>
-        <jaybird4.version>4.0.28</jaybird4.version>
-        <jaybird5.version>5.0.17</jaybird5.version>
+        <jaybird4.version>4.0.30</jaybird4.version>
+        <jaybird5.version>5.0.18</jaybird5.version>
     </properties>
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2024.07</version>
+    <version>2024.09</version>
     <modules>
         <module>modules/plugins/fbplugin</module>
+        <module>modules/plugins/fbclient-3</module>
+        <module>modules/plugins/fbclient-4</module>
+        <module>modules/plugins/fbclient-5</module>
         <module>modules/plugins/fbplugin-impl</module>
         <module>modules/plugins/fbplugin-impl5</module>
         <module>modules/plugins/sql-parser</module>

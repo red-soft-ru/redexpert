@@ -20,7 +20,7 @@
 
 package org.executequery.gui.exportData;
 
-import org.executequery.ApplicationContext;
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -32,6 +32,7 @@ import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.PanelsStateProperties;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -43,7 +44,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.ResultSet;
@@ -101,6 +101,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     private final Object exportData;
     private final String tableNameForExport;
+    private final ParametersSaver parametersSaver;
     private final List<DatabaseColumn> databaseColumns;
 
     private Map<String, Component> components;
@@ -116,6 +117,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         super(GUIUtilities.getParentFrame(), TITLE, true);
 
         this.exportData = exportData;
+        this.parametersSaver = new ParametersSaver();
         this.tableNameForExport = tableNameForExport;
         this.databaseColumns = databaseColumns;
 
@@ -285,7 +287,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         tabbedPane.addTab(bundleString("OptionsTab"), optionsPanel);
         showDelimiterPanel();
-        new ParametersSaver().restore(components);
+        parametersSaver.restore(components);
 
         replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
         replaceNullField.setEnabled(replaceNullCheck.isSelected());
@@ -489,9 +491,21 @@ public class ExportDataPanel extends AbstractBaseDialog {
             return false;
         }
 
+        // export file writable
+        if (!new File(exportFilePath).getAbsoluteFile().getParentFile().exists()) {
+            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
+            return false;
+        }
+
         // blob file defined
         if (isContainsBlob() && MiscUtils.isNull(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
+            return false;
+        }
+
+        // blob file writable
+        if (!new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
+            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
 
@@ -626,14 +640,6 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     // --- getters ---
 
-    public static String getParametersSaverFilePath() {
-        return new ParametersSaver().getFileName();
-    }
-
-    public static String getParametersSaverDelimiter() {
-        return new ParametersSaver().getDelimiter();
-    }
-
     protected List<DatabaseColumn> getDatabaseColumns() {
         return databaseColumns;
     }
@@ -685,87 +691,64 @@ public class ExportDataPanel extends AbstractBaseDialog {
     // --- inner classes ---
 
     private static class ParametersSaver {
+        private final PanelsStateProperties stateProperties;
 
-        private final String FILE_NAME =
-                ApplicationContext.getInstance().getUserSettingsHome() + FileSystems.getDefault().getSeparator() + "resultsExporter.save";
-        private final String DELIMITER = "===";
+        public ParametersSaver() {
+            stateProperties = new PanelsStateProperties(ExportDataPanel.class.getName());
+        }
 
         void save(Map<String, Component> components) {
 
-            // clear old values
-            try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME, false))) {
-                writer.print("");
+            for (String key : components.keySet()) {
+                Object value = null;
 
-            } catch (IOException e) {
-                Log.error("Error saving ExportDataPanel values", e);
-            }
+                Component component = components.get(key);
+                if (component instanceof JCheckBox) {
+                    value = ((JCheckBox) component).isSelected();
 
-            // save new values
-            try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME, true))) {
+                } else if (component instanceof JTextField) {
+                    value = ((JTextField) component).getText().trim();
 
-                for (String key : components.keySet()) {
+                } else if (component instanceof JComboBox) {
 
-                    writer.print(key + DELIMITER);
-
-                    Component component = components.get(key);
-                    if (component instanceof JCheckBox) {
-                        writer.println(((JCheckBox) component).isSelected());
-
-                    } else if (component instanceof JTextField) {
-                        writer.println(((JTextField) component).getText().trim());
-
-                    } else if (component instanceof JComboBox) {
-
-                        if (component.getName().equals(columnDelimiterComboName))
-                            writer.println(((JComboBox<?>) component).getSelectedItem());
-                        else
-                            writer.println(((JComboBox<?>) component).getSelectedIndex());
-                    }
+                    if (component.getName().equals(columnDelimiterComboName))
+                        value = ((JComboBox<?>) component).getSelectedItem();
+                    else
+                        value = ((JComboBox<?>) component).getSelectedIndex();
                 }
 
-            } catch (IOException e) {
-                Log.error("Error saving ExportDataPanel values", e);
+                if (value == null)
+                    value = Constants.EMPTY;
+
+                stateProperties.put(key, value.toString());
             }
+
+            stateProperties.save();
         }
 
         void restore(Map<String, Component> components) {
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+            for (String key : components.keySet()) {
+                Component component = components.get(key);
 
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] data = line.split(DELIMITER);
+                String value = stateProperties.get(key);
+                if (value == null)
+                    continue;
 
-                    Component component = components.get(data[0]);
-                    String value = data.length > 1 ? data[1] : "";
+                if (component instanceof JCheckBox) {
+                    ((JCheckBox) component).setSelected(value.equalsIgnoreCase("true"));
 
-                    if (component instanceof JCheckBox) {
-                        ((JCheckBox) component).setSelected(value.equalsIgnoreCase("true"));
+                } else if (component instanceof JTextField) {
+                    ((JTextField) component).setText(value);
 
-                    } else if (component instanceof JTextField) {
-                        ((JTextField) component).setText(value);
+                } else if (component instanceof JComboBox) {
 
-                    } else if (component instanceof JComboBox) {
-
-                        if (component.getName().equals(columnDelimiterComboName))
-                            ((JComboBox<?>) component).setSelectedItem(value);
-                        else
-                            ((JComboBox<?>) component).setSelectedIndex(Integer.parseInt(value));
-
-                    }
+                    if (component.getName().equals(columnDelimiterComboName))
+                        ((JComboBox<?>) component).setSelectedItem(value);
+                    else
+                        ((JComboBox<?>) component).setSelectedIndex(Integer.parseInt(value));
                 }
-
-            } catch (IOException e) {
-                Log.error("Error restoring ExportDataPanel values", e);
             }
-        }
-
-        String getFileName() {
-            return FILE_NAME;
-        }
-
-        String getDelimiter() {
-            return DELIMITER;
         }
 
     } // class ParameterSaver
@@ -903,12 +886,12 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     @Override
     public void dispose() {
-        new ParametersSaver().save(components);
+        parametersSaver.save(components);
         super.dispose();
     }
 
-    private static String bundleString(String key) {
-        return Bundles.get(ExportDataPanel.class, key);
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(ExportDataPanel.class, key, args);
     }
 
 }

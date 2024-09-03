@@ -665,6 +665,15 @@ public class ConnectionsTreePanel extends TreePanel
      * @param dc the connection the new one is to be based on
      */
     public void newConnection(DatabaseConnection dc) {
+        newConnection(dc, true);
+    }
+
+    /**
+     * Creates a new connection based on the specified connection.
+     *
+     * @param dc the connection the new one is to be based on
+     */
+    public void newConnection(DatabaseConnection dc, boolean updatePropertiesPanel) {
 
         validateConnectionCopyName(dc);
         DatabaseHost host = databaseObjectFactory().createDatabaseHost(dc);
@@ -687,7 +696,7 @@ public class ConnectionsTreePanel extends TreePanel
         } else {
             DatabaseHostNode databaseHostNode = new DatabaseHostNode(host, null);
             tree.addToRoot(databaseHostNode);
-            valueChanged(databaseHostNode, null);
+            valueChanged(databaseHostNode, null, updatePropertiesPanel);
         }
 
         connectionAdded(dc);
@@ -924,8 +933,12 @@ public class ConnectionsTreePanel extends TreePanel
             controller.valueChanged(node, null);
     }
 
-    public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
-        controller.valueChanged(node, connection);
+    public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
+        valueChanged(node, connection, true);
+    }
+
+    public synchronized void valueChanged(DatabaseObjectNode node, DatabaseConnection connection, boolean updatePropertiesPanel) {
+        controller.valueChanged(node, connection, updatePropertiesPanel);
     }
 
     public void reloadOpenedConnections() {
@@ -954,18 +967,11 @@ public class ConnectionsTreePanel extends TreePanel
 
             GUIUtilities.showWaitCursor();
 
-            boolean expanded = tree.isExpanded(path);
-            if (expanded)
-                tree.collapsePath(path);
-
             DatabaseObjectNode node = (DatabaseObjectNode) object;
             node.reset();
+
             nodeStructureChanged(node);
             pathExpanded(path);
-
-            if (expanded)
-                tree.expandPath(path);
-
             pathChanged(oldSelectionPath, path, refreshButtons);
 
             // --- reload panel view ---

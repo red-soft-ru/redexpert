@@ -1,5 +1,6 @@
 package org.executequery.gui.browser;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.ConnectionMediator;
@@ -11,6 +12,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.SimpleDataSource;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.LoggingOutputPanel;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.comparer.ComparedObject;
 import org.executequery.gui.browser.comparer.Comparer;
 import org.executequery.gui.editor.QueryEditor;
@@ -19,10 +21,9 @@ import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.AbstractTreeCellRenderer;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -72,7 +73,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private Comparer comparer;
     private List<Integer> scriptGenerationOrder;
     private List<ComparedObject> comparedObjectList;
-    private List<DatabaseConnection> databaseConnectionList;
     private static final List<DatabaseConnection> busyConnectionList = new ArrayList<>();
 
     private boolean isComparing;
@@ -82,8 +82,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     // --- panel components ---
 
-    private JComboBox<String> dbMasterComboBox;
-    private JComboBox<String> dbTargetComboBox;
+    private ConnectionsComboBox dbMasterComboBox;
+    private ConnectionsComboBox dbTargetComboBox;
+
     private JButton compareButton;
     private JButton saveScriptButton;
     private JButton executeScriptButton;
@@ -92,56 +93,62 @@ public class ComparerDBPanel extends JPanel implements TabView {
     private JButton switchTargetSourceButton;
 
     private JTabbedPane tabPane;
-    private LoggingOutputPanel loggingOutputPanel;
     private SimpleSqlTextPanel sqlTextPanel;
+    private LoggingOutputPanel loggingOutputPanel;
     private DifferenceSqlTextPanel differenceSqlTextPanel;
+
     private JTree dbComponentsTree;
     private ComparerTreeNode rootTreeNode;
 
     private JProgressBar progressBar;
     private BackgroundProgressDialog progressDialog;
 
+    private List<DefaultDatabaseTable> erdTables;
     private Map<Integer, JCheckBox> attributesCheckBoxMap;
     private Map<Integer, JCheckBox> propertiesCheckBoxMap;
-    private List<DefaultDatabaseTable> erdTables;
 
     private StringBuilder settingScriptProps;
 
     // ---
 
     public ComparerDBPanel() {
+        this.isExtractMetadata = false;
+        this.isErd = false;
 
-        isExtractMetadata = false;
-        isErd = false;
         init();
+        arrange();
     }
 
     public ComparerDBPanel(List<ErdTable> tables, DatabaseConnection databaseConnection) {
-        isErd = true;
-        isExtractMetadata = databaseConnection == null;
+        this.isExtractMetadata = databaseConnection == null;
+        this.isErd = true;
+
         this.erdTables = new ArrayList<>();
-        for (ErdTable erd : tables) {
+        for (ErdTable erd : tables)
             erdTables.add(new DefaultDatabaseTable(erd));
-        }
+
         init();
+        arrange();
 
         if (databaseConnection != null) {
-            dbTargetComboBox.setSelectedItem(databaseConnection.getName());
-            dbMasterComboBox.setSelectedItem(databaseConnection.getName());
+            dbTargetComboBox.setSelectedItem(databaseConnection);
+            dbMasterComboBox.setSelectedItem(databaseConnection);
         }
+
         if (databaseConnection != null)
             attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
     }
 
-    public ComparerDBPanel(DatabaseConnection dc) {
+    public ComparerDBPanel(DatabaseConnection databaseConnection) {
+        this.isExtractMetadata = true;
+        this.isErd = false;
 
-        isExtractMetadata = true;
-        isErd = false;
         init();
+        arrange();
 
-        if (dc != null) {
-            dbTargetComboBox.setSelectedItem(dc.getName());
-            dbMasterComboBox.setSelectedItem(dc.getName());
+        if (databaseConnection != null) {
+            dbTargetComboBox.setSelectedItem(databaseConnection);
+            dbMasterComboBox.setSelectedItem(databaseConnection);
         }
 
         attributesCheckBoxMap.values().forEach(checkBox -> checkBox.setSelected(true));
@@ -149,11 +156,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
     private void init() {
 
-        databaseConnectionList = new ArrayList<>();
-        comparedObjectList = new ArrayList<>();
-
         isComparing = false;
         isReverseOrder = false;
+        comparedObjectList = new ArrayList<>();
 
         // --- script generation order defining ---
 
@@ -162,30 +167,42 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- buttons defining ---
 
-        compareButton = new JButton();
-        compareButton.setText(bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"));
-        compareButton.addActionListener(e -> compareDatabase());
+        compareButton = WidgetFactory.createButton(
+                "compareButton",
+                bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"),
+                e -> compareDatabase()
+        );
 
-        saveScriptButton = new JButton();
-        saveScriptButton.setText(bundleString("SaveScriptButton"));
-        saveScriptButton.addActionListener(e -> saveScript());
+        saveScriptButton = WidgetFactory.createButton(
+                "saveScriptButton",
+                bundleString("SaveScriptButton"),
+                e -> saveScript()
+        );
 
-        executeScriptButton = new JButton();
-        executeScriptButton.setText(bundleString("ExecuteScriptButton"));
-        executeScriptButton.addActionListener(e -> executeScript());
+        executeScriptButton = WidgetFactory.createButton(
+                "executeScriptButton",
+                bundleString("ExecuteScriptButton"),
+                e -> executeScript()
+        );
 
-        selectAllAttributesButton = new JButton();
-        selectAllAttributesButton.setText(bundleString("SelectAllButton"));
-        selectAllAttributesButton.addActionListener(e -> selectAll("attributes"));
+        selectAllAttributesButton = WidgetFactory.createButton(
+                "selectAllAttributesButton",
+                bundleString("SelectAllButton"),
+                e -> selectAll("attributes")
+        );
 
-        selectAllPropertiesButton = new JButton();
-        selectAllPropertiesButton.setText(bundleString("SelectAllButton"));
-        selectAllPropertiesButton.addActionListener(e -> selectAll("properties"));
+        selectAllPropertiesButton = WidgetFactory.createButton(
+                "selectAllPropertiesButton",
+                bundleString("SelectAllButton"),
+                e -> selectAll("properties")
+        );
 
-        switchTargetSourceButton = new JButton();
-        switchTargetSourceButton.setText("<html><p style=\"font-size:20pt\">&#x21C5;</p>"); // Unicode Character '⇅' (U+21C5)
-        switchTargetSourceButton.addActionListener(e -> switchTargetSource());
+        switchTargetSourceButton = WidgetFactory.createButton(
+                "switchTargetSourceButton",
+                "<html><p style=\"font-size:20pt\">&#x21C5;</p>",
+                e -> switchTargetSource());
         switchTargetSourceButton.setVisible(!isExtractMetadata);
+        switchTargetSourceButton.setHorizontalTextPosition(SwingConstants.LEFT);
 
         // --- attributes checkBox defining ---
 
@@ -199,23 +216,23 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (checkBoxText.isEmpty())
                 checkBoxText = Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]);
 
-            attributesCheckBoxMap.put(objectType, new JCheckBox(checkBoxText));
+            JCheckBox checkBox = WidgetFactory.createCheckBox(NamedObject.META_TYPES_FOR_BUNDLE[objectType] + "_CHECK", checkBoxText);
+            attributesCheckBoxMap.put(objectType, checkBox);
         }
 
         // --- properties checkBox defining ---
 
         propertiesCheckBoxMap = new LinkedHashMap<>();
-        propertiesCheckBoxMap.put(CHECK_CREATE, new JCheckBox(bundleString("CheckCreate")));
-        propertiesCheckBoxMap.put(CHECK_ALTER, new JCheckBox(bundleString("CheckAlter")));
-        propertiesCheckBoxMap.put(CHECK_DROP, new JCheckBox(bundleString("CheckDrop")));
-        propertiesCheckBoxMap.put(IGNORE_COMMENTS, new JCheckBox(bundleString(("IgnoreComments"))));
-        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, new JCheckBox(bundleString(("IgnoreComputed"))));
-        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, new JCheckBox(bundleString(("IgnorePositions"))));
-        propertiesCheckBoxMap.put(IGNORE_PK, new JCheckBox(bundleString("IgnorePK")));
-        propertiesCheckBoxMap.put(IGNORE_FK, new JCheckBox(bundleString("IgnoreFK")));
-        propertiesCheckBoxMap.put(IGNORE_UK, new JCheckBox(bundleString("IgnoreUK")));
-        propertiesCheckBoxMap.put(IGNORE_CK, new JCheckBox(bundleString("IgnoreCK")));
-
+        propertiesCheckBoxMap.put(CHECK_CREATE, WidgetFactory.createCheckBox("checkCreate", bundleString("CheckCreate")));
+        propertiesCheckBoxMap.put(CHECK_ALTER, WidgetFactory.createCheckBox("checkAlter", bundleString("CheckAlter")));
+        propertiesCheckBoxMap.put(CHECK_DROP, WidgetFactory.createCheckBox("checkDrop", bundleString("CheckDrop")));
+        propertiesCheckBoxMap.put(IGNORE_COMMENTS, WidgetFactory.createCheckBox("ignoreComments", bundleString(("IgnoreComments"))));
+        propertiesCheckBoxMap.put(IGNORE_COMPUTED_FIELDS, WidgetFactory.createCheckBox("ignoreComputed", bundleString(("IgnoreComputed"))));
+        propertiesCheckBoxMap.put(IGNORE_FIELDS_POSITIONS, WidgetFactory.createCheckBox("ignorePositions", bundleString(("IgnorePositions"))));
+        propertiesCheckBoxMap.put(IGNORE_PK, WidgetFactory.createCheckBox("ignorePK", bundleString("IgnorePK")));
+        propertiesCheckBoxMap.put(IGNORE_FK, WidgetFactory.createCheckBox("ignoreFK", bundleString("IgnoreFK")));
+        propertiesCheckBoxMap.put(IGNORE_UK, WidgetFactory.createCheckBox("ignoreUK", bundleString("IgnoreUK")));
+        propertiesCheckBoxMap.put(IGNORE_CK, WidgetFactory.createCheckBox("ignoreCK", bundleString("IgnoreCK")));
 
         if (isExtractMetadata) {
             propertiesCheckBoxMap.remove(CHECK_CREATE);
@@ -231,14 +248,15 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- comboBoxes defining ---
 
-        dbTargetComboBox = new JComboBox<>();
-        dbMasterComboBox = new JComboBox<>();
+        dbTargetComboBox = WidgetFactory.createConnectionComboBox("dbTargetComboBox", false);
+        dbMasterComboBox = WidgetFactory.createConnectionComboBox("dbMasterComboBox", false);
         dbMasterComboBox.setVisible(!isExtractMetadata);
 
         // --- db components tree view ---
 
         rootTreeNode = new ComparerTreeNode(bundleString("DatabaseChanges"));
         dbComponentsTree = new JTree(new DefaultTreeModel(rootTreeNode));
+        dbComponentsTree.setName("dbComponentsTree");
         dbComponentsTree.setCellRenderer(new ComparerTreeCellRenderer());
         dbComponentsTree.addMouseListener(new MouseAdapter() {
             @Override
@@ -265,6 +283,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         loggingOutputPanel = new LoggingOutputPanel();
         loggingOutputPanel.append(bundleString("WelcomeText"));
+        loggingOutputPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
@@ -272,55 +291,42 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         sqlTextPanel = new SimpleSqlTextPanel();
         differenceSqlTextPanel = new DifferenceSqlTextPanel(bundleString("SourceLabel"), bundleString("TargetLabel"), !isExtractMetadata);
-
-        // ---
-
-        arrangeComponents();
-        getConnections();
     }
 
-    private void arrangeComponents() {
-
-        GridBagHelper gridBagHelper;
+    private void arrange() {
+        GridBagHelper gbh;
 
         // --- connections selector panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel connectionsSelectorPanel = new JPanel(new GridBagLayout());
 
-        gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                bundleString("CompareDatabaseLabel"), dbTargetComboBox, null);
-        if (!isExtractMetadata)
-            gridBagHelper.addLabelFieldPair(connectionsSelectorPanel,
-                    bundleString("MasterDatabaseLabel"), dbMasterComboBox, null);
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        connectionsSelectorPanel.add(new JLabel(bundleString("CompareDatabaseLabel")), gbh.topGap(3).setMinWeightX().get());
+        connectionsSelectorPanel.add(dbTargetComboBox, gbh.nextCol().topGap(0).leftGap(5).setMaxWeightX().get());
+        if (!isExtractMetadata) {
+            connectionsSelectorPanel.add(new JLabel(bundleString("MasterDatabaseLabel")), gbh.nextRowFirstCol().topGap(8).leftGap(0).setMinWeightX().get());
+            connectionsSelectorPanel.add(dbMasterComboBox, gbh.nextCol().topGap(5).leftGap(5).setMaxWeightX().get());
+        }
 
         // --- connections panel ---
-
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
         JPanel connectionsPanel = new JPanel(new GridBagLayout());
         connectionsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("ConnectionsLabel")));
 
-        connectionsPanel.add(connectionsSelectorPanel, gridBagHelper.setMaxWeightX().get());
-        connectionsPanel.add(switchTargetSourceButton, gridBagHelper.nextCol().setMinWeightX().fillVertical().get());
-        connectionsPanel.add(compareButton, gridBagHelper.nextRowFirstCol().setWidth(2).fillHorizontally().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        connectionsPanel.add(connectionsSelectorPanel, gbh.setMaxWeightX().get());
+        connectionsPanel.add(switchTargetSourceButton, gbh.nextCol().leftGap(0).setMinWeightX().fillVertical().get());
+        connectionsPanel.add(compareButton, gbh.nextRowFirstCol().leftGap(5).topGap(0).fillHorizontally().spanX().get());
 
         // --- attributes panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel attributesPanel = new JPanel(new GridBagLayout());
 
-        attributesPanel.add(selectAllAttributesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
+        attributesPanel.add(selectAllAttributesButton, gbh.get());
         for (JCheckBox checkBox : attributesCheckBoxMap.values())
-            attributesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
-        attributesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
-
-        attributesPanel.add(new JScrollPane());
+            attributesPanel.add(checkBox, gbh.nextRowFirstCol().get());
+        attributesPanel.add(new JPanel(), gbh.nextRowFirstCol().bottomGap(5).setMaxWeightY().spanY().get());
 
         JScrollPane attributesPanelWithScrolls = new JScrollPane(attributesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -330,15 +336,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- properties panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
-
         JPanel propertiesPanel = new JPanel(new GridBagLayout());
 
-        propertiesPanel.add(selectAllPropertiesButton, gridBagHelper.nextRowFirstCol().setLabelDefault().anchorNorthWest().get());
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
+        propertiesPanel.add(selectAllPropertiesButton, gbh.get());
         for (JCheckBox checkBox : propertiesCheckBoxMap.values())
-            propertiesPanel.add(checkBox, gridBagHelper.nextRowFirstCol().get());
-        propertiesPanel.add(new JPanel(), gridBagHelper.nextRowFirstCol().setMaxWeightY().spanY().get());
+            propertiesPanel.add(checkBox, gbh.nextRowFirstCol().get());
+        propertiesPanel.add(new JPanel(), gbh.nextRowFirstCol().bottomGap(5).setMaxWeightY().spanY().get());
 
         JScrollPane propertiesPanelWithScrolls = new JScrollPane(propertiesPanel,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -348,21 +352,20 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         // --- SQL panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
-
         JPanel sqlPanel = new JPanel(new GridBagLayout());
 
-        sqlPanel.add(sqlTextPanel, gridBagHelper.setWidth(3).setMaxWeightY().spanX().get());
-        sqlPanel.add(saveScriptButton, gridBagHelper.setLabelDefault().nextRowFirstCol().get());
-        sqlPanel.add(executeScriptButton, gridBagHelper.nextCol().get());
-        sqlPanel.add(new JPanel(), gridBagHelper.nextCol().get());
+        gbh = new GridBagHelper().setInsets(0, 5, 0, 5).anchorNorthWest().fillBoth();
+        sqlPanel.add(sqlTextPanel, gbh.setMaxWeightY().spanX().get());
+        sqlPanel.add(saveScriptButton, gbh.nextRowFirstCol().setLabelDefault().topGap(0).bottomGap(6).get());
+        sqlPanel.add(executeScriptButton, gbh.nextCol().leftGap(5).get());
+        sqlPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().get());
 
         // --- view panel ---
 
         JScrollPane dbComponentsTreePanel = new JScrollPane(dbComponentsTree,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        dbComponentsTreePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 5));
 
         JSplitPane viewPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         viewPanel.setResizeWeight(0.25);
@@ -372,58 +375,42 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- tabbed pane ---
 
         tabPane = new JTabbedPane();
-
         tabPane.add(bundleString("OutputLabel"), loggingOutputPanel);
         tabPane.add(bundleString("TreeView"), viewPanel);
         tabPane.add("SQL", sqlPanel);
 
         // --- compare panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
-
         JPanel comparePanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillBoth();
         if (!isErd) {
+            comparePanel.add(connectionsPanel, gbh.spanX().get());
+            comparePanel.add(attributesPanelWithScrolls, gbh.nextRowFirstCol().setMaxWeightY().setWidth(1).spanY().get());
+            gbh.nextCol().leftGap(5);
 
-            comparePanel.add(connectionsPanel, gridBagHelper.setWidth(2).get());
-
-            comparePanel.add(attributesPanelWithScrolls, gridBagHelper.nextRowFirstCol().setWidth(1).get());
         } else {
-            comparePanel.add(compareButton, gridBagHelper.setLabelDefault().get());
-            gridBagHelper.nextRowFirstCol();
-            gridBagHelper.previousCol();
+            comparePanel.add(compareButton, gbh.spanX().get());
+            gbh.nextRow().setMaxWeightY().spanY();
         }
-        comparePanel.add(propertiesPanelWithScrolls, gridBagHelper.nextCol().spanY().get());
+        comparePanel.add(propertiesPanelWithScrolls, gbh.get());
 
         // --- main panel ---
 
-        gridBagHelper = new GridBagHelper();
-        gridBagHelper.setLabelDefault().setInsets(5, 5, 5, 5).anchorNorthWest().fillBoth();
+        gbh = new GridBagHelper();
+        gbh.setLabelDefault().setInsets(0, 5, 5, 5).anchorNorthWest().fillBoth();
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(comparePanel, gridBagHelper.setMaxWeightY().get());
-        mainPanel.add(tabPane, gridBagHelper.nextCol().spanX().get());
-        mainPanel.add(progressBar, gridBagHelper.nextRowFirstCol().setMinWeightY().spanX().get());
+        mainPanel.add(comparePanel, gbh.setMaxWeightY().get());
+        mainPanel.add(tabPane, gbh.nextCol().bottomGap(1).spanX().get());
+        mainPanel.add(progressBar, gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
 
         // --- layout configure ---
 
         setLayout(new BorderLayout());
         add(mainPanel, BorderLayout.CENTER);
 
-    }
-
-    private void getConnections() {
-
-        List<DatabaseConnection> connections =
-                ((DatabaseConnectionRepository) Objects.requireNonNull(
-                        RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
-
-        for (DatabaseConnection dc : connections) {
-            databaseConnectionList.add(dc);
-            dbTargetComboBox.addItem(dc.getName());
-            dbMasterComboBox.addItem(dc.getName());
-        }
     }
 
     private boolean prepareComparer() {
@@ -439,8 +426,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     !isPropertySelected(IGNORE_FIELDS_POSITIONS));
             return true;
         }
-        DatabaseConnection masterConnection = databaseConnectionList.get(dbMasterComboBox.getSelectedIndex());
-        DatabaseConnection targetConnection = databaseConnectionList.get(dbTargetComboBox.getSelectedIndex());
+
+        DatabaseConnection masterConnection = dbMasterComboBox.getSelectedConnection();
+        DatabaseConnection targetConnection = dbTargetComboBox.getSelectedConnection();
 
         if (busyConnectionList.contains(masterConnection) || busyConnectionList.contains(targetConnection)) {
             GUIUtilities.displayWarningMessage(isExtractMetadata ?
@@ -458,6 +446,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 ConnectionMediator.getInstance().connect(targetConnection, true);
 
         } catch (DataSourceException e) {
+            Log.error(e.getMessage(), e);
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
             return false;
         }
@@ -498,8 +487,8 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         try {
 
-            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(databaseConnectionList.get(dbMasterComboBox.getSelectedIndex()));
-            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(databaseConnectionList.get(dbTargetComboBox.getSelectedIndex()));
+            DefaultDatabaseHost masterHost = new DefaultDatabaseHost(dbMasterComboBox.getSelectedConnection());
+            DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(dbTargetComboBox.getSelectedConnection());
 
             if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
                     (!isExtractMetadata && !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase"))) {
@@ -511,7 +500,6 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             if (slaveHost.getDatabaseMajorVersion() < 3 || (!isExtractMetadata && masterHost.getDatabaseMajorVersion() < 3)) {
 
-                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("USER")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("PACKAGE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("FUNCTION")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
@@ -527,6 +515,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
 
         } catch (SQLException | NullPointerException e) {
+            Log.error(e.getMessage(), e);
             GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
             return false;
         }
@@ -568,50 +557,47 @@ public class ComparerDBPanel extends JPanel implements TabView {
             }
 
             if (isErd && isExtractMetadata) {
-                ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                        .add(new ComparerTreeNode(ComparerTreeNode.CREATE, NamedObject.TABLE,
-                                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE]), ComparerTreeNode.TYPE_FOLDER));
-
-                loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
-                        Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[NamedObject.TABLE])));
+                updateOutputPanels(ComparerTreeNode.CREATE, NamedObject.TABLE);
                 comparer.createErds(erdTables);
+
                 if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
                     loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
                     if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
                         loggingOutputPanel.append(comparer.getComputedFieldsList());
                     comparer.createComputedFields();
                 }
-            } else for (Integer type : scriptGenerationOrder) {
 
-                if (isCanceled())
-                    break;
+            } else {
 
-                if (type == STUBS) {
-                    comparer.createStubs(attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
-                            attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected());
+                for (Integer type : scriptGenerationOrder) {
 
-                    if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
-                        loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
-                        if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
-                            loggingOutputPanel.append(comparer.getComputedFieldsList());
-                        comparer.createComputedFields();
+                    if (isCanceled())
+                        break;
+
+                    if (type == STUBS) {
+                        comparer.setStubsNeed(
+                                true,
+                                attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                                attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected()
+                        );
+
+                        if (!isPropertySelected(IGNORE_COMPUTED_FIELDS) && !isCanceled()) {
+                            loggingOutputPanel.append("\n============= COMPUTED FIELDS defining  =============");
+                            if (!Objects.equals(comparer.getComputedFieldsList(), "") && comparer.getComputedFieldsList() != null)
+                                loggingOutputPanel.append(comparer.getComputedFieldsList());
+                            comparer.createComputedFields();
+                        }
+
+                        continue;
                     }
 
-                    continue;
-                }
-
-                if (attributesCheckBoxMap.get(type).isSelected()) {
-
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.CREATE, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to CREATE  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
-                    comparer.createObjects(type);
+                    if (attributesCheckBoxMap.get(type).isSelected()) {
+                        updateOutputPanels(ComparerTreeNode.CREATE, type);
+                        comparer.createObjects(type);
+                    }
                 }
             }
         }
@@ -625,6 +611,15 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 Collections.reverse(scriptGenerationOrder);
             }
 
+            comparer.setStubsNeed(
+                    false,
+                    attributesCheckBoxMap.get(NamedObject.FUNCTION).isSelected(),
+                    attributesCheckBoxMap.get(NamedObject.PROCEDURE).isSelected(),
+                    attributesCheckBoxMap.get(NamedObject.TRIGGER).isSelected(),
+                    attributesCheckBoxMap.get(NamedObject.DDL_TRIGGER).isSelected(),
+                    attributesCheckBoxMap.get(NamedObject.DATABASE_TRIGGER).isSelected()
+            );
+
             for (Integer type : scriptGenerationOrder) {
 
                 if (isCanceled())
@@ -634,16 +629,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
+                    updateOutputPanels(ComparerTreeNode.ALTER, type);
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.ALTER, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to ALTER  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     if (isErd)
                         comparer.alterErds(erdTables);
-                    else comparer.alterObjects(type);
+                    else
+                        comparer.alterObjects(type);
                 }
             }
         }
@@ -666,16 +657,12 @@ public class ComparerDBPanel extends JPanel implements TabView {
                     continue;
 
                 if (attributesCheckBoxMap.get(type).isSelected()) {
+                    updateOutputPanels(ComparerTreeNode.DROP, type);
 
-                    ((ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1))
-                            .add(new ComparerTreeNode(ComparerTreeNode.DROP, type,
-                                    Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]), ComparerTreeNode.TYPE_FOLDER));
-
-                    loggingOutputPanel.append(MessageFormat.format("\n============= {0} to DROP  =============",
-                            Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type])));
                     if (isErd)
                         comparer.dropErds(erdTables);
-                    else comparer.dropObjects(type);
+                    else
+                        comparer.dropObjects(type);
                 }
             }
         }
@@ -706,8 +693,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         if (!isExtractMetadata) {
 
-            if (databaseConnectionList.size() < 2 ||
-                    dbTargetComboBox.getSelectedIndex() == dbMasterComboBox.getSelectedIndex()) {
+            if (Objects.equals(dbTargetComboBox.getSelectedConnection(), dbMasterComboBox.getSelectedConnection())) {
                 GUIUtilities.displayWarningMessage(bundleString("UnableCompareSampleConnections"));
                 return;
             }
@@ -842,9 +828,9 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
             try (FileOutputStream path = new FileOutputStream(fileSavePath)) {
 
-                for (int i = 0; i < comparer.getScript().size(); i++) {
-                    String text = comparer.getScript(i);
-                    byte[] buffer = text.getBytes();
+                String[] sqlTextLines = sqlTextPanel.getSQLText().split("\n");
+                for (String sqlLine : sqlTextLines) {
+                    byte[] buffer = (sqlLine + "\n").getBytes();
                     path.write(buffer, 0, buffer.length);
                 }
 
@@ -852,7 +838,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
                 loggingOutputPanel.append(bundleString("SavedTo") + fileSavePath);
 
             } catch (IOException e) {
-                e.printStackTrace(System.out);
+                Log.error(e.getMessage(), e);
             }
         }
     }
@@ -892,7 +878,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
     }
 
     private void switchTargetSource() {
-        Object sourceConnection = dbMasterComboBox.getSelectedItem();
+        DatabaseConnection sourceConnection = dbMasterComboBox.getSelectedConnection();
         dbMasterComboBox.setSelectedItem(dbTargetComboBox.getSelectedItem());
         dbTargetComboBox.setSelectedItem(sourceConnection);
     }
@@ -951,6 +937,30 @@ public class ComparerDBPanel extends JPanel implements TabView {
         }
 
         return dialect;
+    }
+
+    private void updateOutputPanels(int treeNodeType, Integer objectType) {
+
+        ComparerTreeNode childNode = (ComparerTreeNode) rootTreeNode.getChildAt(rootTreeNode.getChildCount() - 1);
+        childNode.add(new ComparerTreeNode(
+                treeNodeType,
+                objectType,
+                Bundles.get(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType]),
+                ComparerTreeNode.TYPE_FOLDER
+        ));
+
+        String pattern = Constants.EMPTY;
+        if (treeNodeType == ComparerTreeNode.CREATE)
+            pattern = "\n============= {0} to CREATE  =============";
+        else if (treeNodeType == ComparerTreeNode.ALTER)
+            pattern = "\n============= {0} to ALTER  =============";
+        else if (treeNodeType == ComparerTreeNode.DROP)
+            pattern = "\n============= {0} to DROP  =============";
+
+        loggingOutputPanel.append(MessageFormat.format(
+                pattern,
+                Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[objectType])
+        ));
     }
 
     public void recreateProgressBar(String label, String metaTag, int maxValue) {

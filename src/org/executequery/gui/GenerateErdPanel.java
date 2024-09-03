@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.erd.ErdGenerateProgressDialog;
 import org.executequery.gui.erd.ErdViewerPanel;
 import org.executequery.gui.erd.ErdSelectionPanel;
@@ -42,17 +41,15 @@ public class GenerateErdPanel extends JPanel {
     private JButton generateButton;
     private JButton cancelButton;
 
-    private final DatabaseConnection connection;
     private final ErdViewerPanel erdPanel;
     private final ActionContainer parent;
 
     public GenerateErdPanel(ActionContainer parent) {
-        this(null, parent, null);
+        this(null, parent);
     }
 
-    public GenerateErdPanel(ErdViewerPanel erdPanel, ActionContainer parent, DatabaseConnection connection) {
+    public GenerateErdPanel(ErdViewerPanel erdPanel, ActionContainer parent) {
         super(new BorderLayout());
-        this.connection = connection;
         this.erdPanel = erdPanel;
         this.parent = parent;
 
@@ -61,7 +58,7 @@ public class GenerateErdPanel extends JPanel {
     }
 
     private void init() {
-        selectionPanel = new ErdSelectionPanel(connection, erdPanel);
+        selectionPanel = new ErdSelectionPanel(erdPanel);
 
         generateButton = WidgetFactory.createButton(
                 "generateButton",

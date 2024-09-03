@@ -11,6 +11,7 @@ stages:
   - test
   - repackage
   - deploy
+  - report
 
 variables:
   RELEASE_HUB_PROJECT: red_expert
@@ -56,8 +57,10 @@ prepare:
         CONTEXT=commit
         STAGE=snapshot
       fi
+    - BUILD=$(awk -F'=' '/^eq.build=/ {print $2}' ./src/org/executequery/eq.system.properties)
     - m4 -DVERSION=${VERSION} ci/artifacts.m4 > .ci/artifacts
     - echo VERSION=${VERSION} > vars.env
+    - echo BUILD=${BUILD} >> vars.env
     - echo BRANCH=${BRANCH} >> vars.env
     - echo CONTEXT=${CONTEXT} >> vars.env
     - echo STAGE=${STAGE} >> vars.env
@@ -85,8 +88,6 @@ sources:
     paths:
       - dist-src/
 
-
-
 build_docs:
   stage: build_docs
   artifacts:
@@ -97,13 +98,15 @@ build_docs:
     - docker
     - builder
     - x86_64
-  image: registry.red-soft.biz:5000/docker-images/texlive-alpine/texlive2018-alpine:20190305
+  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2022-2023-03-12-full
   before_script:
-    - tar xf dist-src/RedExpert-$VERSION-src.tar.gz
+    - apt update && apt install -y python3-venv python3-pip
+    - mkdir -p dist/guide
   script:
-    - cd RedExpert-$VERSION && ./ci/build_docs.sh && cd ..
-    - mv RedExpert-$VERSION/dist .
-
+    - cd guide_rst
+    - make bootstrap
+    - make latexpdf
+    - cp build/latex/Red_Expert.pdf ../dist/guide/RedExpert_Guide-ru.pdf
 
 .build_template:
   stage: build
@@ -150,6 +153,7 @@ build:linux:
     - mv modules/redexpert/target/lib "${DIST}"
     - cp -r license/ "${DIST}"
     - cp -r "${CI_PROJECT_DIR}"/dist/guide/ "${DIST}"
+    - mv modules/redexpert/target/classes "${DIST}"
     - mv modules/redexpert/target/LICENSE.txt "${DIST}"
     - mv modules/redexpert/target/red_expert.ico "${DIST}"
     - mv modules/redexpert/target/red_expert.png "${DIST}"
@@ -210,6 +214,7 @@ build:windows:
     expire_in: 1 day
     paths:
       - test-results/
+      - coverage-results/
   except:
     variables:
       - $SKIP_TESTS == "1"
@@ -221,6 +226,7 @@ test:windows:
     - proxmox
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-windows-7
     JAVA_HOME: c:\Program Files\Java\jdk8
     ErrorActionPreference: STOP
@@ -259,6 +265,7 @@ test:windows-robot:
     - proxmox
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-windows-7
     ErrorActionPreference: STOP
     DIST: ${CI_PROJECT_DIR}\dist\windows-${ARCH}
@@ -297,6 +304,7 @@ test:linux-robot:
     - red_expert 
     - tester
   variables:
+    BUILD: ${BUILD}
     PROXMOX_TEMPLATE: template-testing-re-ubuntu-20
     ErrorActionPreference: STOP
     DIST: ${CI_PROJECT_DIR}/dist/linux-${ARCH}
@@ -315,6 +323,10 @@ test:linux-robot:
    - $PYTHON ./ci/download_dbms.py ${DBMS} ${ARCH} linux
    - chmod +x ./ci/install_dbms.sh
    - ./ci/install_dbms.sh
+   - |
+      if [ $ARCH == "x86_64" ] && [ $DBMS == "rdb50" ]; then
+        export COVERAGE=true
+      fi
   script:
    - chmod +x ./ci/test_robot.sh
    - ./ci/test_robot.sh
@@ -366,3 +378,38 @@ deploy:
   only:
     variables:
       - "$RELEASE_HUB_KEY"
+
+report:coverage:
+  stage: report
+  tags: ["docker", "x86_64"]
+  image: registry.red-soft.biz:5000/docker-images/rdbbuildenv:rdb5-8
+  before_script:
+    - test -e ${CI_PROJECT_DIR}/coverage-results || (echo No coverage data found; exit 0)
+  script:
+    - echo "Uploading report"
+    - mc alias set minio ${MINIO_SERVER} ${MINIO_USER} ${MINIO_PASSWORD}
+    - |
+      if [ "${CI_COMMIT_TAG}" ]; then
+        REPORT_NAME=${VERSION}
+      elif [ "${CI_COMMIT_REF_NAME}" = "$TAG_BRANCH" ]; then
+        REPORT_NAME=${TAG_BRANCH}
+        echo "Generating badge"
+        PCOV=$(grep -oP '<tfoot.*?>.*?</tfoot>' coverage-results/index.html | grep -oP '<td class="ctr2">\K[^<]+' | head -n 1 | tr -d '%')
+        anybadge -l "coverage ${TAG_BRANCH}" -v "$PCOV" --suffix='%' -o -f coverage-results/badge.svg 70=red 80=orange 90=yellow 100=green
+      fi
+    - |
+      if [ "${REPORT_NAME}" ]; then
+        mc rm -r --force minio/reports/coverage/red-expert/${REPORT_NAME}
+        mc cp -r coverage-results/ minio/reports/coverage/red-expert/${REPORT_NAME}
+        echo Report ${MINIO_SERVER}reports/coverage/red-expert/${REPORT_NAME}/index.html
+      else
+        mc cp -r coverage-results/ minio/reports/temp/coverage/red-expert/${VERSION}
+        echo Report ${MINIO_SERVER}reports/temp/coverage/red-expert/${VERSION}/index.html
+      fi
+  # coverage: /^\s*lines:\s*\d+.\d+\%/
+  only:
+    variables:
+      - $CI_COMMIT_TAG
+      - $CONTEXT == "weekly"
+      - $FORCE_COVERAGE == "1"
+  allow_failure: true

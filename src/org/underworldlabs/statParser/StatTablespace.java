@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatTablespace extends TableModelObject {
+   
     public static final String[][] ITEMS_TBS = {
-            {"Name:", "s", "name"},
-            {"Full path:", "s", null},
-            {"Table count:", "i", null},
-            {"Index count:", "i", null}
-            /* {"TableName count:", "i", null},
-             {"IndexName count:", "i", null},*/
+            {"Name:", "s", "name", null},
+            {"Full path:", "s", null, bundleString("full_path")},
+            {"Table count:", "i", null, bundleString("table_count")},
+            {"Index count:", "i", null, bundleString("index_count")},
     };
+    
     public String full_path;
     public List<String> tableNames;
     public List<String> indexNames;

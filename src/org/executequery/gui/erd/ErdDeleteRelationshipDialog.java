@@ -20,368 +20,289 @@
 
 package org.executequery.gui.erd;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
-import org.executequery.gui.DefaultPanelButton;
 import org.executequery.gui.DefaultTable;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.localization.Bundles;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Vector;
 
 /**
  * @author Takis Diakoumis
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
-        implements ActionListener {
+public class ErdDeleteRelationshipDialog extends ErdPrintableDialog {
+    private static final String TITLE = bundleString("title");
 
-    /**
-     * The controller for the ERD viewer
-     */
-    private final ErdViewerPanel parent;
-    /**
-     * The table listing constraints
-     */
     private JTable table;
-    /**
-     * The two related tables
-     */
-    private ErdTable[] erdTables;
-    /**
-     * The SQL text string buffer
-     */
-    private StringBuffer sqlBuffer;
-    /**
-     * The constraints
-     */
-    private Vector constraints;
+    private JButton deleteButton;
+    private JButton cancelButton;
 
-    /**
-     * The literal 'ALTER TABLE '
-     */
-    private static final String ALTER_TABLE = "ALTER TABLE ";
-    /**
-     * The literal ' ADD CONSTRAINT '
-     */
-    private static final String DROP_CONSTRAINT = " DROP CONSTRAINT ";
-    /**
-     * The literal ';'
-     */
-    private static final String CLOSE_END = ";\n";
+    private Vector constraints;
+    private final ErdViewerPanel parent;
 
     public ErdDeleteRelationshipDialog(ErdViewerPanel parent, ErdTable[] erdTables) {
-        super("Delete Table Relationship");
-
+        super(TITLE);
         this.parent = parent;
-        this.erdTables = erdTables;
+        this.constraints = new Vector();
 
-        ColumnData[] cd1 = erdTables[0].getTableColumns();
-        ColumnData[] cd2 = erdTables[1].getTableColumns();
-
-        String tableName1 = erdTables[0].getTableName();
-        String tableName2 = erdTables[1].getTableName();
-        ColumnConstraint[] tableConstraints = null;
-
-        constraints = new Vector();
-
-        for (int i = 0; i < cd1.length; i++) {
-
-            if (!cd1[i].isForeignKey()) {
-                continue;
-            }
-
-            tableConstraints = cd1[i].getColumnConstraintsArray();
-            if (tableConstraints == null || tableConstraints.length == 0) {
-                break;
-            }
-
-            for (int j = 0; j < tableConstraints.length; j++) {
-                if (tableConstraints[j].isPrimaryKey()) {
-                    continue;
-                }
-
-                if (tableConstraints[j].getRefTable().equalsIgnoreCase(tableName2)) {
-                    constraints.add(new ColumnConstraintDrop(cd1[i], erdTables[0], j));
-                }
-            }
-
-        }
-
-        for (int i = 0; i < cd2.length; i++) {
-
-            if (!cd2[i].isForeignKey()) {
-                continue;
-            }
-
-            tableConstraints = cd2[i].getColumnConstraintsArray();
-            if (tableConstraints == null || tableConstraints.length == 0) {
-                continue;
-            }
-
-            for (int j = 0; j < tableConstraints.length; j++) {
-                if (tableConstraints[j].isPrimaryKey()) {
-                    continue;
-                }
-
-                if (tableConstraints[j].getRefTable().equalsIgnoreCase(tableName1)) {
-                    constraints.add(new ColumnConstraintDrop(cd2[i], erdTables[1], j));
-                }
-            }
-
-        }
-
-        if (constraints.size() == 0) {
-            GUIUtilities.displayErrorMessage(
-                    "No relation exists between the selected tables");
-            super.dispose();
+        if (!preInit(erdTables)) {
+            dispose();
             return;
         }
 
-        try {
-            jbInit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        init();
+        arrange();
         display();
-
     }
 
-    private void jbInit() throws Exception {
-        JButton deleteButton = new DefaultPanelButton(Bundles.get("common.delete.button"), "Delete");
-        JButton cancelButton = new DefaultPanelButton(Bundles.get("common.cancel.button"), "Cancel");
+    private boolean preInit(ErdTable[] erdTables) {
 
-        cancelButton.addActionListener(this);
-        deleteButton.addActionListener(this);
+        String tableName1 = erdTables[0].getTableName();
+        String tableName2 = erdTables[1].getTableName();
 
-        sqlText.setPreferredSize(new Dimension(480, 90));
+        ColumnData[] columnData1 = erdTables[0].getTableColumns();
+        ColumnData[] columnData2 = erdTables[1].getTableColumns();
+
+        for (ColumnData columnData : columnData1) {
+            if (!columnData.isForeignKey())
+                continue;
+
+            ColumnConstraint[] tableConstraints = columnData.getColumnConstraintsArray();
+            if (tableConstraints == null || tableConstraints.length == 0)
+                break;
+
+            for (int j = 0; j < tableConstraints.length; j++) {
+                ColumnConstraint constraint = tableConstraints[j];
+                if (!constraint.isPrimaryKey() && constraint.getRefTable().equalsIgnoreCase(tableName2))
+                    constraints.add(new ColumnConstraintDrop(columnData, erdTables[0], j));
+            }
+        }
+
+        for (ColumnData columnData : columnData2) {
+            if (!columnData.isForeignKey())
+                continue;
+
+            ColumnConstraint[] tableConstraints = columnData.getColumnConstraintsArray();
+            if (tableConstraints == null || tableConstraints.length == 0)
+                continue;
+
+            for (int j = 0; j < tableConstraints.length; j++) {
+                ColumnConstraint constraint = tableConstraints[j];
+                if (!constraint.isPrimaryKey() && constraint.getRefTable().equalsIgnoreCase(tableName1))
+                    constraints.add(new ColumnConstraintDrop(columnData, erdTables[1], j));
+            }
+        }
+
+        if (constraints.isEmpty()) {
+            GUIUtilities.displayErrorMessage(bundleString("noRelation"));
+            return false;
+        }
+
+        return true;
+    }
+
+    private void init() {
+
+        deleteButton = WidgetFactory.createButton("deleteButton", Bundles.get("common.delete.button"), e -> delete());
+        cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> dispose());
+
+        sqlText.setSQLTextEditable(false);
+        sqlText.setPreferredSize(new Dimension(450, 200));
 
         table = new DefaultTable(new ConstraintTableModel());
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getTableHeader().setReorderingAllowed(false);
-        table.setCellSelectionEnabled(true);
         table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
+        table.setCellSelectionEnabled(true);
+        table.setFillsViewportHeight(true);
 
         TableColumnModel tcm = table.getColumnModel();
         tcm.getColumn(0).setPreferredWidth(25);
-        tcm.getColumn(1).setPreferredWidth(100);
-        tcm.getColumn(2).setPreferredWidth(125);
-        tcm.getColumn(3).setPreferredWidth(125);
-        tcm.getColumn(4).setPreferredWidth(125);
-        tcm.getColumn(5).setPreferredWidth(125);
+        tcm.getColumn(0).setMaxWidth(25);
+        tcm.getColumn(0).setMinWidth(25);
+    }
 
-        JScrollPane tableScroller = new JScrollPane(table);
-        tableScroller.setPreferredSize(new Dimension(640, 130));
+    private void arrange() {
+        GridBagHelper gbh;
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEtchedBorder());
+        // --- button panel ---
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("Select the constraints to be dropped:"), gbc);
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.7;
-        gbc.insets.top = 0;
-        panel.add(tableScroller, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weighty = 0.3;
-        panel.add(sqlText, gbc);
-        gbc.gridy = 3;
-        gbc.gridx = 1;
-        gbc.weighty = 0;
-        gbc.gridwidth = 1;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        gbc.anchor = GridBagConstraints.EAST;
-        panel.add(deleteButton, gbc);
-        gbc.gridx = 2;
-        gbc.insets.left = 0;
-        gbc.weightx = 0;
-        panel.add(cancelButton, gbc);
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
 
-        Container c = getContentPane();
-        c.setLayout(new GridBagLayout());
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(deleteButton, gbh.nextCol().setMinWeightX().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().leftGap(5).get());
 
-        c.add(panel, new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                new Insets(7, 7, 7, 7), 0, 0));
+        // --- main panel ---
 
-        sqlBuffer = new StringBuffer();
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+
+        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally().spanX();
+        mainPanel.add(new JLabel(bundleString("selectConstraints")), gbh.get());
+        mainPanel.add(new JScrollPane(table), gbh.nextRow().topGap(5).setMaxWeightY().fillBoth().get());
+        mainPanel.add(sqlText, gbh.nextRow().get());
+        mainPanel.add(buttonPanel, gbh.nextRow().setMinWeightY().get());
+
+        // --- base ---
+
+        setLayout(new GridBagLayout());
+        setPreferredSize(new Dimension(800, 500));
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        gbh = new GridBagHelper().setInsets(5, 5, 5, 5).fillBoth().spanX().spanY();
+        add(mainPanel, gbh.get());
     }
 
     private void setSQLText() {
-        sqlBuffer.setLength(0);
-        ColumnConstraintDrop ccd = null;
+
+        StringBuilder sb = new StringBuilder();
         for (int i = 0, n = constraints.size(); i < n; i++) {
-            ccd = (ColumnConstraintDrop) constraints.elementAt(i);
-            if (ccd.isDropped()) {
-                sqlBuffer.append(ccd.getSql());
-            }
+            ColumnConstraintDrop constraintToDrop = (ColumnConstraintDrop) constraints.elementAt(i);
+            if (constraintToDrop.isDropped())
+                sb.append(constraintToDrop.getSql());
         }
-        sqlText.setSQLText(sqlBuffer.toString());
+
+        sqlText.setSQLText(sb.toString());
     }
 
     private void delete() {
-        ColumnConstraintDrop ccd = null;
+
         for (int i = 0, n = constraints.size(); i < n; i++) {
-            ccd = (ColumnConstraintDrop) constraints.elementAt(i);
-            ccd.dropConstraint();
+            ColumnConstraintDrop constraintToDrop = (ColumnConstraintDrop) constraints.elementAt(i);
+            constraintToDrop.dropConstraint();
         }
 
         constraints = null;
-        erdTables = null;
         table = null;
         parent.updateTableRelationships();
         dispose();
     }
 
-    public void actionPerformed(ActionEvent e) {
-        Object button = e.getSource();
-
-        if (button instanceof JButton) {
-            String command = e.getActionCommand();
-
-            if (command.equals("Cancel"))
-                dispose();
-
-            else if (command.equals("Delete"))
-                delete();
-
-        }
-
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(ErdDeleteRelationshipDialog.class, key, args);
     }
 
     private class ConstraintTableModel extends AbstractTableModel {
 
-        protected String[] header = {" ", "Name", "Referencing Table",
-                "Referencing Column", "Referenced Table",
-                "Referenced Column"};
+        private final String[] headers = {
+                " ",
+                bundleString("Name"),
+                bundleString("ReferencingTable"),
+                bundleString("ReferencingColumn"),
+                bundleString("ReferencedTable"),
+                bundleString("ReferencedColumn")
+        };
 
+        @Override
         public int getColumnCount() {
-            return 6;
+            return headers.length;
         }
 
+        @Override
         public int getRowCount() {
             return constraints.size();
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
-            ColumnConstraintDrop ccd = (ColumnConstraintDrop) constraints.elementAt(row);
-            ColumnConstraint cc = ccd.getColumnConstraint();
+            ColumnConstraintDrop constraintToDrop = (ColumnConstraintDrop) constraints.elementAt(row);
+            ColumnConstraint constraint = constraintToDrop.getColumnConstraint();
 
             switch (col) {
-
                 case 0:
-                    return Boolean.valueOf(ccd.isDropped());
-
+                    return constraintToDrop.isDropped();
                 case 1:
-                    return cc.getName();
-
+                    return constraint.getName();
                 case 2:
-                    return cc.getTable();
-
+                    return constraint.getTable();
                 case 3:
-                    return cc.getColumn();
-
+                    return constraint.getColumn();
                 case 4:
-                    return cc.getRefTable();
-
+                    return constraint.getRefTable();
                 case 5:
-                    return cc.getRefColumn();
-
+                    return constraint.getRefColumn();
                 default:
                     return null;
-
             }
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
-            ColumnConstraintDrop ccd = (ColumnConstraintDrop) constraints.elementAt(row);
-            ColumnConstraint cc = ccd.getColumnConstraint();
+            ColumnConstraintDrop constraintToDrop = (ColumnConstraintDrop) constraints.elementAt(row);
+            ColumnConstraint constraint = constraintToDrop.getColumnConstraint();
 
             switch (col) {
                 case 0:
-                    ccd.setDropped(((Boolean) value).booleanValue());
+                    constraintToDrop.setDropped((Boolean) value);
                     setSQLText();
                     break;
                 case 1:
-                    cc.setName((String) value);
+                    constraint.setName((String) value);
                     break;
                 case 2:
-                    cc.setTable((String) value);
+                    constraint.setTable((String) value);
                     break;
                 case 3:
-                    cc.setColumn((String) value);
+                    constraint.setColumn((String) value);
                     break;
                 case 4:
-                    cc.setRefTable((String) value);
+                    constraint.setRefTable((String) value);
                     break;
                 case 5:
-                    cc.setRefColumn((String) value);
+                    constraint.setRefColumn((String) value);
                     break;
             }
 
             fireTableRowsUpdated(row, row);
         }
 
+        @Override
         public boolean isCellEditable(int row, int col) {
-            return (col == 0);
+            return col == 0;
         }
 
+        @Override
         public String getColumnName(int col) {
-            return header[col];
+            return headers[col];
         }
 
+        @Override
         public Class getColumnClass(int col) {
-            if (col == 0) {
-                return Boolean.class;
-            }
-            return String.class;
+            return col == 0 ? Boolean.class : String.class;
         }
 
-    } // ConstraintTableModel
+    } // ConstraintTableModel class
 
-
-    class ColumnConstraintDrop {
+    private static class ColumnConstraintDrop {
 
         private boolean dropped;
         private final ErdTable erdTable;
-        private ColumnConstraint columnConstraint;
         private final ColumnData columnData;
+        private final ColumnConstraint columnConstraint;
 
-        public ColumnConstraintDrop(ColumnData columnData,
-                                    ErdTable erdTable, int constraintIndex) {
-            columnConstraint = columnData.getColumnConstraintsArray()[constraintIndex];
-            this.erdTable = erdTable;
+        public ColumnConstraintDrop(ColumnData columnData, ErdTable erdTable, int constraintIndex) {
+            this.columnConstraint = columnData.getColumnConstraintsArray()[constraintIndex];
             this.columnData = columnData;
-            dropped = false;
+            this.erdTable = erdTable;
+            this.dropped = false;
         }
 
         public void dropConstraint() {
-
             if (dropped) {
                 columnData.removeConstraint(columnConstraint);
                 columnData.setForeignKey(false);
                 erdTable.setDropConstraintsScript(getSql());
             }
-
-        }
-
-        public void setColumnConstraint(ColumnConstraint columnConstraint) {
-            this.columnConstraint = columnConstraint;
         }
 
         public ColumnConstraint getColumnConstraint() {
@@ -390,12 +311,15 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
 
         public String getSql() {
 
-            if (dropped)
-                return ALTER_TABLE + erdTable.getTableName() +
-                        DROP_CONSTRAINT + columnConstraint.getName() + CLOSE_END;
-            else
-                return "";
+            if (dropped) {
+                return String.format(
+                        "ALTER TABLE %s DROP CONSTRAINT %s;\n",
+                        erdTable.getTableName(),
+                        columnConstraint.getName()
+                );
+            }
 
+            return Constants.EMPTY;
         }
 
         public boolean isDropped() {
@@ -406,18 +330,6 @@ public class ErdDeleteRelationshipDialog extends ErdPrintableDialog
             this.dropped = dropped;
         }
 
-    } // ColumnConstraintDrop
+    } // ColumnConstraintDrop class
 
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -43,6 +43,7 @@ import org.executequery.util.UserProperties;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.underworldlabs.sqlParser.SqlParser;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -55,6 +56,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.print.Printable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -74,7 +77,8 @@ public class QueryEditor extends DefaultTabView
         QueryShortcutListener,
         UserPreferenceListener,
         TextEditor,
-        FocusablePanel {
+        FocusablePanel,
+        PropertyChangeListener {
 
     public static final String TITLE = Bundles.get(QueryEditor.class, "title");
     public static final String FRAME_ICON = "icon_query_editor";
@@ -100,8 +104,8 @@ public class QueryEditor extends DefaultTabView
     private QueryEditorPopupMenu popup;
     private TransactionParametersPanel transactionParametersPanel;
 
-    private OpenConnectionsComboBox connectionsCombo;
     private EQCheckCombox connectionsCheckCombo;
+    private ConnectionsComboBox connectionsCombo;
 
     private JPanel baseEditorPanel;
     private JSplitPane splitPane;
@@ -133,14 +137,14 @@ public class QueryEditor extends DefaultTabView
     private boolean executeToFile;
 
     public QueryEditor() {
-        this(null, null);
+        this(null, null, -1);
     }
 
     public QueryEditor(String text) {
-        this(text, null);
+        this(text, null, -1);
     }
 
-    public QueryEditor(String text, String absolutePath) {
+    public QueryEditor(String text, String absolutePath, int splitDividerLocation) {
         super(new GridBagLayout());
 
         init();
@@ -162,7 +166,11 @@ public class QueryEditor extends DefaultTabView
             editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         }
 
-        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber);
+        if (splitDividerLocation > 0)
+            splitPane.setDividerLocation(splitDividerLocation);
+
+        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber, splitPane.getDividerLocation());
+        splitPane.addPropertyChangeListener("dividerLocation", this);
         isContentChanged = false;
 
         if (text != null)
@@ -187,7 +195,7 @@ public class QueryEditor extends DefaultTabView
 
         // --- connection combos ---
 
-        connectionsCombo = new OpenConnectionsComboBox(this, ConnectionManager.getActiveConnections());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         connectionsCombo.setMaximumSize(new Dimension(200, 30));
         connectionsCombo.addItemListener(this::connectionChanged);
         connectionsCombo.setVisible(!useMultipleConnections);
@@ -199,7 +207,7 @@ public class QueryEditor extends DefaultTabView
 
         oldConnection = useMultipleConnections ?
                 getSelectedConnection() :
-                (DatabaseConnection) connectionsCombo.getSelectedItem();
+                connectionsCombo.getSelectedConnection();
 
         // --- transaction parameters panel ---
 
@@ -572,6 +580,17 @@ public class QueryEditor extends DefaultTabView
     }
 
     /**
+     * Sets the text of the left status label.
+     *
+     * @param text    the text to be set
+     * @param toolTip the label toolTip
+     * @param icon    the icon to be set
+     */
+    public void setLeftStatus(String text, String toolTip, Icon icon) {
+        statusBar.setStatus(text, toolTip, icon);
+    }
+
+    /**
      * Propagates the call to interrupt an executing process.
      */
     public void interrupt() {
@@ -816,13 +835,21 @@ public class QueryEditor extends DefaultTabView
 
             return false;
         }
+
         if (delegate.getIDTransaction() != -1) {
-            int result = GUIUtilities.displayConfirmCancelDialog(bundleString("requestTransactionMessage"));
+
+            int result = GUIUtilities.displayYesNoCancelDialog(
+                    bundleString("requestTransactionMessage"),
+                    bundleString("requestTransactionTitle")
+            );
+
             if (result == JOptionPane.YES_OPTION)
                 delegate.commit(false);
             else if (result == JOptionPane.NO_OPTION)
                 delegate.rollback(false);
-            else return false;
+            else
+                return false;
+
             return tabViewClosing();
         }
 
@@ -846,7 +873,7 @@ public class QueryEditor extends DefaultTabView
                     QueryEditorHistory.removeFile(oldPath);
 
                 scriptFile.setAbsolutePath(newPath);
-                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1);
+                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1, splitPane.getDividerLocation());
 
             } else
                 return false;
@@ -861,13 +888,15 @@ public class QueryEditor extends DefaultTabView
                     "\n\nThe system returned:\n" + e.getMessage(), e, this.getClass());
         }
 
-        String connectionID = (getSelectedConnection() != null) ?
-                getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
-
         try {
-            QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+            DatabaseConnection dc = getSelectedConnection();
+            if (dc == null || dc.isConnected()) {
+                String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
+                QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+            }
+
         } catch (Exception e) {
-            e.printStackTrace(System.out);
+            Log.error(e.getMessage(), e);
         }
 
         return true;
@@ -925,12 +954,9 @@ public class QueryEditor extends DefaultTabView
             return selectedConnections != null && !selectedConnections.isEmpty() ?
                     (DatabaseConnection) selectedConnections.get(0) :
                     null;
-
-        } else {
-            return connectionsCombo.getSelectedIndex() != -1 ?
-                    (DatabaseConnection) connectionsCombo.getSelectedItem() :
-                    null;
         }
+
+        return connectionsCombo.getSelectedConnection();
     }
 
     public void setSelectedConnection(DatabaseConnection databaseConnection) {
@@ -942,8 +968,8 @@ public class QueryEditor extends DefaultTabView
         } else if (useMultipleConnections)
             connectionToSelect = databaseConnection;
 
-        if (connectionsCombo.contains(databaseConnection)) {
-            connectionsCombo.getModel().setSelectedItem(databaseConnection);
+        if (connectionsCombo.hasConnection(databaseConnection)) {
+            connectionsCombo.setSelectedItem(databaseConnection);
 
         } else if (!useMultipleConnections)
             connectionToSelect = databaseConnection;
@@ -1298,7 +1324,7 @@ public class QueryEditor extends DefaultTabView
                     getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
             QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
             QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number);
+            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
         }
         return SaveFunction.SAVE_COMPLETE;
     }
@@ -1377,29 +1403,21 @@ public class QueryEditor extends DefaultTabView
     public void connected(ConnectionEvent connectionEvent) {
 
         if (!isQueryEditorClosed) {
-
-//            if (connectionsCombo.getModel().getSize() == 0)
-//                connectionsCombo.addElement(null);
-
-            connectionsCombo.addElement(connectionEvent.getDatabaseConnection());
             connectionsCheckCombo.getModel().addElement(connectionEvent.getDatabaseConnection());
 
             DatabaseConnection databaseConnection = connectionEvent.getDatabaseConnection();
             if (databaseConnection == connectionToSelect) {
                 connectionsCheckCombo.getModel().addCheck(databaseConnection);
-                connectionsCombo.getModel().setSelectedItem(databaseConnection);
+                connectionsCombo.setSelectedItem(databaseConnection);
                 connectionToSelect = null;
             }
         }
-
     }
 
     @Override
     public void disconnected(ConnectionEvent connectionEvent) {
-        if (!isQueryEditorClosed) {
+        if (!isQueryEditorClosed)
             connectionsCheckCombo.getModel().removeElement(connectionEvent.getDatabaseConnection());
-            connectionsCombo.removeElement(connectionEvent.getDatabaseConnection());
-        }
     }
 
     // ---------------------------------------------
@@ -1531,6 +1549,20 @@ public class QueryEditor extends DefaultTabView
         oldConnection = getSelectedConnection();
         editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
         transactionParametersPanel.setDatabaseConnection(getSelectedConnection());
+    }
+
+    // --- PropertyChangeListener impl ---
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+        DatabaseConnection dc = getSelectedConnection();
+        String oldAbsolutePath = scriptFile.getAbsolutePath();
+        String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
+
+        QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
+        QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
+        QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
     }
 
 }

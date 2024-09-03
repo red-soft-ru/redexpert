@@ -21,15 +21,16 @@
 package org.executequery.gui.prefs;
 
 import org.executequery.*;
-import org.executequery.components.BottomButtonPanel;
 import org.executequery.components.SplitPaneFactory;
 import org.executequery.components.table.PropertiesTreeCellRenderer;
 import org.executequery.event.DefaultUserPreferenceEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.gui.ActionContainer;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.toolbars.ToolBarManager;
 import org.executequery.util.ThreadUtils;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.tree.DynamicTree;
 
 import javax.swing.*;
@@ -72,6 +73,8 @@ public class PropertiesPanel extends JPanel
             "startup.display.lookandfeel",
             "startup.display.language",
             "display.aa.fonts",
+            // -- PropertiesConnections --
+            "treeconnection.row.height",
             // -- PropertiesEditorGeneral --
             "editor.tabs.tospaces",
             "editor.tab.spaces"
@@ -86,6 +89,7 @@ public class PropertiesPanel extends JPanel
     private final ActionContainer parent;
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
+    private static boolean hasChanges;
     private static boolean updateEnvNeed;
     private static Integer lastSelectedRow;
     private static List<Class<?>> classesNeedRestart;
@@ -192,14 +196,21 @@ public class PropertiesPanel extends JPanel
         leftPanel.add(js, BorderLayout.CENTER);
         splitPane.setLeftComponent(leftPanel);
 
+        // --- buttons panel ---
+
+        JButton saveButton = WidgetFactory.createButton("saveButton", Bundles.get("common.ok.button"), e -> save(false));
+        JButton cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"), e -> cancel());
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        GridBagHelper gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally();
+        buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
+        buttonPanel.add(saveButton, gbh.nextCol().setMinWeightX().fillNone().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().get());
+
+        // ---
+
         mainPanel.add(splitPane, BorderLayout.CENTER);
-        mainPanel.add(new BottomButtonPanel(
-                        e -> save(false),
-                        null,
-                        "prefs",
-                        parent.isDialog()
-                ), BorderLayout.SOUTH
-        );
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
         panelMap = new HashMap<>();
@@ -347,8 +358,10 @@ public class PropertiesPanel extends JPanel
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
                     ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
 
-            } else
+            } else if (isHasChanges()) {
                 GUIUtilities.displayInformationMessage(bundledString("setting-applied"));
+                setHasChanges(false);
+            }
 
         } finally {
             GUIUtilities.showNormalCursor();
@@ -358,8 +371,21 @@ public class PropertiesPanel extends JPanel
             parent.finished();
     }
 
+    private void cancel() {
+        setHasChanges(false);
+        parent.finished();
+    }
+
     private UserPreferenceEvent createUserPreferenceEvent() {
         return new DefaultUserPreferenceEvent(this, null, UserPreferenceEvent.ALL);
+    }
+
+    public static void setHasChanges(boolean hasChanges) {
+        PropertiesPanel.hasChanges = hasChanges;
+    }
+
+    public static boolean isHasChanges() {
+        return hasChanges;
     }
 
     private boolean isRestartNeed() {

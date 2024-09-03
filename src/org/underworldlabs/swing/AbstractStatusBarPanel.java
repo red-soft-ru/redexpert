@@ -117,6 +117,28 @@ public abstract class AbstractStatusBarPanel extends JPanel {
 
     }
 
+    protected void setLabelToolTip(int index, final String toolTip) {
+
+        Object object = components.get(index);
+        if (object instanceof JLabel) {
+
+            final JLabel label = (JLabel) object;
+            label.setToolTipText(toolTip);
+        }
+    }
+
+    protected void setLabelIcon(int index, final Icon icon) {
+
+        Object object = components.get(index);
+        if (object instanceof JLabel) {
+
+            final JLabel label = (JLabel) object;
+            label.setIcon(icon);
+
+            scheduleLabelRepaint(label);
+        }
+    }
+
     private void scheduleLabelRepaint(final JLabel label) {
 
         Runnable update = new Runnable() {

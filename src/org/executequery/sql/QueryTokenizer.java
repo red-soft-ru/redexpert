@@ -273,6 +273,10 @@ public class QueryTokenizer {
                     declareBlockTokens.add(new Token(TokenTypes.DECLARE_BLOCK, startIndex, antlrToken.getStopIndex()));
                     state = AS;
                 }
+                if (antlrToken.getType() == SqlLexer.KEYWORD && antlrToken.getText().equalsIgnoreCase("as")) {
+                    declareBlockTokens.add(new Token(TokenTypes.DECLARE_BLOCK, startIndex, antlrToken.getStopIndex()));
+                    state = AS;
+                }
             } else if (state == BEGIN_END) {
                 if (antlrToken.getType() == SqlLexer.KEYWORD) {
                     if (antlrToken.getText().equalsIgnoreCase("begin")) {
@@ -281,7 +285,7 @@ public class QueryTokenizer {
                         beginCount--;
                         if (beginCount <= 0) {
                             beginEndBlockTokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, startIndex, antlrToken.getStopIndex()));
-                            state = NORMAL;
+                            state = AS;
                         }
                     }
                 }

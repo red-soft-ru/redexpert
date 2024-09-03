@@ -21,4 +21,15 @@ public class FBBatchCompletionStateImpl implements IFBBatchCompletionState {
     public String printAllStates() throws SQLException {
         return state.printAllStates();
     }
+
+    @Override
+    public int getState(int i) throws SQLException {
+        return state.getState(i);
+    }
+
+    @Override
+    public String getError(int i) throws SQLException {
+        return state.getError(i);
+    }
+
 }

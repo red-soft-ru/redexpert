@@ -1,8 +1,10 @@
 package org.executequery.gui.editor;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.log.Log;
 import org.executequery.util.SystemResources;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
@@ -32,9 +34,8 @@ public class QueryEditorHistory {
         return historyParameters;
     }
 
-    public static void addEditor(String connectionID, String editor, int number) {
-        addEditor(connectionID, new PathNumber(editor, number));
-
+    public static void addEditor(String connectionID, String editor, int number, int splitDividerLocation) {
+        addEditor(connectionID, new PathNumber(editor, number, splitDividerLocation));
     }
 
     public static void addEditor(String connectionID, PathNumber pathNumber) {
@@ -82,11 +83,11 @@ public class QueryEditorHistory {
         return -1;
     }
 
-
     public static void changedConnectionEditor(String oldConnectionID, String newConnectionID, String editor) {
-        int number = getEditors(oldConnectionID).get(indexOfEditor(editor, getEditors(oldConnectionID))).number;
+        PathNumber pathNumber = getEditors(oldConnectionID).get(indexOfEditor(editor, getEditors(oldConnectionID)));
+
         removeEditor(oldConnectionID, editor);
-        addEditor(newConnectionID, editor, number);
+        addEditor(newConnectionID, editor, pathNumber.number, pathNumber.splitDividerLocation);
     }
 
     public static List<PathNumber> getEditors(DatabaseConnection connection) {
@@ -158,10 +159,10 @@ public class QueryEditorHistory {
                 String[] strings = strLine.split(";");
                 if (!editors.containsKey(strings[0]))
                     editors.put(strings[0], new ArrayList<>());
-                editors.get(strings[0]).add(new PathNumber(strings[1], Integer.parseInt(strings[2])));
+                editors.get(strings[0]).add(new PathNumber(strings[1], Integer.parseInt(strings[2]), Integer.parseInt(strings[3])));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
     }
 
@@ -180,22 +181,27 @@ public class QueryEditorHistory {
     }
 
     private static void saveEditors() {
-        //Log.printStackTrace();
+
+        String charset = SystemProperties.getProperty("user", "system.file.encoding");
+        if (charset == null)
+            charset = Constants.EMPTY;
+
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(historyFile(), false);
-            Writer writer = new OutputStreamWriter(fileOutputStream, SystemProperties.getProperty("user", "system.file.encoding"));
-            //int g = 0;
+            Writer writer = new OutputStreamWriter(fileOutputStream, charset);
+
             for (String key : editors().keySet()) {
-                List<PathNumber> list = editors().get(key);
-                for (int i = 0; i < list.size(); i++) {
-                    //Log.info(g+";"+i+";"+key+";"+list.get(i).path+";"+list.get(i).number);
-                    writer.append(key + ";" + list.get(i).path + ";" + list.get(i).number + "\n");
+                for (PathNumber pathNumber : editors().get(key)) {
+                    writer.append(key).append(";")
+                            .append(pathNumber.path).append(";")
+                            .append(String.valueOf(pathNumber.number)).append(";")
+                            .append(String.valueOf(pathNumber.splitDividerLocation)).append("\n");
                 }
-                //g++;
             }
             writer.flush();
+
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.error(e.getMessage(), e);
         }
     }
 
@@ -271,7 +277,7 @@ public class QueryEditorHistory {
                 File file = new File(copy.get(i).path);
                 if (file.exists()) {
                     String contents = FileUtils.loadFile(file, encoding);
-                    QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path);
+                    QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path, copy.get(i).splitDividerLocation);
                     if (connection != null)
                         queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
@@ -280,7 +286,7 @@ public class QueryEditorHistory {
                             null,
                             true);
                 } else {
-                    QueryEditor queryEditor = new QueryEditor("", copy.get(i).path);
+                    QueryEditor queryEditor = new QueryEditor("", copy.get(i).path, copy.get(i).splitDividerLocation);
                     if (connection != null)
                         queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
@@ -296,12 +302,16 @@ public class QueryEditorHistory {
     }
 
     public static class PathNumber {
+        private final int splitDividerLocation;
         public String path;
         public int number;
 
-        public PathNumber(String path, int number) {
+        public PathNumber(String path, int number, int splitDividerLocation) {
             this.path = path;
             this.number = number;
+            this.splitDividerLocation = splitDividerLocation;
         }
-    }
+
+    } // PathNumber class
+
 }

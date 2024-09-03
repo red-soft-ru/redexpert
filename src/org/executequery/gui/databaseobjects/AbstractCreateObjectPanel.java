@@ -8,7 +8,6 @@ import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
-import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
@@ -24,7 +23,7 @@ import org.executequery.gui.text.SimpleCommentPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.UpperFilter;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -39,7 +38,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.print.Printable;
-import java.util.Vector;
 
 public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPanel {
 
@@ -58,7 +56,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     protected JButton submitButton;
     protected JButton cancelButton;
     protected JTextField nameField;
-    protected JComboBox<?> connectionsCombo;
+    protected ConnectionsComboBox connectionsCombo;
     protected SimpleCommentPanel simpleCommentPanel;
 
     protected boolean edited;
@@ -125,13 +123,12 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
         // --- connections comboBox ---
 
-        Vector<DatabaseConnection> connections = ConnectionManager.getActiveConnections();
-        connectionsCombo = WidgetFactory.createComboBox("connectionsCombo", new DynamicComboBoxModel(connections));
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", true);
         connectionsCombo.addItemListener(this::connectionChanged);
         connectionsCombo.setEnabled(parent != null);
 
         if (connection == null)
-            connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+            connection = getSelectedConnection();
         else
             connectionsCombo.setSelectedItem(connection);
 
@@ -264,7 +261,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                 return new CreateGeneratorPanel(dc, null, (DefaultDatabaseSequence) databaseObject);
 
             case NamedObject.PACKAGE:
-                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject);
+                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject, false);
+
+            case NamedObject.SYSTEM_PACKAGE:
+                return new CreatePackagePanel(dc, null, (DefaultDatabasePackage) databaseObject, true);
 
             case NamedObject.EXCEPTION:
                 return new CreateExceptionPanel(dc, null, (DefaultDatabaseException) databaseObject);
@@ -297,7 +297,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
         if (e.getStateChange() == ItemEvent.DESELECTED)
             return;
 
-        connection = (DatabaseConnection) connectionsCombo.getSelectedItem();
+        connection = getSelectedConnection();
         sender.setDatabaseConnection(connection);
     }
 
@@ -411,6 +411,17 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     protected static String getEditTitle(int type) {
         return Bundles.get(BrowserTreePopupMenu.class, "edit", Bundles.get(BrowserTreePopupMenu.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
+    }
+
+    protected void hideButtons() {
+        editButton.setVisible(false);
+        actionButton.setVisible(false);
+        submitButton.setVisible(false);
+        cancelButton.setVisible(false);
+    }
+
+    protected DatabaseConnection getSelectedConnection() {
+        return connectionsCombo.getSelectedConnection();
     }
 
     @Override

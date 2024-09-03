@@ -20,6 +20,7 @@ check_variable WORKSPACE
 check_variable DISTRO
 check_variable PYTHON
 check_variable DBMS
+check_variable BUILD
 
 echo "Downloading tests"
 git clone -q http://git.red-soft.biz/red-database/re-tests-robot
@@ -28,13 +29,26 @@ echo "Installing components"
 $PYTHON -m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git
 $PYTHON -m pip install robotframework
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/RedDatabase/lib
+
 export PYTHONPATH=$PYTHONPATH:/root/remoteswinglibrary-2.3.3.jar
 export DISPLAY=:0
 su reduser -c 'xhost +'
 
+echo "Set .xml"
+BUILD_PATH="/root/.redexpert/${BUILD}"
+mkdir "${BUILD_PATH}"
+cp "./re-tests-robot/files/xml/savedconnections.xml" "${BUILD_PATH}"
+
 echo "Start testing"
 cd re-tests-robot
 $PYTHON -m robot -x results.xml --nostatusrc ./tests
+
+if [ $COVERAGE == true ]; then
+    echo "Start generate coverage results"
+    mkdir "${WORKSPACE}/coverage-results/"
+    java -jar ./lib/jacococli.jar report ./results/jacoco.exec --classfiles "${DIST}/classes" --sourcefiles ../src --html "${WORKSPACE}/coverage-results/"
+fi
 
 echo "Copy test results"
 mkdir "${WORKSPACE}/test-results/"

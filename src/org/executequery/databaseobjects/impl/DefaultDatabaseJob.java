@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -17,14 +18,15 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
 
     public static final int PSQL_TYPE = 0;
     public static final int BASH_TYPE = 1;
+
     private String id;
     private String source;
-    private boolean active;
-    private int jobType;
+    private Boolean active;
+    private Integer jobType;
+    private String database;
     private String cronSchedule;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private String database;
 
     public DefaultDatabaseJob(DatabaseMetaTag metaTagParent, String name) {
         super(metaTagParent, name);
@@ -62,7 +64,7 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table jobs = getMainTable();
         sb.appendTable(jobs);
-
+        sb.appendField(Field.createField(jobs, getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendFields(jobs, JOB_ID, SOURCE, ACTIVE, JOB_TYPE, SCHEDULE, START_DATE, END_DATE, DATABASE, DESCRIPTION);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;
@@ -155,6 +157,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public String getId() {
+        if (id == null || isMarkedForReload())
+            getObjectInfo();
         return id;
     }
 
@@ -164,9 +168,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
 
     @Override
     public String getSource() {
-        if (source == null || isMarkedForReload()) {
+        if (source == null || isMarkedForReload())
             getObjectInfo();
-        }
         return source;
     }
 
@@ -176,6 +179,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public boolean isActive() {
+        if (active == null || isMarkedForReload())
+            getObjectInfo();
         return active;
     }
 
@@ -184,6 +189,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public int getJobType() {
+        if (jobType == null || isMarkedForReload())
+            getObjectInfo();
         return jobType;
     }
 
@@ -192,9 +199,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public String getCronSchedule() {
-        if (cronSchedule == null || isMarkedForReload()) {
+        if (cronSchedule == null || isMarkedForReload())
             getObjectInfo();
-        }
         return cronSchedule;
     }
 
@@ -203,6 +209,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public LocalDateTime getStartDate() {
+        if (startDate == null || isMarkedForReload())
+            getObjectInfo();
         return startDate;
     }
 
@@ -211,6 +219,8 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public LocalDateTime getEndDate() {
+        if (endDate == null || isMarkedForReload())
+            getObjectInfo();
         return endDate;
     }
 
@@ -219,13 +229,13 @@ public class DefaultDatabaseJob extends AbstractDatabaseObject {
     }
 
     public String getDatabase() {
-        if (database == null || isMarkedForReload()) {
+        if (database == null || isMarkedForReload())
             getObjectInfo();
-        }
         return database;
     }
 
     public void setDatabase(String database) {
         this.database = database;
     }
+
 }

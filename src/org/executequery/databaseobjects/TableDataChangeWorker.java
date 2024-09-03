@@ -67,6 +67,8 @@ public class TableDataChangeWorker {
             if (row.get(0).isDeleted()) {
                 if (table != null && table.hasPrimaryKey())
                     result += executeDeletingWithPK(connection, table, row);
+                else if (table != null && table.getMonField() != null)
+                    result += executeDeletingFromMonTable(connection, table, row);
                 else
                     result += executedDeleting(connection, tableObject, row);
 
@@ -75,6 +77,9 @@ public class TableDataChangeWorker {
 
             } else if (table != null && table.hasPrimaryKey()) {
                 result += executeWithPK(connection, table, row);
+
+            } else if (table != null && table.getMonField() != null) {
+                result += executeInMonTable(connection, table, row);
 
             } else
                 result += executeChange(connection, tableObject, row);
@@ -172,6 +177,70 @@ public class TableDataChangeWorker {
 
     }
 
+    private int executeInMonTable(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isChanged()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+
+            int n = changes.size();
+            String sql = table.prepareStatementInMonTable(columns);
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+            for (int i = 0; i < n; i++) {
+
+                RecordDataItem recordDataItem = changes.get(i);
+                if (!recordDataItem.isNewValueNull()) {
+
+                    statement.setObject((i + 1), recordDataItem.getNewValue(), recordDataItem.getDataType());
+
+                } else {
+
+                    statement.setNull((i + 1), Types.NULL);
+                }
+
+            }
+            n++;
+            statement.setObject(n, valueForKey(table.getMonField()[1], values));
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+                statement = null;
+            }
+
+        }
+
+    }
+
     private int executeDeletingWithPK(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
 
         List<String> columns = new ArrayList<String>();
@@ -206,6 +275,56 @@ public class TableDataChangeWorker {
                 n++;
                 statement.setObject(n, valueForKey(primaryKey, values));
             }
+
+            return statement.executeUpdate();
+
+        } catch (Exception e) {
+
+            rollback();
+            throw handleException(e);
+
+        } finally {
+
+            if (statement != null) {
+
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                }
+                statement = null;
+            }
+
+        }
+
+    }
+
+    private int executeDeletingFromMonTable(Connection connection, DatabaseTable table, List<RecordDataItem> values) {
+
+        List<String> columns = new ArrayList<String>();
+        List<RecordDataItem> changes = new ArrayList<RecordDataItem>();
+        for (RecordDataItem item : values) {
+
+            if (item.isDeleted()) {
+
+                changes.add(item);
+                columns.add(item.getName());
+            }
+
+        }
+
+        if (changes.isEmpty()) {
+
+            return 0;
+        }
+
+        try {
+            String sql = table.prepareStatementDeletingFromMonTable();
+
+            Log.info("Executing data change using statement - [ " + sql + " ]");
+
+            statement = connection.prepareStatement(sql);
+            statement.setObject(1, valueForKey(table.getMonField()[1], values));
+
 
             return statement.executeUpdate();
 

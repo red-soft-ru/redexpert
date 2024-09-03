@@ -22,7 +22,6 @@ package org.executequery.gui.resultset;
 
 import org.executequery.Constants;
 import org.executequery.databaseobjects.Types;
-import org.executequery.localization.Bundles;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -448,6 +447,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
             setBackground(selectionBackground);
 
         } else if (row == table.getSelectedRow()) {
+            setForeground(tableForeground);
             setBackground(focusRowBackground);
 
         } else {

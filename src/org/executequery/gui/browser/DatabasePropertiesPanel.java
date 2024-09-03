@@ -38,8 +38,6 @@ import java.util.Map;
  * @author Takis Diakoumis
  */
 public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
-
-    private PropertyWrapperModel model;
     private JTable table;
 
     public DatabasePropertiesPanel() {
@@ -48,10 +46,7 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
     }
 
     private void init() {
-
-        model = new PropertyWrapperModel();
-
-        table = new SortableColumnsTable(model);
+        table = new SortableColumnsTable();
         setTableProperties(table);
 
         add(new JScrollPane(table), new GridBagHelper().fillBoth().spanX().spanY().get());
@@ -62,7 +57,7 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
     }
 
     public void setDatabaseProperties(Map<Object, Object> properties, boolean sort) {
-        model.setValues(properties, sort);
+        table.setModel(new PropertyWrapperModel(properties, sort));
     }
 
     public JTable getTable() {

@@ -1363,6 +1363,10 @@ public final class GUIUtilities {
         return GUIUtils.displayYesNoDialog(getInFocusDialogOrWindow(), message, title);
     }
 
+    public static int displayYesNoCancelDialog(Object message, String title) {
+        return GUIUtils.displayYesNoCancelDialog(getInFocusDialogOrWindow(), message, title);
+    }
+
     public static int displayConfirmCancelDialog(Object message) {
         return GUIUtils.displayConfirmCancelDialog(getInFocusDialogOrWindow(), message);
     }

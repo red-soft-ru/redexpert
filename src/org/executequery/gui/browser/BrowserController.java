@@ -26,8 +26,8 @@ import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.*;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.AbstractCreateObjectPanel;
@@ -170,11 +170,21 @@ public class BrowserController {
      * This void has been moved in BrowserTreePopupMenuActionListener
      */
     public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection) {
+        valueChanged(node, connection, true);
+    }
+
+    /**
+     * This void has been moved in BrowserTreePopupMenuActionListener
+     */
+    public void valueChanged(DatabaseObjectNode node, DatabaseConnection connection, boolean updatePropertiesPanel) {
+
+        if (!isNodeObjectEditable(node))
+            return;
 
         treePanel.setInProcess(true);
         try {
 
-            FormObjectView panel = buildPanelView(node);
+            FormObjectView panel = buildPanelView(node, updatePropertiesPanel);
             if (panel == null)
                 return;
 
@@ -182,9 +192,6 @@ public class BrowserController {
             String type = "";
 
             int nodeType = node.getType();
-            if (NamedObject.isTableFolder(nodeType))
-                return;
-
             if (nodeType < NamedObject.META_TYPES.length)
                 type = NamedObject.META_TYPES[node.getType()];
 
@@ -225,7 +232,7 @@ public class BrowserController {
      * @param node the selected node
      */
     @SuppressWarnings("DataFlowIssue")
-    private FormObjectView buildPanelView(DatabaseObjectNode node) {
+    private FormObjectView buildPanelView(DatabaseObjectNode node, boolean updatePropertiesPanel) {
         try {
 
             NamedObject databaseObject = node.getDatabaseObject();
@@ -247,7 +254,7 @@ public class BrowserController {
                         viewPanel = new BrowserViewPanel(this);
 
                     HostPanel hostPanel = hostPanel();
-                    hostPanel.setValues((DatabaseHost) databaseObject);
+                    hostPanel.setValues((DatabaseHost) databaseObject, updatePropertiesPanel);
 
                     return hostPanel;
                 }
@@ -285,6 +292,7 @@ public class BrowserController {
                 case NamedObject.ROLE:
                 case NamedObject.SYSTEM_DOMAIN:
                 case NamedObject.SYSTEM_ROLE:
+                case NamedObject.SYSTEM_PACKAGE:
                 case NamedObject.SYSTEM_FUNCTION: {
 
                     AbstractCreateObjectPanel objectPanel = AbstractCreateObjectPanel
@@ -313,20 +321,6 @@ public class BrowserController {
                     return triggerPanel;
                 }
 
-                case NamedObject.SYSTEM_PACKAGE: {
-
-                    BrowserPackagePanel packagePanel;
-                    if (!viewPanel.containsPanel(BrowserPackagePanel.NAME)) {
-                        packagePanel = new BrowserPackagePanel(this);
-                        viewPanel.addToLayout(packagePanel);
-
-                    } else
-                        packagePanel = (BrowserPackagePanel) viewPanel.getFormObjectView(BrowserPackagePanel.NAME);
-
-                    packagePanel.setValues((DefaultDatabasePackage) databaseObject);
-                    return packagePanel;
-                }
-
                 case NamedObject.SYSTEM_SEQUENCE: {
 
                     BrowserSequencePanel sequencePanel;
@@ -339,6 +333,20 @@ public class BrowserController {
 
                     sequencePanel.setValues((DefaultDatabaseSequence) databaseObject);
                     return sequencePanel;
+                }
+
+                case NamedObject.SYSTEM_INDEX: {
+                    try {
+
+                        GUIUtilities.showWaitCursor();
+                        BaseDialog dialog = new BaseDialog(CreateIndexPanel.ALTER_TITLE, true);
+                        CreateIndexPanel createObjectPanel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) databaseObject, true);
+                        showDialogCreateObject(createObjectPanel, dialog);
+
+                    } finally {
+                        GUIUtilities.showNormalCursor();
+                    }
+                    return null;
                 }
 
                 case NamedObject.TABLE_INDEX:
@@ -356,22 +364,9 @@ public class BrowserController {
                     return null;
                 }
 
-                case NamedObject.SYSTEM_INDEX: {
-
-                    BrowserIndexPanel browserIndexPanel;
-                    if (!viewPanel.containsPanel(BrowserIndexPanel.NAME)) {
-                        browserIndexPanel = new BrowserIndexPanel(this);
-                        viewPanel.addToLayout(browserIndexPanel);
-
-                    } else
-                        browserIndexPanel = (BrowserIndexPanel) viewPanel.getFormObjectView(BrowserIndexPanel.NAME);
-
-                    browserIndexPanel.setValues((DefaultDatabaseIndex) databaseObject);
-                    return browserIndexPanel;
-                }
-
                 case NamedObject.TABLE:
-                case NamedObject.GLOBAL_TEMPORARY: {
+                case NamedObject.GLOBAL_TEMPORARY:
+                case NamedObject.SYSTEM_TABLE: {
                     BrowserTableEditingPanel editingPanel = viewPanel.getEditingPanel();
                     editingPanel.setValues((DatabaseTable) databaseObject);
                     return editingPanel;
@@ -461,6 +456,20 @@ public class BrowserController {
             hostPanel = (HostPanel) viewPanel.getFormObjectView(HostPanel.NAME);
 
         return hostPanel;
+    }
+
+    private static boolean isNodeObjectEditable(DatabaseObjectNode node) {
+
+        int nodeType = node.getType();
+        if (NamedObject.isTableFolder(nodeType))
+            return false;
+
+        if (nodeType == NamedObject.TABLE_COLUMN) {
+            int parentType = ((DatabaseObjectNode) node.getParent()).getType();
+            return parentType != NamedObject.VIEW;
+        }
+
+        return true;
     }
 
     /**

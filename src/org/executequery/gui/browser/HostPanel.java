@@ -102,7 +102,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         return connectionPanel.tabViewDeselected();
     }
 
-    public void setValues(DatabaseHost host) {
+    public void setValues(DatabaseHost host, boolean updatePropertiesPanel) {
 
         this.host = host;
         connectionPanel.setConnectionValue(host);
@@ -110,7 +110,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
         DatabaseConnection databaseConnection = host.getDatabaseConnection();
         if (databaseConnection.isConnected())
             changePanelData();
-        else
+        else if (updatePropertiesPanel)
             updateDatabaseProperties(true);
     }
 

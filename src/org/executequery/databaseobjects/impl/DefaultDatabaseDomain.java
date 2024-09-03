@@ -73,8 +73,9 @@ public class DefaultDatabaseDomain extends AbstractDatabaseObject {
         Table collations = Table.createTable("RDB$COLLATIONS", "CO");
         Table dimensions = Table.createTable("RDB$FIELD_DIMENSIONS", "FD");
 
+        sb.appendField(Field.createField(fields, getFieldName()).setCast("VARCHAR(1024)"));
         sb.appendFields(fields,
-                FIELD_NAME, TYPE, SUB_TYPE, FIELD_PRECISION, SCALE, FIELD_LENGTH, NULL_FLAG,
+                TYPE, SUB_TYPE, FIELD_PRECISION, SCALE, FIELD_LENGTH, NULL_FLAG,
                 COMPUTED_BY, VALIDATION_SOURCE, DEFAULT_SOURCE, COMPUTED_SOURCE, SEGMENT_LENGTH, DESCRIPTION
         );
         sb.appendField(Field.createField(fields, "CHARACTER_LENGTH").setAlias(CHAR_LENGTH));

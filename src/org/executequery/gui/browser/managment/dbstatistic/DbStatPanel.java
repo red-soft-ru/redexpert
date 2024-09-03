@@ -26,13 +26,19 @@ public class DbStatPanel extends AbstractPanel {
 
     @Override
     protected void initComponents() {
+
         textPanel = new SimpleTextArea();
+        textPanel.getTextAreaComponent().setEditable(false);
+
         tablesPanel = new StatisticTablePanel();
         tablesPanel.initModel(StatisticTablePanel.TABLE);
+
         indexesPanel = new StatisticTablePanel();
         indexesPanel.initModel(StatisticTablePanel.INDEX);
+
         tablespacesPanel = new StatisticTablePanel();
         tablespacesPanel.initModel(StatisticTablePanel.TABLESPACE);
+
         tabPane = new JTabbedPane();
         tabPane.add(AbstractServiceManagerPanel.bundleString("tabText"), textPanel);
         tabPane.add(AbstractServiceManagerPanel.bundleString("tables"), tablesPanel);

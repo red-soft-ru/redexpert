@@ -3,6 +3,7 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.DatabaseProcedure;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -56,8 +57,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
         if (isMarkedForReload())
             getObjectInfo();
 
-        return "CREATE OR ALTER PACKAGE  " + getName() +
-                "\nAS\n" + this.headerSource;
+        return this.headerSource;
     }
 
     public void setHeaderSource(String headerSource) {
@@ -65,9 +65,11 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     }
 
     public String getBodySource() {
+        return this.bodySource;
+    }
 
-        return "RECREATE PACKAGE BODY " + getName() +
-                "\nAS\n" + this.bodySource;
+    public String getOriginalBodySource() {
+        return this.bodySource;
     }
 
     public void setBodySource(String bodySource) {
@@ -129,7 +131,7 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
     protected final static String PACKAGE_HEADER_SOURCE = "PACKAGE_HEADER_SOURCE";
     protected final static String PACKAGE_BODY_SOURCE = "PACKAGE_BODY_SOURCE";
@@ -152,7 +154,8 @@ public class DefaultDatabasePackage extends DefaultDatabaseExecutable
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table packages = getMainTable();
-        sb.appendFields(packages, getFieldName(), PACKAGE_HEADER_SOURCE, PACKAGE_BODY_SOURCE, VALID_BODY_FLAG,
+        sb.appendField(Field.createField(packages, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(packages, PACKAGE_HEADER_SOURCE, PACKAGE_BODY_SOURCE, VALID_BODY_FLAG,
                 SECURITY_CLASS, OWNER_NAME, SYSTEM_FLAG, DESCRIPTION);
         sb.appendField(buildSqlSecurityField(packages));
         sb.appendTable(packages);

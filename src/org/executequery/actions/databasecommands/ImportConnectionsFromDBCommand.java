@@ -10,12 +10,14 @@ import java.awt.event.ActionEvent;
 
 public class ImportConnectionsFromDBCommand extends OpenFrameCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
 
+        if (!isConnected())
+            return;
+
+        GUIUtilities.showWaitCursor();
         try {
-
-            GUIUtilities.showWaitCursor();
-
             BaseDialog dialog = new BaseDialog(ImportConnectionsDBPanel.TITLE, true);
             ImportConnectionsDBPanel panel = new ImportConnectionsDBPanel(dialog);
 
@@ -23,10 +25,8 @@ public class ImportConnectionsFromDBCommand extends OpenFrameCommand implements 
             dialog.display();
 
         } finally {
-
             GUIUtilities.showNormalCursor();
         }
-
     }
 
 }

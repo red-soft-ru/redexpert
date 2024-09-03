@@ -24,6 +24,8 @@ import static org.executequery.gui.browser.ColumnConstraint.RULES;
 import static org.executequery.gui.table.CreateTableSQLSyntax.*;
 
 public final class SQLUtils {
+    public static final String THERE_ARE_NO_CHANGES = "/* there are no changes */\n";
+    public static final String ALTER_CONSTRAINTS = "/* ALTER CONSTRAINTS */\n";
 
     public static String generateCreateTable(
             String name, List<ColumnData> columnDataList, List<ColumnConstraint> columnConstraintList,
@@ -360,6 +362,83 @@ public final class SQLUtils {
         return sb.toString();
     }
 
+    public static String generateDownCreateProcedureScript(String name, String comment, Vector<ColumnData> inputParameters,
+                                                           Vector<ColumnData> outputParameters, boolean setComment, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n^\n");
+
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
+            sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
+            sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
+        }
+        return sb.toString();
+    }
+
+    public static String generateDownCreateFunctionScript(String name, String comment, Vector<ColumnData> inputArguments, boolean setComment, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n^\n");
+
+        if (setComment) {
+            sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
+            sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
+        }
+
+
+        return sb.toString();
+    }
+
+    public static String generateUpperCreateProcedureScript(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters,
+            Vector<ColumnData> outputParameters, Vector<ColumnData> variables, String sqlSecurity, String authid, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+        String body = null;
+        if (variables != null)
+            body = formattedParameters(variables, true);
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[PROCEDURE], authid, dc));
+
+        String output = formattedParameters(outputParameters, false);
+        if (!MiscUtils.isNull(output.trim()))
+            sb.append("\nRETURNS (\n").append(output).append(")");
+
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        sb.append("\nAS\n");
+        if (body != null && !body.isEmpty())
+            sb.append(body);
+
+        return sb.toString();
+    }
+
+    public static String generateUpperCreateFunctionScript(
+            String name, String entryPoint, String engine, Vector<ColumnData> inputParameters, Vector<ColumnData> variables, String sqlSecurity, ColumnData returnType, boolean deterministic, DatabaseConnection dc) {
+
+        StringBuilder sb = new StringBuilder();
+        String body = null;
+        if (variables != null)
+            body = formattedParameters(variables, true);
+
+        sb.append(generateCreateProcedureOrFunctionHeader(name, inputParameters, NamedObject.META_TYPES[FUNCTION], null, dc));
+        sb.append("\nRETURNS ").append(formattedReturnType(returnType, deterministic));
+
+        if (!MiscUtils.isNull(entryPoint)) {
+            sb.append("\nEXTERNAL NAME '").append(entryPoint).append("'");
+            sb.append(" ENGINE ").append(engine);
+
+        } else if (!MiscUtils.isNull(sqlSecurity))
+            sb.append("\n" + SQL_SECURITY).append(sqlSecurity);
+        sb.append("\nAS\n");
+        if (body != null && !body.isEmpty())
+            sb.append(body);
+
+        return sb.toString();
+    }
+
     public static String generateCommentForColumns(
             String relationName, List<ColumnData> cols, String metaTag, String delimiter) {
 
@@ -673,7 +752,10 @@ public final class SQLUtils {
         for (int i = 0, k = tableVector.size(); i < k; i++) {
 
             ColumnData cd = tableVector.elementAt(i);
-
+            if (cd.getTypeName() == "PROCEDURE" || cd.getTypeName() == "FUNCTION") {
+                sb.append(cd.getSelectOperator());
+                continue;
+            }
             if (!MiscUtils.isNull(cd.getColumnName())) {
 
                 if (variable)
@@ -784,6 +866,7 @@ public final class SQLUtils {
         cd.setColumnTable(parameter.getFieldName());
         cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
         cd.setRemarkAsSingleComment(parameter.isDescriptionAsSingleComment());
+        cd.setColumnPosition(parameter.getPosition());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
@@ -794,26 +877,45 @@ public final class SQLUtils {
     }
 
     public static String generateNameForDBObject(String type, DatabaseConnection databaseConnection) {
-        String name = "NEW_" + type + "_";
-        int int_number = 0;
-        String number;
-        List<NamedObject> keys = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getDatabaseObjectsForMetaTag(type);
-        if (keys != null)
-            for (NamedObject key : keys) {
-                if (!MiscUtils.isNull(key.getName()))
-                    if (key.getName().contains(name)) {
-                        number = key.getName().replace(name, "");
-                        try {
-                            if (Integer.parseInt(number) > int_number)
-                                int_number = Integer.parseInt(number);
-                        } catch (NumberFormatException e) {
-                            Log.debug(e.getMessage());
-                        }
-                    }
 
+        String newObjectName = "NEW_" + type + "_";
+        String stringNumber;
+        int newNumber = 0;
+
+        DefaultDatabaseHost databaseHost = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection);
+        List<NamedObject> databaseObjects = databaseHost.getDatabaseObjectsForMetaTag(type);
+        if (Objects.equals(type, META_TYPES[TRIGGER])) {
+            List<NamedObject> dbo = databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DATABASE_TRIGGER]);
+            if (dbo != null)
+                databaseObjects.addAll(dbo);
+            dbo = databaseHost.getDatabaseObjectsForMetaTag(META_TYPES[DDL_TRIGGER]);
+            if (dbo != null)
+                databaseObjects.addAll(dbo);
+        }
+
+        if (databaseObjects == null)
+            return newObjectName + "1";
+
+        for (NamedObject object : databaseObjects) {
+
+            if (MiscUtils.isNull(object.getName()))
+                continue;
+
+            if (object.getName().contains(newObjectName)) {
+                stringNumber = object.getName().replace(newObjectName, "");
+
+                try {
+                    if (Integer.parseInt(stringNumber) > newNumber)
+                        newNumber = Integer.parseInt(stringNumber);
+
+                } catch (NumberFormatException e) {
+                    Log.debug(e.getMessage());
+                }
             }
-        number = String.valueOf(int_number + 1);
-        return name + number;
+        }
+
+        stringNumber = String.valueOf(newNumber + 1);
+        return newObjectName + stringNumber;
     }
 
     private static String generateNameForConstraint(String type, List<ColumnConstraint> keys) {
@@ -1021,7 +1123,7 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
     }
 
     public static String generateAlterDomain(ColumnData columnData, String domainName) {
@@ -1064,7 +1166,8 @@ public final class SQLUtils {
                 sb.append("NULL");
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
+
     }
 
 
@@ -1074,6 +1177,7 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         StringBuilder columnComments = new StringBuilder();
+        boolean alterConstraints = false;
 
         if (temporary)
             sb.append("ALTER GLOBAL TEMPORARY TABLE ");
@@ -1151,18 +1255,49 @@ public final class SQLUtils {
             }
         }
 
-        if (!Arrays.equals(constraints, new boolean[]{false, false, false, false})) {
+        if (!Arrays.equals(constraints, new boolean[]{true, true, true, true})) {
 
             List<org.executequery.databaseobjects.impl.ColumnConstraint> thisConstraints = thisTable.getConstraints();
             List<org.executequery.databaseobjects.impl.ColumnConstraint> comparingConstraints = comparingTable.getConstraints();
+            //check for ALTER CONSTRAINT
+            for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
+
+                if ((thisConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (thisConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (thisConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (thisConstraint.getType() == CHECK_KEY && constraints[3]))
+                    continue;
+
+
+                for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints)
+                    if (Objects.equals(thisConstraint.getName(), comparingConstraint.getName())) {
+                        boolean[] flags = new boolean[8];
+                        flags[0] = thisConstraint.getType() != comparingConstraint.getType();
+                        flags[1] = !Objects.equals(thisConstraint.getColumnName(), comparingConstraint.getColumnName());
+                        flags[2] = !Objects.equals(thisConstraint.getCheck(), comparingConstraint.getCheck());
+                        flags[3] = !Objects.equals(thisConstraint.getReferencedTable(), comparingConstraint.getReferencedTable());
+                        flags[4] = !Objects.equals(thisConstraint.getColumnDisplayList(), comparingConstraint.getColumnDisplayList());
+                        flags[5] = !Objects.equals(thisConstraint.getReferenceColumnDisplayList(), comparingConstraint.getReferenceColumnDisplayList());
+                        flags[6] = !Objects.equals(thisConstraint.getUpdateRule(), comparingConstraint.getUpdateRule());
+                        flags[7] = !Objects.equals(thisConstraint.getDeleteRule(), comparingConstraint.getDeleteRule());
+                        boolean notEquals = false;
+                        for (boolean flag : flags) {
+                            notEquals = notEquals || flag;
+                        }
+                        if (notEquals) {
+                            alterConstraints = true;
+                            break;
+                        }
+                    }
+            }
 
             //check for DROP CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint thisConstraint : thisConstraints) {
 
-                if ((thisConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
-                        (thisConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
-                        (thisConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
-                        (thisConstraint.getType() == CHECK_KEY && !constraints[3]))
+                if ((thisConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (thisConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (thisConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (thisConstraint.getType() == CHECK_KEY && constraints[3]))
                     continue;
 
                 int dropCheck = 0;
@@ -1178,10 +1313,10 @@ public final class SQLUtils {
             //check for ADD CONSTRAINT
             for (org.executequery.databaseobjects.impl.ColumnConstraint comparingConstraint : comparingConstraints) {
 
-                if ((comparingConstraint.getType() == PRIMARY_KEY && !constraints[0]) ||
-                        (comparingConstraint.getType() == FOREIGN_KEY && !constraints[1]) ||
-                        (comparingConstraint.getType() == UNIQUE_KEY && !constraints[2]) ||
-                        (comparingConstraint.getType() == CHECK_KEY && !constraints[3]))
+                if ((comparingConstraint.getType() == PRIMARY_KEY && constraints[0]) ||
+                        (comparingConstraint.getType() == FOREIGN_KEY && constraints[1]) ||
+                        (comparingConstraint.getType() == UNIQUE_KEY && constraints[2]) ||
+                        (comparingConstraint.getType() == CHECK_KEY && constraints[3]))
                     continue;
 
                 int addCheck = 0;
@@ -1220,7 +1355,10 @@ public final class SQLUtils {
         }
 
         if (sb.toString().isEmpty())
-            return "/* there are no changes */\n";
+            if (alterConstraints)
+                return ALTER_CONSTRAINTS;
+            else
+                return THERE_ARE_NO_CHANGES;
         return sb.toString();
     }
 
@@ -1244,7 +1382,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().trim().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().trim().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterSequence(
@@ -1262,7 +1400,7 @@ public final class SQLUtils {
         }
 
         if (noChangesCheckString.contentEquals(sb))
-            return "/* there are no changes */\n";
+            return THERE_ARE_NO_CHANGES;
         return sb.append(";\n").toString();
     }
 
@@ -1296,7 +1434,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterIndex(
@@ -1343,7 +1481,7 @@ public final class SQLUtils {
             }
         }
 
-        return sb.toString().isEmpty() ? "/* there are no changes */\n" : sb.toString();
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
@@ -1399,30 +1537,66 @@ public final class SQLUtils {
             sb.append(generateComment(thisUser.getName(), "USER", compareUser.getRemarks(), thisUser.getPlugin(), ";", false, thisUser.getHost().getDatabaseConnection()));
         }
 
-        return !sb.toString().isEmpty() ? sb.toString() : "/* there are no changes */\n";
+        return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
     }
 
 
-    public static String generateAlterTablespace(
-            DefaultDatabaseTablespace thisTablespace, DefaultDatabaseTablespace comparingTablespace) {
+    public static String generateAlterTablespace(DefaultDatabaseTablespace thisTablespace,
+                                                 DefaultDatabaseTablespace comparingTablespace,
+                                                 boolean commentsNeed) {
+
+        StringBuilder sb = new StringBuilder();
 
         String comparingFileName = comparingTablespace.getFileName();
+        if (!Objects.equals(thisTablespace.getFileName(), comparingFileName)) {
+            sb.append(generateAlterTablespace(
+                    thisTablespace.getName(),
+                    comparingFileName,
+                    null,
+                    false,
+                    thisTablespace.getHost().getDatabaseConnection()
+            ));
+        }
 
-        return !Objects.equals(thisTablespace.getFileName(), comparingFileName) ?
-                "/* there are no changes */\n" :
-                generateAlterTablespace(thisTablespace.getName(), comparingFileName, thisTablespace.getHost().getDatabaseConnection());
+        String comparingComment = comparingTablespace.getRemarks();
+        if (commentsNeed && !Objects.equals(thisTablespace.getRemarks(), comparingComment)) {
+            sb.append(generateComment(
+                    thisTablespace.getName(),
+                    "TABLESPACE",
+                    comparingComment,
+                    ";",
+                    false,
+                    thisTablespace.getHost().getDatabaseConnection()
+            ));
+        }
+
+        return sb.toString().isEmpty() ? THERE_ARE_NO_CHANGES : sb.toString();
     }
 
-    public static String generateAlterTablespace(String name, String file, DatabaseConnection dc) {
-        String sb = "ALTER TABLESPACE " + format(name, dc) +
-                " SET FILE '" + file + "';\n";
-        return sb;
+    public static String generateAlterTablespace(String name, String file, String comment, boolean commentNeed, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        String formattedName = format(name, dc);
+
+        sb.append("ALTER TABLESPACE ").append(formattedName);
+        sb.append(" SET FILE '").append(file).append("';\n");
+
+        if (commentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(formattedName, "TABLESPACE", comment, ";"));
+
+        return sb.toString();
     }
 
-    public static String generateCreateTablespace(String name, String file, DatabaseConnection dc) {
-        String sb = "CREATE TABLESPACE " + format(name, dc) +
-                " FILE '" + file + "';\n";
-        return sb;
+    public static String generateCreateTablespace(String name, String file, String comment, boolean commentNeed, DatabaseConnection dc) {
+        StringBuilder sb = new StringBuilder();
+        String formattedName = format(name, dc);
+
+        sb.append("CREATE TABLESPACE ").append(formattedName);
+        sb.append(" FILE '").append(file).append("';\n");
+
+        if (commentNeed && !MiscUtils.isNull(comment))
+            sb.append(generateComment(formattedName, "TABLESPACE", comment, ";"));
+
+        return sb.toString();
     }
 
     public static String generateCreateSequence(
@@ -1557,8 +1731,9 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         sb.append("SET TERM ^ ;");
-        sb.append("\n").append(headerSource);
-        sb.append("^\n").append(bodySource);
+        sb.append("\n").append("CREATE OR ALTER PACKAGE  ").append(name).append("\nAS\n").append(headerSource);
+        if (!MiscUtils.isNull(bodySource))
+            sb.append("^\n").append("RECREATE PACKAGE BODY ").append(name).append("\nAS\n").append(bodySource);
         sb.append("^\n").append("SET TERM ; ^").append("\n");
 
         if (description != null && !description.isEmpty())
@@ -1806,7 +1981,11 @@ public final class SQLUtils {
         if (!MiscUtils.isNull(formattedOutputParams.trim()))
             sb.append(String.format("\nRETURNS (\n%s)", formattedOutputParams));
 
-        return sb.append("\nAS BEGIN END^\n").toString();
+        sb.append("\nAS BEGIN ");
+        if (!outputParams.isEmpty())
+            sb.append("\n\tSUSPEND;\n");
+
+        return sb.append("END^").toString();
     }
 
     public static String generateCreateTriggerStub(DefaultDatabaseTrigger obj) {
@@ -1973,7 +2152,7 @@ public final class SQLUtils {
             sb.append("^").append(generateComment(thisJob.getName(), "JOB", compareJob.getRemarks(), "", false, thisJob.getHost().getDatabaseConnection()));
 
         if (noChangesCheckString.contentEquals(sb))
-            return "/* there are no changes */\n";
+            return THERE_ARE_NO_CHANGES;
         return sb.append("^\nSET TERM ;^\n").toString();
     }
 

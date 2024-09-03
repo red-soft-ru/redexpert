@@ -21,7 +21,6 @@
 package org.executequery.gui;
 
 import org.executequery.Constants;
-import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.DefaultInlineFieldButton;
 import org.underworldlabs.swing.*;
 
@@ -252,6 +251,20 @@ public final class WidgetFactory {
     /**
      * Create named JTextField class instance
      *
+     * @param name     the component's name
+     * @param editable the boolean to be set
+     */
+    public static JTextField createTextField(String name, boolean editable) {
+
+        JTextField textField = createTextField(name);
+        textField.setEditable(editable);
+
+        return textField;
+    }
+
+    /**
+     * Create named JTextField class instance
+     *
      * @param name the component's name
      * @param text the text to be set
      */
@@ -438,7 +451,7 @@ public final class WidgetFactory {
      */
     public static JPanel createPanel(String name) {
 
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setName(name);
 
         return panel;
@@ -490,6 +503,21 @@ public final class WidgetFactory {
     // --- Custom Components ---
     // -------------------------
 
+    /**
+     * Create named <code>ConnectionsComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
+     * with the automatically updated active connections list
+     *
+     * @param name                      the component's name
+     * @param showOnlyActiveConnections whether comboBox will contain only active connections
+     */
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
+
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+        connectionsCombo.setName(name);
+
+        return connectionsCombo;
+    }
 
     /**
      * Create named DefaultInlineFieldButton class instance
@@ -755,7 +783,10 @@ public final class WidgetFactory {
     // -----------------------
 
     private static Dimension getPreferredSize(JComponent component) {
-        return new Dimension((int) component.getPreferredSize().getWidth(), DEFAULT_HEIGHT);
+        return new Dimension(
+                (int) component.getPreferredSize().getWidth(),
+                (int) Math.max(DEFAULT_HEIGHT, component.getPreferredSize().getHeight())
+        );
     }
 
     public static int defaultHeight() {

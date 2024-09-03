@@ -180,6 +180,7 @@ public class UserPreference {
     }
 
     public void setValue(Object value) {
+        PropertiesPanel.setHasChanges(true);
         this.value = value;
     }
 

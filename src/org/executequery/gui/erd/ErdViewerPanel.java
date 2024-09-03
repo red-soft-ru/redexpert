@@ -24,7 +24,6 @@ import org.executequery.ActiveComponent;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabView;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.browser.ColumnConstraint;
 import org.executequery.gui.browser.ColumnData;
@@ -49,7 +48,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.Vector;
 
-import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -545,10 +544,12 @@ public class ErdViewerPanel extends DefaultTabView
 
                 for (ColumnConstraint columnConstraint : cca) {
 
-                    if (columnConstraint.getType() == PRIMARY_KEY)
+                    if (columnConstraint.getType() != FOREIGN_KEY)
                         continue;
 
                     referencedTable = columnConstraint.getRefTable();
+                    if (referencedTable == null)
+                        continue;
 
                     for (int j = 0; j < m; j++) {
 
@@ -1253,19 +1254,6 @@ public class ErdViewerPanel extends DefaultTabView
         return textBlockFontStyle;
     }
 
-    public String getAllSQLText() {
-
-        char newLine = '\n';
-        ErdTable[] allTables = getAllTablesArray();
-
-        StringBuilder sb = new StringBuilder();
-        for (ErdTable allTable : allTables)
-            if (allTable.hasSQLScripts())
-                sb.append(allTable.getAllSQLScripts()).append(newLine);
-
-        return sb.toString();
-    }
-
     public String getErdFileName() {
         return fileName;
     }
@@ -1278,14 +1266,6 @@ public class ErdViewerPanel extends DefaultTabView
     @Override
     public String toString() {
         return TITLE + " - " + fileName;
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return tools.getSelectedConnection();
-    }
-
-    public void setDatabaseConnection(DatabaseConnection databaseConnection) {
-        tools.setSelectedConnection(databaseConnection);
     }
 
     // --------------------------------------------

@@ -38,7 +38,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static org.executequery.databaseobjects.NamedObject.PRIMARY_KEY;
+import static org.executequery.databaseobjects.NamedObject.FOREIGN_KEY;
 
 /**
  * @author Takis Diakoumis
@@ -60,17 +60,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
 
         this.connection = connection;
         this.selectedTables = selectedTables;
-
-        init();
-        display();
-    }
-
-    public ErdGenerateProgressDialog(Vector selectedTables, ErdViewerPanel parent) {
-        super(GUIUtilities.getParentFrame(), "Adding Tables", false);
-
-        this.connection = parent.getDatabaseConnection();
-        this.selectedTables = selectedTables;
-        this.parent = parent;
 
         init();
         display();
@@ -219,10 +208,6 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
             }
 
             GUIUtilities.showWaitCursor();
-
-            ErdViewerPanel viewerPanel = new ErdViewerPanel(tableInfoList, false);
-            viewerPanel.setDatabaseConnection(connection);
-
             GUIUtilities.closeDialog(GenerateErdPanel.TITLE);
             dispose();
             GUIUtilities.showNormalCursor();
@@ -277,7 +262,7 @@ public class ErdGenerateProgressDialog extends AbstractBaseDialog {
                 cca = columnData.getColumnConstraintsArray();
                 for (ColumnConstraint columnConstraint : cca) {
 
-                    if (columnConstraint.getType() == PRIMARY_KEY)
+                    if (columnConstraint.getType() != FOREIGN_KEY)
                         continue;
 
                     referencedTable = columnConstraint.getRefTable();

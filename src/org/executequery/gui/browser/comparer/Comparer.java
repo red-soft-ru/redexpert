@@ -40,6 +40,10 @@ public class Comparer {
     protected DatabaseConnection masterConnection;
     protected DatabaseConnection compareConnection;
 
+    private int stubsInsertIndex;
+    private Map<Integer, List<NamedObject>> stubsOnAlter;
+    private Map<Integer, List<NamedObject>> stubsOnCreate;
+
     private final int[] counter;
     private String constraintsList;
     private String computedFieldsList;
@@ -63,6 +67,7 @@ public class Comparer {
         constraintsToDrop = new ArrayList<>();
         computedFields = new ArrayList<>();
 
+        stubsInsertIndex = -1;
         counter = new int[]{0, 0, 0};
 
         this.panel = panel;
@@ -215,7 +220,7 @@ public class Comparer {
             AbstractDatabaseObject compareObject = (AbstractDatabaseObject) alterObjects.get(obj);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            if (!sqlScript.contains("there are no changes")) {
+            if (!sqlScript.contains(SQLUtils.THERE_ARE_NO_CHANGES)) {
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, TABLE, obj);
                 panel.addComparedObject(new ComparedObject(TABLE, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
@@ -253,6 +258,9 @@ public class Comparer {
 
         if (createObjects == null || createObjects.isEmpty())
             return;
+
+        if (stubsOnCreate != null && stubsOnCreate.containsKey(type) && stubsOnCreate.get(type) != null)
+            stubsOnCreate.get(type).addAll(createObjects);
 
         String header = MessageFormat.format(
                 "\n/* ----- Creating {0} ----- */\n",
@@ -382,8 +390,18 @@ public class Comparer {
             loadingObjectsHelperCompare.preparingLoadForObjectAndCols(compareObject);
 
             String sqlScript = masterObject.getCompareAlterSQL(compareObject);
-            if (!sqlScript.contains("there are no changes")) {
+            if (!sqlScript.contains(SQLUtils.THERE_ARE_NO_CHANGES) && !sqlScript.equals(SQLUtils.ALTER_CONSTRAINTS)) {
+
+                if (stubsOnAlter != null && stubsOnAlter.containsKey(type) && stubsOnAlter.get(type) != null)
+                    stubsOnAlter.get(type).add(compareObject);
+
                 script.add("\n/* " + obj.getName() + " */\n" + sqlScript);
+                panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
+                panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
+                panel.addToLog("\t" + obj.getName());
+                isHeaderNeeded = true;
+                counter[2]++;
+            } else if (sqlScript.equals(SQLUtils.ALTER_CONSTRAINTS)) {
                 panel.addTreeComponent(ComparerDBPanel.ComparerTreeNode.ALTER, type, obj);
                 panel.addComparedObject(new ComparedObject(type, masterObject, compareObject.getCreateSQLText(), masterObject.getCreateSQLText()));
                 panel.addToLog("\t" + obj.getName());
@@ -633,26 +651,31 @@ public class Comparer {
         }
     }
 
-    public void createStubs(
+    public void setStubsNeed(
+            boolean onCreate,
             boolean functions, boolean procedures, boolean triggers,
             boolean ddlTriggers, boolean dbTriggers) {
 
-        if (functions)
-            addStubsToScript(FUNCTION);
-        if (procedures)
-            addStubsToScript(PROCEDURE);
-        if (triggers)
-            addStubsToScript(TRIGGER);
-        if (ddlTriggers)
-            addStubsToScript(DDL_TRIGGER);
-        if (dbTriggers)
-            addStubsToScript(DATABASE_TRIGGER);
+        Map<Integer, List<NamedObject>> exampleHashMap = new HashMap<>();
+        exampleHashMap.put(FUNCTION, functions ? new ArrayList<>() : null);
+        exampleHashMap.put(PROCEDURE, procedures ? new ArrayList<>() : null);
+        exampleHashMap.put(TRIGGER, triggers ? new ArrayList<>() : null);
+        exampleHashMap.put(DDL_TRIGGER, ddlTriggers ? new ArrayList<>() : null);
+        exampleHashMap.put(DATABASE_TRIGGER, dbTriggers ? new ArrayList<>() : null);
+
+        if (stubsInsertIndex < 0)
+            stubsInsertIndex = script.size();
+
+        if (onCreate)
+            stubsOnCreate = new HashMap<>(exampleHashMap);
+        else
+            stubsOnAlter = new HashMap<>(exampleHashMap);
     }
 
     private void addConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
         script.add("\n/* " + obj.getTable() + "." + obj.getName() + " */");
         script.add("\nALTER TABLE " + obj.getTable() + "\n\tADD " +
-                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection, false) + ";\n");
+                SQLUtils.generateDefinitionColumnConstraint(obj, true, false, compareConnection, true) + ";\n");
     }
 
     private void dropConstraintToScript(org.executequery.gui.browser.ColumnConstraint obj) {
@@ -847,7 +870,7 @@ public class Comparer {
                 AbstractDatabaseObject masterAbstractObject = (AbstractDatabaseObject) masterObject;
                 loadingObjectsHelperMaster.preparingLoadForObjectCols(masterAbstractObject);
                 if (Objects.equals(masterObject.getName(), compareObject.getName()))
-                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains("there are no changes"))
+                    if (!((AbstractDatabaseObject) masterObject).getCompareAlterSQL((AbstractDatabaseObject) compareObject).contains(SQLUtils.THERE_ARE_NO_CHANGES))
                         checkConstraintsPair(masterObject, compareObject, droppedConstraints);
                 loadingObjectsHelperMaster.postProcessingLoadForObjectForCols(masterAbstractObject);
 
@@ -915,10 +938,10 @@ public class Comparer {
             if (panel.isCanceled())
                 break;
 
-            if ((masterCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
-                    (masterCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
-                    (masterCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
-                    (masterCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+            if ((masterCC.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
+                    (masterCC.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
+                    (masterCC.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
+                    (masterCC.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
                 continue;
 
             long dropCheck = compareConstraints.stream()
@@ -1015,10 +1038,10 @@ public class Comparer {
             if (panel.isCanceled())
                 break;
 
-            if ((comparingCC.getType() == PRIMARY_KEY && !TABLE_CONSTRAINTS_NEED[0]) ||
-                    (comparingCC.getType() == FOREIGN_KEY && !TABLE_CONSTRAINTS_NEED[1]) ||
-                    (comparingCC.getType() == UNIQUE_KEY && !TABLE_CONSTRAINTS_NEED[2]) ||
-                    (comparingCC.getType() == CHECK_KEY && !TABLE_CONSTRAINTS_NEED[3]))
+            if ((comparingCC.getType() == PRIMARY_KEY && TABLE_CONSTRAINTS_NEED[0]) ||
+                    (comparingCC.getType() == FOREIGN_KEY && TABLE_CONSTRAINTS_NEED[1]) ||
+                    (comparingCC.getType() == UNIQUE_KEY && TABLE_CONSTRAINTS_NEED[2]) ||
+                    (comparingCC.getType() == CHECK_KEY && TABLE_CONSTRAINTS_NEED[3]))
                 continue;
 
             long addCheck = masterConstraints.stream()
@@ -1114,21 +1137,15 @@ public class Comparer {
         return objectsList;
     }
 
-    private void addStubsToScript(int type) {
+    private void addStubsToScript(int type, List<NamedObject> stubsList, int insertIndex) {
 
-        List<NamedObject> stubsList = createListObjects(
-                panel.isExtractMetadata() ? new ArrayList<>() : getObjects(masterConnection, type),
-                getObjects(compareConnection, type),
-                type
-        );
-
-        if (stubsList.isEmpty())
+        if (stubsList == null || stubsList.isEmpty())
             return;
 
         String header = MessageFormat.format(
                 "\n/* ----- Creating {0} stubs ----- */\n",
                 Bundles.getEn(NamedObject.class, NamedObject.META_TYPES_FOR_BUNDLE[type]));
-        script.add(header);
+        script.add(insertIndex++, header);
 
         panel.recreateProgressBar(
                 "CreatingStubs", NamedObject.META_TYPES[type],
@@ -1136,8 +1153,8 @@ public class Comparer {
         );
 
         for (NamedObject obj : stubsList) {
-            script.add("\n/* " + obj.getName() + " (STUB) */");
-            script.add("\n" + SQLUtils.generateCreateDefaultStub(obj));
+            script.add(insertIndex++, "\n/* " + obj.getName() + " (STUB) */");
+            script.add(insertIndex++, "\n" + SQLUtils.generateCreateDefaultStub(obj));
             panel.incrementProgressBarValue();
         }
 
@@ -1160,6 +1177,21 @@ public class Comparer {
     }
 
     public ArrayList<String> getScript() {
+
+        if (stubsInsertIndex > 0 && stubsOnCreate != null) {
+            for (Integer key : stubsOnCreate.keySet())
+                addStubsToScript(key, stubsOnCreate.get(key), stubsInsertIndex);
+
+            stubsOnCreate = null;
+        }
+
+        if (stubsInsertIndex > 0 && stubsOnAlter != null) {
+            for (Integer key : stubsOnAlter.keySet())
+                addStubsToScript(key, stubsOnAlter.get(key), stubsInsertIndex);
+
+            stubsOnAlter = null;
+        }
+
         return script;
     }
 

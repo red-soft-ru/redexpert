@@ -594,7 +594,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
             BaseDialog dialog = new BaseDialog(InsertColumnPanel.EDIT_TITLE, true);
             InsertColumnPanel panel = new InsertColumnPanel(table, dialog, column);
 
-            dialog.addDisplayComponent(panel);
+            dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
             table.reset();
             reloadView();
@@ -1359,6 +1359,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     private class PropertiesPanel extends JPanel {
 
         private static final String NONE = "NONE";
+        private static final String PRIMARY = "PRIMARY";
 
         private List<Object> oldValues;
         private DynamicComboBoxModel tablespaceComboModel;
@@ -1436,7 +1437,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                     .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.TABLESPACE]);
 
             List<String> tablespaceNameList = new ArrayList<>();
-            tablespaceNameList.add(0, NONE);
+            tablespaceNameList.add(0, PRIMARY);
             if (tablespaceList != null && !tablespaceList.isEmpty())
                 tablespaceNameList.addAll(tablespaceList.stream().map(Named::getName).collect(Collectors.toList()));
 
@@ -1457,7 +1458,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 tablespaceComboBox.setEnabled(false);
 
             sqlSecurityComboBox.setSelectedItem(Objects.equals(sqlSecurity, "") ? NONE : sqlSecurity);
-            tablespaceComboBox.setSelectedItem(Objects.equals(tablespace, "") ? NONE : tablespace);
+            tablespaceComboBox.setSelectedItem(Objects.equals(tablespace, "") ? PRIMARY : tablespace);
             externalCheckBox.setSelected(externalFile != null && !externalFile.isEmpty());
             adapterCheckBox.setSelected(adapter != null && !adapter.isEmpty());
             externalFileTextField.setText(externalFile);

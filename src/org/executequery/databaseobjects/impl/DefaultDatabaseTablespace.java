@@ -3,6 +3,8 @@ package org.executequery.databaseobjects.impl;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseMetaTag;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.comparer.Comparer;
+import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -95,7 +97,8 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     protected SelectBuilder builderCommonQuery() {
         SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
         Table table = getMainTable();
-        sb.appendFields(table, getFieldName(), ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
+        sb.appendField(Field.createField(table, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(table, ID, SYSTEM, DESCRIPTION, OWNER, FILE_NAME, READ_ONLY, OFFLINE);
         sb.appendTable(table);
         sb.setOrdering(getObjectField().getFieldTable());
         return sb;
@@ -176,14 +179,13 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
 
     @Override
     public String getCreateSQLText() throws DataSourceException {
-        return SQLUtils.generateCreateTablespace(getName(), getFileName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateCreateTablespace(getName(), getFileName(), getRemarks(), true, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getCreateSQLTextWithoutComment() throws DataSourceException {
-        return getCreateSQLText();
+        return SQLUtils.generateCreateTablespace(getName(), getFileName(), null, false, getHost().getDatabaseConnection());
     }
-
 
     @Override
     public String getDropSQL() throws DataSourceException {
@@ -193,8 +195,7 @@ public class DefaultDatabaseTablespace extends AbstractDatabaseObject {
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         DefaultDatabaseTablespace comparingTablespace = (DefaultDatabaseTablespace) databaseObject;
-        return SQLUtils.generateAlterTablespace(this, comparingTablespace);
+        return SQLUtils.generateAlterTablespace(this, comparingTablespace, Comparer.isCommentsNeed());
     }
 
 }
-

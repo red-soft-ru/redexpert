@@ -24,15 +24,21 @@ import org.executequery.actions.helpcommands.FeedbackCommand;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 /**
  * Generic error dialog box displaying the stack trace.
@@ -42,7 +48,10 @@ import java.util.Vector;
 public class ExceptionErrorDialog extends AbstractBaseDialog {
 
     private static final int STACK_HEIGHT = 220;
-    private static final int DEFAULT_WIDTH = 600;
+    private static final int DEFAULT_WIDTH = 700;
+
+    private static final String HTML_ROW = "<tr><td>%s</td></tr>\n";
+    private static final String HTML_MESSAGE = "<html><table border=\"0\" cellpadding=\"2\">%s</table></html>";
 
     private final String message;
     private final Class<?> sourceClass;
@@ -145,7 +154,7 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
 
         gbh = new GridBagHelper().setInsets(5, 5, 20, 0);
         mainPanel.add(new JLabel(errorIcon), gbh.get());
-        mainPanel.add(new JLabel(getExceptionMessage()), gbh.nextCol().rightGap(5).leftGap(0).setMaxWeightX().fillHorizontally().spanX().get());
+        mainPanel.add(new ExceptionMessageLabel(message), gbh.nextCol().rightGap(5).leftGap(0).setMaxWeightX().fillHorizontally().spanX().get());
         mainPanel.add(buttonPanel, gbh.anchorEast().fillNone().leftGap(5).bottomGap(5).nextRowFirstCol().spanX().get());
         mainPanel.add(stackTracePanel, gbh.nextRowFirstCol().topGap(0).setMaxWeightY().fillBoth().get());
 
@@ -155,7 +164,8 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         pack();
 
         defaultHeight = getHeight();
-        setMinimumSize(new Dimension(Math.max(DEFAULT_WIDTH, getWidth()), defaultHeight));
+        int defaultWidth = Math.max(Math.min(getPreferredSize().width, Toolkit.getDefaultToolkit().getScreenSize().width / 2), DEFAULT_WIDTH);
+        setMinimumSize(new Dimension(defaultWidth, defaultHeight));
         setSize(getMinimumSize());
 
         Point location = GUIUtils.getPointToCenter(getOwner(), getSize());
@@ -193,35 +203,6 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
                 stackTracePanel.add(nextButton, gbh.nextCol().get());
             }
         }
-    }
-
-    private String getExceptionMessage() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html><table border=\"0\" cellpadding=\"2\">");
-
-        String lineBreak = "\n";
-        boolean hasLineBreak = true;
-
-        StringTokenizer tokenizer = new StringTokenizer(message, lineBreak, true);
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-
-            if (lineBreak.equals(token)) {
-                if (hasLineBreak)
-                    sb.append("<tr><td></td></tr>");
-
-                hasLineBreak = true;
-                continue;
-            }
-
-            sb.append("<tr><td>").append(token).append("</td></tr>");
-            hasLineBreak = false;
-        }
-
-        sb.append("</table></html>");
-
-        return sb.toString();
     }
 
     /**
@@ -299,5 +280,126 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
     private String bundleString(String key) {
         return Bundles.get(ExceptionErrorDialog.class, key);
     }
+
+    // ---
+
+    private class ExceptionMessageLabel extends JLabel implements ComponentListener {
+        private final List<ExceptionMessage> messages;
+
+        public ExceptionMessageLabel(String originalMessage) {
+            super();
+            this.messages = parseMessage(originalMessage);
+            addComponentListener(this);
+            update();
+        }
+
+        public List<ExceptionMessage> parseMessage(String originalMessage) {
+
+            String lineBreak = "\n";
+            boolean hasLineBreak = true;
+            List<ExceptionMessage> parsedMessage = new LinkedList<>();
+
+            StringTokenizer tokenizer = new StringTokenizer(originalMessage, lineBreak, true);
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+
+                if (lineBreak.equals(token)) {
+                    if (hasLineBreak)
+                        parsedMessage.add(new ExceptionMessage());
+
+                    hasLineBreak = true;
+                    continue;
+                }
+
+                parsedMessage.add(new ExceptionMessage(token.trim()));
+                hasLineBreak = false;
+            }
+
+            return parsedMessage;
+        }
+
+        private void update() {
+            ExceptionMessage.setProperties(
+                    getFontMetrics(getFont()),
+                    ExceptionErrorDialog.this.getWidth() - 100,
+                    getInsets().left + getInsets().right
+            );
+
+            String preparedMessage = messages.stream()
+                    .map(ExceptionMessage::getPrepareMessage)
+                    .collect(Collectors.joining());
+
+            setText(String.format(HTML_MESSAGE, preparedMessage));
+        }
+
+        // --- ComponentListener impl ---
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            update();
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {
+        }
+
+        @Override
+        public void componentShown(ComponentEvent e) {
+        }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+        }
+
+    } // ExceptionMessageLabel class
+
+    private static class ExceptionMessage {
+        private static final String ELLIPSIS = "...";
+
+        private static FontMetrics fontMetrics;
+        private static int availableWidth;
+        private final String message;
+
+        public ExceptionMessage() {
+            this(null);
+        }
+
+        public ExceptionMessage(String message) {
+            this.message = message;
+        }
+
+        public static void setProperties(FontMetrics fontMetrics, int availableWidth, int insets) {
+            ExceptionMessage.fontMetrics = fontMetrics;
+            ExceptionMessage.availableWidth = availableWidth - insets;
+        }
+
+        public String getPrepareMessage() {
+
+            if (MiscUtils.isNull(message))
+                return String.format(HTML_ROW, "");
+
+            String preparedMessage = message;
+            int textWidth = fontMetrics.stringWidth(message);
+
+            if (textWidth > availableWidth) {
+                int ellipsisWidth = fontMetrics.stringWidth(ELLIPSIS);
+
+                do {
+                    preparedMessage = clipText(preparedMessage);
+                    textWidth = fontMetrics.stringWidth(preparedMessage) + ellipsisWidth;
+
+                } while (!preparedMessage.isEmpty() && textWidth >= availableWidth);
+
+                preparedMessage += ELLIPSIS;
+            }
+
+            return String.format(HTML_ROW, preparedMessage);
+        }
+
+        private String clipText(String text) {
+            return text.substring(0, text.length() - 1);
+        }
+
+    } // ExceptionMessage class
 
 }

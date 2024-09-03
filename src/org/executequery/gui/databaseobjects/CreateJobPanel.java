@@ -1,6 +1,5 @@
 package org.executequery.gui.databaseobjects;
 
-import org.executequery.Constants;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseJob;
@@ -26,7 +25,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
     private DefaultDatabaseJob job;
 
-    // --- GUI ccomponents ---
+    // --- GUI components ---
 
     private TimestampPicker startDatePicker;
     private TimestampPicker endDatePicker;
@@ -81,7 +80,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
         tabbedPane.add(bundleString("Task"), taskPanel);
         tabbedPane.add(bundleString("Schedule"), cronPanel);
-//        addCommentTab(null); RDB doesn't support adding comments on the JOBs
+        addCommentTab(null);
 
         if (!editing)
             arrange();
@@ -99,7 +98,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         reset();
         arrange();
 
-//        simpleCommentPanel.setDatabaseObject(job); RDB doesn't support adding comments on the JOBs
+        simpleCommentPanel.setDatabaseObject(job);
         nameField.setEditable(false);
         tabbedPane.addTab(bundleString("Log"), new JobsLogPanel(job));
         addCreateSqlTab(job);
@@ -159,9 +158,8 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
         topPanel.add(endDatePicker, topGbh.nextCol().setMaxWeightX().topGap(0).rightGap(5).spanX().get());
 
         if (parent != null) {
-            int height = System.getProperty("os.name").toLowerCase().contains("win") ? 450 : 420;
-            ((BaseDialog) parent).setPreferredSize(new Dimension(700, height));
-            ((BaseDialog) parent).setResizable(false);
+            ((BaseDialog) parent).setPreferredSize(new Dimension(700, 450));
+            parent.setResizable(false);
         }
     }
 
@@ -217,7 +215,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
                 jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                         sqlTextPanel.getSQLText() :
                         bashTextPanel.getTextAreaComponent().getText(),
-                Constants.EMPTY,
+                simpleCommentPanel.getComment(),
                 false,
                 getDatabaseConnection()
         );
@@ -239,7 +237,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
                 jobTypeCombo.getSelectedIndex() == DefaultDatabaseJob.PSQL_TYPE ?
                         sqlTextPanel.getSQLText() :
                         bashTextPanel.getTextAreaComponent().getText(),
-                Constants.EMPTY,
+                simpleCommentPanel.getComment(),
                 false
         );
     }

@@ -1059,41 +1059,36 @@ public class QueryDispatcher {
                         continue;
                     }
 
+                    if (isBeginEndQuery(query)) {
+                        executeCreateOrAlterObject(queryToExecute, query, anyConnections);
+                        continue;
+                    }
+
                     int type = query.getQueryType();
                     if (type != QueryTypes.COMMIT && type != QueryTypes.ROLLBACK) {
-
                         logExecution(queryToExecute, anyConnections);
 
                     } else {
-
-                        if (type == QueryTypes.COMMIT) {
-
-                            setOutputMessage(querySender.getDatabaseConnection(),
-                                    SqlMessages.ACTION_MESSAGE,
-                                    COMMITTING_LAST, anyConnections);
-
-                        } else if (type == QueryTypes.ROLLBACK) {
-
-                            setOutputMessage(querySender.getDatabaseConnection(),
-                                    SqlMessages.ACTION_MESSAGE,
-                                    ROLLING_BACK_LAST, anyConnections);
-                        }
-
+                        setOutputMessage(
+                                querySender.getDatabaseConnection(),
+                                SqlMessages.ACTION_MESSAGE,
+                                type == QueryTypes.COMMIT ? COMMITTING_LAST : ROLLING_BACK_LAST,
+                                anyConnections
+                        );
                     }
-
-                    PreparedStatement statement;
 
                     if (queryToExecute.toUpperCase().contains("SET BLOBFILE ")) {
                         blobFilePath = "blobfile=" + queryToExecute.substring(queryToExecute.indexOf("SET BLOBFILE ") + 14, queryToExecute.length() - 1);
                         continue;
                     }
 
+                    PreparedStatement statement;
                     if (query.getQueryType() == QueryTypes.SET_AUTODDL_ON || query.getQueryType() == QueryTypes.SET_AUTODDL_OFF)
                         statement = null;
                     else if (query.getQueryType() == QueryTypes.INSERT)
                         statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
                     else
-                        statement = prepareStatementWithParameters(queryToExecute, "");
+                        statement = prepareStatementWithParameters(queryToExecute, getVariables(queryToExecute));
 
                     SqlStatementResult result = querySender.execute(type, statement);
 

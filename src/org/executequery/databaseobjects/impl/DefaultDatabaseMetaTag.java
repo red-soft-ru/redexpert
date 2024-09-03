@@ -22,7 +22,10 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseMetaTag;
+import org.executequery.databaseobjects.DatabaseObject;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.datasource.PooledConnection;
 import org.executequery.datasource.PooledResultSet;
 import org.executequery.gui.browser.ComparerDBPanel;
@@ -601,6 +604,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         switch (type) {
             case TABLE:
+            case SYSTEM_TABLE:
                 return new DefaultDatabaseTable(object);
             case VIEW:
                 return new DefaultDatabaseView(object);
@@ -804,10 +808,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 e.printStackTrace(System.out);
             }
 
-            String sql = "SELECT CAST (RDB$PROCEDURE_NAME as VARCHAR(1024)) AS PROCEDURE_NAME\n" +
+            String sql = "SELECT\n" +
+                    "CAST (RDB$PROCEDURE_NAME as VARCHAR(1024)) AS PROCEDURE_NAME\n" +
                     "FROM RDB$PROCEDURES\n" +
                     ((majorVersion > 2) ? "WHERE RDB$PACKAGE_NAME IS NULL\n" : "") +
-                    "ORDER BY PROCEDURE_NAME";
+                    "ORDER BY RDB$PROCEDURE_NAME";
 
             if (typeTree == TreePanel.DEPENDED_ON)
                 sql = getDependOnQuery(5);
@@ -882,7 +887,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSequencesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$GENERATORS\n" +
                 "WHERE ((RDB$SYSTEM_FLAG IS NULL) OR (RDB$SYSTEM_FLAG = 0))\n" +
                 "ORDER BY RDB$GENERATOR_NAME";
@@ -897,10 +903,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemSequencesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$GENERATOR_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$GENERATORS\n" +
                 "WHERE ((RDB$SYSTEM_FLAG IS NOT NULL) AND (RDB$SYSTEM_FLAG != 0))\n" +
-                "ORDER BY  RDB$GENERATOR_NAME";
+                "ORDER BY RDB$GENERATOR_NAME";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(14);
@@ -912,7 +919,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getDomainsResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$FIELDS\n" +
                 "WHERE (NOT (RDB$FIELD_NAME STARTING WITH 'RDB$')) AND (RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL)\n" +
                 "ORDER BY RDB$FIELD_NAME";
@@ -927,7 +935,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getSystemDomainResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$FIELD_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$FIELDS\n" +
                 "WHERE (RDB$FIELD_NAME STARTING WITH 'RDB$') OR (RDB$SYSTEM_FLAG <> 0 AND RDB$SYSTEM_FLAG IS NOT NULL)\n" +
                 "ORDER BY RDB$FIELD_NAME";
@@ -942,17 +951,18 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$OWNER_NAME AS OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
-                "ORDER BY 1";
+                "ORDER BY RDB$ROLE_NAME";
 
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getSystemPackagesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$PACKAGE_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$PACKAGE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$PACKAGES\n" +
                 "WHERE RDB$SYSTEM_FLAG != 0 AND RDB$SYSTEM_FLAG IS NOT NULL\n" +
-                "ORDER BY 1";
+                "ORDER BY RDB$PACKAGE_NAME";
 
         return getResultSetFromQuery(query);
     }
@@ -963,7 +973,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "CAST (SEC$USER_NAME as VARCHAR(1024)),\n" +
                 "SEC$PLUGIN\n" +
                 "FROM SEC$USERS\n" +
-                "ORDER BY 1,2";
+                "ORDER BY SEC$USER_NAME, SEC$PLUGIN";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(8);
@@ -980,36 +990,47 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$OWNER_NAME AS OWNER_NAME\n" +
                 "FROM RDB$ROLES\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
-                "ORDER BY 1";
+                "ORDER BY RDB$ROLE_NAME";
 
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getTablespacesResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$TABLESPACE_NAME as VARCHAR(1024)) FROM RDB$TABLESPACES ORDER BY 1";
+        String query = "SELECT\n" +
+                "CAST (RDB$TABLESPACE_NAME as VARCHAR(1024))\n" +
+                "FROM RDB$TABLESPACES\n" +
+                "ORDER BY RDB$TABLESPACE_NAME";
+
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getJobsResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$JOB_NAME as VARCHAR(1024)) FROM RDB$JOBS ORDER BY 1";
+        String query = "SELECT\n" +
+                "CAST (RDB$JOB_NAME as VARCHAR(1024))\n" +
+                "FROM RDB$JOBS\n" +
+                "ORDER BY RDB$JOB_NAME";
+
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getCollationsResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$COLLATION_NAME as VARCHAR(1024))\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$COLLATION_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$COLLATIONS\n" +
                 "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
-                "ORDER BY 1";
+                "ORDER BY RDB$COLLATION_NAME";
 
         return getResultSetFromQuery(query);
     }
 
     private ResultSet getExceptionResultSet() throws SQLException {
 
-        String query = "SELECT CAST (RDB$EXCEPTION_NAME as VARCHAR(1024)), RDB$DESCRIPTION\n" +
+        String query = "SELECT\n" +
+                "CAST (RDB$EXCEPTION_NAME as VARCHAR(1024)),\n" +
+                "RDB$DESCRIPTION\n" +
                 "FROM RDB$EXCEPTIONS\n" +
                 "ORDER BY RDB$EXCEPTION_NAME";
 
@@ -1095,7 +1116,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         String query = "SELECT CAST (P.RDB$PACKAGE_NAME as VARCHAR(1024))\n" +
                 "FROM RDB$PACKAGES P\n" +
-                "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL ORDER BY 1";
+                "WHERE RDB$SYSTEM_FLAG = 0 OR RDB$SYSTEM_FLAG IS NULL\n" +
+                "ORDER BY P.RDB$PACKAGE_NAME";
 
         if (typeTree == TreePanel.DEPENDED_ON)
             query = getDependOnQuery(19);
@@ -1173,7 +1195,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "RDB$DESCRIPTION AS REMARKS\n" +
                 "FROM RDB$FUNCTIONS\n" +
                 "WHERE (RDB$MODULE_NAME IS NULL) AND (RDB$PACKAGE_NAME IS NULL)\n" +
-                "ORDER BY FUNCTION_NAME ";
+                "ORDER BY RDB$FUNCTION_NAME";
 
         try {
 

@@ -101,7 +101,7 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
 
     @Override
     public String getDropSQL() throws DataSourceException {
-        return SQLUtils.generateDefaultDropQuery("UDF", getName(), getHost().getDatabaseConnection());
+        return SQLUtils.generateDefaultDropQuery("EXTERNAL FUNCTION", getName(), getHost().getDatabaseConnection());
     }
 
     @Override
@@ -120,7 +120,8 @@ public class DefaultDatabaseUDF extends DefaultDatabaseFunction
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
 
-        sb.appendFields(functions, getFieldName(), DESCRIPTION, RETURN_ARGUMENT, MODULE_NAME, ENTRYPOINT);
+        sb.appendField(Field.createField(functions, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(functions, DESCRIPTION, RETURN_ARGUMENT, MODULE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(functions));
         sb.appendFields(FA, arguments, getDatabaseMajorVersion() < 3 && !isRDB(), PARAMETER_NAME, DESCRIPTION, PARAMETER_MECHANISM, mechanismLabel(), DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME);
         sb.appendFields(FA, arguments, PARAMETER_NUMBER);

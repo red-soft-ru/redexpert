@@ -114,8 +114,8 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         DatabaseObjectNode objectNode = (DatabaseObjectNode) treeNode;
         int nodeType = objectNode.getType();
 
-        String labelMultiple = Bundles.get(NamedObject.class, getMetaTag(objectNode)).toLowerCase();
-        String labelSingle = Bundles.get(BrowserTreePopupMenu.class, getMetaTag(objectNode)).toLowerCase();
+        String labelSingle = bundleString(getMetaTag(objectNode));
+        String labelMultiple = bundleString(getMetaTag(objectNode) + ".multiple");
 
         // --- system objects popup ---
 
@@ -181,27 +181,32 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         boolean isTable = nodeType == NamedObject.TABLE;
         boolean isIndex = nodeType == NamedObject.INDEX;
         boolean isSeveralSelected = listener.isSelectedSeveralPaths();
+        boolean isViewColumn = nodeType == NamedObject.TABLE_COLUMN
+                && ((DatabaseObjectNode) objectNode.getParent()).getType() == NamedObject.VIEW;
 
         // ---
 
-        if (!isSeveralSelected) {
-            createObject.setText(bundleString("create", labelSingle));
-            add(createObject);
-            addSeparator();
-        }
+        if (!isViewColumn) {
 
-        reloadObject.setText(bundleString("reload", isSeveralSelected ? labelMultiple : labelSingle));
-        add(reloadObject);
+            if (!isSeveralSelected) {
+                createObject.setText(bundleString("create", labelSingle));
+                add(createObject);
+                addSeparator();
+            }
 
-        if (!isSeveralSelected) {
-            editObject.setText(bundleString("edit", labelSingle));
-            add(editObject);
-        }
+            reloadObject.setText(bundleString("reload", isSeveralSelected ? labelMultiple : labelSingle));
+            add(reloadObject);
 
-        if (!isSeveralSelected) {
-            deleteObject.setText(bundleString("delete", labelSingle));
-            add(deleteObject);
-            addSeparator();
+            if (!isSeveralSelected) {
+                editObject.setText(bundleString("edit", labelSingle));
+                add(editObject);
+            }
+
+            if (!isSeveralSelected) {
+                deleteObject.setText(bundleString("delete", labelSingle));
+                add(deleteObject);
+                addSeparator();
+            }
         }
 
         if (isIndex)

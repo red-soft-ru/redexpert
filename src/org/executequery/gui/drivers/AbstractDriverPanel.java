@@ -49,7 +49,6 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Vector;
 
 public abstract class AbstractDriverPanel extends JPanel
@@ -221,30 +220,7 @@ public abstract class AbstractDriverPanel extends JPanel
     }
 
     private Vector<DatabaseDefinition> createDatabaseComboValues() {
-
-        // retrieve the db name list
-        List<DatabaseDefinition> databases = loadDatabaseDefinitions();
-
-        int count = databases.size() + 1;
-        Vector<DatabaseDefinition> databasesVector = new Vector<DatabaseDefinition>(count);
-
-        // create a new list with a dummy value
-        for (int i = 1; i < count; i++) {
-
-            databasesVector.add(databases.get(i - 1));
-        }
-
-        // add the dummy
-        databasesVector.add(0, new DatabaseDefinition(
-                DatabaseDefinition.INVALID_DATABASE_ID,
-                getString("AbstractDriverPanel.selectWithDots")));
-
-        return databasesVector;
-    }
-
-    private List<DatabaseDefinition> loadDatabaseDefinitions() {
-
-        return DatabaseDefinitionCache.getDatabaseDefinitions();
+        return new Vector<>(DatabaseDefinitionCache.getDatabaseDefinitions());
     }
 
     public void itemStateChanged(ItemEvent e) {

@@ -20,13 +20,25 @@ grammar ProcedureParser;
  ;
 
  create_or_alter_procedure_stmt
- :K_CREATE spases_or_comment K_OR spases_or_comment K_ALTER K_PROCEDURE procedure_name
+ :K_CREATE spases_or_comment K_OR spases_or_comment K_ALTER spases_or_comment K_PROCEDURE spases_or_comment procedure_name
       (K_AUTHID (K_OWNER|K_CALLER))?
       declare_block
  |recreate_procedure_stmt
  |alter_procedure_stmt
  |create_procedure_stmt
  ;
+
+ declare_procedure_stmt
+  :K_DECLARE spases_or_comment K_PROCEDURE spases_or_comment procedure_name
+     (K_AUTHID (K_OWNER|K_CALLER))?
+     declare_block
+  ;
+
+declare_function_stmt
+:K_DECLARE spases_or_comment K_FUNCTION spases_or_comment procedure_name
+declare_function_block
+;
+
  recreate_procedure_stmt
  :K_RECREATE  K_PROCEDURE procedure_name
       (K_AUTHID (K_OWNER|K_CALLER))?
@@ -44,18 +56,36 @@ grammar ProcedureParser;
      declare_block
   ;
 
- declare_block
+ declare_function_block
  : ('(' input_parameter (',' input_parameter)*')')?
-       (K_RETURNS '('  output_parameter (',' output_parameter)*')')?
-       K_AS
-       local_variable*
+       K_RETURNS   output_parameter
+       spases_or_comment? K_AS spases_or_comment
+       declare_stmt*
        K_BEGIN
        body
        K_END
 ;
 
+ declare_block
+ : ('(' input_parameter (',' input_parameter)*')')?
+       (spases_or_comment? K_RETURNS '('  output_parameter (',' output_parameter)*')')?
+       spases_or_comment? K_AS spases_or_comment
+       declare_stmt*
+       K_BEGIN
+       body
+       K_END
+       spases_or_comment?
+;
+
+declare_stmt
+:local_variable
+ |declare_procedure_stmt
+ |declare_function_stmt
+ ;
+
 declare_block_without_params
-:spases_or_comment? local_variable*
+:spases_or_comment?
+declare_stmt*
 full_body
 ;
 
@@ -65,7 +95,7 @@ full_body
 
 body:
   ~(K_END)*
-  | ~(K_BEGIN)* K_BEGIN body K_END ~(K_END)*
+  | ~(K_BEGIN|K_END)* K_BEGIN body K_END ~(K_END)*
   ;
 
  local_variable
@@ -114,7 +144,8 @@ body:
 
 
  variable_name
- :any_name
+ : IDENTIFIER
+   | STRING_LITERAL
  ;
 
  input_parameter
@@ -1108,6 +1139,7 @@ K_FORTRAN : F O R T R A N ;
 K_FOUND : F O U N D ;
 K_FROM : F R O M ;
 K_FULL : F U L L ;
+K_FUNCTION : F U N C T I O N;
 K_GENERATED : G E N E R A T E D ;
 K_GEN_UUID : G E N '_' U U I D ;
 K_GET : G E T ;

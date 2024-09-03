@@ -296,15 +296,17 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         try {
             GUIUtilities.showWaitCursor();
 
-            BaseDialog dialog = new BaseDialog("", false);
-            AbstractCreateObjectPanel panel = editing ?
-                    getEditObjectPanel(node, dialog, connection) :
-                    getCreateObjectPanel(node, dialog, connection);
+            if (editing) {
+                treePanel.valueChanged(node, connection);
+                return;
+            }
 
+            BaseDialog dialog = new BaseDialog("", false);
+            AbstractCreateObjectPanel panel = getCreateObjectPanel(node, dialog, connection);
             if (panel == null)
                 return;
 
-            String title = editing ? panel.getEditTitle() : panel.getCreateTitle();
+            String title = panel.getCreateTitle();
             if (GUIUtilities.isDialogOpen(title)) {
                 GUIUtilities.setSelectedDialog(title);
                 return;
@@ -432,108 +434,6 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             case NamedObject.FOREIGN_KEYS_FOLDER_NODE:
                 panel = new EditConstraintPanel((DatabaseTable) node.getDatabaseObject(), dialog, NamedObject.FOREIGN_KEY);
-                break;
-
-            default:
-                GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                break;
-        }
-
-        return panel;
-    }
-
-    private AbstractCreateObjectPanel getEditObjectPanel(DatabaseObjectNode node, BaseDialog
-            dialog, DatabaseConnection connection) {
-
-        int type = node.getType();
-        if (type == NamedObject.META_TAG) {
-            for (int i = 0; i < NamedObject.META_TYPES.length; i++) {
-                if (NamedObject.META_TYPES[i].equals(node.getMetaDataKey())) {
-                    type = i;
-                    break;
-                }
-            }
-        }
-
-        ColumnConstraint constraint;
-        AbstractCreateObjectPanel panel = null;
-        switch (type) {
-
-            case NamedObject.TABLE:
-            case NamedObject.GLOBAL_TEMPORARY:
-            case NamedObject.ROLE:
-                treePanel.valueChanged(node, connection);
-                break;
-
-            case NamedObject.SEQUENCE:
-                panel = new CreateGeneratorPanel(connection, dialog, (DefaultDatabaseSequence) node.getDatabaseObject());
-                break;
-
-            case NamedObject.VIEW:
-                panel = new CreateViewPanel(connection, dialog, (DefaultDatabaseView) node.getDatabaseObject());
-                break;
-
-            case NamedObject.PROCEDURE:
-                if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
-                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                    break;
-                }
-                panel = new CreateProcedurePanel(connection, dialog, MiscUtils.trimEnd(node.getName()));
-                break;
-
-            case NamedObject.DOMAIN:
-                panel = new CreateDomainPanel(connection, dialog, MiscUtils.trimEnd(node.getName()));
-                break;
-
-            case NamedObject.TRIGGERS_FOLDER_NODE:
-                type = NamedObject.TRIGGER;
-            case NamedObject.TRIGGER:
-            case NamedObject.DATABASE_TRIGGER:
-            case NamedObject.DDL_TRIGGER:
-                panel = new CreateTriggerPanel(connection, dialog, (DefaultDatabaseTrigger) node.getDatabaseObject(), type);
-                break;
-
-            case NamedObject.EXCEPTION:
-                panel = new CreateExceptionPanel(connection, dialog, (DefaultDatabaseException) node.getDatabaseObject());
-                break;
-
-            case NamedObject.INDEX:
-            case NamedObject.INDEXES_FOLDER_NODE:
-                panel = new CreateIndexPanel(connection, dialog, (DefaultDatabaseIndex) node.getDatabaseObject());
-                break;
-
-            case NamedObject.FUNCTION:
-                if (node.getDatabaseObject().getParent().getType() == NamedObject.PACKAGE) {
-                    GUIUtilities.displayErrorMessage(bundledString("temporaryInconvenience"));
-                    break;
-                }
-                panel = new CreateFunctionPanel(connection, dialog, MiscUtils.trimEnd(node.getName()), (DefaultDatabaseFunction) node.getDatabaseObject());
-                break;
-
-            case NamedObject.UDF:
-                panel = new CreateUDFPanel(connection, dialog, node.getDatabaseObject());
-                break;
-
-            case NamedObject.PACKAGE:
-                panel = new CreatePackagePanel(connection, dialog, (DefaultDatabasePackage) node.getDatabaseObject());
-                break;
-
-            case NamedObject.USER:
-                panel = new CreateDatabaseUserPanel(connection, dialog, (DefaultDatabaseUser) node.getDatabaseObject());
-                break;
-
-            case NamedObject.TABLESPACE:
-                panel = new CreateTablespacePanel(connection, dialog, node.getDatabaseObject());
-                break;
-
-            case NamedObject.TABLE_COLUMN:
-                panel = new InsertColumnPanel((DatabaseTableColumn) node.getDatabaseObject(), dialog, true);
-                break;
-
-            case NamedObject.PRIMARY_KEY:
-            case NamedObject.FOREIGN_KEY:
-                constraint = (ColumnConstraint) node.getDatabaseObject();
-                panel = new EditConstraintPanel(constraint.getTable(), dialog, constraint);
                 break;
 
             default:

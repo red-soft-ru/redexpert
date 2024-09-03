@@ -350,9 +350,9 @@ public class CheckForUpdateNotifier implements Interruptible {
             argsList.add("-root=" + updateLoader.getRoot());
             argsList.add("-launch=" + restartNow);
 
-            File file = new File("RedExpert.jar");
+            File file = new File(CheckForUpdateNotifier.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             if (!file.exists())
-                file = new File("../RedExpert.jar");
+                throw new Exception("Couldn't locale application JAR file (RedExpert.jar)");
 
             String javaPath = "java";
             if (!System.getProperty("os.name").toLowerCase().contains("win"))

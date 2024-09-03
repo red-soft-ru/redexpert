@@ -19,11 +19,14 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     private DefaultDatabasePackage databasePackage;
 
     public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog) {
-        this(dc, dialog, null);
+        this(dc, dialog, null, false);
     }
 
-    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabasePackage databaseObject) {
+    public CreatePackagePanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabasePackage databaseObject, boolean isSystem) {
         super(dc, dialog, databaseObject);
+
+        if (isSystem)
+            hideButtons();
     }
 
     @Override
@@ -36,11 +39,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     }
 
     protected String generateQuery() {
-        String sb = headerPanel.getSQLText() + "^\n" +
-                bodyPanel.getSQLText() + "^\n" +
-                SQLUtils.generateComment(getFormattedName(), "PACKAGE",
-                        simpleCommentPanel.getComment(), "^", true, getDatabaseConnection());
-        return sb;
+       return SQLUtils.generateCreatePackage(nameField.getText(), headerPanel.getSQLText(), bodyPanel.getSQLText(), simpleCommentPanel.getComment(), getDatabaseConnection());
     }
 
     @Override
@@ -53,7 +52,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
 
     @Override
     public void createObject() {
-        displayExecuteQueryDialog(generateQuery(), "^");
+        displayExecuteQueryDialog(generateQuery(), ";");
     }
 
     @Override
@@ -92,6 +91,7 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
             public void removeUpdate(DocumentEvent e) {
                 changeName();
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 changeName();
@@ -102,24 +102,13 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
         tabbedPane.add(bundleString("Body"), bodyPanel);
         addCommentTab(null);
 
-        String sqlTemplate = getFormattedName() + "\nAS" + "\nBEGIN" + "\n\nEND";
-        headerPanel.setSQLText("CREATE OR ALTER PACKAGE " + sqlTemplate);
-        bodyPanel.setSQLText("RECREATE PACKAGE BODY " + sqlTemplate);
+        String sqlTemplate = "BEGIN" + "\n\nEND";
+        headerPanel.setSQLText(sqlTemplate);
+        bodyPanel.setSQLText(sqlTemplate);
     }
 
     private void changeName() {
 
-        String sqlText = headerPanel.getSQLText().trim()
-                .replaceAll("PACKAGE\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
-                        "PACKAGE " + getFormattedName().replace("$", "\\$"))
-                .replace("PACKAGE " + getFormattedName().replace("$", "\\$"), "PACKAGE " + getFormattedName());
-        headerPanel.setSQLText(sqlText);
-
-        sqlText = bodyPanel.getSQLText().trim()
-                .replaceAll("PACKAGE BODY\\s+((\".*\")|(\\w*\\$?\\w*\\b)|)",
-                        "PACKAGE BODY " + getFormattedName().replace("$", "\\$"))
-                .replace("PACKAGE BODY " + getFormattedName().replace("$", "\\$"), "PACKAGE BODY " + getFormattedName());
-        bodyPanel.setSQLText(sqlText);
     }
 
 }

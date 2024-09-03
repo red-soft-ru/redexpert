@@ -51,17 +51,9 @@ public final class Application {
     public void exitProgram() {
 
         if (promptToSave() && GUIUtilities.getOpenSaveFunctionCount() > 0) {
-
-            SaveOnExitDialog exitDialog = new SaveOnExitDialog();
-
-            int result = exitDialog.getResult();
-            if (result != SaveFunction.SAVE_COMPLETE ||
-                    result != SaveOnExitDialog.DISCARD_OPTION) {
-
-                exitDialog = null;
+            int result = new SaveOnExitDialog().getResult();
+            if (result != SaveFunction.SAVE_COMPLETE && result != SaveFunction.SAVE_CANCELLED)
                 return;
-            }
-
         }
 
         releaseConnections();

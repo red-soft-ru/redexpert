@@ -21,7 +21,6 @@
 package org.executequery.gui.erd;
 
 import org.executequery.GUIUtilities;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ActionContainer;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.WidgetFactory;
@@ -68,7 +67,7 @@ public class ErdNewTableDialog extends BaseDialog
         createPanel.setTableName(erdTable.getTableName());
         createPanel.getSimpleCommentPanel().setComment(erdTable.getDescriptionTable());
         createPanel.setColumnDataArray(tableColumns);
-        createPanel.setColumnConstraintVector(getColumnConstraints(tableColumns));
+        createPanel.setColumnConstraintVector(erdTable.getColumnConstraints());
         createPanel.resetSQLText();
         createPanel.setSQLTextCaretPosition(0);
     }
@@ -93,7 +92,7 @@ public class ErdNewTableDialog extends BaseDialog
         buttonsPanel.add(createButton, gbh.nextCol().setMinWeightX().fillNone().get());
         buttonsPanel.add(cancelButton, gbh.nextCol().rightGap(5).get());
 
-        createPanel = new CreateTableERDPanel(erdViewerPanel.getDatabaseConnection(), this);
+        createPanel = new CreateTableERDPanel(this);
         createPanel.addButtonsPanel(buttonsPanel);
         createPanel.setPreferredSize(new Dimension(700, 550));
 
@@ -146,21 +145,6 @@ public class ErdNewTableDialog extends BaseDialog
 
         SwingUtilities.invokeLater(erdViewerPanel::updateTableRelationships);
         dispose();
-    }
-
-    private static Vector<ColumnConstraint> getColumnConstraints(ColumnData[] columnDataArray) {
-
-        if (columnDataArray == null)
-            return new Vector<>();
-
-        Vector<ColumnConstraint> columnConstraintVector = new Vector<>();
-        for (ColumnData columnData : columnDataArray) {
-            Vector<ColumnConstraint> tempConstraintsVector = columnData.getColumnConstraintsVector();
-            if (tempConstraintsVector != null)
-                columnConstraintVector.addAll(tempConstraintsVector);
-        }
-
-        return columnConstraintVector;
     }
 
     // --- ActionContainer impl ---
@@ -218,8 +202,8 @@ public class ErdNewTableDialog extends BaseDialog
 
     public class CreateTableERDPanel extends CreateTablePanel {
 
-        public CreateTableERDPanel(DatabaseConnection dc, ActionContainer dialog) {
-            super(dc, dialog);
+        public CreateTableERDPanel(ActionContainer dialog) {
+            super(null, dialog);
         }
 
         public void setColumnConstraintVector(Vector<ColumnConstraint> ccv) {
@@ -235,11 +219,11 @@ public class ErdNewTableDialog extends BaseDialog
         }
 
         public boolean isShowCommentOnTable() {
-            return showCommentOnTableBox.isSelected();
+            return showTableCommentCheck.isSelected();
         }
 
         public boolean isShowCommentOnFields() {
-            return showCommentOnFieldsBox.isSelected();
+            return showFieldCommentCheck.isSelected();
         }
 
         @Override

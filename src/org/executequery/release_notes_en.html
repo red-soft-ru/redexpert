@@ -1,5 +1,69 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <h1>RedExpert Changelog</h1>
+<h2><a name='v2024.09'>Major changes - v2024.09</a></h2>
+<p>Added:</p>
+<ol>
+    <li>fbclient libraries for RDB 3, 4 and 5 version</li>
+    <li>Notification when records count limit is enabled</li>
+    <li>Check for valid exported file path before export table data</li>
+    <li>Ability to delete data from the monitoring tables (MON$...)</li>
+    <li>Indicators of the connected databases in the select connection fields</li>
+    <li>Comment tabs for "Edit Job" and "Edit Tablespace" panels</li>
+    <li>Ability to hide helper tools in the "Edit Procedure" and "Edit Function" panels</li>
+    <li>Displaying Result Set table row numbers by default</li>
+    <li>Tooltips for the table columns in the DB statistics panel</li>
+    <li>Clearing selected tables if the "Only select tables" check disabled in the DB statistics panel</li>
+</ol>
+<p>Improved:</p>
+<ol>
+    <li>ER-diagram editor toolbar</li>
+    <li>"Test Data Generator" tool</li>
+    <li>"Import connections from DB" tool</li>
+    <li>"Add table" dialog in the ERD Editor</li>
+    <li>"Add relationship" dialog in the ERD Editor</li>
+    <li>"Remove relationship" dialog in the ERD Editor</li>
+    <li>Exception message formatting in the error dialog</li>
+    <li>Update databases list for JDBC drivers</li>
+    <li>Update Jaybird drivers to 4.0.30 and 5.0.18</li>
+    <li>Update Java Native Access and Java Native Access Platform package versions</li>
+    <li>Remove showing "setting applied" message when there are no preferences changed</li>
+    <li>Set Monospaced font for the "Trace Manager" SQL panel</li>
+    <li>Set PRIMARY tablespace as default instead of NONE when creating table</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>ER-diagram generation</li>
+    <li>Loading ER-diagram from the file</li>
+    <li>Primary key generation for ER-diagram</li>
+    <li>Editing table constraints in the ER-diagram editor</li>
+    <li>Saving visible columns in the "Trace Manager" tool</li>
+    <li>Editing JOB type displaying</li>
+    <li>Result Set table cell rendering</li>
+    <li>Enabling toolbar for table constraints</li>
+    <li>Freezing when displaying the autocomplete popup</li>
+    <li>Connections tree updating</li>
+    <li>Popup actions for the VIEW columns into the connections tree</li>
+    <li>NPE when open "Edit Function" panel</li>
+    <li>Executing SQL scripts with parameters</li>
+    <li>Executing SQL scripts without "SET TERM" statement</li>
+    <li>OO API tools enabling in the "Test Data Generator" panel</li>
+    <li>Default TRIGGER name generation when create new one</li>
+    <li>Generating SQL drop query for UDFs</li>
+    <li>Generating SQL script for PROCEDUREs and FUNCTIONs</li>
+    <li>Generating SQL script for JOBs and TABLESPACEs with comment</li>
+    <li>Generating SQL script for PACKAGEs without body</li>
+    <li>Generating SQL script for TRIGGERs on the Firebird with version less than 3</li>
+    <li>Generating SQL script for existing FUNCTIONs with the deterministic return type</li>
+    <li>Generating SQL script for table constraints during comparing</li>
+    <li>Loading information for TABLEs, INDEXes and FUNCTIONs during DB comparing</li>
+    <li>Loading information for JOBs while editing them</li>
+    <li>Starting DB compare with version less than 3</li>
+    <li>Saving SQL script after DB comparing with the user changes</li>
+    <li>Generating SQL stubs for PROCEDUREs during DB comparing</li>
+    <li>Generating titles for new "System Console" tool instances</li>
+    <li>Saving Query Editor instances history</li>
+    <li>Data view dialog opening for the first time</li>
+</ol>
 <h2><a name='v2024.07'>Major changes - v2024.07</a></h2>
 <p>Improved:</p>
 <ol>
@@ -89,7 +153,7 @@
     <li>Export UDF from Firebird 3 using UTF-8 encoding</li>
     <li>Display related foreign key columns</li>
     <li>Deadlock on editing table records</li>
-    <li>Red Expert hangs when opening the “Memory Usage” tool</li>
+    <li>Red Expert hangs when opening the "Memory Usage" tool</li>
     <li>Adding variables when generating SQL script for creating procedures</li>
     <li>Adding comments to database table fields</li>
     <li>Creating a connection folder with an empty name</li>
@@ -206,13 +270,13 @@
     <li>Transaction confirmation window when closing the Query Editor and the "Data" tab of tables and views</li>
     <li>Displaying connection and database properties (such as server, page size, database file size, etc.)</li>
     <li>Ability to copy column names from a Result Set</li>
-    <li>“Triggers” tab for views</li>
+    <li>"Triggers" tab for views</li>
     <li>Ability to configure database connection timeout</li>
     <li>Updated data import and export panels</li>
 </ol>
 <p>Fixed:</p>
 <ol>
-    <li>Display tables with “NONE” encoding</li>
+    <li>Display tables with "NONE" encoding</li>
     <li>Recognizing VARCHAR and CHAR types other than undefined subtype and with fixed binary data</li>
     <li>Reloading of views after making changes</li>
     <li>Auto-completion: by occurrence, not by string start</li>
@@ -220,7 +284,7 @@
     <li>Editing foreign keys</li>
     <li>Copying connection with encoding</li>
     <li>Editing data in columns with names containing spaces</li>
-    <li>Disappearance of the edited procedure text on the “DDL” tab when switching tabs</li>
+    <li>Disappearance of the edited procedure text on the "DDL" tab when switching tabs</li>
     <li>Searching for database objects in the connection tree with names containing '$'</li>
     <li>GUI defects when double-clicking on a table name in the Query Editor</li>
     <li>Limitations on the number of characters and maximum value when editing field value with INT128 type</li>
@@ -235,7 +299,7 @@
 <h2><a name='v2023.10.1'>Major changes - v2023.10.1</a></h2>
 <p>Added:</p>
 <ol>
-    <li>“Properties” tab on the database table editing panel.</li>
+    <li>"Properties" tab on the database table editing panel.</li>
     <li>Configuring SQL templates from the Menu -> Tools.</li>
     <li>Checkbox "Automatic text wrapping" in the text browser of data with the BLOB type.</li>
     <li>Ability to specify a relative path to the log file in the settings.</li>
@@ -259,8 +323,8 @@
         application over the old one.
     </li>
     <li>Action taken when clicking the Select Displayed Dataset Columns button when the Results Pane is closed.</li>
-    <li>Selecting table rows to be deleted after closing the “Data” tab and canceling the deletion.</li>
-    <li>An error when the “Close all tabs” button did not close all tabs.</li>
+    <li>Selecting table rows to be deleted after closing the "Data" tab and canceling the deletion.</li>
+    <li>An error when the "Close all tabs" button did not close all tabs.</li>
     <li>Incorrect error handling during update.</li>
     <li>Syntax highlighting for multi-line identifiers.</li>
     <li>Application crash if user settings are broken.</li>
@@ -282,9 +346,9 @@
     <li>Ability to enable line wrapping mode in the Query Editor.</li>
     <li>Support of the PSQL-profiler.</li>
     <li>Tree view display with a panel of differences for each object as a DB comparer result.</li>
-    <li>New Foreign Key selection panel on the “Data” tab when working with DB tables.</li>
+    <li>New Foreign Key selection panel on the "Data" tab when working with DB tables.</li>
     <li>Ability to reset color to default by RMB click in the color settings.</li>
-    <li>Ability to filter columns by their names in the “Result Column Visibility” window for a Result Set.</li>
+    <li>Ability to filter columns by their names in the "Result Column Visibility" window for a Result Set.</li>
     <li>Audit analysis.</li>
     <li>Auto-complete for packages (procedures and functions are suggested after a dot).</li>
     <li>Date display in the application log.</li>
@@ -296,13 +360,13 @@
 <p>Fixed:</p>
 <ol>
     <li>Inability to add a comment for a table field when editing it.</li>
-    <li>An error due to which the content of the “SQL” tab during table creation was not updated when changing the
-        “Comment” tab content.
+    <li>An error due to which the content of the "SQL" tab during table creation was not updated when changing the
+        "Comment" tab content.
     </li>
-    <li>Option “Show Grid” in the “Links” tab when working with a DB table.</li>
-    <li>Displaying the username in the “Select Result” tab when editing a user is confirmed.</li>
+    <li>Option "Show Grid" in the "Links" tab when working with a DB table.</li>
+    <li>Displaying the username in the "Select Result" tab when editing a user is confirmed.</li>
     <li>Generation of the SQL scripts for packages, views, tables and jobs.</li>
-    <li>“Description” tabs renamed to “Comment”.</li>
+    <li>"Description" tabs renamed to "Comment".</li>
     <li>Incorrect application of theme and style for the Query Editor.</li>
     <li>Wrong SQL script formatting in the Query Editor.</li>
     <li>NPE when navigating through folders in the connection tree.</li>
@@ -385,7 +449,7 @@
     <li>"Switch data display" button and key combination [ALT + NUM_ADD] in data tab</li>
     <li>Exit confirmation dialog</li>
     <li>Specifies explicitly how a table field is sorted (COLLATE) when creating a table</li>
-    <li>“DDL to create” tab in "Edit constraint" panel</li>
+    <li>"DDL to create" tab in "Edit constraint" panel</li>
     <li>Ability to view password during user creation and authorization at reddatabase.ru</li>
     <li>Ability to replace "\n" with another symbol when exporting to file with separators</li>
     <li>Ability to work with functions and packages in privilege manager</li>
@@ -403,8 +467,8 @@
     <li>Error when generating SQL script for adding table constraints when only one constraint was inserted into script
         instead of multiple ones
     </li>
-    <li>Red Expert hangs after a data access error in the “Data” tab of the “Table” menu.</li>
-    <li>Adding comments to database elements like “User” or “Domain” while editing them</li>
+    <li>Red Expert hangs after a data access error in the "Data" tab of the "Table" menu.</li>
+    <li>Adding comments to database elements like "User" or "Domain" while editing them</li>
     <li>Generating SQL script when adding a new column to a table</li>
     <li>Export to a spreadsheet. Now export to Excel 2007 is possible</li>
     <li>Automatic generation of table name on creation</li>
@@ -418,7 +482,7 @@
     <li>Updated keyword list for syntax highlighting</li>
     <li>Creating a database with default charset</li>
     <li>Flickering interface in privilege manager</li>
-    <li>Invalid representation of “DATE” type when exporting to SQL</li>
+    <li>Invalid representation of "DATE" type when exporting to SQL</li>
     <li>Undo/redo (Ctrl+Z/Ctrl+Y) in the query editor</li>
     <li>Nonoptimal space usage by result set in query editor</li>
     <li>Application hangs when opening objects</li>
@@ -446,7 +510,7 @@
     <li>Rollback transaction on closing request dialog</li>
     <li>Error in generating date and time values in the test data generator</li>
     <li>Wrong message about successful creation of external procedures and functions in request editor</li>
-    <li>Incorrect generation of “create generator” query</li>
+    <li>Incorrect generation of "create generator" query</li>
     <li>Errors of trace parsing</li>
     <li>Autocomplete columns to alias escaped table</li>
 </ol>
@@ -497,7 +561,7 @@
     <li>Error adding a record with IDENTITY field</li>
     <li>Autocomplete errors in queries with aliases</li>
     <li>Tab-indexing order on connection page</li>
-    <li>Wrong error “TABLE is in use” on attempt to remove table</li>
+    <li>Wrong error "TABLE is in use" on attempt to remove table</li>
     <li>Error opening browser in Linux</li>
     <li>Index is active by default when created</li>
     <li>Modified the update dialogs</li>
@@ -715,7 +779,7 @@
     <li>Changed display of connection windows in the user manager (removed unnecessary windows when there are no
         connections)
     </li>
-    <li>On the Membership tab, the option “User → Role” is enabled by default. The remaining options are deactivated.
+    <li>On the Membership tab, the option "User → Role" is enabled by default. The remaining options are deactivated.
     </li>
     <li>Before sorting the data in the table, a full fetch is done.</li>
     <li>Added the distinction between the display of the total and the loaded (recorded) number of records in the table.
@@ -734,13 +798,13 @@
     <li>Fixed table editing mode. When you click "Apply" did not exit the edit mode, as a result, changes in the
         editable field were not displayed.
     </li>
-    <li>Fixed procedure call using “execute procedure” in query editor</li>
+    <li>Fixed procedure call using "execute procedure" in query editor</li>
     <li>Fixed reconnection (Recycle) to the database (not performed at all)</li>
     <li>Fixed closing cursors when closing a table</li>
     <li>Fixed deletion of objects (if the object is open, it cannot be deleted)</li>
     <li>Fixed the location of menu objects (removed inaccessible and under development)</li>
     <li>Fixed display of the "Database Tools" menu (hiding, although it was active)</li>
-    <li>Hidden schemes (in the “Firebird” and “Red Database” they are missing)</li>
+    <li>Hidden schemes (in the "Firebird" and "Red Database" they are missing)</li>
     <li>Fixed display of errors in dialog boxes (structured output)</li>
     <li>Fixed working with tables if OpenJDK is used as Java (NPE when clicking on a table cell)</li>
     <li>Fixed bug where after adding a role it is impossible to create (change and delete) a user</li>
@@ -754,7 +818,7 @@
         on the connection button
     </li>
     <li>Fixed display of the search window when you press ALT in Windows (when clicked, the window disappeared)</li>
-    <li>Fixed bug with double-clicking on “Favorite” connections</li>
+    <li>Fixed bug with double-clicking on "Favorite" connections</li>
     <li>Fixed definition of hot keys in the application settings</li>
     <li>Fixed display of columns in the table when fetching data</li>
     <li>Optimized loading of the Membership tab in the user manager</li>

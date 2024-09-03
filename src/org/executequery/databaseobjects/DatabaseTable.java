@@ -192,7 +192,13 @@ public interface DatabaseTable extends DatabaseTableObject {
 
     String prepareStatementWithPK(List<String> columns);
 
+    String prepareStatementInMonTable(List<String> columns);
+
     String prepareStatementDeletingWithPK();
+
+    String[] getMonField();
+
+    String prepareStatementDeletingFromMonTable();
 
     List<String> getPrimaryKeyColumnNames();
 

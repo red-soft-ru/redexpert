@@ -6,6 +6,7 @@ public class Field {
     String alias;
     boolean isNull = false;
     String statement;
+    String castType;
 
     public static Field createField() {
         return new Field();
@@ -66,17 +67,31 @@ public class Field {
         return this;
     }
 
+    public Field setCast(String castType) {
+        this.castType = castType;
+        return this;
+    }
+
+    public String getCastType() {
+        return castType;
+    }
+
     public String getFieldTable() {
         return table.getAlias() + "." + name;
     }
 
     public String getFieldForQuery() {
         StringBuilder sb = new StringBuilder();
+
         if (isNull)
             sb.append("NULL");
         else if (statement != null)
             sb.append(statement);
-        else sb.append(getFieldTable());
+        else if (castType != null)
+            sb.append("CAST (").append(getFieldTable()).append(" AS ").append(castType).append(")");
+        else
+            sb.append(getFieldTable());
+
         sb.append(" AS ").append(alias);
         return sb.toString();
     }

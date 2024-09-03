@@ -343,6 +343,9 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     @Override
     protected void reset() {
+        if (!editing)
+            return;
+
         nameField.setEditable(false);
         triggerTypeCombo.setEnabled(false);
 

@@ -168,7 +168,7 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
     @Override
     public String getCompareAlterSQL(AbstractDatabaseObject databaseObject) throws DataSourceException {
         return (!this.getCompareCreateSQL().equals(databaseObject.getCompareCreateSQL())) ?
-                databaseObject.getCompareCreateSQL() : "/* there are no changes */";
+                databaseObject.getCompareCreateSQL() : SQLUtils.THERE_ARE_NO_CHANGES;
     }
 
     protected static final String FA = "FA_";
@@ -207,7 +207,8 @@ public class DefaultDatabaseFunction extends DefaultDatabaseExecutable
         Table charsets = Table.createTable("RDB$CHARACTER_SETS", "CR");
         Table collations1 = Table.createTable("RDB$COLLATIONS", "CO1");
         Table collations2 = Table.createTable("RDB$COLLATIONS", "CO2");
-        sb.appendFields(functions, getFieldName(), PROCEDURE_SOURCE, DESCRIPTION, DETERMINISTIC_FLAG, RETURN_ARGUMENT, VALID_BLR);
+        sb.appendField(Field.createField(functions, getFieldName()).setCast("VARCHAR(1024)"));
+        sb.appendFields(functions, PROCEDURE_SOURCE, DESCRIPTION, DETERMINISTIC_FLAG, RETURN_ARGUMENT, VALID_BLR);
         sb.appendFields(functions, !externalCheck(), ENGINE_NAME, ENTRYPOINT);
         sb.appendField(buildSqlSecurityField(functions));
         sb.appendFields(FA, arguments, PARAMETER_NAME, PARAMETER_NUMBER, FIELD_SOURCE, DESCRIPTION, PARAMETER_MECHANISM, DEFAULT_SOURCE, RELATION_NAME, FIELD_NAME, NULL_FLAG);

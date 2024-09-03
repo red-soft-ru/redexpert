@@ -1,8 +1,12 @@
 package org.underworldlabs.statParser;
 
+import org.executequery.localization.Bundles;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class TableModelObject implements Comparable {
 
@@ -30,6 +34,9 @@ public abstract class TableModelObject implements Comparable {
         return columns;
     }
 
+    public List<String> getToolTips() {
+        return Arrays.stream(getItems()).map(item -> item[3]).collect(Collectors.toList());
+    }
 
     public String getColumnName(int column) {
         return getColumns().get(column).toLowerCase();
@@ -110,4 +117,9 @@ public abstract class TableModelObject implements Comparable {
     public void setName(String name) {
         this.name = name;
     }
+
+    protected static String bundleString(String key, Object... args) {
+        return Bundles.get(TableModelObject.class, key, args);
+    }
+
 }

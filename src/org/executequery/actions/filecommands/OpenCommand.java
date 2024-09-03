@@ -182,7 +182,7 @@ public class OpenCommand implements BaseCommand {
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE,
                 QueryEditor.FRAME_ICON,
-                new QueryEditor(contents, file.getAbsolutePath()),
+                new QueryEditor(contents, file.getAbsolutePath(), -1),
                 null,
                 true
         );

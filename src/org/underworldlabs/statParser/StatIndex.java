@@ -4,29 +4,29 @@ package org.underworldlabs.statParser;
 import java.util.ArrayList;
 
 public class StatIndex extends StatTableIndex {
-    public static final String[][] ITEMS_IDX = {
-            {"Index name:", "s", "name"},
-            {"Table name:", "s", "table_name"},
-            {"Tablespace:", "s", "tablespaceName"},
-            {"Real selectivity:", "f+", "real_selectivity"},
-            {"Average data length:", "f", "avg_data_length"},
-            {"total dup:", "i", null},
-            {"max dup:", "i", null},
-            {"Root page:", "i", null},
-            {"Depth:", "i", null},
-            {"leaf buckets:", "i", null},
-            {"nodes:", "i", null},
-            {"Average node length:", "f", "avg_node_length"},
-            {"Average key length:", "f", "avg_key_length"},
-            {"compression ratio:", "f", null},
-            {"Average prefix length:", "f", "avg_prefix_length"},
-            {"average data length:", "f", "avg_data_length"},
-            {"Clustering factor:", "f", null},
-            {"ratio:", "f", null},
-            {"leaf full size:", "i", null},
-            {"estimated full size:", "i", null},
 
+    public static final String[][] ITEMS_IDX = {
+            {"Index name:", "s", "name", null},
+            {"Table name:", "s", "table_name", null},
+            {"Tablespace:", "s", "tablespaceName", bundleString("tablespace_name")},
+            {"Real selectivity:", "f+", "real_selectivity", bundleString("real_selectivity")},
+            {"Average data length:", "f", "avg_data_length", bundleString("avg_data_length")},
+            {"total dup:", "i", null, bundleString("total_dup")},
+            {"max dup:", "i", null, bundleString("max_dup")},
+            {"Root page:", "i", null, bundleString("root_page")},
+            {"Depth:", "i", null, bundleString("depth")},
+            {"leaf buckets:", "i", null, bundleString("leaf_buckets")},
+            {"nodes:", "i", null, bundleString("nodes")},
+            {"Average node length:", "f", "avg_node_length", bundleString("avg_node_length")},
+            {"Average key length:", "f", "avg_key_length", bundleString("avg_key_length")},
+            {"compression ratio:", "f", null, bundleString("compression_ratio.index")},
+            {"Average prefix length:", "f", "avg_prefix_length", bundleString("avg_prefix_length")},
+            {"Clustering factor:", "f", null, bundleString("clustering_factor")},
+            {"ratio:", "f", null, bundleString("ratio")},
+            {"leaf full size:", "i", null, bundleString("leaf_full_size")},
+            {"estimated full size:", "i", null, bundleString("estimated_full_size")},
     };
+
     public StatTable table;
     public String table_name;
     public double real_selectivity;

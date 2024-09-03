@@ -394,7 +394,7 @@ report:coverage:
       elif [ "${CI_COMMIT_REF_NAME}" = "$TAG_BRANCH" ]; then
         REPORT_NAME=${TAG_BRANCH}
         echo "Generating badge"
-        PCOV = value=$(grep -oP '<tfoot.*?>.*?</tfoot>' coverage-results/index.html | grep -oP '<td class="ctr2">\K[^<]+' | head -n 1 | tr -d '%')
+        PCOV=$(grep -oP '<tfoot.*?>.*?</tfoot>' coverage-results/index.html | grep -oP '<td class="ctr2">\K[^<]+' | head -n 1 | tr -d '%')
         anybadge -l "coverage ${TAG_BRANCH}" -v "$PCOV" --suffix='%' -o -f coverage-results/badge.svg 70=red 80=orange 90=yellow 100=green
       fi
     - |

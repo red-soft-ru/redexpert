@@ -195,17 +195,17 @@ public class CreateDatabasePanel extends ActionPanel
         // create the basic props panel
 
         // initialise the fields
-        nameField = new DefaultTextField();
+        nameField = new JTextField();
         nameField.setName("nameField");
         passwordField = new DefaultPasswordField();
         passwordField.setName("passwordField");
-        hostField = new DefaultTextField();
+        hostField = new JTextField();
         hostField.setName("hostField");
         portField = new NumberTextField();
         portField.setName("portField");
         sourceField = createMatchedWidthTextField();
         sourceField.setName("sourceField");
-        userField = new DefaultTextField();
+        userField = new JTextField();
         userField.setName("userField");
 
         hostField.setText("localhost");
@@ -284,7 +284,7 @@ public class CreateDatabasePanel extends ActionPanel
             }
         });
 
-        JLabel dataSourceLabel = new DefaultFieldLabel(bundledString("sourceField"));
+        JLabel dataSourceLabel = new JLabel(bundledString("sourceField"));
         mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(sourceField, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         mainPanel.add(saveFile, gbh.nextCol().setLabelDefault().get());
@@ -299,7 +299,7 @@ public class CreateDatabasePanel extends ActionPanel
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
         gbh.nextCol().setLabelDefault();
-        mainPanel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
+        mainPanel.add(new JLabel(bundledString("driverField")), gbh.get());
         mainPanel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
         JButton addNewDriver = new JButton(bundledString("addNewDriver"));
@@ -430,10 +430,10 @@ public class CreateDatabasePanel extends ActionPanel
         advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
         gbh.setXY(0, 0).setWidth(1).setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundledString("advPropsPanel.text1")), gbh.get());
+                new JLabel(bundledString("advPropsPanel.text1")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundledString("advPropsPanel.text2")), gbh.get());
+                new JLabel(bundledString("advPropsPanel.text2")), gbh.get());
         gbh.nextRowFirstCol().spanX().spanY().fillBoth();
         advPropsPanel.add(scroller, gbh.get());
 
@@ -454,12 +454,12 @@ public class CreateDatabasePanel extends ActionPanel
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundledString("TransactionIsolation")));
         gbh.setXY(0, 0).setLabelDefault().setWidth(2);
         advTxPanel.add(
-                new DefaultFieldLabel(bundledString("advTxPanel.Text1")), gbh.get());
+                new JLabel(bundledString("advTxPanel.Text1")), gbh.get());
         gbh.nextRow();
         advTxPanel.add(
-                new DefaultFieldLabel(bundledString("advTxPanel.Text2")), gbh.get());
+                new JLabel(bundledString("advTxPanel.Text2")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
-        advTxPanel.add(new DefaultFieldLabel(bundledString("IsolationLevel")), gbh.get());
+        advTxPanel.add(new JLabel(bundledString("IsolationLevel")), gbh.get());
         gbh.nextCol().setWeightX(1).fillHorizontally();
         advTxPanel.add(txCombo, gbh.get());
         gbh.setLabelDefault().nextCol();
@@ -545,7 +545,7 @@ public class CreateDatabasePanel extends ActionPanel
 
     private JTextField createMatchedWidthTextField() {
 
-        JTextField textField = new DefaultTextField() {
+        JTextField textField = new JTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
             }

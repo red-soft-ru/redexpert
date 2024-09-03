@@ -226,7 +226,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
 
         // initialise the fields
-        nameField = new DefaultTextField();
+        nameField = new JTextField();
         addCheckEmptyField(nameField);
         nameField.addFocusListener(new FocusListener() {
             @Override
@@ -241,7 +241,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
         passwordField = new DefaultPasswordField();
         passwordDocumentListener = addCheckEmptyField(passwordField);
-        hostField = new DefaultTextField();
+        hostField = new JTextField();
         addCheckEmptyField(hostField);
         hostField.setText("localhost");
         portField = new NumberTextField();
@@ -249,8 +249,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         portField.setText("3050");
         sourceField = createMatchedWidthTextField();
         addCheckEmptyField(sourceField);
-        roleField = new DefaultTextField();
-        userField = new DefaultTextField();
+        roleField = new JTextField();
+        userField = new JTextField();
         userNameDocumentListener = addCheckEmptyField(userField);
         urlField = createMatchedWidthTextField();
         nameField.setPreferredSize(hostField.getPreferredSize());
@@ -313,7 +313,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh.insertEmptyRow(mainPanel, 0);
 
-        statusLabel = new DefaultFieldLabel();
+        statusLabel = new JLabel();
         gbh.addLabelFieldPair(mainPanel, bundleString("statusLabel"),
                 statusLabel, bundleString("statusLabel.tool-tip"), true, false, fieldWidth);
 
@@ -493,10 +493,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
         gbh.setXY(0, 0).setWidth(1).setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundleString("advPropsPanel.text1")), gbh.get());
+                new JLabel(bundleString("advPropsPanel.text1")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundleString("advPropsPanel.text2")), gbh.get());
+                new JLabel(bundleString("advPropsPanel.text2")), gbh.get());
         gbh.nextRowFirstCol().spanX().spanY().fillBoth();
         advPropsPanel.add(scroller, gbh.get());
 
@@ -513,12 +513,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));
         gbh.setXY(0, 0).setLabelDefault().setWidth(2);
         advTxPanel.add(
-                new DefaultFieldLabel(bundleString("advTxPanel.Text1")), gbh.get());
+                new JLabel(bundleString("advTxPanel.Text1")), gbh.get());
         gbh.nextRow();
         advTxPanel.add(
-                new DefaultFieldLabel(bundleString("advTxPanel.Text2")), gbh.get());
+                new JLabel(bundleString("advTxPanel.Text2")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
-        advTxPanel.add(new DefaultFieldLabel(bundleString("IsolationLevel")), gbh.get());
+        advTxPanel.add(new JLabel(bundleString("IsolationLevel")), gbh.get());
         gbh.nextCol().setWeightX(1).fillHorizontally();
         advTxPanel.add(txCombo, gbh.get());
         gbh.setLabelDefault().nextCol();
@@ -702,7 +702,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JTextField createMatchedWidthTextField() {
 
-        JTextField textField = new DefaultTextField() {
+        JTextField textField = new JTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
             }

@@ -545,6 +545,20 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named <code>TransactionIsolationComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>String</code> items
+     *
+     * @param name the component's name
+     */
+    public static TransactionIsolationComboBox createTransactionIsolationComboBox(String name) {
+
+        TransactionIsolationComboBox isolationsCombo = new TransactionIsolationComboBox();
+        isolationsCombo.setName(name);
+
+        return isolationsCombo;
+    }
+
+    /**
      * Create named RolloverButton class instance
      *
      * @param name    the component's name

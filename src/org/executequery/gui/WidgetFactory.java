@@ -30,6 +30,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -210,6 +211,16 @@ public final class WidgetFactory {
      */
     public static <E> JComboBox<E> createComboBox(String name, Vector<E> items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
+    }
+
+    /**
+     * Create named JComboBox class instance
+     *
+     * @param name  the component's name
+     * @param items the data list to insert into the combo box
+     */
+    public static <E> JComboBox<E> createComboBox(String name, List<E> items) {
+        return createComboBox(name, new Vector<>(items));
     }
 
     /**

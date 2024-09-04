@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent;
  *
  * @author Alexey Kozlov
  */
-public final class PaintMouseHandler extends MouseAdapter {
+public final class MouseHoverPainter extends MouseAdapter {
 
     public enum Preset {
         COLORED_FOREGROUND,
@@ -36,7 +36,7 @@ public final class PaintMouseHandler extends MouseAdapter {
     private Color defaultBackground;
     private final JComponent component;
 
-    public PaintMouseHandler(JComponent component, Preset preset) {
+    public MouseHoverPainter(JComponent component, Preset preset) {
         this.component = component;
 
         init(preset);

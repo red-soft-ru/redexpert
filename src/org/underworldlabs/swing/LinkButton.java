@@ -20,7 +20,7 @@
 
 package org.underworldlabs.swing;
 
-import org.underworldlabs.swing.listener.PaintMouseHandler;
+import org.underworldlabs.swing.listener.MouseHoverPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +47,7 @@ public class LinkButton extends JButton {
         setContentAreaFilled(false);
         setRequestFocusEnabled(false);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        addMouseListener(new PaintMouseHandler(this, PaintMouseHandler.Preset.COLORED_UNDERLINE));
+        addMouseListener(new MouseHoverPainter(this, MouseHoverPainter.Preset.COLORED_UNDERLINE));
     }
 
 }

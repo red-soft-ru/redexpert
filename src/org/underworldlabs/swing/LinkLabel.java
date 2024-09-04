@@ -2,7 +2,7 @@ package org.underworldlabs.swing;
 
 import org.executequery.Constants;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.listener.PaintMouseHandler;
+import org.underworldlabs.swing.listener.MouseHoverPainter;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -39,7 +39,7 @@ public class LinkLabel extends JLabel {
 
         setCursor(new Cursor(Cursor.HAND_CURSOR));
         addMouseListener(new LinkMouseListener());
-        addMouseListener(new PaintMouseHandler(this, PaintMouseHandler.Preset.COLORED_FOREGROUND));
+        addMouseListener(new MouseHoverPainter(this, MouseHoverPainter.Preset.COLORED_FOREGROUND));
     }
 
     private final class LinkMouseListener extends MouseAdapter {

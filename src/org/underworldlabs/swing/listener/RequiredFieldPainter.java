@@ -16,14 +16,14 @@ import java.awt.*;
 public class RequiredFieldPainter {
     private static final Color REQUIRED_COLOR = new Color(205, 61, 60); // #CD3D3C
 
+    private boolean enable;
+    private final JComponent component;
     private final Border defaultBorder;
     private final Border reqiuredBorder;
 
-    public static void initialize(JComponent component) {
-        new RequiredFieldPainter(component);
-    }
-
     private RequiredFieldPainter(JComponent component) {
+        this.enable = true;
+        this.component = component;
         this.defaultBorder = component.getBorder();
         this.reqiuredBorder = BorderFactory.createLineBorder(REQUIRED_COLOR);
 
@@ -36,6 +36,19 @@ public class RequiredFieldPainter {
         textField.getDocument().addDocumentListener(new DocumentPainter(textField));
     }
 
+    public static RequiredFieldPainter initialize(JComponent component) {
+        return new RequiredFieldPainter(component);
+    }
+
+    public void enable() {
+        this.enable = true;
+    }
+
+    public void disable() {
+        this.enable = false;
+        this.component.setBorder(defaultBorder);
+    }
+
     // ---
 
     private class DocumentPainter implements DocumentListener {
@@ -46,7 +59,8 @@ public class RequiredFieldPainter {
         }
 
         private void paintComponent() {
-            textField.setBorder(MiscUtils.isNull(textField.getText()) ? reqiuredBorder : defaultBorder);
+            boolean required = enable && MiscUtils.isNull(textField.getText());
+            textField.setBorder(required ? reqiuredBorder : defaultBorder);
         }
 
         @Override

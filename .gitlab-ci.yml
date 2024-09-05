@@ -385,6 +385,7 @@ report:coverage:
   image: registry.red-soft.biz:5000/docker-images/rdbbuildenv:rdb5-8
   before_script:
     - test -e ${CI_PROJECT_DIR}/coverage-results || (echo No coverage data found; exit 0)
+    - pip3 install anybadge
   script:
     - echo "Uploading report"
     - mc alias set minio ${MINIO_SERVER} ${MINIO_USER} ${MINIO_PASSWORD}

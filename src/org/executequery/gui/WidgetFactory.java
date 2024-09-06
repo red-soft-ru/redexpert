@@ -561,6 +561,34 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named <code>ViewablePasswordField</code> class instance,
+     * that enable password visibility changing.
+     *
+     * @param name the component's name
+     */
+    public static ViewablePasswordField createViewablePasswordField(String name) {
+
+        ViewablePasswordField passwordField = new ViewablePasswordField();
+        passwordField.setPreferredSize(getPreferredSize(passwordField));
+        passwordField.setName(name);
+
+        return passwordField;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
+     * @param name the component's name
+     */
+    public static RolloverButton createRolloverButton(String name) {
+
+        RolloverButton button = new RolloverButton();
+        button.setName(name);
+
+        return button;
+    }
+
+    /**
      * Create named RolloverButton class instance
      *
      * @param name    the component's name
@@ -569,7 +597,7 @@ public final class WidgetFactory {
      */
     public static RolloverButton createRolloverButton(String name, String toolTip, String icon) {
 
-        RolloverButton button = new RolloverButton();
+        RolloverButton button = createRolloverButton(name);
         button.setIcon(IconManager.getIcon(icon));
         button.setToolTipText(toolTip);
         button.setName(name);

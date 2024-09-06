@@ -144,7 +144,7 @@ public class BrowserController {
     /**
      * Reloads the database properties meta data table panel.
      */
-    protected void updateDatabaseProperties() {
+    public void updateDatabaseProperties() {
 
         FormObjectView view = viewPanel.getFormObjectView(HostPanel.NAME);
         if (view != null)

@@ -539,6 +539,7 @@ public final class WidgetFactory {
     public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
 
         ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+        connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 
         return connectionsCombo;
@@ -553,6 +554,7 @@ public final class WidgetFactory {
     public static TransactionIsolationComboBox createTransactionIsolationComboBox(String name) {
 
         TransactionIsolationComboBox isolationsCombo = new TransactionIsolationComboBox();
+        isolationsCombo.setPreferredSize(getPreferredSize(isolationsCombo));
         isolationsCombo.setName(name);
 
         return isolationsCombo;

@@ -94,7 +94,7 @@ public class AdvancedPropertiesPanel extends JPanel {
 
         gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
         transactionPanel.add(new JLabel(bundleString("transactionText")), gbh.topGap(8).spanX().get());
-        transactionPanel.add(new JLabel(bundleString("IsolationLevel")), gbh.nextRow().bottomGap(5).setWidth(1).get());
+        transactionPanel.add(new JLabel(bundleString("IsolationLevel")), gbh.nextRow().setMinWeightX().bottomGap(5).setWidth(1).get());
         transactionPanel.add(levelsCombo, gbh.nextCol().leftGap(0).topGap(5).setMaxWeightX().get());
         transactionPanel.add(setLevelButton, gbh.nextCol().setMinWeightX().get());
 

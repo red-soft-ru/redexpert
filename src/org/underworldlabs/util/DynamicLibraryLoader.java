@@ -101,12 +101,11 @@ public class DynamicLibraryLoader extends URLClassLoader {
             urls = MiscUtils.loadURLs(jarPath);
             cl = new URLClassLoader(urls, unwrapObject.getClass().getClassLoader());
         } catch (Exception e) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Error loading class ");
-            sb.append(className);
-            sb.append(" from ");
-            sb.append(jarPath);
-            throw new ClassNotFoundException(sb.toString(), e.getCause());
+            String sb = "Error loading class " +
+                    className +
+                    " from " +
+                    jarPath;
+            throw new ClassNotFoundException(sb, e.getCause());
         }
 
         return loadingObjectFromClassLoaderWithCS(cl, className, jarPath);
@@ -122,12 +121,11 @@ public class DynamicLibraryLoader extends URLClassLoader {
             clazzdb = classLoader.loadClass(className);
             odb = clazzdb.newInstance();
         } catch (Exception e) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Error loading class ");
-            sb.append(className);
-            sb.append(" from ");
-            sb.append(jarPath);
-            throw new ClassNotFoundException(sb.toString(), e.getCause());
+            String sb = "Error loading class " +
+                    className +
+                    " from " +
+                    jarPath;
+            throw new ClassNotFoundException(sb, e.getCause());
         }
 
         return odb;
@@ -138,6 +136,11 @@ public class DynamicLibraryLoader extends URLClassLoader {
         if (jaybirdVersion >= 5)
             jarPath = "./lib/fbplugin-impl5.jar;../lib/fbplugin-impl5.jar";
         return jarPath;
+    }
+
+    public static Object loadingObjectFromClassLoaderWithParams(int jaybirdVersion, Object unwrapObject, String shortClassName, Parameter... params)
+            throws ClassNotFoundException {
+        return loadingObjectFromClassLoaderWithParams(unwrapObject, "biz.redsoft." + shortClassName, getFbPluginImplPath(jaybirdVersion), params);
     }
 
     public static Object loadingObjectFromClassLoaderWithParams(Object unwrapObject, String className, String jarPath, Parameter... params)
@@ -158,12 +161,11 @@ public class DynamicLibraryLoader extends URLClassLoader {
             }
             odb = clazzdb.getConstructor(types).newInstance(parameters);
         } catch (Exception e) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Error loading class ");
-            sb.append(className);
-            sb.append(" from ");
-            sb.append(jarPath);
-            throw new ClassNotFoundException(sb.toString(), e.getCause());
+            String sb = "Error loading class " +
+                    className +
+                    " from " +
+                    jarPath;
+            throw new ClassNotFoundException(sb, e.getCause());
         }
 
         return odb;

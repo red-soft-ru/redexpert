@@ -22,6 +22,8 @@ package org.executequery.sql;
 
 import biz.redsoft.IFBDatabasePerformance;
 import biz.redsoft.IFBPerformanceInfo;
+import biz.redsoft.IFBTableStatisticManager;
+import biz.redsoft.IFBTableStatistics;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -58,6 +60,7 @@ import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
 import org.underworldlabs.sqlParser.REDDATABASESqlParser;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.KeyValuePair;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -572,6 +575,7 @@ public class QueryDispatcher {
 
         IFBPerformanceInfo before;
         before = null;
+        Map<String, IFBTableStatistics> beforeQuery = null;
 
         waiting = false;
         long totalDuration = 0L;
@@ -717,6 +721,15 @@ public class QueryDispatcher {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
+                    if (driver.getMajorVersion() >= 5) {
+                        IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+                        try {
+                            beforeQuery = tsm.getTableStatistics();
+
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
 
             } catch (Exception e) {
@@ -763,7 +776,7 @@ public class QueryDispatcher {
                         }
 
                     }
-
+                    printTableStat(beforeQuery, anyConnections);
                     printExecutionPlan(before, anyConnections);
                     setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                             message, true, anyConnections);
@@ -776,7 +789,7 @@ public class QueryDispatcher {
                     printPlan(rset, anyConnections);
 
                     setResultSet(rset, query.getOriginalQuery(), anyConnections, querySender.getDatabaseConnection());
-
+                    printTableStat(beforeQuery, anyConnections);
                     printExecutionPlan(before, anyConnections);
                 }
 
@@ -791,7 +804,7 @@ public class QueryDispatcher {
 
                     int updateCount = result.getUpdateCount();
                     if (updateCount == -1) {
-
+                        printTableStat(beforeQuery, anyConnections);
                         printExecutionPlan(before, anyConnections);
                         setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                                 result.getErrorMessage(), true, anyConnections);
@@ -800,6 +813,7 @@ public class QueryDispatcher {
                     } else {
 
                         if (result.isException()) {
+                            printTableStat(beforeQuery, anyConnections);
                             printExecutionPlan(before, anyConnections);
                             setOutputMessage(
                                     querySender.getDatabaseConnection(),
@@ -846,7 +860,7 @@ public class QueryDispatcher {
 
                             if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK)
                                 setStatusMessage(" " + result.getMessage());
-
+                            printTableStat(beforeQuery, anyConnections);
                             printExecutionPlan(before, anyConnections);
                         }
                     }
@@ -856,14 +870,14 @@ public class QueryDispatcher {
                     Map results = (Map) result.getOtherResult();
 
                     if (results == null) {
-
+                        printTableStat(beforeQuery, anyConnections);
                         printExecutionPlan(before, anyConnections);
 
                         setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), true, anyConnections);
                         setStatusMessage(ERROR_EXECUTING);
 
                     } else {
-
+                        printTableStat(beforeQuery, anyConnections);
                         printExecutionPlan(before, anyConnections);
 
                         setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, "Call executed successfully.", anyConnections);
@@ -991,6 +1005,7 @@ public class QueryDispatcher {
         IFBPerformanceInfo before, after;
         before = null;
         after = null;
+        Map<String, IFBTableStatistics> beforeQuery = null;
 
         waiting = false;
         long totalDuration = 0L;
@@ -1023,6 +1038,7 @@ public class QueryDispatcher {
                     }
 
                     IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), connection, "FBDatabasePerformanceImpl");
+
                     try {
 
                         db.setConnection(connection);
@@ -1030,6 +1046,15 @@ public class QueryDispatcher {
 
                     } catch (SQLException e) {
                         e.printStackTrace();
+                    }
+                    if (driver.getMajorVersion() >= 5) {
+                        IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+                        try {
+                            beforeQuery = tsm.getTableStatistics();
+
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
@@ -1096,7 +1121,6 @@ public class QueryDispatcher {
 
                         throw new InterruptedException();
                     }
-
                     if (result.isResultSet()) {
 
                         ResultSet rset = result.getResultSet();
@@ -1114,8 +1138,9 @@ public class QueryDispatcher {
                                 }
 
                             }
-
+                            printTableStat(beforeQuery, anyConnections);
                             printExecutionPlan(before, anyConnections);
+
 
                             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE,
                                     message, true, anyConnections);
@@ -1129,8 +1154,9 @@ public class QueryDispatcher {
                             printPlan(rset, anyConnections);
 
                             setResultSet(rset, query.getOriginalQuery(), anyConnections, querySender.getDatabaseConnection());
-
+                            printTableStat(beforeQuery, anyConnections);
                             printExecutionPlan(before, anyConnections);
+
                         }
 
                         end = System.currentTimeMillis();
@@ -1174,8 +1200,9 @@ public class QueryDispatcher {
 
                                         setStatusMessage(" " + result.getMessage());
                                     }
-
+                                    printTableStat(beforeQuery, anyConnections);
                                     printExecutionPlan(before, anyConnections);
+
 
                                 }
                             }
@@ -1194,8 +1221,9 @@ public class QueryDispatcher {
                                 error = true;
 
                             } else {
-
+                                printTableStat(beforeQuery, anyConnections);
                                 printExecutionPlan(before, anyConnections);
+
 
                                 setOutputMessage(querySender.getDatabaseConnection(),
                                         SqlMessages.PLAIN_MESSAGE, "Call executed successfully.", anyConnections);
@@ -1431,6 +1459,82 @@ public class QueryDispatcher {
         }
         QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
         return statement;
+    }
+
+    private void printTableStat(Map<String, IFBTableStatistics> before, boolean anyConnections) {
+        // Trying to get execution plan of firebird statement
+        if (before != null) {
+            DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+
+            if (driver.getClass().getName().contains("FBDriver")) {
+
+                Connection connection = null;
+                try {
+                    connection = querySender.getConnection().unwrap(Connection.class);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                Map<String, IFBTableStatistics> after = null;
+                try {
+                    IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+                    after = tsm.getTableStatistics();
+
+                } catch (SQLException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String[] headers = {"Natural", "Index", "Insert", "Update", "Delete", "Backout", "Purge", "Expunge"};
+                if (after != null) {
+                    StringBuilder sb = new StringBuilder();
+                    Map<String, List<KeyValuePair>> map = new HashMap<>();
+                    for (int i = 0; i < headers.length; i++) {
+                        map.put(headers[i], new ArrayList<>());
+                    }
+                    for (String table : after.keySet()) {
+                        IFBTableStatistics f = after.get(table);
+                        long[] fArray = f.getArrayValues();
+                        if (before.containsKey(table)) {
+                            IFBTableStatistics b = before.get(table);
+                            long[] bArray = b.getArrayValues();
+                            for (int i = 0; i < bArray.length; i++) {
+                                long value = fArray[i] - bArray[i];
+                                if (value > 0)
+                                    map.get(headers[i]).add(new KeyValuePair(table, value));
+                            }
+
+                        } else {
+                            for (int i = 0; i < fArray.length; i++) {
+                                long value = fArray[i];
+                                if (value > 0)
+                                    map.get(headers[i]).add(new KeyValuePair(table, value));
+                            }
+                        }
+                    }
+                    sb.append("Per table statistics:\n");
+                    for (String key : headers) {
+                        List<KeyValuePair> list = map.get(key);
+                        if (list.size() > 0) {
+                            list.sort(new Comparator<KeyValuePair>() {
+                                @Override
+                                public int compare(KeyValuePair o1, KeyValuePair o2) {
+                                    return -Long.compare((long) o1.getValue(), (long) o2.getValue());
+                                }
+                            });
+                            sb.append("\t").append(key).append(":\n");
+                            for (KeyValuePair elem : list) {
+                                sb.append("\t\t").append(elem.getKey()).append(" = ").append(elem.getValue()).append("\n");
+                            }
+                        }
+
+                    }
+                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, sb.toString(), anyConnections);
+                }
+            }
+
+        }
+
     }
 
     private void printExecutionPlan(IFBPerformanceInfo before, boolean anyConnections) {

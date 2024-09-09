@@ -165,6 +165,7 @@ public class ColumnData implements Serializable {
         computedBy = cd.getComputedBy();
         connection = cd.getConnection();
         columnTable = cd.getColumnTable();
+        charset = cd.getCharset();
         defaultValue = new DefaultValue(cd.getDefaultValue());
 
         Vector<ColumnConstraint> constraints = cd.getColumnConstraintsVector();
@@ -190,6 +191,7 @@ public class ColumnData implements Serializable {
         setComputedBy(cd.getComputedSource());
         setDefaultValue(cd.getDefaultValue());
         setDomain(cd.getDomain(), loadDomainInfo);
+        setCharset(cd.getCharset());
         autoincrement.setIdentity(cd.isIdentity());
         if (cd.hasConstraints()) {
             columnConstraints = new Vector<>();

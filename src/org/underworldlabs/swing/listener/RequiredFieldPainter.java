@@ -40,8 +40,7 @@ public class RequiredFieldPainter {
     }
 
     private void init(ViewablePasswordField passwordField) {
-        new DocumentPainter(passwordField.getTextField());
-        new DocumentPainter(passwordField.getPasswordField());
+        new DocumentPainter(passwordField.getPasswordField(), passwordField);
     }
 
     // ---
@@ -62,18 +61,24 @@ public class RequiredFieldPainter {
     // ---
 
     private class DocumentPainter implements DocumentListener {
+        private final JComponent component;
         private final JTextField textField;
 
         public DocumentPainter(JTextField textField) {
-            this.textField = textField;
-            this.textField.getDocument().addDocumentListener(this);
+            this(textField, textField);
+        }
 
+        public DocumentPainter(JTextField textField, JComponent component) {
+            this.component = component;
+            this.textField = textField;
+
+            textField.getDocument().addDocumentListener(this);
             paintComponent();
         }
 
         private void paintComponent() {
             boolean required = enable && MiscUtils.isNull(textField.getText());
-            textField.setBorder(required ? reqiuredBorder : defaultBorder);
+            component.setBorder(required ? reqiuredBorder : defaultBorder);
         }
 
         @Override

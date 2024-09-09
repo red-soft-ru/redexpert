@@ -6,8 +6,6 @@ import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 import java.awt.*;
 
 /**
@@ -21,34 +19,26 @@ public class ViewablePasswordField extends JPanel {
 
     // --- gui components ---
 
-    private JTextField textField;
     private RolloverButton toggleButton;
     private JPasswordField passwordField;
 
     // ---
 
     public ViewablePasswordField() {
-        this.visible = false;
-
         init();
         update();
         arrange();
     }
 
     private void init() {
-        Document document = new PlainDocument();
-
-        textField = WidgetFactory.createTextField("textField");
-        textField.setDocument(document);
-        textField.setBorder(null);
+        visible = false;
 
         passwordField = WidgetFactory.createPasswordField("passwordField");
-        passwordField.setDocument(document);
         passwordField.setBorder(null);
 
         toggleButton = WidgetFactory.createRolloverButton("toggleButton");
         toggleButton.addActionListener(e -> togglePasswordVisible());
-        toggleButton.setBackground(textField.getBackground());
+        toggleButton.setBackground(passwordField.getBackground());
         toggleButton.enableSelectionRollover(false);
     }
 
@@ -56,10 +46,9 @@ public class ViewablePasswordField extends JPanel {
 
         setLayout(new GridBagLayout());
         setBorder(new JTextField().getBorder());
-        setBackground(textField.getBackground());
+        setBackground(new JTextField().getBackground());
 
         GridBagHelper gbh = new GridBagHelper().setMaxWeightX().fillBoth();
-        add(textField, gbh.get());
         add(passwordField, gbh.get());
         add(toggleButton, gbh.nextCol().setMinWeightX().get());
     }
@@ -76,13 +65,7 @@ public class ViewablePasswordField extends JPanel {
                 "icon_password_hide"
         ));
 
-        textField.setVisible(visible);
-        passwordField.setVisible(!visible);
-
-        if (visible)
-            textField.requestFocusInWindow();
-        else
-            passwordField.requestFocusInWindow();
+        passwordField.setEchoChar(visible ? (char) 0 : 8226);
     }
 
     private void togglePasswordVisible() {
@@ -95,7 +78,6 @@ public class ViewablePasswordField extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        textField.setEnabled(enabled);
         toggleButton.setEnabled(enabled);
         passwordField.setEnabled(enabled);
     }
@@ -108,10 +90,6 @@ public class ViewablePasswordField extends JPanel {
 
     public char[] getPassword() {
         return passwordField.getPassword();
-    }
-
-    public JTextField getTextField() {
-        return textField;
     }
 
     public JPasswordField getPasswordField() {

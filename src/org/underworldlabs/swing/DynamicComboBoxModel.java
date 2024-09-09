@@ -84,7 +84,7 @@ public class DynamicComboBoxModel<E> extends DefaultComboBoxModel<E> {
 
     @Override
     protected void fireIntervalAdded(Object source, int index0, int index1) {
-        if (!blocked)
+        if (!blocked && index0 >= 0 && index1 >= 0)
             super.fireIntervalAdded(source, index0, index1);
     }
 

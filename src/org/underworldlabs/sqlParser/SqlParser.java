@@ -161,9 +161,9 @@ public class SqlParser {
                         }
                         break;
                     case QUOTE_STATE:
-                        if (curChar == openChar)
-                            if (nextChar != openChar)
-                                state = DEFAULT_STATE;
+                        if (curChar == openChar) {
+                            state = DEFAULT_STATE;
+                        }
                         processed.append(curChar);
                         break;
                     case COMMENT_LINE_STATE:

@@ -279,7 +279,7 @@ public class QueryTokenizer {
                 }
             } else if (state == BEGIN_END) {
                 if (antlrToken.getType() == SqlLexer.KEYWORD) {
-                    if (antlrToken.getText().equalsIgnoreCase("begin")) {
+                    if (antlrToken.getText().equalsIgnoreCase("begin") || antlrToken.getText().equalsIgnoreCase("case")) {
                         beginCount++;
                     } else if (antlrToken.getText().equalsIgnoreCase("end")) {
                         beginCount--;

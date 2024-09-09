@@ -523,6 +523,19 @@ public final class WidgetFactory {
         return label;
     }
 
+    /**
+     * Create JLabel class instance
+     *
+     * @param text text to be displayed by the label
+     */
+    public static JLabel createLabel(String text) {
+
+        JLabel label = new JLabel(text);
+        label.setPreferredSize(getPreferredSize(label));
+
+        return label;
+    }
+
 
     // -------------------------
     // --- Custom Components ---

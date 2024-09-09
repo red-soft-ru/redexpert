@@ -109,14 +109,27 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).get());
         rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
-        // --- base ---
+        // --- main panel ---
+
+        JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
 
         gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillBoth();
-        add(leftPanel, gbh.setMaxWeightX().get());
-        add(rightPanel, gbh.nextCol().get());
-        add(multifactorPanel, gbh.nextRowFirstCol().spanX().get());
-        add(createButton, gbh.nextRowFirstCol().setMinWeightX().fillNone().get());
-        add(new JPanel(), gbh.nextRow().fillBoth().setMaxWeightY().spanX().spanY().get());
+        mainPanel.add(leftPanel, gbh.setMaxWeightX().get());
+        mainPanel.add(rightPanel, gbh.nextCol().get());
+        mainPanel.add(multifactorPanel, gbh.nextRowFirstCol().spanX().get());
+        mainPanel.add(createButton, gbh.nextRowFirstCol().setMinWeightX().fillNone().get());
+        mainPanel.add(new JPanel(), gbh.nextRow().fillBoth().setMaxWeightY().spanX().spanY().get());
+
+        // --- tab pane ---
+
+        tabPane.setTabPlacement(JTabbedPane.BOTTOM);
+        tabPane.addTab(bundleString("Basic"), mainPanel);
+        tabPane.addTab(bundleString("Advanced"), propertiesPanel);
+
+        // --- base ---
+
+        gbh = new GridBagHelper().fillBoth().spanX().spanY();
+        add(tabPane, gbh.get());
     }
 
     // ---

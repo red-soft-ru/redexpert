@@ -83,7 +83,7 @@ public class AdvancedPropertiesPanel extends JPanel {
         gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
         propertiesPanel.add(new JLabel(bundleString("propertiesText")), gbh.topGap(8).spanX().get());
         propertiesPanel.add(new JScrollPane(propertiesTable), gbh.nextRow().topGap(0).setMaxWeightY().fillBoth().get());
-        propertiesPanel.add(new JPanel(), gbh.nextRow().setWidth(1).setMaxWeightX().get());
+        propertiesPanel.add(new JPanel(), gbh.nextRow().setWidth(1).setMaxWeightX().setMinWeightY().get());
         propertiesPanel.add(addButton, gbh.nextCol().leftGap(0).setMinWeightX().get());
         propertiesPanel.add(removeButton, gbh.nextCol().get());
 
@@ -102,7 +102,7 @@ public class AdvancedPropertiesPanel extends JPanel {
 
         JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
 
-        gbh = new GridBagHelper().anchorNorthWest().fillBoth();
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth().spanX();
         mainPanel.add(propertiesPanel, gbh.setMaxWeightY().get());
         mainPanel.add(transactionPanel, gbh.nextRow().topGap(5).setMinWeightY().get());
 

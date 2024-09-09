@@ -1179,10 +1179,8 @@ public final class SQLUtils {
         StringBuilder columnComments = new StringBuilder();
         boolean alterConstraints = false;
 
-        if (temporary)
-            sb.append("ALTER GLOBAL TEMPORARY TABLE ");
-        else
-            sb.append("ALTER TABLE ");
+
+        sb.append("ALTER TABLE ");
         sb.append(format(thisTable.getName(), thisTable.getHost().getDatabaseConnection()));
         String noChangesCheckString = sb.toString();
 

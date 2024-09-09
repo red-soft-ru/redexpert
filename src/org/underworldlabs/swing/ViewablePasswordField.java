@@ -90,6 +90,16 @@ public class ViewablePasswordField extends JPanel {
         update();
     }
 
+    // --- JComponent impl ---
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        textField.setEnabled(enabled);
+        toggleButton.setEnabled(enabled);
+        passwordField.setEnabled(enabled);
+    }
+
     // ---
 
     public void setPassword(String text) {

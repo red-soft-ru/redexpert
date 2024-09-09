@@ -182,7 +182,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * Creates a new instance of ConnectionPanel
      */
     public ConnectionPanel(BrowserController controller) {
-        super(new BorderLayout());
+        super(controller);
         this.controller = controller;
         init();
         addListeners();
@@ -190,7 +190,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     GridBagHelper gbh;
 
-    private void init() {
+    protected void init() {
 
         // ---------------------------------
         // create the basic props panel
@@ -263,11 +263,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         saveContPwdCheck = WidgetFactory.createCheckBox("saveContPwdCheck", bundleString("Store-container-password"));
         saveContPwdCheck.setActionCommand("setStoreContainerPassword");
-        saveContPwdCheck.addActionListener(this);
+//        saveContPwdCheck.addActionListener(this);
 
         verifyServerCertCheck = WidgetFactory.createCheckBox("verifyServerCertCheck", bundleString("Verify-server-certificate"));
         verifyServerCertCheck.setActionCommand("setVerifyServerCertCheck");
-        verifyServerCertCheck.addActionListener(this);
+//        verifyServerCertCheck.addActionListener(this);
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
 
@@ -285,10 +285,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         useNewAPI.setToolTipText(bundleString("UseNewAPI.tool-tip"));
         useNewAPI.setActionCommand("setNewAPI");
 
-        savePwdCheck.addActionListener(this);
-        encryptPwdCheck.addActionListener(this);
-        namesToUpperBox.addActionListener(this);
-        useNewAPI.addActionListener(this);
+//        savePwdCheck.addActionListener(this);
+//        encryptPwdCheck.addActionListener(this);
+//        namesToUpperBox.addActionListener(this);
+//        useNewAPI.addActionListener(this);
 
         // retrieve the drivers
         buildDriversList();
@@ -412,7 +412,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
-        showPassword.addActionListener(this);
+//        showPassword.addActionListener(this);
 
         savePwdCheck.setToolTipText(bundleString("StorePassword.tool-tip"));
         showPassword.setToolTipText(bundleString("ShowPassword.tool-tip"));
@@ -504,7 +504,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         txApplyButton.setActionCommand("transactionLevelChanged");
         txApplyButton.setToolTipText(bundleString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
-        txApplyButton.addActionListener(this);
+//        txApplyButton.addActionListener(this);
 
         txCombo = WidgetFactory.createTransactionIsolationComboBox("txCombo");
 
@@ -547,7 +547,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         checkVisibleComponents();
     }
 
-    private void addListeners() {
+    protected void addListeners() {
 
         userField.addKeyListener(getKeyAdapter());
         passwordField.addKeyListener(getKeyAdapter());
@@ -714,7 +714,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private void formatTextField(JTextField textField) {
         textField.setActionCommand(CONNECT_ACTION_COMMAND);
-        textField.addActionListener(this);
+//        textField.addActionListener(this);
     }
 
     private JButton createButton(String text, String actionCommand, int mnemonic) {
@@ -722,7 +722,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         JButton button = new JButton(text);
         button.setActionCommand(actionCommand);
         button.setMnemonic(mnemonic);
-        button.addActionListener(this);
+//        button.addActionListener(this);
         //button.applyMaximumSize();
 
         return button;
@@ -745,17 +745,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 DatabaseDriverRepository.REPOSITORY_ID);
     }
 
-    private List<DatabaseDriver> loadDrivers() {
-
-        return driverRepository().findAll();
-    }
+//    protected List<DatabaseDriver> loadDrivers() {
+//
+//        return driverRepository().findAll();
+//    }
 
     /**
      * Retrieves and populates the drivers list.
      */
     protected void buildDriversList() {
 
-        jdbcDrivers = loadDrivers();
+//        jdbcDrivers = loadDrivers();
 
         String[] driverNames = new String[jdbcDrivers.size()];
         for (int i = 0; i < jdbcDrivers.size(); i++)
@@ -1053,7 +1053,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
      * Retrieves the values from the jdbc properties table
      * and stores them within the current database connection.
      */
-    private void storeJdbcProperties() {
+    protected void storeJdbcProperties() {
 
         Properties properties = databaseConnection.getJdbcProperties();
         if (properties == null)
@@ -1707,7 +1707,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         driverCombo.setToolTipText(bundleString("driverField.tool-tip"));
         JButton button = new JButton(bundleString("addNewDriver"));
         button.setActionCommand("addNewDriver");
-        button.addActionListener(this);
+//        button.addActionListener(this);
         button.setMnemonic('r');
         gbh.nextCol().setLabelDefault();
         panel.add(button, gbh.get());

@@ -51,17 +51,13 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
     public SSHTunnelConnectionPanel() {
 
-        super(new BorderLayout());
-        try {
-            init();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(null);
+        init();
     }
 
     private JTextField hostField;
 
-    private void init() throws IOException {
+    protected void init() {
 
         gbh = new GridBagHelper();
         hostField = new JTextField();
@@ -80,8 +76,8 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
         gbc.insets.bottom = 5;
 
         gbc.gridwidth = GridBagConstraints.REMAINDER;
-        mainPanel.add(new JLabel(
-                FileUtils.loadResource(bundleString("path_to_html"))), gbc);
+//        mainPanel.add(new JLabel(
+//                FileUtils.loadResource(bundleString("path_to_html"))), gbc);
         gbh.setDefaults(gbc).defaults();
         gbh.addLabelFieldPair(mainPanel, bundleString("hostField"), hostField,
                 bundleString("hostField.tool-tip"));
@@ -100,12 +96,12 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         JButton showPassword = new LinkButton(bundleString("ShowPassword"));
         showPassword.setActionCommand("showPassword");
-        showPassword.addActionListener(this);
+//        showPassword.addActionListener(this);
 
         JPanel passwordOptionsPanel = new JPanel(new GridBagLayout());
-        addComponents(passwordOptionsPanel,
-                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
-                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
+//        addComponents(passwordOptionsPanel,
+//                new ComponentToolTipPair(savePwdCheck, bundleString("StorePassword.tool-tip")),
+//                new ComponentToolTipPair(showPassword, bundleString("ShowPassword.tool-tip")));
         gbc = gbh.get();
         gbc.gridy++;
         gbc.gridx = 1;
@@ -118,7 +114,7 @@ public class SSHTunnelConnectionPanel extends AbstractConnectionPanel {
 
         useSshCheckbox = WidgetFactory.createCheckBox("useSshCheckbox", bundleString("borderTitle"));
         useSshCheckbox.setActionCommand("useSshSelected");
-        useSshCheckbox.addActionListener(this);
+//        useSshCheckbox.addActionListener(this);
 
         ComponentTitledPanel titledPanel = new ComponentTitledPanel(useSshCheckbox);
 

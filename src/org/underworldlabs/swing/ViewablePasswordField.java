@@ -110,6 +110,14 @@ public class ViewablePasswordField extends JPanel {
         return passwordField.getPassword();
     }
 
+    public JTextField getTextField() {
+        return textField;
+    }
+
+    public JPasswordField getPasswordField() {
+        return passwordField;
+    }
+
     private static String bundleString(String key, Object... args) {
         return Bundles.get(ViewablePasswordField.class, key, args);
     }

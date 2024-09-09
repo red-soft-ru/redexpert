@@ -1,5 +1,6 @@
 package org.underworldlabs.swing.listener;
 
+import org.underworldlabs.swing.ViewablePasswordField;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -29,12 +30,21 @@ public class RequiredFieldPainter {
 
         if (component instanceof JTextField) {
             init((JTextField) component);
+        } else if (component instanceof ViewablePasswordField) {
+            init((ViewablePasswordField) component);
         }
     }
 
     private void init(JTextField textField) {
-        textField.getDocument().addDocumentListener(new DocumentPainter(textField));
+        new DocumentPainter(textField);
     }
+
+    private void init(ViewablePasswordField passwordField) {
+        new DocumentPainter(passwordField.getTextField());
+        new DocumentPainter(passwordField.getPasswordField());
+    }
+
+    // ---
 
     public static RequiredFieldPainter initialize(JComponent component) {
         return new RequiredFieldPainter(component);
@@ -56,6 +66,9 @@ public class RequiredFieldPainter {
 
         public DocumentPainter(JTextField textField) {
             this.textField = textField;
+            this.textField.getDocument().addDocumentListener(this);
+
+            paintComponent();
         }
 
         private void paintComponent() {

@@ -18,13 +18,12 @@ public class RequiredFieldPainter {
     private static final Color REQUIRED_COLOR = new Color(205, 61, 60); // #CD3D3C
 
     private boolean enable;
-    private final JComponent component;
+    private DocumentPainter painter;
     private final Border defaultBorder;
     private final Border reqiuredBorder;
 
     private RequiredFieldPainter(JComponent component) {
         this.enable = true;
-        this.component = component;
         this.defaultBorder = component.getBorder();
         this.reqiuredBorder = BorderFactory.createLineBorder(REQUIRED_COLOR);
 
@@ -36,11 +35,11 @@ public class RequiredFieldPainter {
     }
 
     private void init(JTextField textField) {
-        new DocumentPainter(textField);
+        painter = new DocumentPainter(textField);
     }
 
     private void init(ViewablePasswordField passwordField) {
-        new DocumentPainter(passwordField.getPasswordField(), passwordField);
+        painter = new DocumentPainter(passwordField.getPasswordField(), passwordField);
     }
 
     // ---
@@ -51,11 +50,16 @@ public class RequiredFieldPainter {
 
     public void enable() {
         this.enable = true;
+        this.painter.paintComponent();
     }
 
     public void disable() {
         this.enable = false;
-        this.component.setBorder(defaultBorder);
+        this.painter.paintComponent();
+    }
+
+    public boolean check() {
+        return !painter.required();
     }
 
     // ---
@@ -77,8 +81,11 @@ public class RequiredFieldPainter {
         }
 
         private void paintComponent() {
-            boolean required = enable && MiscUtils.isNull(textField.getText());
-            component.setBorder(required ? reqiuredBorder : defaultBorder);
+            component.setBorder(required() ? reqiuredBorder : defaultBorder);
+        }
+
+        public boolean required() {
+            return enable && MiscUtils.isNull(textField.getText());
         }
 
         @Override

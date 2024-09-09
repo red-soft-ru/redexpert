@@ -20,7 +20,6 @@
 
 package org.executequery.gui.drivers;
 
-import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -28,6 +27,7 @@ import org.executequery.datasource.DatabaseDefinition;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.DatabaseDriverEvent;
 import org.executequery.event.DatabaseDriverListener;
+import org.executequery.event.DefaultDatabaseDriverEvent;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -159,6 +159,8 @@ public class DriversPanel extends JPanel
         drivers.remove(driver);
         updateTable();
         saveDrivers();
+
+        EventMediator.fireEvent(new DefaultDatabaseDriverEvent(driver, DatabaseDriverEvent.DRIVERS_UPDATED));
     }
 
     private void maybeEditDriver(MouseEvent e) {
@@ -240,7 +242,7 @@ public class DriversPanel extends JPanel
                     return values.get(row).getDescription();
                 case 2:
                     DatabaseDefinition definition = DatabaseDefinitionCache.getDatabaseDefinition(values.get(row).getType());
-                    return definition != null ? definition.getName() : Constants.EMPTY;
+                    return definition.getName();
                 case 3:
                     return values.get(row).getClassName();
             }

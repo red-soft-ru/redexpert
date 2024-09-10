@@ -536,6 +536,21 @@ public final class WidgetFactory {
         return label;
     }
 
+    /**
+     * Create JLabel class instance
+     *
+     * @param text text to be displayed by the label
+     * @param icon the default icon this component will display
+     */
+    public static JLabel createLabel(String text, Icon icon) {
+
+        JLabel label = new JLabel(text);
+        label.setIcon(icon);
+        label.setPreferredSize(getPreferredSize(label));
+
+        return label;
+    }
+
 
     // -------------------------
     // --- Custom Components ---
@@ -586,6 +601,20 @@ public final class WidgetFactory {
         passwordField.setName(name);
 
         return passwordField;
+    }
+
+    /**
+     * Create named <code>ComponentTitledPanel</code> class instance,
+     * that has border with the <code>JComponents</code> instead of title.
+     *
+     * @param name the component's name
+     */
+    public static ComponentTitledPanel createComponentTitledPanel(String name, JComponent component) {
+
+        ComponentTitledPanel panel = new ComponentTitledPanel(component);
+        panel.setName(name);
+
+        return panel;
     }
 
     /**

@@ -47,6 +47,7 @@ public class ViewablePasswordField extends JPanel {
         setLayout(new GridBagLayout());
         setBorder(new JTextField().getBorder());
         setBackground(new JTextField().getBackground());
+        setPreferredSize(new Dimension(getPreferredSize().width, WidgetFactory.defaultHeight()));
 
         GridBagHelper gbh = new GridBagHelper().setMaxWeightX().fillBoth();
         add(passwordField, gbh.get());

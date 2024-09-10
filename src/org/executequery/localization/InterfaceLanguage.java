@@ -3,7 +3,8 @@ package org.executequery.localization;
 public enum InterfaceLanguage {
 
     en("en"),
-    ru("ru");
+    ru("ru"),
+    pt_br("pt_br");
 
     private final String key;
     private final String label;

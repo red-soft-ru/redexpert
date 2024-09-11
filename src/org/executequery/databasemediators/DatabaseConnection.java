@@ -238,6 +238,10 @@ public interface DatabaseConnection extends Serializable {
     void setAutoConnect(boolean val);
 
     boolean isAutoConnected();
+
+    void setAuthMethodMode(String val);
+
+    String getAuthMethodMode();
 }
 
 

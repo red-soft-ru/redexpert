@@ -93,18 +93,19 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
 
         gbh = new GridBagHelper().setMinWeightX().anchorNorthWest().fillHorizontally();
         rightPanel.add(WidgetFactory.createLabel(bundleString("driverCombo")), gbh.get());
-        rightPanel.add(WidgetFactory.createLabel(bundleString("authCombo")), gbh.nextRow().topGap(5).get());
+        rightPanel.add(WidgetFactory.createLabel(bundleString("serverCombo")), gbh.nextRow().topGap(5).get());
+        rightPanel.add(WidgetFactory.createLabel(bundleString("authCombo")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("userField")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("passwordField")), gbh.nextRow().get());
 
         gbh.setY(0).nextCol().leftGap(5).topGap(0).setMaxWeightX();
         rightPanel.add(driverCombo, gbh.get());
         rightPanel.add(addDriverButton, gbh.nextCol().setMinWeightX().get());
-        rightPanel.add(authCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
+        rightPanel.add(serverCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
+        rightPanel.add(authCombo, gbh.nextRow().get());
         rightPanel.add(userField, gbh.nextRow().get());
         rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).get());
-        rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
         // --- main panel ---
 
@@ -245,6 +246,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
             databaseConnection.setContainerPassword(contPasswordField.getPassword());
             databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+            databaseConnection.setAuthMethodMode((String) serverCombo.getSelectedItem());
             databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
             databaseConnection.setSourceName(path.replace("\\", "/"));
             databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());

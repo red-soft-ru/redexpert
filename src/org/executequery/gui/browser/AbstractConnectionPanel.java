@@ -70,6 +70,9 @@ public abstract class AbstractConnectionPanel extends JPanel
     private static final String BASIC_AUTH = bundleString("BasicAu");
     private static final String MULTIFACTOR_AUTH = bundleString("Multifactor");
 
+    protected static final String OLD_SERVER = "Red Database 2.6";
+    protected static final String NEW_SERVER = "Red Database 3+";
+
     private boolean driverChangeEnable;
 
     // ---
@@ -89,6 +92,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected JButton browseCertFileButton;
 
     protected JComboBox<String> authCombo;
+    protected JComboBox<String> serverCombo;
     protected JComboBox<String> charsetsCombo;
     protected JComboBox<DatabaseDriver> driverCombo;
 
@@ -139,6 +143,9 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void init() {
 
+        String[] availableServers = new String[]{OLD_SERVER, NEW_SERVER};
+        String[] authMethods = new String[]{BASIC_AUTH, GSS_AUTH, MULTIFACTOR_AUTH};
+
         tabPane = WidgetFactory.createTabbedPane("tabPane");
         propertiesPanel = new AdvancedPropertiesPanel(connection, controller);
 
@@ -164,9 +171,10 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         // --- combo boxes ---
 
+        authCombo = WidgetFactory.createComboBox("authCombo", authMethods);
         driverCombo = WidgetFactory.createComboBox("driverCombo", jdbcDrivers);
         charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets);
-        authCombo = WidgetFactory.createComboBox("authCombo", new String[]{BASIC_AUTH, GSS_AUTH, MULTIFACTOR_AUTH});
+        serverCombo = WidgetFactory.createComboBox("serverCombo", availableServers);
 
         // --- text fields ---
 
@@ -228,6 +236,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         userPasswordField.getField().addKeyListener(this);
 
         authCombo.addItemListener(this::authChanged);
+        serverCombo.addItemListener(this::serverChanged);
         driverCombo.addItemListener(this::driverChanged);
         charsetsCombo.addItemListener(this::charsetChanged);
 
@@ -255,6 +264,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     }
 
     protected void updateVisibleComponents() {
+
         if (isGssAuthSelected()) {
             userRequire.disable();
             certRequire.disable();
@@ -265,8 +275,8 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         } else if (isMultifactorAuthSelected()) {
             userRequire.enable();
-            certRequire.enable();
             userPasswordRequire.disable();
+            certRequire.setEnable(!isNewServerSelected());
 
             multifactorPanel.setVisible(true);
             setEnabledComponents(basicAuthComponents, true);
@@ -275,7 +285,6 @@ public abstract class AbstractConnectionPanel extends JPanel
             userRequire.enable();
             certRequire.disable();
             userPasswordRequire.enable();
-
 
             multifactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, true);
@@ -351,10 +360,27 @@ public abstract class AbstractConnectionPanel extends JPanel
     }
 
     private void authChanged(ItemEvent e) {
-        if (!isSelected(e)) {
+        if (isSelected(e)) {
             updateVisibleComponents();
             handleEvent(e);
         }
+    }
+
+    private void serverChanged(ItemEvent e) {
+
+        if (!isSelected(e))
+            return;
+
+        if (isNewServerSelected()) {
+            if (isBasicAuthSelected())
+                authCombo.setSelectedItem(MULTIFACTOR_AUTH);
+            authCombo.removeItem(BASIC_AUTH);
+
+        } else
+            authCombo.insertItemAt(BASIC_AUTH, 0);
+
+        updateVisibleComponents();
+        handleEvent(e);
     }
 
     private void charsetChanged(ItemEvent e) {
@@ -397,6 +423,9 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         } else if (Objects.equals(source, authCombo)) {
             connection.setAuthMethod((String) authCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, serverCombo)) {
+            connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
 
         } else if (Objects.equals(source, userField)) {
             connection.setUserName(userField.getText().trim());
@@ -445,6 +474,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         connection.setAuthMethod((String) authCombo.getSelectedItem());
         connection.setCharset((String) charsetsCombo.getSelectedItem());
         connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
+        connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
         connection.setSourceName(fileField.getText().replace("\\", "/").trim());
 
         // --- driver ---
@@ -704,6 +734,14 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected boolean isMultifactorAuthSelected() {
         return Objects.equals(authCombo.getSelectedItem(), MULTIFACTOR_AUTH);
+    }
+
+    protected boolean isBasicAuthSelected() {
+        return Objects.equals(authCombo.getSelectedItem(), BASIC_AUTH);
+    }
+
+    protected boolean isNewServerSelected() {
+        return Objects.equals(serverCombo.getSelectedItem(), NEW_SERVER);
     }
 
     protected static boolean isSelected(ItemEvent e) {

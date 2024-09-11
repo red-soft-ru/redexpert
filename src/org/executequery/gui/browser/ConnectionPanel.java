@@ -180,7 +180,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh = new GridBagHelper().leftGap(5).setMinWeightX().anchorNorthWest().fillHorizontally();
         rightPanel.add(WidgetFactory.createLabel(bundleString("driverCombo")), gbh.get());
-        rightPanel.add(WidgetFactory.createLabel(bundleString("authCombo")), gbh.nextRow().topGap(5).get());
+        rightPanel.add(WidgetFactory.createLabel(bundleString("serverCombo")), gbh.nextRow().topGap(5).get());
+        rightPanel.add(WidgetFactory.createLabel(bundleString("authCombo")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("roleField")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("userField")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("passwordField")), gbh.nextRow().get());
@@ -188,12 +189,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbh.setY(0).nextCol().topGap(0).setMaxWeightX();
         rightPanel.add(driverCombo, gbh.get());
         rightPanel.add(addDriverButton, gbh.nextCol().setMinWeightX().get());
-        rightPanel.add(authCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
+        rightPanel.add(serverCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
+        rightPanel.add(authCombo, gbh.nextRow().get());
         rightPanel.add(roleField, gbh.nextRow().get());
         rightPanel.add(userField, gbh.nextRow().get());
         rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPwdPanel, gbh.nextRow().nextCol().leftGap(2).get());
-        rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
         // --- main panel ---
 
@@ -703,6 +704,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         portField.setText(dc.getPort().isEmpty() ? "3050" : dc.getPort());
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
         hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());
+        serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
 
         selectActualDriver();
         useSshCheckTriggered(null);

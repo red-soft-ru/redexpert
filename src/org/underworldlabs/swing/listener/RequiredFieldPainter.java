@@ -58,6 +58,13 @@ public class RequiredFieldPainter {
         this.painter.paintComponent();
     }
 
+    public void setEnable(boolean enable) {
+        if (enable)
+            enable();
+        else
+            disable();
+    }
+
     public boolean check() {
         return !painter.required();
     }

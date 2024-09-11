@@ -172,6 +172,8 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
 
     private String authMethod;
 
+    private String authMethodMode;
+
     private String connectionMethod;
 
     private String folderId;
@@ -844,6 +846,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     @Override
     public boolean isAutoConnected() {
         return isAutoConnected;
+    }
+
+    @Override
+    public void setAuthMethodMode(String val) {
+        authMethodMode = val;
+    }
+
+    @Override
+    public String getAuthMethodMode() {
+        return authMethodMode;
     }
 
     @Override

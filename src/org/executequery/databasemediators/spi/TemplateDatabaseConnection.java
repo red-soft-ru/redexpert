@@ -141,6 +141,8 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   private String authMethod;
 
+  private String authMethodMode;
+
   private String connectionMethod;
 
   private String folderId;
@@ -804,7 +806,14 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     return isAutoConnected;
   }
 
+  @Override
+  public void setAuthMethodMode(String val) {
+    authMethodMode = val;
+  }
+
+  @Override
+  public String getAuthMethodMode() {
+    return authMethodMode;
+  }
+
 }
-
-
-

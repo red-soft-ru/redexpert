@@ -393,7 +393,7 @@ public abstract class AbstractConnectionPanel extends JPanel
             connection.setUserName(userField.getText().trim());
 
         } else if (Objects.equals(source, passwordField)) {
-            connection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+            connection.setPassword(passwordField.getPassword());
 
         } else if (Objects.equals(source, storePasswordCheck)) {
             connection.setPasswordStored(storePasswordCheck.isSelected());
@@ -405,7 +405,7 @@ public abstract class AbstractConnectionPanel extends JPanel
             connection.setCertificate(certField.getText().trim());
 
         } else if (Objects.equals(source, containerPasswordField)) {
-            connection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+            connection.setContainerPassword(containerPasswordField.getPassword());
 
         } else if (Objects.equals(source, storeContPasswordCheck)) {
             connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
@@ -431,7 +431,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         connection.setHost(hostField.getText());
         connection.setPort(portField.getText());
         connection.setUserName(userField.getText());
-        connection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+        connection.setPassword(passwordField.getPassword());
         connection.setPasswordStored(storePasswordCheck.isSelected());
         connection.setAuthMethod((String) authCombo.getSelectedItem());
         connection.setCharset((String) charsetsCombo.getSelectedItem());
@@ -454,8 +454,8 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         connection.setCertificate(certField.getText());
         connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+        connection.setContainerPassword(containerPasswordField.getPassword());
         connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-        connection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
 
         // --- transaction isolation ---
 
@@ -516,10 +516,9 @@ public abstract class AbstractConnectionPanel extends JPanel
         if (!certField.getText().isEmpty() && isMultifactorAuthSelected())
             loadCertificate(properties, certField.getText());
 
-        if (containerPasswordField.getPassword() != null
-                && containerPasswordField.getPassword().length != 0
+        if (!MiscUtils.isNull(containerPasswordField.getPassword())
                 && isMultifactorAuthSelected())
-            properties.setProperty("isc_dpb_repository_pin", MiscUtils.charsToString(containerPasswordField.getPassword()));
+            properties.setProperty("isc_dpb_repository_pin", containerPasswordField.getPassword());
 
         if (verifyCertCheck.isSelected() && isMultifactorAuthSelected())
             properties.setProperty("isc_dpb_verify_server", "1");

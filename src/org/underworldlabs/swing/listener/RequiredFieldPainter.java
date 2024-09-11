@@ -39,7 +39,7 @@ public class RequiredFieldPainter {
     }
 
     private void init(ViewablePasswordField passwordField) {
-        painter = new DocumentPainter(passwordField.getPasswordField(), passwordField);
+        painter = new DocumentPainter(passwordField.getField(), passwordField);
     }
 
     // ---

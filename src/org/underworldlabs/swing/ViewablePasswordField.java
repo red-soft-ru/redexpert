@@ -4,6 +4,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,11 +90,11 @@ public class ViewablePasswordField extends JPanel {
         passwordField.setText(text);
     }
 
-    public char[] getPassword() {
-        return passwordField.getPassword();
+    public String getPassword() {
+        return MiscUtils.charsToString(passwordField.getPassword());
     }
 
-    public JPasswordField getPasswordField() {
+    public JPasswordField getField() {
         return passwordField;
     }
 

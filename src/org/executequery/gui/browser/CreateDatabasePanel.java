@@ -195,9 +195,9 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         String user = userField.getText();
         String path = fileField.getText();
         String server = hostField.getText();
+        String password = passwordField.getPassword();
         String charset = (String) charsetsCombo.getSelectedItem();
         int port = portField.getValue() != 0 ? portField.getValue() : 3050;
-        String password = MiscUtils.charsToString(passwordField.getPassword());
         int pageSize = Integer.parseInt(Objects.requireNonNull((String) pageSizeCombo.getSelectedItem()));
 
         createDatabase.setPort(port);
@@ -246,8 +246,8 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
             databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
             databaseConnection.setSourceName(path.replace("\\", "/"));
+            databaseConnection.setContainerPassword(containerPasswordField.getPassword());
             databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-            databaseConnection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
 
             JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
             if (tabComponent instanceof ConnectionsTreePanel)

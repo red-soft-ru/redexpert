@@ -316,7 +316,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
             processed = true;
 
         } else if (Objects.equals(source, sshPasswordField)) {
-            connection.setSshPassword(MiscUtils.charsToString(sshPasswordField.getPassword()));
+            connection.setSshPassword(sshPasswordField.getPassword());
             processed = true;
 
         } else if (Objects.equals(source, storeSshPasswordCheck)) {
@@ -350,8 +350,8 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         connection.setSshPort(sshPortField.getValue());
         connection.setSshUserName(sshUserField.getText());
         connection.setSshTunnel(useSshCheck.isSelected());
+        connection.setSshPassword(sshPasswordField.getPassword());
         connection.setSshPasswordStored(storeSshPasswordCheck.isSelected());
-        connection.setSshPassword(MiscUtils.charsToString(sshPasswordField.getPassword()));
 
         // ---
 

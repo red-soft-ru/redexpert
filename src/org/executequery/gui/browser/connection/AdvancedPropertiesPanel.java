@@ -60,9 +60,11 @@ public class AdvancedPropertiesPanel extends JPanel {
 
     private void init() {
 
-        levelsCombo = WidgetFactory.createTransactionIsolationComboBox("levelsCombo");
         addButton = WidgetFactory.createButton("addButton", Bundles.get("common.add.button"), e -> add());
         removeButton = WidgetFactory.createButton("removeButton", Bundles.get("common.delete.button"), e -> remove());
+
+        levelsCombo = WidgetFactory.createTransactionIsolationComboBox("levelsCombo");
+        levelsCombo.setEnabled(false);
 
         setLevelButton = WidgetFactory.createButton("setLevelButton", Bundles.get("common.apply.button"), e -> setLevel());
         setLevelButton.setEnabled(false);

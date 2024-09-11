@@ -220,8 +220,8 @@ public abstract class AbstractConnectionPanel extends JPanel
                 userPasswordField,
                 storePasswordCheck,
                 encryptPasswordCheck,
-                getNearComponent(userField, -5),
-                getNearComponent(userPasswordField, -5)
+                getNearComponent(userField, -6),
+                getNearComponent(userPasswordField, -6)
         ));
     }
 

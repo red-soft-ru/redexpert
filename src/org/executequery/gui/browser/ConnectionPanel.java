@@ -228,9 +228,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 userPasswordField,
                 storePasswordCheck,
                 encryptPasswordCheck,
-                getNearComponent(roleField, -6),
-                getNearComponent(userField, -6),
-                getNearComponent(userPasswordField, -6)
+                getNearComponent(roleField, -7),
+                getNearComponent(userField, -7),
+                getNearComponent(userPasswordField, -7)
         ));
     }
 

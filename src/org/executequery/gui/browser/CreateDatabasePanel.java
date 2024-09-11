@@ -11,9 +11,6 @@ import org.executequery.event.*;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.Repository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -260,22 +257,6 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         GUIUtilities.closeSelectedCentralPane();
     }
 
-    private boolean connectionNameExists(String connectionName) {
-
-        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repo instanceof DatabaseConnectionRepository) {
-            DatabaseConnectionRepository dbRepo = (DatabaseConnectionRepository) repo;
-
-            String folderId = connection != null ? connection.getFolderId() : "";
-            if (dbRepo.nameExists(connection, connectionName, folderId)) {
-                GUIUtilities.displayErrorMessage(bundleString("error.nameExist", connectionName));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // ---
 
     private void populateAndSave() {
@@ -283,73 +264,6 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
                 this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null
         ));
-    }
-
-    /**
-     * Populates the values of the selected connection
-     * properties object with the field values.
-     */
-    private void populateConnectionObject() {
-
-        if (connection == null)
-            return;
-
-        connection.setHost(hostField.getText());
-        connection.setPort(portField.getText());
-        connection.setUserName(userField.getText());
-        connection.setCertificate(certField.getText());
-        connection.setPasswordStored(storePasswordCheck.isSelected());
-        connection.setAuthMethod((String) authCombo.getSelectedItem());
-        connection.setCharset((String) charsetsCombo.getSelectedItem());
-        connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
-        connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
-        connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-        connection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
-        connection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
-
-        DatabaseDriver driver = (DatabaseDriver) driverCombo.getSelectedItem();
-        if (driver != null) {
-            connection.setJDBCDriver(driver);
-            connection.setDriverId(driver.getId());
-            connection.setDriverName(driver.getName());
-            connection.setDatabaseType(Integer.toString(driver.getType()));
-
-        } else {
-            connection.setDriverId(0);
-            connection.setJDBCDriver(null);
-            connection.setDriverName(null);
-            connection.setDatabaseType(null);
-        }
-
-        storeJdbcProperties();
-        propertiesPanel.getTransactionIsolationLevel();
-        checkNameUpdate();
-    }
-
-    /**
-     * Checks the current selection for a name change
-     * to be propagated back to the tree view.
-     */
-    private void checkNameUpdate() {
-
-        String newName = nameField.getText().trim();
-        if (connectionNameExists(newName)) {
-            focusNameField();
-            return;
-        }
-
-        String oldName = connection.getName();
-        if (!oldName.equals(newName)) {
-            connection.setName(newName);
-            controller.nodeNameValueChanged(host);
-        }
-    }
-
-    // ---
-
-    private void focusNameField() {
-        nameField.requestFocusInWindow();
-        nameField.selectAll();
     }
 
 }

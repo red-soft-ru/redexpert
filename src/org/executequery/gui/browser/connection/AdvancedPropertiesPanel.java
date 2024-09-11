@@ -273,6 +273,10 @@ public class AdvancedPropertiesPanel extends JPanel {
         propertiesModel.update();
     }
 
+    public int getSelectedLevel() {
+        return levelsCombo.getSelectedLevel();
+    }
+
     public void setTransactionEnabled(boolean enable) {
         levelsCombo.setEnabled(enable);
         setLevelButton.setEnabled(enable);

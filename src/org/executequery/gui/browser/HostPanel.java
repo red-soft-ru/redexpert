@@ -80,7 +80,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      * Indicates the panel is being selected in the pane
      */
     public boolean tabViewSelected() {
-        connectionPanel.buildDriversList();
+        connectionPanel.selectActualDriver();
         return connectionPanel.tabViewSelected();
     }
 
@@ -168,7 +168,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
      */
     @Override
     public void disconnected(ConnectionEvent connectionEvent) {
-        connectionPanel.disconnected(connectionEvent.getDatabaseConnection());
+        connectionPanel.disconnected();
         GUIUtilities.scheduleGC();
     }
 

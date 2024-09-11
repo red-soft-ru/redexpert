@@ -38,6 +38,7 @@ import org.executequery.gui.browser.connection.AdvancedPropertiesPanel;
 import org.executequery.gui.drivers.CreateDriverDialog;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.DatabaseDriverRepository;
 import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
@@ -79,9 +80,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected List<String> charsets;
     protected List<DatabaseDriver> jdbcDrivers;
-
     protected final List<JComponent> basicAuthComponents;
-    protected final List<JComponent> multifactorAuthComponents;
 
     // --- gui components ---
 
@@ -108,6 +107,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected ViewablePasswordField passwordField;
     protected ViewablePasswordField containerPasswordField;
 
+    protected JTabbedPane tabPane;
     protected JPanel multifactorPanel;
     protected AdvancedPropertiesPanel propertiesPanel;
 
@@ -120,9 +120,8 @@ public abstract class AbstractConnectionPanel extends JPanel
     public AbstractConnectionPanel(BrowserController controller) {
         super(new GridBagLayout());
         this.controller = controller;
-
+        this.driverChangeEnable = true;
         this.basicAuthComponents = new ArrayList<>();
-        this.multifactorAuthComponents = new ArrayList<>();
 
         loadCharsets();
         loadDrivers();
@@ -139,6 +138,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void init() {
 
+        tabPane = WidgetFactory.createTabbedPane("tabPane");
         propertiesPanel = new AdvancedPropertiesPanel(connection, controller);
 
         // --- buttons ---
@@ -193,7 +193,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         // --- multifactor panel ---
 
         multifactorPanel = WidgetFactory.createPanel("multifactorPanel");
-        multifactorPanel.setBorder(BorderFactory.createEtchedBorder());
+        multifactorPanel.setBorder(BorderFactory.createTitledBorder(bundleString("multifactorPanel")));
 
         gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
         multifactorPanel.add(WidgetFactory.createLabel(bundleString("certField")), gbh.setMinWeightX().get());
@@ -205,8 +205,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         multifactorPanel.add(verifyCertCheck, gbh.nextCol().leftGap(0).spanX().get());
     }
 
-    private void initComponentsLists() {
-
+    protected void initComponentsLists() {
         basicAuthComponents.addAll(Arrays.asList(
                 userField,
                 passwordField,
@@ -215,14 +214,11 @@ public abstract class AbstractConnectionPanel extends JPanel
                 getNearComponent(userField, -5),
                 getNearComponent(passwordField, -5)
         ));
-
-        multifactorAuthComponents.add(multifactorPanel);
     }
 
     protected void addListeners() {
 
         KeyListener keyListener = new KeyHandler();
-        nameField.addKeyListener(keyListener);
         hostField.addKeyListener(keyListener);
         userField.addKeyListener(keyListener);
         portField.addKeyListener(keyListener);
@@ -252,8 +248,7 @@ public abstract class AbstractConnectionPanel extends JPanel
                 RequiredFieldPainter.initialize(nameField),
                 RequiredFieldPainter.initialize(fileField),
                 RequiredFieldPainter.initialize(hostField),
-                RequiredFieldPainter.initialize(portField),
-                RequiredFieldPainter.initialize(driverCombo)
+                RequiredFieldPainter.initialize(portField)
         );
     }
 
@@ -261,25 +256,24 @@ public abstract class AbstractConnectionPanel extends JPanel
         if (isGssAuthSelected()) {
             userRequiredPainter.disable();
             passwordRequiredPainter.disable();
+            multifactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, false);
-            setVisibleComponents(multifactorAuthComponents, false);
 
         } else if (isMultifactorAuthSelected()) {
             userRequiredPainter.enable();
             passwordRequiredPainter.enable();
+            multifactorPanel.setVisible(true);
             setEnabledComponents(basicAuthComponents, true);
-            setVisibleComponents(multifactorAuthComponents, true);
 
         } else {
             userRequiredPainter.enable();
             passwordRequiredPainter.enable();
+            multifactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, true);
-            setVisibleComponents(multifactorAuthComponents, false);
         }
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private JComponent getNearComponent(JComponent comp, int zOffset) {
+    protected final JComponent getNearComponent(JComponent comp, int zOffset) {
 
         Container container = comp.getParent();
         if (container == null)
@@ -290,10 +284,6 @@ public abstract class AbstractConnectionPanel extends JPanel
             return null;
 
         return (JComponent) container.getComponent(componentIndex);
-    }
-
-    private void setVisibleComponents(List<JComponent> components, boolean visible) {
-        components.stream().filter(Objects::nonNull).forEach(c -> c.setVisible(visible));
     }
 
     private void setEnabledComponents(List<JComponent> components, boolean enabled) {
@@ -423,6 +413,55 @@ public abstract class AbstractConnectionPanel extends JPanel
         } else if (Objects.equals(source, verifyCertCheck)) {
             connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
         }
+
+        storeJdbcProperties();
+    }
+
+    /**
+     * Populates the values of the selected connection
+     * properties object with the field values.
+     */
+    protected void populateConnectionObject() {
+
+        if (connection == null)
+            return;
+
+        // --- basic ---
+
+        connection.setHost(hostField.getText());
+        connection.setPort(portField.getText());
+        connection.setUserName(userField.getText());
+        connection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+        connection.setPasswordStored(storePasswordCheck.isSelected());
+        connection.setAuthMethod((String) authCombo.getSelectedItem());
+        connection.setCharset((String) charsetsCombo.getSelectedItem());
+        connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
+        connection.setSourceName(fileField.getText().replace("\\", "/").trim());
+
+        // --- driver ---
+
+        if (isDriverChangeEnable()) {
+            DatabaseDriver driver = (DatabaseDriver) driverCombo.getSelectedItem();
+            if (driver != null) {
+                connection.setJDBCDriver(driver);
+                connection.setDriverId(driver.getId());
+                connection.setDriverName(driver.getName());
+                connection.setDatabaseType(Integer.toString(driver.getType()));
+            }
+        }
+
+        // --- certificate ---
+
+        connection.setCertificate(certField.getText());
+        connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+        connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
+        connection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        // --- transaction isolation ---
+
+        connection.setTransactionIsolation(propertiesPanel.getSelectedLevel());
+
+        // ---
 
         storeJdbcProperties();
     }
@@ -582,6 +621,46 @@ public abstract class AbstractConnectionPanel extends JPanel
         this.driverChangeEnable = enable;
     }
 
+    // --- connection name handlers ---
+
+    protected final boolean connectionNameExists() {
+        return connectionNameExists(nameField.getText().trim());
+    }
+
+    protected final boolean connectionNameExists(String connectionName) {
+
+        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repo instanceof DatabaseConnectionRepository) {
+            DatabaseConnectionRepository dbRepo = (DatabaseConnectionRepository) repo;
+
+            String folderId = connection != null ? connection.getFolderId() : "";
+            if (dbRepo.nameExists(connection, connectionName, folderId)) {
+                GUIUtilities.displayErrorMessage(bundleString("error.nameExist", connectionName));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected void checkNameUpdate() {
+
+        String newName = nameField.getText().trim();
+        if (MiscUtils.isNull(newName)) {
+            GUIUtilities.displayWarningMessage(bundleString("error.nameEmpty"));
+            focusNameField();
+            return;
+        }
+
+        if (connectionNameExists(newName))
+            focusNameField();
+    }
+
+    protected final void focusNameField() {
+        nameField.requestFocusInWindow();
+        nameField.selectAll();
+    }
+
     // --- others ---
 
     private void loadCharsets() {
@@ -602,7 +681,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         }
     }
 
-    protected final boolean anyRequiredFieldEmpty() {
+    protected boolean anyRequiredFieldEmpty() {
 
         boolean anyRequiredFieldEmpty = requiredPainters.stream().anyMatch(e -> !e.check());
         if (anyRequiredFieldEmpty)

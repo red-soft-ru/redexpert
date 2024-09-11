@@ -544,8 +544,11 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
     private void updateConnectionState() {
         boolean connected = connection != null && connection.isConnected();
+
         connectButton.setText(Bundles.getCommon(connected ? "disconnect.button" : "connect.button"));
         connectButton.setEnabled(true);
+
+        testButton.setEnabled(!connected);
     }
 
     /**

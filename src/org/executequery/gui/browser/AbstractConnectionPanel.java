@@ -374,23 +374,17 @@ public abstract class AbstractConnectionPanel extends JPanel
             return;
 
         Object source = event.getSource();
-        if (Objects.equals(source, storePasswordCheck)) {
-            connection.setPasswordStored(storePasswordCheck.isSelected());
+        if (Objects.equals(source, hostField)) {
+            connection.setHost(hostField.getText().trim());
 
-        } else if (Objects.equals(source, encryptPasswordCheck)) {
-            connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
+        } else if (Objects.equals(source, portField)) {
+            connection.setPort(portField.getText().trim());
 
-        } else if (Objects.equals(source, storeContPasswordCheck)) {
-            connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-
-        } else if (Objects.equals(source, verifyCertCheck)) {
-            connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+        } else if (Objects.equals(source, fileField)) {
+            connection.setSourceName(fileField.getText().trim());
 
         } else if (Objects.equals(source, charsetsCombo)) {
             connection.setCharset((String) charsetsCombo.getSelectedItem());
-
-        } else if (Objects.equals(source, authCombo)) {
-            connection.setAuthMethod((String) authCombo.getSelectedItem());
 
         } else if (Objects.equals(source, driverCombo)) {
 
@@ -401,6 +395,33 @@ public abstract class AbstractConnectionPanel extends JPanel
                 connection.setDriverName(driver.getName());
                 connection.setDatabaseType(Integer.toString(driver.getType()));
             }
+
+        } else if (Objects.equals(source, authCombo)) {
+            connection.setAuthMethod((String) authCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, userField)) {
+            connection.setUserName(userField.getText().trim());
+
+        } else if (Objects.equals(source, passwordField)) {
+            connection.setPassword(MiscUtils.charsToString(passwordField.getPassword()));
+
+        } else if (Objects.equals(source, storePasswordCheck)) {
+            connection.setPasswordStored(storePasswordCheck.isSelected());
+
+        } else if (Objects.equals(source, encryptPasswordCheck)) {
+            connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
+
+        } else if (Objects.equals(source, certField)) {
+            connection.setCertificate(certField.getText().trim());
+
+        } else if (Objects.equals(source, containerPasswordField)) {
+            connection.setContainerPassword(MiscUtils.charsToString(containerPasswordField.getPassword()));
+
+        } else if (Objects.equals(source, storeContPasswordCheck)) {
+            connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
+
+        } else if (Objects.equals(source, verifyCertCheck)) {
+            connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
         }
 
         storeJdbcProperties();

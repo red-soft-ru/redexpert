@@ -431,8 +431,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         boolean enabled = useSshCheck.isSelected();
         if (enabled) {
-            populateConnectionObject();
             setSshValues(connection);
+            populateConnectionObject();
 
             sshPanel.setVisible(true);
             sshRequired.forEach(RequiredFieldPainter::enable);

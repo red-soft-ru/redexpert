@@ -439,7 +439,11 @@ public abstract class AbstractConnectionPanel extends JPanel
         }
 
         properties.setProperty("lc_ctype", (String) charsetsCombo.getSelectedItem());
-        properties.setProperty("useGSSAuth", String.valueOf(isGssAuthSelected()));
+
+        if (isGssAuthSelected())
+            properties.setProperty("useGSSAuth", "true");
+        else
+            properties.remove("useGSSAuth");
 
         if (!properties.containsKey("isc_dpb_trusted_auth")
                 && !properties.containsKey("isc_dpb_multi_factor_auth")

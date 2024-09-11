@@ -164,6 +164,9 @@ public class AdvancedPropertiesPanel extends JPanel {
             return;
 
         Properties properties = connection.getJdbcProperties();
+        if (properties == null)
+            properties = new Properties();
+
         properties.put(key, val);
         connection.setJdbcProperties(properties);
     }
@@ -174,6 +177,9 @@ public class AdvancedPropertiesPanel extends JPanel {
             return;
 
         Properties properties = connection.getJdbcProperties();
+        if (properties == null)
+            return;
+
         properties.remove(key);
         connection.setJdbcProperties(properties);
     }
@@ -184,6 +190,9 @@ public class AdvancedPropertiesPanel extends JPanel {
             return new Object[0][0];
 
         Properties properties = connection.getJdbcProperties();
+        if (properties == null)
+            return new Object[0][0];
+
         for (Map.Entry<Object, Object> prop : properties.entrySet()) {
             String key = (String) prop.getKey();
             if (propertyIgnored(key))

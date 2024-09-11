@@ -203,11 +203,11 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         createDatabase.setPort(port);
         createDatabase.setUser(user);
         createDatabase.setServer(server);
-        storeJdbcProperties(createDatabase);
         createDatabase.setEncoding(charset);
         createDatabase.setPassword(password);
         createDatabase.setDatabaseName(path);
         createDatabase.setPageSize(pageSize);
+        storeJdbcProperties(createDatabase);
 
         try {
             createDatabase.exec();

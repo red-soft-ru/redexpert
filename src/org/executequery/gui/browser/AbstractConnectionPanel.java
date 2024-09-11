@@ -64,7 +64,7 @@ import java.util.*;
 import java.util.List;
 
 public abstract class AbstractConnectionPanel extends JPanel
-        implements DatabaseDriverListener {
+        implements DatabaseDriverListener, KeyListener {
 
     private static final String GSS_AUTH = "GSS";
     private static final String BASIC_AUTH = bundleString("BasicAu");
@@ -219,14 +219,13 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void addListeners() {
 
-        KeyListener keyListener = new KeyHandler();
-        hostField.addKeyListener(keyListener);
-        userField.addKeyListener(keyListener);
-        portField.addKeyListener(keyListener);
-        fileField.addKeyListener(keyListener);
-        certField.addKeyListener(keyListener);
-        userPasswordField.addKeyListener(keyListener);
-        contPasswordField.addKeyListener(keyListener);
+        hostField.addKeyListener(this);
+        userField.addKeyListener(this);
+        portField.addKeyListener(this);
+        fileField.addKeyListener(this);
+        certField.addKeyListener(this);
+        contPasswordField.getField().addKeyListener(this);
+        userPasswordField.getField().addKeyListener(this);
 
         authCombo.addItemListener(this::authChanged);
         driverCombo.addItemListener(this::driverChanged);
@@ -729,15 +728,19 @@ public abstract class AbstractConnectionPanel extends JPanel
         return event instanceof DatabaseDriverEvent;
     }
 
-    // ---
+    // --- KeyListener impl ---
 
-    protected final class KeyHandler extends KeyAdapter {
+    @Override
+    public void keyReleased(KeyEvent e) {
+        handleEvent(e);
+    }
 
-        @Override
-        public void keyReleased(KeyEvent e) {
-            handleEvent(e);
-        }
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
 
-    } // KeyHandler class
+    @Override
+    public void keyPressed(KeyEvent e) {
+    }
 
 }

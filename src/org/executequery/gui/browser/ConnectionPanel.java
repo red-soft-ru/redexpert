@@ -36,6 +36,8 @@ import org.underworldlabs.swing.listener.RequiredFieldPainter;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -44,7 +46,8 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-public class ConnectionPanel extends AbstractConnectionPanel {
+public class ConnectionPanel extends AbstractConnectionPanel
+        implements DocumentListener {
 
     private List<RequiredFieldPainter> sshRequired;
 
@@ -62,6 +65,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
     private JCheckBox namesToUpperCheck;
     private JCheckBox storeSshPasswordCheck;
 
+    private JButton saveButton;
     private JButton testButton;
     private JButton connectButton;
 
@@ -75,6 +79,8 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         updateConnectionState();
         useSshCheckTriggered(null);
     }
+
+    // --- AbstractConnectionPanel impl ---
 
     @Override
     protected void init() {
@@ -91,6 +97,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         storeSshPasswordCheck = WidgetFactory.createCheckBox("storeSshPasswordCheck", bundleString("StorePassword"));
         namesToUpperCheck = WidgetFactory.createCheckBox("namesToUpperCheck", bundleString("namesToUpperCheck"), true);
 
+        saveButton = WidgetFactory.createButton("saveButton", Bundles.get("common.save.button"), e -> saveConnection());
         testButton = WidgetFactory.createButton("testButton", Bundles.get("common.test.button"), e -> testConnection());
         connectButton = WidgetFactory.createButton("connectButton", Bundles.get("common.connect.button"), e -> toggleConnection());
     }
@@ -141,9 +148,10 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
         JPanel buttonsPanel = WidgetFactory.createPanel("buttonsPanel");
 
-        gbh = new GridBagHelper().fillHorizontally();
+        gbh = new GridBagHelper().rightGap(5).fillHorizontally();
         buttonsPanel.add(connectButton, gbh.get());
-        buttonsPanel.add(testButton, gbh.nextCol().leftGap(5).get());
+        buttonsPanel.add(testButton, gbh.nextCol().get());
+        buttonsPanel.add(saveButton, gbh.nextCol().get());
         buttonsPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
 
         // --- left panel ---
@@ -236,12 +244,24 @@ public class ConnectionPanel extends AbstractConnectionPanel {
             checkNameUpdate();
         });
 
-        KeyListener keyListener = new KeyHandler();
-        roleField.addKeyListener(keyListener);
-        sshHostField.addKeyListener(keyListener);
-        sshPortField.addKeyListener(keyListener);
-        sshUserField.addKeyListener(keyListener);
-        sshPasswordField.addKeyListener(keyListener);
+        roleField.addKeyListener(this);
+        sshHostField.addKeyListener(this);
+        sshPortField.addKeyListener(this);
+        sshUserField.addKeyListener(this);
+        sshPasswordField.getField().addKeyListener(this);
+
+        hostField.getDocument().addDocumentListener(this);
+        userField.getDocument().addDocumentListener(this);
+        portField.getDocument().addDocumentListener(this);
+        fileField.getDocument().addDocumentListener(this);
+        certField.getDocument().addDocumentListener(this);
+        roleField.getDocument().addDocumentListener(this);
+        sshHostField.getDocument().addDocumentListener(this);
+        sshPortField.getDocument().addDocumentListener(this);
+        sshUserField.getDocument().addDocumentListener(this);
+        sshPasswordField.getField().getDocument().addDocumentListener(this);
+        contPasswordField.getField().getDocument().addDocumentListener(this);
+        userPasswordField.getField().getDocument().addDocumentListener(this);
 
         namesToUpperCheck.addActionListener(this::handleEvent);
         useSshCheck.addActionListener(this::useSshCheckTriggered);
@@ -281,6 +301,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
     @Override
     protected void handleEvent(AWTEvent event) {
+        setApplyButtonEnabled(true);
 
         boolean processed = false;
         if (event == null || connection == null)
@@ -481,7 +502,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         this.host = host;
 
         populateConnectionFields(host.getDatabaseConnection());
-        populateAndSave();
+        saveConnection();
         focusNameField();
         updateConnectionState();
 
@@ -560,7 +581,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
             return;
 
         try {
-            populateAndSave();
+            saveConnection();
             GUIUtilities.showWaitCursor();
             System.setProperty("java.security.auth.login.config", "config/gss.login.conf");
 
@@ -585,6 +606,9 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("error.disconnect", e.getMessage()), e, this.getClass());
+
+        } finally {
+            setApplyButtonEnabled(false);
         }
     }
 
@@ -594,7 +618,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
             return;
 
         try {
-            populateAndSave();
+            saveConnection();
             GUIUtilities.showWaitCursor();
 
             if (ConnectionMediator.getInstance().test(connection))
@@ -605,7 +629,13 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
         } finally {
             GUIUtilities.showNormalCursor();
+            setApplyButtonEnabled(false);
         }
+    }
+
+    private void saveConnection() {
+        setApplyButtonEnabled(false);
+        populateAndSave();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -682,6 +712,28 @@ public class ConnectionPanel extends AbstractConnectionPanel {
 
     public void addTab(String title, Component component) {
         tabPane.addTab(title, component);
+    }
+
+    private void setApplyButtonEnabled(boolean value) {
+        value &= connection != null && !connection.isConnected();
+        saveButton.setEnabled(value);
+    }
+
+    // --- DocumentListener impl ---
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        setApplyButtonEnabled(true);
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        setApplyButtonEnabled(true);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        setApplyButtonEnabled(true);
     }
 
     // ---

@@ -183,7 +183,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         rightPanel.add(authCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
         rightPanel.add(roleField, gbh.nextRow().get());
         rightPanel.add(userField, gbh.nextRow().get());
-        rightPanel.add(passwordField, gbh.nextRow().get());
+        rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPwdPanel, gbh.nextRow().nextCol().leftGap(2).get());
         rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
@@ -216,12 +216,12 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         basicAuthComponents.addAll(Arrays.asList(
                 roleField,
                 userField,
-                passwordField,
+                userPasswordField,
                 storePasswordCheck,
                 encryptPasswordCheck,
                 getNearComponent(roleField, -6),
                 getNearComponent(userField, -6),
-                getNearComponent(passwordField, -6)
+                getNearComponent(userPasswordField, -6)
         ));
     }
 
@@ -663,10 +663,10 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         charsetsCombo.setSelectedItem(dc.getCharset());
         storePasswordCheck.setSelected(dc.isPasswordStored());
         namesToUpperCheck.setSelected(dc.isNamesToUpperCase());
-        passwordField.setPassword(dc.getUnencryptedPassword());
+        contPasswordField.setPassword(dc.getContainerPassword());
         verifyCertCheck.setSelected(dc.isVerifyServerCertCheck());
+        userPasswordField.setPassword(dc.getUnencryptedPassword());
         encryptPasswordCheck.setSelected(dc.isPasswordEncrypted());
-        containerPasswordField.setPassword(dc.getContainerPassword());
         portField.setText(dc.getPort().isEmpty() ? "3050" : dc.getPort());
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
         hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());

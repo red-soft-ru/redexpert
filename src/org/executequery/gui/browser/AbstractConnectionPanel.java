@@ -104,16 +104,17 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected JTextField certField;
     protected NumberTextField portField;
 
-    protected ViewablePasswordField passwordField;
-    protected ViewablePasswordField containerPasswordField;
+    protected ViewablePasswordField userPasswordField;
+    protected ViewablePasswordField contPasswordField;
 
     protected JTabbedPane tabPane;
     protected JPanel multifactorPanel;
     protected AdvancedPropertiesPanel propertiesPanel;
 
-    private RequiredFieldPainter userRequiredPainter;
+    private RequiredFieldPainter certRequire;
+    private RequiredFieldPainter userRequire;
+    private RequiredFieldPainter userPasswordRequire;
     private List<RequiredFieldPainter> requiredPainters;
-    private RequiredFieldPainter passwordRequiredPainter;
 
     // ---
 
@@ -176,8 +177,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         hostField = WidgetFactory.createTextField("hostField", "localhost");
 
         portField = WidgetFactory.createNumberTextField("portField", "3050");
-        passwordField = WidgetFactory.createViewablePasswordField("passwordField");
-        containerPasswordField = WidgetFactory.createViewablePasswordField("containerPasswordField");
+        userPasswordField = WidgetFactory.createViewablePasswordField("userPasswordField");
+        contPasswordField = WidgetFactory.createViewablePasswordField("contPasswordField");
 
         // --- check boxes ---
 
@@ -200,7 +201,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         multifactorPanel.add(certField, gbh.nextCol().setWidth(3).leftGap(0).setMaxWeightX().get());
         multifactorPanel.add(browseCertFileButton, gbh.nextCol().setWidth(1).setMinWeightX().get());
         multifactorPanel.add(WidgetFactory.createLabel(bundleString("containerPasswordField")), gbh.nextRowFirstCol().leftGap(5).get());
-        multifactorPanel.add(containerPasswordField, gbh.nextCol().leftGap(0).setMaxWeightX().spanX().get());
+        multifactorPanel.add(contPasswordField, gbh.nextCol().leftGap(0).setMaxWeightX().spanX().get());
         multifactorPanel.add(storeContPasswordCheck, gbh.nextRow().leftGap(-3).bottomGap(5).setMinWeightX().setWidth(1).get());
         multifactorPanel.add(verifyCertCheck, gbh.nextCol().leftGap(0).spanX().get());
     }
@@ -208,11 +209,11 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected void initComponentsLists() {
         basicAuthComponents.addAll(Arrays.asList(
                 userField,
-                passwordField,
+                userPasswordField,
                 storePasswordCheck,
                 encryptPasswordCheck,
                 getNearComponent(userField, -5),
-                getNearComponent(passwordField, -5)
+                getNearComponent(userPasswordField, -5)
         ));
     }
 
@@ -224,8 +225,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         portField.addKeyListener(keyListener);
         fileField.addKeyListener(keyListener);
         certField.addKeyListener(keyListener);
-        passwordField.addKeyListener(keyListener);
-        containerPasswordField.addKeyListener(keyListener);
+        userPasswordField.addKeyListener(keyListener);
+        contPasswordField.addKeyListener(keyListener);
 
         authCombo.addItemListener(this::authChanged);
         driverCombo.addItemListener(this::driverChanged);
@@ -239,12 +240,14 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void addRequired() {
 
-        userRequiredPainter = RequiredFieldPainter.initialize(userField);
-        passwordRequiredPainter = RequiredFieldPainter.initialize(passwordField);
+        userRequire = RequiredFieldPainter.initialize(userField);
+        certRequire = RequiredFieldPainter.initialize(certField);
+        userPasswordRequire = RequiredFieldPainter.initialize(userPasswordField);
 
         requiredPainters = Arrays.asList(
-                userRequiredPainter,
-                passwordRequiredPainter,
+                userRequire,
+                certRequire,
+                userPasswordRequire,
                 RequiredFieldPainter.initialize(nameField),
                 RequiredFieldPainter.initialize(fileField),
                 RequiredFieldPainter.initialize(hostField),
@@ -254,20 +257,27 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void updateVisibleComponents() {
         if (isGssAuthSelected()) {
-            userRequiredPainter.disable();
-            passwordRequiredPainter.disable();
+            userRequire.disable();
+            certRequire.disable();
+            userPasswordRequire.disable();
+
             multifactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, false);
 
         } else if (isMultifactorAuthSelected()) {
-            userRequiredPainter.enable();
-            passwordRequiredPainter.enable();
+            userRequire.enable();
+            certRequire.enable();
+            userPasswordRequire.disable();
+
             multifactorPanel.setVisible(true);
             setEnabledComponents(basicAuthComponents, true);
 
         } else {
-            userRequiredPainter.enable();
-            passwordRequiredPainter.enable();
+            userRequire.enable();
+            certRequire.disable();
+            userPasswordRequire.enable();
+
+
             multifactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, true);
         }
@@ -392,8 +402,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         } else if (Objects.equals(source, userField)) {
             connection.setUserName(userField.getText().trim());
 
-        } else if (Objects.equals(source, passwordField)) {
-            connection.setPassword(passwordField.getPassword());
+        } else if (Objects.equals(source, userPasswordField)) {
+            connection.setPassword(userPasswordField.getPassword());
 
         } else if (Objects.equals(source, storePasswordCheck)) {
             connection.setPasswordStored(storePasswordCheck.isSelected());
@@ -404,8 +414,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         } else if (Objects.equals(source, certField)) {
             connection.setCertificate(certField.getText().trim());
 
-        } else if (Objects.equals(source, containerPasswordField)) {
-            connection.setContainerPassword(containerPasswordField.getPassword());
+        } else if (Objects.equals(source, contPasswordField)) {
+            connection.setContainerPassword(contPasswordField.getPassword());
 
         } else if (Objects.equals(source, storeContPasswordCheck)) {
             connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
@@ -431,7 +441,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         connection.setHost(hostField.getText());
         connection.setPort(portField.getText());
         connection.setUserName(userField.getText());
-        connection.setPassword(passwordField.getPassword());
+        connection.setPassword(userPasswordField.getPassword());
         connection.setPasswordStored(storePasswordCheck.isSelected());
         connection.setAuthMethod((String) authCombo.getSelectedItem());
         connection.setCharset((String) charsetsCombo.getSelectedItem());
@@ -454,7 +464,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         connection.setCertificate(certField.getText());
         connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
-        connection.setContainerPassword(containerPasswordField.getPassword());
+        connection.setContainerPassword(contPasswordField.getPassword());
         connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
 
         // --- transaction isolation ---
@@ -516,9 +526,9 @@ public abstract class AbstractConnectionPanel extends JPanel
         if (!certField.getText().isEmpty() && isMultifactorAuthSelected())
             loadCertificate(properties, certField.getText());
 
-        if (!MiscUtils.isNull(containerPasswordField.getPassword())
+        if (!MiscUtils.isNull(contPasswordField.getPassword())
                 && isMultifactorAuthSelected())
-            properties.setProperty("isc_dpb_repository_pin", containerPasswordField.getPassword());
+            properties.setProperty("isc_dpb_repository_pin", contPasswordField.getPassword());
 
         if (verifyCertCheck.isSelected() && isMultifactorAuthSelected())
             properties.setProperty("isc_dpb_verify_server", "1");

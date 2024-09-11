@@ -102,7 +102,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         rightPanel.add(addDriverButton, gbh.nextCol().setMinWeightX().get());
         rightPanel.add(authCombo, gbh.nextRow().previousCol().topGap(5).spanX().get());
         rightPanel.add(userField, gbh.nextRow().get());
-        rightPanel.add(passwordField, gbh.nextRow().get());
+        rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).get());
         rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
@@ -195,7 +195,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         String user = userField.getText();
         String path = fileField.getText();
         String server = hostField.getText();
-        String password = passwordField.getPassword();
+        String password = userPasswordField.getPassword();
         String charset = (String) charsetsCombo.getSelectedItem();
         int port = portField.getValue() != 0 ? portField.getValue() : 3050;
         int pageSize = Integer.parseInt(Objects.requireNonNull((String) pageSizeCombo.getSelectedItem()));
@@ -243,10 +243,10 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             databaseConnection.setDriverName(databaseDriver.getName());
             databaseConnection.setPasswordStored(storePasswordCheck.isSelected());
             databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+            databaseConnection.setContainerPassword(contPasswordField.getPassword());
             databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
             databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
             databaseConnection.setSourceName(path.replace("\\", "/"));
-            databaseConnection.setContainerPassword(containerPasswordField.getPassword());
             databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
 
             JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);

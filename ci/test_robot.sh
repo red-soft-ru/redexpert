@@ -23,7 +23,7 @@ check_variable DBMS
 check_variable BUILD
 
 echo "Downloading tests"
-git clone -q http://git.red-soft.biz/red-database/re-tests-robot
+git clone -q http://git.red-soft.biz/red-database/re-tests-robot -b connection-panel-rework
 
 echo "Installing components"
 $PYTHON -m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git

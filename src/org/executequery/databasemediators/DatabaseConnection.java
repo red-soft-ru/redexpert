@@ -242,6 +242,9 @@ public interface DatabaseConnection extends Serializable {
     void setAuthMethodMode(String val);
 
     String getAuthMethodMode();
+
+    void setConnType(String val);
+
+    String getConnType();
+
 }
-
-

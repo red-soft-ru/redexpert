@@ -143,6 +143,8 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   private String authMethodMode;
 
+  private String connType;
+
   private String connectionMethod;
 
   private String folderId;
@@ -814,6 +816,16 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   @Override
   public String getAuthMethodMode() {
     return authMethodMode;
+  }
+
+  @Override
+  public void setConnType(String val) {
+    connType = val;
+  }
+
+  @Override
+  public String getConnType() {
+    return connType;
   }
 
 }

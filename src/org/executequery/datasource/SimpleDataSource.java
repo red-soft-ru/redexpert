@@ -27,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
 import org.executequery.ExecuteQuery;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.event.ConnectionRepositoryEvent;
@@ -46,6 +47,7 @@ import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -151,9 +153,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 return dataSource.getConnection(tpb);
 
             // If used jaybird
-            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
-                    !StringUtils.equalsIgnoreCase(databaseConnection.getConnectionMethod(), "jdbc")) {
-
+            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver")) {
                 try {
 
                     // Checking for original jaybird or rdb jaybird...
@@ -188,28 +188,35 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                         }
                     }
 
-                    if (databaseConnection.useNewAPI()) {
-                        try {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
-                                    driver,
-                                    "biz.redsoft.FBDataSourceImpl",
-                                    jarPath,
-                                    new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE")
-                            );
+                    String connType = databaseConnection.getConnType();
+                    if (!Objects.equals(connType, ConnectionType.PURE_JAVA.name())) {
 
-                        } catch (ClassNotFoundException e) {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
-                                    "FBDataSourceImpl");
+                        if (Objects.equals(connType, ConnectionType.NATIVE.name())) {
+                            ConnectionType.NATIVE.value(databaseConnection.useNewAPI());
+
+                        } else if (Objects.equals(connType, ConnectionType.EMBEDDED.name())) {
+                            connType = ConnectionType.EMBEDDED.value(databaseConnection.useNewAPI());
+
+                        } else {
+                            connType = ConnectionType.PURE_JAVA.name();
                         }
-
-                    } else {
-                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
-                                "FBDataSourceImpl");
                     }
 
-                    for (Map.Entry<Object, Object> entry : advancedProperties.entrySet()) {
+                    try {
+                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
+                                driver,
+                                "biz.redsoft.FBDataSourceImpl",
+                                jarPath,
+                                new DynamicLibraryLoader.Parameter(String.class, connType)
+                        );
+
+                    } catch (ClassNotFoundException e) {
+                        throw new DataSourceException("Couldn't connect, class not found", e);
+                    }
+
+                    for (Map.Entry<Object, Object> entry : advancedProperties.entrySet())
                         dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
-                    }
+
                     dataSource.setURL(url);
                     classLoaderFromPlugin = dataSource.getClass().getClassLoader();
 

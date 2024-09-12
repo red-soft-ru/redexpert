@@ -22,6 +22,7 @@ package org.executequery.gui.browser;
 
 import org.executequery.*;
 import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -78,6 +79,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         updateConnectionState();
         useSshCheckTriggered(null);
+        useNewApiCheckTriggered(null);
     }
 
     // --- AbstractConnectionPanel impl ---
@@ -160,14 +162,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh = new GridBagHelper().leftGap(5).setMinWeightX().anchorNorthWest().fillHorizontally();
         leftPanel.add(WidgetFactory.createLabel(bundleString("nameField")), gbh.get());
-        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().topGap(5).get());
+        leftPanel.add(WidgetFactory.createLabel(bundleString("connTypeCombo")), gbh.nextRow().topGap(5).get());
+        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("portField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("fileField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("charsetsCombo")), gbh.nextRow().get());
 
         gbh.setY(0).nextCol().topGap(0).setMaxWeightX().spanX();
         leftPanel.add(nameField, gbh.get());
-        leftPanel.add(hostField, gbh.nextRow().topGap(5).get());
+        leftPanel.add(connTypeCombo, gbh.nextRow().topGap(5).get());
+        leftPanel.add(hostField, gbh.nextRow().get());
         leftPanel.add(portField, gbh.nextRow().get());
         leftPanel.add(fileField, gbh.nextRow().setWidth(1).get());
         leftPanel.add(browseFileButton, gbh.nextCol().setMinWeightX().get());
@@ -195,6 +199,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         rightPanel.add(userField, gbh.nextRow().get());
         rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPwdPanel, gbh.nextRow().nextCol().leftGap(2).get());
+        rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
         // --- main panel ---
 
@@ -264,10 +269,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         contPasswordField.getField().getDocument().addDocumentListener(this);
         userPasswordField.getField().getDocument().addDocumentListener(this);
 
+        useNewApiCheck.addActionListener(this::handleEvent);
         namesToUpperCheck.addActionListener(this::handleEvent);
         useSshCheck.addActionListener(this::useSshCheckTriggered);
         storeSshPasswordCheck.addActionListener(this::handleEvent);
-        useNewApiCheck.addActionListener(this::useNewApiCheckTriggered);
     }
 
     @Override
@@ -296,7 +301,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
     @Override
     protected void driverChanged(ItemEvent e) {
         super.driverChanged(e);
-        if (e.getStateChange() == ItemEvent.SELECTED)
+        if (isSelected(e))
+            useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
+    }
+
+    @Override
+    protected void connTypeChanged(ItemEvent e) {
+        super.connTypeChanged(e);
+        if (isSelected(e))
             useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
     }
 
@@ -447,13 +459,26 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     private void useNewApiCheckTriggered(ActionEvent e) {
+
         DatabaseDriver selectedDriver = (DatabaseDriver) driverCombo.getSelectedItem();
         int majorVersion = selectedDriver != null ? selectedDriver.getMajorVersion() : -1;
 
-        if (majorVersion < 4 && useNewApiCheck.isSelected()) {
-            GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI"));
-            useNewApiCheck.setSelected(false);
-        }
+        if (majorVersion < 4) {
+            if (useNewApiCheck.isSelected()) {
+                GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI.driver"));
+                useNewApiCheck.setSelected(false);
+            }
+            useNewApiCheck.setEnabled(false);
+
+        } else if (isPureJavaConnectionSelected()) {
+            if (useNewApiCheck.isSelected()) {
+                GUIUtilities.displayWarningMessage(bundleString("warning.useNewAPI.connType"));
+                useNewApiCheck.setSelected(false);
+            }
+            useNewApiCheck.setEnabled(false);
+
+        } else
+            useNewApiCheck.setEnabled(true);
 
         handleEvent(e);
     }
@@ -705,6 +730,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
         hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());
         serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
+        connTypeCombo.setSelectedItem(ConnectionType.contains(dc.getConnType()) ?
+                ConnectionType.valueOf(dc.getConnType()).name() :
+                ConnectionType.NATIVE.name()
+        );
 
         selectActualDriver();
         useSshCheckTriggered(null);

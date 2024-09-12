@@ -27,6 +27,7 @@ import org.executequery.EventMediator;
 import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
@@ -95,6 +96,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected JComboBox<String> serverCombo;
     protected JComboBox<String> charsetsCombo;
     protected JComboBox<DatabaseDriver> driverCombo;
+    protected JComboBox<ConnectionType> connTypeCombo;
 
     protected JCheckBox verifyCertCheck;
     protected JCheckBox storePasswordCheck;
@@ -175,6 +177,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         driverCombo = WidgetFactory.createComboBox("driverCombo", jdbcDrivers);
         charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets);
         serverCombo = WidgetFactory.createComboBox("serverCombo", availableServers);
+        connTypeCombo = WidgetFactory.createComboBox("connTypeCombo", ConnectionType.values());
 
         // --- text fields ---
 
@@ -239,6 +242,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         serverCombo.addItemListener(this::serverChanged);
         driverCombo.addItemListener(this::driverChanged);
         charsetsCombo.addItemListener(this::charsetChanged);
+        connTypeCombo.addItemListener(this::connTypeChanged);
 
         verifyCertCheck.addActionListener(this::setVerifyCertCheck);
         storePasswordCheck.addActionListener(this::setStorePassword);
@@ -393,6 +397,11 @@ public abstract class AbstractConnectionPanel extends JPanel
             handleEvent(e);
     }
 
+    protected void connTypeChanged(ItemEvent e) {
+        if (isSelected(e))
+            handleEvent(e);
+    }
+
     protected void handleEvent(AWTEvent event) {
 
         if (event == null || connection == null)
@@ -410,6 +419,10 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         } else if (Objects.equals(source, charsetsCombo)) {
             connection.setCharset((String) charsetsCombo.getSelectedItem());
+
+        } else if (Objects.equals(source, connTypeCombo)) {
+            ConnectionType connectionType = (ConnectionType) connTypeCombo.getSelectedItem();
+            connection.setConnType(connectionType != null ? connectionType.name() : null);
 
         } else if (Objects.equals(source, driverCombo)) {
 
@@ -476,6 +489,9 @@ public abstract class AbstractConnectionPanel extends JPanel
         connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
         connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
         connection.setSourceName(fileField.getText().replace("\\", "/").trim());
+
+        ConnectionType connectionType = (ConnectionType) connTypeCombo.getSelectedItem();
+        connection.setConnType(connectionType != null ? connectionType.name() : null);
 
         // --- driver ---
 
@@ -742,6 +758,15 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected boolean isNewServerSelected() {
         return Objects.equals(serverCombo.getSelectedItem(), NEW_SERVER);
+    }
+
+    protected boolean isPureJavaConnectionSelected() {
+
+        ConnectionType connectionType = (ConnectionType) connTypeCombo.getSelectedItem();
+        if (connectionType == null)
+            return false;
+
+        return Objects.equals(connectionType.name(), ConnectionType.PURE_JAVA.name());
     }
 
     protected static boolean isSelected(ItemEvent e) {

@@ -129,54 +129,45 @@ public class ConnectionDataSource implements DataSource, DatabaseDataSource {
 
             jdbcUrl = databaseConnection.getURL();
 
-            String connectionMethod = databaseConnection.getConnectionMethod();
+            /* Generate the JDBC URL as specfied in jdbcdrivers.xml
+             * using the server, port and source values for the connection. */
+            String value = null;
+            jdbcUrl = databaseDriver.getURL();
 
-            if (connectionMethod.equalsIgnoreCase("jdbc")) {
-                Log.info("Using user specified JDBC URL: " + jdbcUrl);
+            Log.info("JDBC URL pattern: " + jdbcUrl);
 
-            } else { // if the url is null - generate it
-
-                /* Generate the JDBC URL as specfied in jdbcdrivers.xml
-                 * using the server, port and source values for the connection. */
-                String value = null;
-                jdbcUrl = databaseDriver.getURL();
-
-                Log.info("JDBC URL pattern: " + jdbcUrl);
-
-                // check if this url needs the server/host name
-                if (jdbcUrl.contains(HOST)) {
-                    value = databaseConnection.getHost();
-                    if (MiscUtils.isNull(value)) {
-                        handleInformationException();
-                    }
-                    jdbcUrl = jdbcUrl.replaceAll(HOST_REGEX, value);
+            // check if this url needs the server/host name
+            if (jdbcUrl.contains(HOST)) {
+                value = databaseConnection.getHost();
+                if (MiscUtils.isNull(value)) {
+                    handleInformationException();
                 }
-
-                // check if this url needs the port number
-                if (jdbcUrl.contains(PORT)) {
-                    value = databaseConnection.getPort();
-                    if (MiscUtils.isNull(value)) {
-                        handleInformationException();
-                    }
-                    jdbcUrl = jdbcUrl.replaceAll(PORT_REGEX, value);
-                }
-
-                // check if this url needs the source name
-                if (jdbcUrl.contains(SOURCE)) {
-                    value = databaseConnection.getSourceName();
-                    if (MiscUtils.isNull(value)) {
-                        handleInformationException();
-                    }
-                    jdbcUrl = jdbcUrl.replaceAll(SOURCE_REGEX, value);
-                }
-
-                Log.info("JDBC URL generated: " + jdbcUrl);
-                Properties clone = (Properties) databaseConnection.getJdbcProperties().clone();
-                if (clone.getProperty("isc_dpb_repository_pin") != null)
-                    clone.setProperty("isc_dpb_repository_pin", "********");
-                Log.info("JDBC properties: " + clone);
-
+                jdbcUrl = jdbcUrl.replaceAll(HOST_REGEX, value);
             }
+
+            // check if this url needs the port number
+            if (jdbcUrl.contains(PORT)) {
+                value = databaseConnection.getPort();
+                if (MiscUtils.isNull(value)) {
+                    handleInformationException();
+                }
+                jdbcUrl = jdbcUrl.replaceAll(PORT_REGEX, value);
+            }
+
+            // check if this url needs the source name
+            if (jdbcUrl.contains(SOURCE)) {
+                value = databaseConnection.getSourceName();
+                if (MiscUtils.isNull(value)) {
+                    handleInformationException();
+                }
+                jdbcUrl = jdbcUrl.replaceAll(SOURCE_REGEX, value);
+            }
+
+            Log.info("JDBC URL generated: " + jdbcUrl);
+            Properties clone = (Properties) databaseConnection.getJdbcProperties().clone();
+            if (clone.getProperty("isc_dpb_repository_pin") != null)
+                clone.setProperty("isc_dpb_repository_pin", "********");
+            Log.info("JDBC properties: " + clone);
 
             // check if this driver has already been loaded
             if (loadedDrivers.containsKey(databaseDriver)) {

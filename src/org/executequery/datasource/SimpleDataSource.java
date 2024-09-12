@@ -287,28 +287,18 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     public static String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
 
-        String url = databaseConnection.getURL();
+        String url = databaseConnection.getJDBCDriver().getURL();
+        Log.info("JDBC URL pattern: " + url);
 
-        String connectionMethod = databaseConnection.getConnectionMethod();
+        url = replacePart(url, databaseConnection.getHost(), HOST);
+        url = replacePart(url, databaseConnection.getPort(), PORT);
+        url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
+        Log.info("JDBC URL generated: " + url);
 
-        if (connectionMethod.equalsIgnoreCase("jdbc")) {
-            Log.info("Using user specified JDBC URL: " + url);
-
-        } else {
-
-            url = databaseConnection.getJDBCDriver().getURL();
-            Log.info("JDBC URL pattern: " + url);
-
-            url = replacePart(url, databaseConnection.getHost(), HOST);
-            url = replacePart(url, databaseConnection.getPort(), PORT);
-            url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
-            Log.info("JDBC URL generated: " + url);
-            Properties clone = (Properties) properties.clone();
-            if (clone.getProperty("isc_dpb_repository_pin") != null)
-                clone.setProperty("isc_dpb_repository_pin", "********");
-            Log.info("JDBC properties: " + clone);
-
-        }
+        Properties clone = (Properties) properties.clone();
+        if (clone.getProperty("isc_dpb_repository_pin") != null)
+            clone.setProperty("isc_dpb_repository_pin", "********");
+        Log.info("JDBC properties: " + clone);
 
         return url;
     }

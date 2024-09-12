@@ -101,10 +101,6 @@ public interface DatabaseConnection extends Serializable {
 
     void setAuthMethod(String method);
 
-    String getConnectionMethod();
-
-    void setConnectionMethod(String method);
-
     String getURL();
 
     void setURL(String url);

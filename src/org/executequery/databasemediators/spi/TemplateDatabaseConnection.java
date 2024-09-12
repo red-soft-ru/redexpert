@@ -145,8 +145,6 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   private String connType;
 
-  private String connectionMethod;
-
   private String folderId;
 
   private transient ConnectionsFolder folder;
@@ -391,14 +389,6 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   public void setUseNewAPI(boolean useNewAPI) {
     this.useNewAPI = useNewAPI;
-  }
-
-  public String getConnectionMethod() {
-    return connectionMethod == null ? "Standard" : connectionMethod;
-  }
-
-  public void setConnectionMethod(String method) {
-    this.connectionMethod = method;
   }
 
   public String getAuthMethod() {

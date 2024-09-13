@@ -1,10 +1,8 @@
 package org.underworldlabs.swing;
 
-import org.japura.gui.CheckComboBox;
-
 import java.awt.*;
 
-public class EQCheckCombox extends CheckComboBox {
+public class DefaultCheckComboBox extends org.japura.gui.CheckComboBox {
 
     @Override
     protected void updateComboBox() {

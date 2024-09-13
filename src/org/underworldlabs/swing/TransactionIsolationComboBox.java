@@ -1,13 +1,15 @@
-package org.executequery.gui.editor;
+package org.underworldlabs.swing;
 
 import org.executequery.Constants;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.localization.Bundles;
-import org.underworldlabs.swing.DynamicComboBoxModel;
 
 import javax.swing.*;
 import java.sql.Connection;
 
+/**
+ * @author Alexey Kozlov
+ */
 public class TransactionIsolationComboBox extends JComboBox<String> {
 
     public TransactionIsolationComboBox() {
@@ -16,11 +18,7 @@ public class TransactionIsolationComboBox extends JComboBox<String> {
         isolationLevels[0] = Bundles.get(ConnectionPanel.class, "DatabaseDefault");
         System.arraycopy(Constants.TRANSACTION_LEVELS, 2, isolationLevels, 1, isolationLevels.length - 1);
 
-        DynamicComboBoxModel model = new DynamicComboBoxModel();
-        model.setElements(isolationLevels);
-
-        //noinspection unchecked
-        setModel(model);
+        setModel(new DynamicComboBoxModel<>(isolationLevels));
     }
 
     public int getSelectedLevel() {

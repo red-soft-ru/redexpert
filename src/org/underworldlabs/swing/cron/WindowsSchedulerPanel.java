@@ -5,7 +5,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
-import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.DefaultCheckComboBox;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.celleditor.picker.TimePicker;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
@@ -38,10 +38,10 @@ public class WindowsSchedulerPanel extends JPanel
     private TimestampPicker timestampPicker;
 
     private JCheckBox repeatCheck;
-    private EQCheckCombox daysCheckCombo;
-    private EQCheckCombox monthCheckCombo;
+    private DefaultCheckComboBox daysCheckCombo;
+    private DefaultCheckComboBox monthCheckCombo;
     private JComboBox<String> intervalCombo;
-    private EQCheckCombox weekdaysCheckCombo;
+    private DefaultCheckComboBox weekdaysCheckCombo;
 
     private NumberTextField intervalField;
     private JPanel propertiessPanel;

@@ -6,7 +6,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
-import org.underworldlabs.swing.EQCheckCombox;
+import org.underworldlabs.swing.DefaultCheckComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -60,7 +60,7 @@ public class AdvancedSchedulePanel extends JTabbedPane {
         private JComboBox<?> intervalCombo;
         private JComboBox<?> betweenEndCombo;
         private JComboBox<?> betweenBeginCombo;
-        private EQCheckCombox specificUnitComboCheck;
+        private DefaultCheckComboBox specificUnitComboCheck;
 
         private Vector<String> baseUnits;
         private Vector<Integer> intervalUnits;

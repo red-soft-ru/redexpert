@@ -2,6 +2,7 @@ package org.underworldlabs.swing;
 
 import org.executequery.Constants;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.listener.MouseHoverPainter;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
@@ -12,6 +13,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * JLabel implementation with the hyperlink behaviour.
+ *
+ * @author Alexey Kozlov
+ */
 public class LinkLabel extends JLabel {
 
     private URI uri;
@@ -33,6 +39,7 @@ public class LinkLabel extends JLabel {
 
         setCursor(new Cursor(Cursor.HAND_CURSOR));
         addMouseListener(new LinkMouseListener());
+        addMouseListener(new MouseHoverPainter(this, MouseHoverPainter.Preset.COLORED_FOREGROUND));
     }
 
     private final class LinkMouseListener extends MouseAdapter {

@@ -6,7 +6,6 @@ import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.swing.DefaultComboBox;
 import org.underworldlabs.swing.DisabledField;
 import org.underworldlabs.swing.StyledLogPane;
 
@@ -34,8 +33,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
 
     private JLabel triggerInfoLabel;
     private JLabel beforeAfterLabel;
-    private JLabel triggerPositionLabel;
-    private JComboBox tableNameCombo;
     JTextPane descriptionPane;
     SQLTextArea sqlPane;
 
@@ -85,17 +82,11 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
         paramPanel.add(triggerInfoLabel, new GridBagConstraints(1, 0, 1, 1, 0, 0,
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 0, 5, 5), 0, 0));
 
-        tableNameCombo = new DefaultComboBox();
-        //paramPanel.add(tableNameCombo);
-
         beforeAfterLabel = new JLabel(bundleString("BeforeAfter"));
         //paramPanel.add(beforeAfterLabel);
 
         triggerBeforeAfterField = new DisabledField();
         //paramPanel.add(triggerBeforeAfterField);
-
-        triggerPositionLabel = new JLabel(bundleString("Position"));
-        //paramPanel.add(triggerPositionLabel);
 
         triggerPositionField = new DisabledField();
 
@@ -217,7 +208,6 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             else
                 beforeAfterLabel.setText(bundleString("BeforeAfter"));
             triggerBeforeAfterField.setText(trigger.getStringTriggerType());
-            tableNameCombo.removeAllItems();
             if (trigger.getTriggerTableName() != null && !trigger.getTriggerTableName().isEmpty()) {
                 triggerInfoLabel.setText(bundleString("ForTable") + trigger.getTriggerTableName().trim());
                 //tableNameCombo.setVisible(true);
@@ -229,7 +219,7 @@ public class BrowserTriggerPanel extends AbstractFormObjectViewPanel {
             triggerPositionField.setText(String.valueOf(trigger.getTriggerSequence()));
             descriptionPane.setText(trigger.getRemarks());
             sqlPane.setText(trigger.getCreateSQLText());
-            triggerInfoLabel.setText(triggerInfoLabel.getText() + "       " + triggerBeforeAfterField.getText() + "       " + triggerPositionLabel.getText() + triggerPositionField.getText());
+            triggerInfoLabel.setText(triggerInfoLabel.getText() + "       " + triggerBeforeAfterField.getText() + "       " + bundleString("Position") + triggerPositionField.getText());
         } catch (DataSourceException e) {
             controller.handleException(e);
         }

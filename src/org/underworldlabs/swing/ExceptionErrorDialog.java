@@ -20,6 +20,7 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.GUIUtilities;
 import org.executequery.actions.helpcommands.FeedbackCommand;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -28,7 +29,6 @@ import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.PrintWriter;
@@ -96,13 +96,13 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
         stackTracePanel = new JPanel(new GridBagLayout());
         stackTracePanel.setVisible(false);
 
-        showStackButton = WidgetFactory.createDefaultButton(
+        showStackButton = WidgetFactory.createButton(
                 "showStackButton",
                 bundleString("ShowStackTrace"),
                 e -> showHideStack()
         );
 
-        sendReportButton = WidgetFactory.createDefaultButton(
+        sendReportButton = WidgetFactory.createButton(
                 "sendReportButton",
                 bundleString("sendReportButton"),
                 e -> new FeedbackCommand().bugReport(message, exceptions, sourceClass)
@@ -112,18 +112,16 @@ public class ExceptionErrorDialog extends AbstractBaseDialog {
                 "copyButton",
                 bundleString("pasteToClipboard"),
                 "icon_paste",
-                e -> Toolkit.getDefaultToolkit()
-                        .getSystemClipboard()
-                        .setContents(new StringSelection(textPane.getText()), null)
+                e -> GUIUtilities.copyToClipBoard(textPane.getText())
         );
 
-        nextButton = WidgetFactory.createDefaultButton(
+        nextButton = WidgetFactory.createButton(
                 "nextButton",
                 bundleString("NextException"),
                 e -> showNextStack()
         );
 
-        previousButton = WidgetFactory.createDefaultButton(
+        previousButton = WidgetFactory.createButton(
                 "previousButton",
                 bundleString("PreviousException"),
                 e -> showPrewStack()

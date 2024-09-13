@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing;
 
+import org.executequery.log.Log;
+import org.underworldlabs.swing.menu.SimpleTextComponentPopUpMenu;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -36,38 +38,42 @@ import java.text.ParseException;
  */
 public class NumberTextField extends JTextField {
 
-    private NumberFormat integerFormatter;
-    private WholeNumberDocument numberDocument;
-    private int digits;
-    private boolean negativeNumbers;
+    private final int digits;
+    private final boolean negativeNumbers;
+    private final NumberFormat integerFormatter;
+
+    private NumberDocument numberDocument;
 
     public NumberTextField() {
-        this(true);
-    }
-
-    public NumberTextField(boolean negativeNumbers) {
-
-        super();
-
-        this.negativeNumbers = negativeNumbers;
-        this.digits = -1;
-        if (numberDocument == null)
-            this.numberDocument = new WholeNumberDocument();
-        numberDocument.setDigits(digits);
-        numberDocument.setEnableNegativeNumbers(this.negativeNumbers);
-
-        this.integerFormatter = NumberFormat.getNumberInstance();
-        integerFormatter.setParseIntegerOnly(true);
+        this(-1, true);
     }
 
     public NumberTextField(int digits) {
-        this();
-        numberDocument.setDigits(digits);
-        this.digits = digits;
+        this(digits, true);
     }
 
-    public boolean isEnableNegativeNumbers() {
-        return numberDocument.isEnableNegativeNumbers();
+    public NumberTextField(int digits, boolean negativeNumbers) {
+        super();
+        this.digits = digits;
+        this.negativeNumbers = negativeNumbers;
+
+        integerFormatter = NumberFormat.getNumberInstance();
+        integerFormatter.setParseIntegerOnly(true);
+
+        initModel();
+        initPopup();
+    }
+
+    private void initModel() {
+        if (numberDocument == null) {
+            numberDocument = new NumberDocument();
+            numberDocument.setDigits(digits);
+            numberDocument.setEnableNegativeNumbers(negativeNumbers);
+        }
+    }
+
+    private void initPopup() {
+        new SimpleTextComponentPopUpMenu(this);
     }
 
     public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {
@@ -75,47 +81,41 @@ public class NumberTextField extends JTextField {
     }
 
     public void setDigits(int digits) {
-        this.digits = digits;
-    }
-
-    public int getDigits() {
-        return digits;
+        this.numberDocument.setDigits(digits);
     }
 
     public int getValue() {
-        int retVal = 0;
         try {
+
             String value = getText();
-            if (MiscUtils.isNull(value)) {
+            if (MiscUtils.isNull(value))
                 value = "0";
-            }
-            retVal = integerFormatter.parse(value).intValue();
+
+            return integerFormatter.parse(value).intValue();
+
         } catch (ParseException e) {
-            //toolkit.beep();
+            Log.error(e.getMessage(), e);
+            return 0;
         }
-        return retVal;
     }
 
     public long getLongValue() {
-        long retVal = 0;
         try {
+
             String value = getText();
-            if (MiscUtils.isNull(value)) {
+            if (MiscUtils.isNull(value))
                 value = "0";
-            }
-            retVal = integerFormatter.parse(value).longValue();
+
+            return integerFormatter.parse(value).longValue();
+
         } catch (ParseException e) {
-            //toolkit.beep();
+            Log.error(e.getMessage(), e);
+            return 0;
         }
-        return retVal;
     }
 
     public String getStringValue() {
         return String.valueOf(getLongValue());
-    }
-
-    public boolean isZero() {
-        return getValue() == 0;
     }
 
     public void setValue(int value) {
@@ -126,80 +126,55 @@ public class NumberTextField extends JTextField {
         setText(integerFormatter.format(value));
     }
 
+    @Override
     protected Document createDefaultModel() {
-
-        if (numberDocument == null)
-            numberDocument = new WholeNumberDocument();
-        numberDocument.setEnableNegativeNumbers(negativeNumbers);
+        initModel();
         return numberDocument;
-
     }
 
-}
+    private static class NumberDocument extends PlainDocument {
 
+        private boolean enableNegativeNumbers;
+        private final Toolkit toolkit;
+        private int digits;
 
-class WholeNumberDocument extends PlainDocument {
+        public NumberDocument() {
+            toolkit = Toolkit.getDefaultToolkit();
+            enableNegativeNumbers = true;
+        }
 
-    private Toolkit toolkit;
-    private int digits;
+        public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {
+            this.enableNegativeNumbers = enableNegativeNumbers;
+        }
 
-    private boolean enableNegativeNumbers;
+        public void setDigits(int digits) {
+            this.digits = digits;
+        }
 
-    public WholeNumberDocument() {
-        toolkit = Toolkit.getDefaultToolkit();
-        enableNegativeNumbers = true;
-    }
+        @Override
+        public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
 
-    public boolean isEnableNegativeNumbers() {
-        return enableNegativeNumbers;
-    }
-
-    public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {
-        this.enableNegativeNumbers = enableNegativeNumbers;
-    }
-
-    public int getDigits() {
-        return digits;
-    }
-
-    public void setDigits(int digits) {
-        this.digits = digits;
-    }
-
-    public void insertString(int offs, String str, AttributeSet a)
-            throws BadLocationException {
-
-        if (digits > 0) {
-
-            if (getLength() >= digits) {
+            if (digits > 0 && getLength() >= digits) {
                 toolkit.beep();
                 return;
             }
 
-        }
+            int j = 0;
+            char[] source = str.toCharArray();
+            char[] result = new char[source.length];
 
-        int j = 0;
-        char[] source = str.toCharArray();
-        char[] result = new char[source.length];
+            for (int i = 0; i < result.length; i++) {
 
-        for (int i = 0; i < result.length; i++) {
-
-            if (Character.isDigit(source[i]) || enableNegativeNumbers &&
-                    (offs == 0 && i == 0 && source[i] == '-')) {
-                result[j++] = source[i];
-            } else {
-                toolkit.beep();
+                boolean isNegative = offs == 0 && i == 0 && source[i] == '-';
+                if (Character.isDigit(source[i]) || enableNegativeNumbers && isNegative) {
+                    result[j++] = source[i];
+                } else
+                    toolkit.beep();
             }
 
+            super.insertString(offs, new String(result, 0, j), a);
         }
 
-        super.insertString(offs, new String(result, 0, j), a);
-    }
+    } // NumberDocument class
 
-} // class WholeNumberDocument
-
-
-
-
-
-
+}

@@ -43,8 +43,8 @@ import org.executequery.util.UserProperties;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.underworldlabs.sqlParser.SqlParser;
+import org.underworldlabs.swing.DefaultCheckComboBox;
 import org.underworldlabs.swing.ConnectionsComboBox;
-import org.underworldlabs.swing.EQCheckCombox;
 import org.underworldlabs.swing.RolloverButton;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -104,7 +104,7 @@ public class QueryEditor extends DefaultTabView
     private QueryEditorPopupMenu popup;
     private TransactionParametersPanel transactionParametersPanel;
 
-    private EQCheckCombox connectionsCheckCombo;
+    private DefaultCheckComboBox connectionsCheckCombo;
     private ConnectionsComboBox connectionsCombo;
 
     private JPanel baseEditorPanel;

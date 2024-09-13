@@ -6,7 +6,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.base.DefaultTabViewActionPanel;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.ConnectionMediator;
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -18,8 +17,7 @@ import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.TableSorter;
@@ -67,11 +65,11 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     private JPanel csvPropsPanel;
     private JPanel xlsxPropsPanel;
 
-    private JComboBox targetConnectionsCombo;
     private JComboBox targetTableCombo;
-    private JComboBox sourceConnectionsCombo;
     private JComboBox sourceTableCombo;
     private JComboBox delimiterCombo;
+    private ConnectionsComboBox sourceConnectionsCombo;
+    private ConnectionsComboBox targetConnectionsCombo;
 
     private JTextField fileNameField;
     private JTextField lobFileField;
@@ -128,7 +126,6 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         // --- comboBoxes ---
 
         String[] delimiters = {";", "|", ",", "#"};
-        List<DatabaseConnection> connections = ((DatabaseConnectionRepository) Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).findAll();
 
         delimiterCombo = WidgetFactory.createComboBox("delimiterCombo", delimiters);
         delimiterCombo.setEditable(true);
@@ -140,7 +137,6 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         targetTableCombo = WidgetFactory.createComboBox("targetTableCombo");
         targetTableCombo.addActionListener(e -> updateMappingTable());
         targetTableCombo.setEditable(true);
-        targetTableCombo.setEnabled(false);
         targetTableCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -149,15 +145,12 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             }
         });
 
-        targetConnectionsCombo = WidgetFactory.createComboBox("targetConnectionsCombo");
+        targetConnectionsCombo = WidgetFactory.createConnectionComboBox("targetConnectionsCombo", false);
         targetConnectionsCombo.addActionListener(e -> targetConnectionChanged());
-        targetConnectionsCombo.addItem(bundleString("SelectDB"));
-        connections.forEach(dc -> targetConnectionsCombo.addItem(dc));
 
         sourceTableCombo = WidgetFactory.createComboBox("sourceTableCombo");
         sourceTableCombo.addActionListener(e -> previewSourceTable());
         sourceTableCombo.setEditable(true);
-        sourceTableCombo.setEnabled(false);
         sourceTableCombo.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -166,10 +159,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             }
         });
 
-        sourceConnectionsCombo = WidgetFactory.createComboBox("sourceConnectionsCombo");
+        sourceConnectionsCombo = WidgetFactory.createConnectionComboBox("sourceConnectionsCombo", false);
         sourceConnectionsCombo.addActionListener(e -> sourceConnectionChanged());
-        sourceConnectionsCombo.addItem(bundleString("SelectDB"));
-        connections.forEach(dc -> sourceConnectionsCombo.addItem(dc));
 
         targetTableCombo.setPreferredSize(targetConnectionsCombo.getPreferredSize());
         sourceTableCombo.setPreferredSize(sourceConnectionsCombo.getPreferredSize());
@@ -610,7 +601,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         DefaultStatementExecutor executor = new DefaultStatementExecutor();
         executor.setCommitMode(false);
         executor.setKeepAlive(true);
-        executor.setDatabaseConnection((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
+        executor.setDatabaseConnection(targetConnectionsCombo.getSelectedConnection());
 
         // -- generate  mapped columns lists
 
@@ -751,7 +742,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                         this,
                         fileName,
                         PREVIEW_ROWS_COUNT,
-                        (DatabaseConnection) sourceConnectionsCombo.getSelectedItem()
+                        sourceConnectionsCombo.getSelectedConnection()
                 );
                 break;
         }
@@ -766,7 +757,7 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             DefaultStatementExecutor executor = new DefaultStatementExecutor();
             executor.setCommitMode(false);
             executor.setKeepAlive(true);
-            executor.setDatabaseConnection((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
+            executor.setDatabaseConnection(targetConnectionsCombo.getSelectedConnection());
 
             String query = "DELETE FROM " + tableName + ";";
             executor.execute(QueryTypes.DELETE, query);
@@ -784,12 +775,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             columnMappingTableModel.setRowCount(0);
 
         targetTableCombo.removeAllItems();
-        if (targetConnectionsCombo.getSelectedIndex() == 0) {
-            targetTableCombo.setEnabled(false);
-            return;
-        }
 
-        targetHost = new DefaultDatabaseHost((DatabaseConnection) targetConnectionsCombo.getSelectedItem());
+        targetHost = new DefaultDatabaseHost(targetConnectionsCombo.getSelectedConnection());
         if (!targetHost.isConnected())
             ConnectionMediator.getInstance().connect(targetHost.getDatabaseConnection(), true);
 
@@ -800,8 +787,6 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                 .forEach(table -> targetTablesList.add(table.getName()));
 
         targetTablesList.forEach(targetTableCombo::addItem);
-        targetTableCombo.setEnabled(true);
-
         targetHost.close();
     }
 
@@ -812,12 +797,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                 connectionPreviewTableModel.deleteRow(i);
 
         sourceTableCombo.removeAllItems();
-        if (sourceConnectionsCombo.getSelectedIndex() == 0) {
-            sourceTableCombo.setEnabled(false);
-            return;
-        }
 
-        DefaultDatabaseHost host = new DefaultDatabaseHost((DatabaseConnection) sourceConnectionsCombo.getSelectedItem());
+        DefaultDatabaseHost host = new DefaultDatabaseHost(sourceConnectionsCombo.getSelectedConnection());
         if (!host.isConnected())
             ConnectionMediator.getInstance().connect(host.getDatabaseConnection(), true);
 
@@ -828,8 +809,6 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                 .forEach(table -> sourceTablesList.add(table.getName()));
 
         sourceTablesList.forEach(sourceTableCombo::addItem);
-        sourceTableCombo.setEnabled(true);
-
         host.close();
     }
 
@@ -868,12 +847,6 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     }
 
     private boolean targetNotSelected(boolean displayWarnings) {
-
-        if (targetConnectionsCombo.getSelectedIndex() == 0) {
-            if (displayWarnings)
-                GUIUtilities.displayWarningMessage(bundleString("SelectDBMessage"));
-            return true;
-        }
 
         if (targetTableCombo.getSelectedIndex() == 0) {
             if (displayWarnings)

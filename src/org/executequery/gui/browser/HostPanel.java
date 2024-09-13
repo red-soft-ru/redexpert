@@ -32,8 +32,11 @@ import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.util.SwingWorker;
 
 import java.awt.print.Printable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Database connection host panel.
@@ -124,11 +127,31 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
     /**
      * Reloads the database properties meta data table panel.
      */
-    protected void updateDatabaseProperties(boolean useStaticMethhod) {
-        propertiesPanel.setDatabaseProperties(useStaticMethhod ?
-                DefaultDatabaseHost.getDatabaseProperties(host.getDatabaseConnection(), false) :
-                host.getDatabaseProperties()
-        );
+    protected void updateDatabaseProperties(boolean useStaticMethod) {
+        DatabaseConnection connection = host.getDatabaseConnection();
+
+        new SwingWorker(String.format("Loading advanced properties for %s", connection.getName())) {
+
+            private Map<Object, Object> properties = new HashMap<>();
+
+            @Override
+            public Object construct() {
+                propertiesPanel.setLoading(true);
+
+                properties = useStaticMethod ?
+                        DefaultDatabaseHost.getDatabaseProperties(connection, false) :
+                        host.getDatabaseProperties();
+
+                return null;
+            }
+
+            @Override
+            public void finished() {
+                propertiesPanel.setLoading(false);
+                propertiesPanel.setDatabaseProperties(properties);
+            }
+
+        }.start();
     }
 
     /**

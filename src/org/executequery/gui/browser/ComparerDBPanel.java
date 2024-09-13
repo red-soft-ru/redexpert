@@ -168,7 +168,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- buttons defining ---
 
         compareButton = WidgetFactory.createButton(
-                "compareButton",
+                isExtractMetadata ? "extractButton" : "compareButton",
                 bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"),
                 e -> compareDatabase()
         );
@@ -186,13 +186,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
         );
 
         selectAllAttributesButton = WidgetFactory.createButton(
-                "selectAllAttributesButton",
+                isExtractMetadata ? "selectAllExtractAttributesButton" : "selectAllAttributesButton",
                 bundleString("SelectAllButton"),
                 e -> selectAll("attributes")
         );
 
         selectAllPropertiesButton = WidgetFactory.createButton(
-                "selectAllPropertiesButton",
+                isExtractMetadata ? "selectAllExtractPropertiesButton" : "selectAllPropertiesButton",
                 bundleString("SelectAllButton"),
                 e -> selectAll("properties")
         );

@@ -78,7 +78,8 @@ public class DriversPanel extends JPanel
 
         // --- drivers table ---
 
-        driversTable = new DefaultTable(new DriversTableModel());
+        // driversTable = new DefaultTable(new DriversTableModel());
+        driversTable = WidgetFactory.createTable("driversTable", new DriversTableModel());
         driversTable.setColumnSelectionAllowed(false);
         driversTable.getTableHeader().setReorderingAllowed(false);
         driversTable.addMouseListener(new MouseAdapter() {

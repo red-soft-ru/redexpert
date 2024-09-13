@@ -1126,14 +1126,27 @@ public class ConnectionsTreePanel extends TreePanel
         properties.put(bundleString("charset"), dc.getCharset());
         properties.put(bundleString("user"), dc.getUserName());
         properties.put(bundleString("role"), dc.getRole());
-        if (SystemProperties.getBooleanProperty("user", "browser.show.connection.properties.advanced"))
-            properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc, false));
 
         properties.values().removeAll(Collections.singleton(Constants.EMPTY));
         properties.values().removeAll(Collections.singleton(null));
 
         propertiesPanel.restoreHeaders();
         propertiesPanel.setDatabaseProperties(properties, false);
+
+        if (SystemProperties.getBooleanProperty("user", "browser.show.connection.properties.advanced")) {
+            new SwingWorker(String.format("Loading advanced properties for %s", dc.getName())) {
+
+                @Override
+                public Object construct() {
+                    properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc, false));
+                    propertiesPanel.restoreHeaders();
+                    propertiesPanel.setDatabaseProperties(properties, false);
+
+                    return null;
+                }
+
+            }.start();
+        }
     }
 
     private void updateProperties(List<DatabaseConnection> databaseConnections) {

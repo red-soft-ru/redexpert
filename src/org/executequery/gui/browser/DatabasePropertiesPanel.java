@@ -20,7 +20,10 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.gui.IconManager;
 import org.executequery.gui.SortableColumnsTable;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.table.PropertyWrapperModel;
 
@@ -38,6 +41,8 @@ import java.util.Map;
  * @author Takis Diakoumis
  */
 public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
+
+    private JLabel loadingLabel;
     private JTable table;
 
     public DatabasePropertiesPanel() {
@@ -49,6 +54,11 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
         table = new SortableColumnsTable();
         setTableProperties(table);
 
+        loadingLabel = WidgetFactory.createLabel(Bundles.get("common.loading.label"), 20);
+        loadingLabel.setIcon(IconManager.getIcon("icon_loading", "gif", 20, IconManager.IconFolder.BASE));
+        loadingLabel.setVisible(false);
+
+        add(loadingLabel, new GridBagHelper().anchorCenter().spanX().spanY().get());
         add(new JScrollPane(table), new GridBagHelper().fillBoth().spanX().spanY().get());
     }
 
@@ -75,6 +85,11 @@ public class DatabasePropertiesPanel extends ConnectionPropertiesPanel {
 
     public void restoreHeaders() {
         setHeaders(Arrays.asList(PropertyWrapperModel.DEFAULT_HEADERS));
+    }
+
+    public void setLoading(boolean loading) {
+        loadingLabel.setVisible(loading);
+        table.setVisible(!loading);
     }
 
 }

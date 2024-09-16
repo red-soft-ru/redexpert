@@ -731,8 +731,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());
         serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
         connTypeCombo.setSelectedItem(ConnectionType.contains(dc.getConnType()) ?
-                ConnectionType.valueOf(dc.getConnType()).name() :
-                ConnectionType.NATIVE.name()
+                ConnectionType.valueOf(dc.getConnType()) :
+                ConnectionType.NATIVE
         );
 
         selectActualDriver();

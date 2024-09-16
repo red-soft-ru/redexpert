@@ -1166,6 +1166,7 @@ public class ConnectionsTreePanel extends TreePanel
     }
 
     protected void connect(DatabaseConnection dc) {
+        dc.validateJdbcProperties();
         controller.connect(dc);
         updateProperties(dc);
     }

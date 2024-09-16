@@ -238,6 +238,18 @@ public interface DatabaseConnection extends Serializable {
     void setAutoConnect(boolean val);
 
     boolean isAutoConnected();
+
+    default void validateJdbcProperties() {
+        Properties properties = getJdbcProperties();
+
+        boolean markUpdate = false;
+        if (!properties.contains("lc_ctype")) {
+            properties.setProperty("lc_ctype", "NONE");
+            markUpdate = true;
+        }
+
+        if (markUpdate)
+            setJdbcProperties(properties);
+    }
+
 }
-
-

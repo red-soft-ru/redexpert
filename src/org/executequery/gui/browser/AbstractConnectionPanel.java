@@ -117,6 +117,9 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected JPanel multifactorPanel;
     protected AdvancedPropertiesPanel propertiesPanel;
 
+    protected RequiredFieldPainter hostRequire;
+    protected RequiredFieldPainter portRequire;
+
     private RequiredFieldPainter certRequire;
     private RequiredFieldPainter userRequire;
     private RequiredFieldPainter userPasswordRequire;
@@ -255,17 +258,19 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected void addRequired() {
 
         userRequire = RequiredFieldPainter.initialize(userField);
+        hostRequire = RequiredFieldPainter.initialize(hostField);
+        portRequire = RequiredFieldPainter.initialize(portField);
         certRequire = RequiredFieldPainter.initialize(certField);
         userPasswordRequire = RequiredFieldPainter.initialize(userPasswordField);
 
         requiredPainters = Arrays.asList(
                 userRequire,
                 certRequire,
+                hostRequire,
+                portRequire,
                 userPasswordRequire,
                 RequiredFieldPainter.initialize(nameField),
-                RequiredFieldPainter.initialize(fileField),
-                RequiredFieldPainter.initialize(hostField),
-                RequiredFieldPainter.initialize(portField)
+                RequiredFieldPainter.initialize(fileField)
         );
     }
 
@@ -310,7 +315,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         return (JComponent) container.getComponent(componentIndex);
     }
 
-    private void setEnabledComponents(List<JComponent> components, boolean enabled) {
+    protected final void setEnabledComponents(List<JComponent> components, boolean enabled) {
         components.stream().filter(Objects::nonNull).forEach(c -> c.setEnabled(enabled));
     }
 

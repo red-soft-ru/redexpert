@@ -50,6 +50,7 @@ import java.util.List;
 public class ConnectionPanel extends AbstractConnectionPanel
         implements DocumentListener {
 
+    private List<JComponent> basicServerComponents;
     private List<RequiredFieldPainter> sshRequired;
 
     // ---  gui components ---
@@ -89,6 +90,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
     @Override
     protected void init() {
         super.init();
+
+        basicServerComponents = new ArrayList<>();
 
         roleField = WidgetFactory.createTextField("roleField");
         sshHostField = WidgetFactory.createTextField("sshHostField");
@@ -241,6 +244,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 getNearComponent(userField, -7),
                 getNearComponent(userPasswordField, -7)
         ));
+
+        basicServerComponents.addAll(Arrays.asList(
+                hostField,
+                portField,
+                getNearComponent(hostField, -5),
+                getNearComponent(portField, -5)
+        ));
     }
 
     @Override
@@ -357,7 +367,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
             processed = true;
 
         } else if (Objects.equals(source, useNativeCheck) || Objects.equals(source, useEmbeddedCheck)) {
-            connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected()).name());
+            connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), isEmbeddedConnectionSelected()).name());
             processed = true;
         }
 
@@ -371,6 +381,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     @Override
     protected void populateConnectionObject() {
+        super.populateConnectionObject();
 
         if (connection == null)
             return;
@@ -380,7 +391,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         connection.setRole(roleField.getText());
         connection.setUseNewAPI(useNewApiCheck.isSelected());
         connection.setNamesToUpperCase(namesToUpperCheck.isSelected());
-        connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected()).name());
+        connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), isEmbeddedConnectionSelected()).name());
 
         // --- ssh ---
 
@@ -393,7 +404,14 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // ---
 
-        super.populateConnectionObject();
+        if (isEmbeddedConnectionSelected()) {
+            connection.setHost("0");
+            connection.setPort("0");
+        }
+
+        // ---
+
+        storeJdbcProperties();
     }
 
     @Override
@@ -442,6 +460,27 @@ public class ConnectionPanel extends AbstractConnectionPanel
         }
     }
 
+    @Override
+    protected void updateVisibleComponents() {
+
+        if (isEmbeddedConnectionSelected()) {
+            super.updateVisibleComponents();
+
+            setEnabledComponents(basicAuthComponents, false);
+            setEnabledComponents(basicServerComponents, false);
+            hostRequire.disable();
+            portRequire.disable();
+
+        } else {
+            setEnabledComponents(basicAuthComponents, true);
+            setEnabledComponents(basicServerComponents, true);
+            hostRequire.enable();
+            portRequire.enable();
+
+            super.updateVisibleComponents();
+        }
+    }
+
     // --- handlers ---
 
     private void connTypeChanged(ActionEvent e) {
@@ -452,11 +491,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 useEmbeddedCheck.setSelected(false);
 
         } else if (Objects.equals(source, useEmbeddedCheck)) {
-            if (useEmbeddedCheck.isSelected())
+            if (isEmbeddedConnectionSelected())
                 useNativeCheck.setSelected(false);
         }
 
         useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
+        updateVisibleComponents();
         handleEvent(e);
     }
 
@@ -706,8 +746,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     // ---
 
+    private boolean isEmbeddedConnectionSelected() {
+        return useEmbeddedCheck.isSelected();
+    }
+
     private boolean isPureJavaConnectionSelected() {
-        ConnectionType connectionType = ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected());
+        ConnectionType connectionType = ConnectionType.getConnType(useNativeCheck.isSelected(), isEmbeddedConnectionSelected());
         return Objects.equals(connectionType.name(), ConnectionType.PURE_JAVA.name());
     }
 
@@ -736,6 +780,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private void populateConnectionFields(DatabaseConnection dc) {
         connection = dc;
 
+        String host = dc.getHost();
+        if (host.isEmpty() || Objects.equals(host, "0"))
+            host = "localhost";
+
+        String port = dc.getPort();
+        if (port.isEmpty() || Objects.equals(port, "0"))
+            port = "3050";
+
+        portField.setText(port);
+        hostField.setText(host);
         nameField.setText(dc.getName());
         roleField.setText(dc.getRole());
         userField.setText(dc.getUserName());
@@ -751,9 +805,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         verifyCertCheck.setSelected(dc.isVerifyServerCertCheck());
         userPasswordField.setPassword(dc.getUnencryptedPassword());
         encryptPasswordCheck.setSelected(dc.isPasswordEncrypted());
-        portField.setText(dc.getPort().isEmpty() ? "3050" : dc.getPort());
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
-        hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());
         serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
 
         ConnectionType connType = ConnectionType.contains(dc.getConnType()) ?
@@ -766,6 +818,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         useSshCheckTriggered(null);
         enableFields(connection.isConnected());
         propertiesPanel.setConnection(connection);
+        updateVisibleComponents();
     }
 
     public void addTab(String title, Component component) {

@@ -113,6 +113,8 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected ViewablePasswordField userPasswordField;
     protected ViewablePasswordField contPasswordField;
 
+    protected JLabel authLabel;
+
     protected JTabbedPane tabPane;
     protected JPanel multifactorPanel;
     protected AdvancedPropertiesPanel propertiesPanel;
@@ -197,6 +199,10 @@ public abstract class AbstractConnectionPanel extends JPanel
         encryptPasswordCheck = WidgetFactory.createCheckBox("encryptPasswordCheck", bundleString("EncryptPassword"));
         verifyCertCheck = WidgetFactory.createCheckBox("verifyCertCheck", bundleString("Verify-server-certificate"));
         storeContPasswordCheck = WidgetFactory.createCheckBox("storeContPasswordCheck", bundleString("Store-container-password"));
+
+        // ---
+
+        authLabel = WidgetFactory.createLabel(bundleString("authCombo"));
     }
 
     protected void arrange() {
@@ -376,12 +382,14 @@ public abstract class AbstractConnectionPanel extends JPanel
             return;
 
         if (isNewServerSelected()) {
-            if (isBasicAuthSelected())
-                authCombo.setSelectedItem(MULTIFACTOR_AUTH);
-            authCombo.removeItem(BASIC_AUTH);
+            authCombo.setSelectedItem(MULTIFACTOR_AUTH);
+            authLabel.setEnabled(false);
+            authCombo.setEnabled(false);
 
-        } else
-            authCombo.insertItemAt(BASIC_AUTH, 0);
+        } else {
+            authLabel.setEnabled(true);
+            authCombo.setEnabled(true);
+        }
 
         updateVisibleComponents();
         handleEvent(e);
@@ -750,10 +758,6 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected boolean isMultifactorAuthSelected() {
         return Objects.equals(authCombo.getSelectedItem(), MULTIFACTOR_AUTH);
-    }
-
-    protected boolean isBasicAuthSelected() {
-        return Objects.equals(authCombo.getSelectedItem(), BASIC_AUTH);
     }
 
     protected boolean isNewServerSelected() {

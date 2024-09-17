@@ -97,7 +97,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper().setMinWeightX().anchorNorthWest().fillHorizontally();
         rightPanel.add(WidgetFactory.createLabel(bundleString("driverCombo")), gbh.get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("serverCombo")), gbh.nextRow().topGap(5).get());
-        rightPanel.add(WidgetFactory.createLabel(bundleString("authCombo")), gbh.nextRow().get());
+        rightPanel.add(authLabel, gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("userField")), gbh.nextRow().get());
         rightPanel.add(WidgetFactory.createLabel(bundleString("passwordField")), gbh.nextRow().get());
 

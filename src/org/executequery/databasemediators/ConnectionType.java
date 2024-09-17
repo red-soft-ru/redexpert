@@ -18,6 +18,10 @@ public enum ConnectionType {
         return Arrays.stream(ConnectionType.values()).anyMatch(type -> Objects.equals(type.name(), name));
     }
 
+    public static ConnectionType getConnType(boolean isNative, boolean isEmbedded) {
+        return isEmbedded ? EMBEDDED : isNative ? NATIVE : PURE_JAVA;
+    }
+
     public String value(boolean useOOApi) {
         return useOOApi && !Objects.equals(name(), PURE_JAVA.name()) ?
                 "FBOO" + name() :

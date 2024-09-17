@@ -63,6 +63,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JCheckBox useSshCheck;
     private JCheckBox useNewApiCheck;
+    private JCheckBox useNativeCheck;
+    private JCheckBox useEmbeddedCheck;
     private JCheckBox namesToUpperCheck;
     private JCheckBox storeSshPasswordCheck;
 
@@ -96,6 +98,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         useSshCheck = WidgetFactory.createCheckBox("useSshCheck", bundleString("useSshCheck"));
         useNewApiCheck = WidgetFactory.createCheckBox("useNewApiCheck", bundleString("useNewApiCheck"));
+        useNativeCheck = WidgetFactory.createCheckBox("useNativeCheck", bundleString("useNativeCheck"));
+        useEmbeddedCheck = WidgetFactory.createCheckBox("useEmbeddedCheck", bundleString("useEmbeddedCheck"));
         storeSshPasswordCheck = WidgetFactory.createCheckBox("storeSshPasswordCheck", bundleString("StorePassword"));
         namesToUpperCheck = WidgetFactory.createCheckBox("namesToUpperCheck", bundleString("namesToUpperCheck"), true);
 
@@ -141,10 +145,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         JPanel checkPanel = WidgetFactory.createPanel("checkPanel");
 
-        gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
-        checkPanel.add(useNewApiCheck, gbh.get());
-        checkPanel.add(useSshCheck, gbh.nextCol().leftGap(5).spanX().get());
-        checkPanel.add(namesToUpperCheck, gbh.nextRowFirstCol().leftGap(-3).topGap(5).get());
+        gbh = new GridBagHelper().anchorNorthWest().fillNone();
+        checkPanel.add(namesToUpperCheck, gbh.spanX().get());
+        checkPanel.add(useNativeCheck, gbh.nextRow().topGap(5).get());
+        checkPanel.add(useEmbeddedCheck, gbh.nextRow().get());
+        checkPanel.add(useNewApiCheck, gbh.nextRow().setMinWeightX().setWidth(1).get());
+        checkPanel.add(useSshCheck, gbh.nextCol().leftGap(5).get());
 
         // --- buttons panel ---
 
@@ -162,21 +168,19 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh = new GridBagHelper().leftGap(5).setMinWeightX().anchorNorthWest().fillHorizontally();
         leftPanel.add(WidgetFactory.createLabel(bundleString("nameField")), gbh.get());
-        leftPanel.add(WidgetFactory.createLabel(bundleString("connTypeCombo")), gbh.nextRow().topGap(5).get());
-        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().get());
+        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().topGap(5).get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("portField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("fileField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("charsetsCombo")), gbh.nextRow().get());
 
         gbh.setY(0).nextCol().topGap(0).setMaxWeightX().spanX();
         leftPanel.add(nameField, gbh.get());
-        leftPanel.add(connTypeCombo, gbh.nextRow().topGap(5).get());
-        leftPanel.add(hostField, gbh.nextRow().get());
+        leftPanel.add(hostField, gbh.nextRow().topGap(5).get());
         leftPanel.add(portField, gbh.nextRow().get());
         leftPanel.add(fileField, gbh.nextRow().setWidth(1).get());
         leftPanel.add(browseFileButton, gbh.nextCol().setMinWeightX().get());
         leftPanel.add(charsetsCombo, gbh.nextRow().previousCol().spanX().get());
-        leftPanel.add(checkPanel, gbh.nextRow().previousCol().leftGap(2).get());
+        leftPanel.add(checkPanel, gbh.nextRowFirstCol().setWidth(2).leftGap(2).get());
 
         // --- right panel ---
 
@@ -271,6 +275,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         useNewApiCheck.addActionListener(this::handleEvent);
         namesToUpperCheck.addActionListener(this::handleEvent);
+        useNativeCheck.addActionListener(this::connTypeChanged);
+        useEmbeddedCheck.addActionListener(this::connTypeChanged);
         useSshCheck.addActionListener(this::useSshCheckTriggered);
         storeSshPasswordCheck.addActionListener(this::handleEvent);
     }
@@ -301,13 +307,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
     @Override
     protected void driverChanged(ItemEvent e) {
         super.driverChanged(e);
-        if (isSelected(e))
-            useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
-    }
-
-    @Override
-    protected void connTypeChanged(ItemEvent e) {
-        super.connTypeChanged(e);
         if (isSelected(e))
             useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
     }
@@ -356,6 +355,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         } else if (Objects.equals(source, storeSshPasswordCheck)) {
             connection.setSshPasswordStored(storeSshPasswordCheck.isSelected());
             processed = true;
+
+        } else if (Objects.equals(source, useNativeCheck) || Objects.equals(source, useEmbeddedCheck)) {
+            connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected()).name());
+            processed = true;
         }
 
         if (processed) {
@@ -377,6 +380,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         connection.setRole(roleField.getText());
         connection.setUseNewAPI(useNewApiCheck.isSelected());
         connection.setNamesToUpperCase(namesToUpperCheck.isSelected());
+        connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected()).name());
 
         // --- ssh ---
 
@@ -439,6 +443,22 @@ public class ConnectionPanel extends AbstractConnectionPanel
     }
 
     // --- handlers ---
+
+    private void connTypeChanged(ActionEvent e) {
+
+        Object source = e.getSource();
+        if (Objects.equals(source, useNativeCheck)) {
+            if (useNativeCheck.isSelected())
+                useEmbeddedCheck.setSelected(false);
+
+        } else if (Objects.equals(source, useEmbeddedCheck)) {
+            if (useEmbeddedCheck.isSelected())
+                useNativeCheck.setSelected(false);
+        }
+
+        useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
+        handleEvent(e);
+    }
 
     private void useSshCheckTriggered(ActionEvent e) {
 
@@ -686,6 +706,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     // ---
 
+    private boolean isPureJavaConnectionSelected() {
+        ConnectionType connectionType = ConnectionType.getConnType(useNativeCheck.isSelected(), useEmbeddedCheck.isSelected());
+        return Objects.equals(connectionType.name(), ConnectionType.PURE_JAVA.name());
+    }
+
     private void enableFields(boolean enable) {
         updateConnectionState();
         propertiesPanel.setTransactionEnabled(enable);
@@ -730,10 +755,12 @@ public class ConnectionPanel extends AbstractConnectionPanel
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
         hostField.setText(dc.getHost().isEmpty() ? "localhost" : dc.getHost());
         serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
-        connTypeCombo.setSelectedItem(ConnectionType.contains(dc.getConnType()) ?
+
+        ConnectionType connType = ConnectionType.contains(dc.getConnType()) ?
                 ConnectionType.valueOf(dc.getConnType()) :
-                ConnectionType.NATIVE
-        );
+                ConnectionType.PURE_JAVA;
+        useNativeCheck.setSelected(Objects.equals(connType, ConnectionType.NATIVE));
+        useEmbeddedCheck.setSelected(Objects.equals(connType, ConnectionType.EMBEDDED));
 
         selectActualDriver();
         useSshCheckTriggered(null);

@@ -73,8 +73,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
 
         gbh = new GridBagHelper().setMinWeightX().anchorNorthWest().fillHorizontally();
         leftPanel.add(WidgetFactory.createLabel(bundleString("nameField")), gbh.get());
-        leftPanel.add(WidgetFactory.createLabel(bundleString("connTypeCombo")), gbh.nextRow().topGap(5).get());
-        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().get());
+        leftPanel.add(WidgetFactory.createLabel(bundleString("hostField")), gbh.nextRow().topGap(5).get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("portField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("fileField")), gbh.nextRow().get());
         leftPanel.add(WidgetFactory.createLabel(bundleString("charsetsCombo")), gbh.nextRow().get());
@@ -82,8 +81,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
 
         gbh.setY(0).nextCol().leftGap(5).topGap(0).setMaxWeightX().spanX();
         leftPanel.add(nameField, gbh.get());
-        leftPanel.add(connTypeCombo, gbh.nextRow().topGap(5).get());
-        leftPanel.add(hostField, gbh.nextRow().get());
+        leftPanel.add(hostField, gbh.nextRow().topGap(5).get());
         leftPanel.add(portField, gbh.nextRow().get());
         leftPanel.add(fileField, gbh.nextRow().setWidth(1).get());
         leftPanel.add(browseFileButton, gbh.nextCol().setMinWeightX().get());
@@ -109,7 +107,6 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         rightPanel.add(userField, gbh.nextRow().get());
         rightPanel.add(userPasswordField, gbh.nextRow().get());
         rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).get());
-        rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
         // --- main panel ---
 
@@ -246,6 +243,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             databaseConnection.setCertificate(certField.getText());
             databaseConnection.setDriverId(databaseDriver.getId());
             databaseConnection.setDriverName(databaseDriver.getName());
+            databaseConnection.setConnType(ConnectionType.PURE_JAVA.name());
             databaseConnection.setPasswordStored(storePasswordCheck.isSelected());
             databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
             databaseConnection.setContainerPassword(contPasswordField.getPassword());
@@ -254,9 +252,6 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
             databaseConnection.setSourceName(path.replace("\\", "/"));
             databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-
-            ConnectionType connectionType = (ConnectionType) connTypeCombo.getSelectedItem();
-            databaseConnection.setConnType(connectionType != null ? connectionType.name() : null);
 
             JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
             if (tabComponent instanceof ConnectionsTreePanel)

@@ -53,6 +53,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
     private List<JComponent> basicServerComponents;
     private List<RequiredFieldPainter> sshRequired;
 
+    private int connectButtonWidth;
+    private int disconnectButtonWidth;
+
     // ---  gui components ---
 
     private JTextField roleField;
@@ -109,6 +112,9 @@ public class ConnectionPanel extends AbstractConnectionPanel
         saveButton = WidgetFactory.createButton("saveButton", Bundles.get("common.save.button"), e -> saveConnection());
         testButton = WidgetFactory.createButton("testButton", Bundles.get("common.test.button"), e -> testConnection());
         connectButton = WidgetFactory.createButton("connectButton", Bundles.get("common.connect.button"), e -> toggleConnection());
+
+        connectButtonWidth = (int) connectButton.getPreferredSize().getWidth();
+        disconnectButtonWidth = (int) WidgetFactory.createButton("", Bundles.get("common.disconnect.button")).getPreferredSize().getWidth();
     }
 
     @Override
@@ -644,7 +650,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 connect();
 
         } finally {
-
             updateConnectionState();
         }
     }
@@ -654,6 +659,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         connectButton.setText(Bundles.getCommon(connected ? "disconnect.button" : "connect.button"));
         connectButton.setEnabled(true);
+        connectButton.setPreferredSize(new Dimension(
+                connected ? disconnectButtonWidth : connectButtonWidth,
+                connectButton.getPreferredSize().height
+        ));
 
         testButton.setEnabled(!connected);
     }

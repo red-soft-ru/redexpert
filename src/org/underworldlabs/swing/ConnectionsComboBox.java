@@ -128,6 +128,9 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
+            if (value == null)
+                return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
+
             JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             component.setIcon(((DatabaseConnection) value).isConnected() ? CONNECTED_ICON : NOT_CONNECTED_ICON);
 

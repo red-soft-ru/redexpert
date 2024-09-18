@@ -397,7 +397,6 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     @Override
     protected void populateConnectionObject() {
-        super.populateConnectionObject();
 
         if (connection == null)
             return;
@@ -420,14 +419,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // ---
 
-        if (isEmbeddedConnectionSelected()) {
-            connection.setHost("0");
-            connection.setPort("0");
-        }
-
-        // ---
-
-        storeJdbcProperties();
+        super.populateConnectionObject();
     }
 
     @Override
@@ -800,11 +792,11 @@ public class ConnectionPanel extends AbstractConnectionPanel
         connection = dc;
 
         String host = dc.getHost();
-        if (host.isEmpty() || Objects.equals(host, "0"))
+        if (host.isEmpty())
             host = "localhost";
 
         String port = dc.getPort();
-        if (port.isEmpty() || Objects.equals(port, "0"))
+        if (port.isEmpty())
             port = "3050";
 
         portField.setText(port);

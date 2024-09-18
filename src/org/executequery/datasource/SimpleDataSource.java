@@ -88,7 +88,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             throw new DataSourceException("Error loading specified JDBC driver");
         }
 
-        url = generateUrl(databaseConnection, properties);
+        url = Objects.equals(databaseConnection.getConnType(), ConnectionType.EMBEDDED.name()) ?
+                databaseConnection.getSourceName() :
+                generateUrl(databaseConnection, properties);
+
         Log.info("JDBC Driver class: " + databaseConnection.getJDBCDriver().getClassName());
     }
 

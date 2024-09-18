@@ -660,11 +660,17 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     }
 
     public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection, boolean handleException) {
+        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
+
+        String serverVersion = getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader);
+        if (connection.getMajorServerVersion() > 0)
+            serverVersion += " " + connection.getMajorServerVersion();
+        serverVersion = serverVersion.trim();
 
         Map<Object, Object> databaseProperties = new HashMap<>();
+        databaseProperties.put(bundleString("ServerVersion"), serverVersion);
         databaseProperties.put(bundleString("Driver"), connection.getDriverName());
 
-        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
         databaseProperties.put(bundleString("GUID"), getHeaderValue(DatabaseStatisticCommand.GUID, databaseHeader));
         databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATACHMENT, databaseHeader));
         databaseProperties.put(bundleString("GENERATION"), getHeaderValue(DatabaseStatisticCommand.GENERATION, databaseHeader));
@@ -678,7 +684,6 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         databaseProperties.put(bundleString("NEXT_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.NEXT_TRANSACTION, databaseHeader));
         databaseProperties.put(bundleString("PAGE_SIZE"), getHeaderValue(DatabaseStatisticCommand.PAGE_SIZE, databaseHeader));
         databaseProperties.put(bundleString("ODS_VERSION"), getHeaderValue(DatabaseStatisticCommand.ODS, databaseHeader));
-        databaseProperties.put(bundleString("ServerVersion"), (getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader) + " " + connection.getMajorServerVersion()).trim());
         databaseProperties.put(bundleString("OLDEST_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.OIT, databaseHeader));
         databaseProperties.put(bundleString("OLDEST_ACTIVE"), getHeaderValue(DatabaseStatisticCommand.OAT, databaseHeader));
         databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), getHeaderValue(DatabaseStatisticCommand.OST, databaseHeader));

@@ -1355,7 +1355,7 @@ public class QueryEditor extends DefaultTabView
         this.isContentChanged = contentChanged;
         if (this.isContentChanged) {
             save(false);
-            this.isContentChanged = true;
+            this.isContentChanged = false;
         }
     }
 

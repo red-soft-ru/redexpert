@@ -1945,24 +1945,10 @@ public class QueryDispatcher {
     }
 
     private boolean isNotSingleStatementExecution(int typeQuery) {
-
-
-        int[] nonSingleStatementExecutionTypes = {
-                QueryTypes.CREATE_OBJECT,
-                QueryTypes.ALTER_OBJECT,
-                QueryTypes.CREATE_OR_ALTER
-        };
-
-        for (int i = 0; i < nonSingleStatementExecutionTypes.length; i++) {
-
-            if (typeQuery == nonSingleStatementExecutionTypes[i]) {
-
-                return true;
-            }
-
-        }
-
-        return false;
+        return typeQuery == QueryTypes.CREATE_OBJECT
+                || typeQuery == QueryTypes.ALTER_OBJECT
+                || typeQuery == QueryTypes.CREATE_OR_ALTER
+                || typeQuery == QueryTypes.RECREATE_OBJECT;
     }
 
     public TransactionParametersPanel getTpp() {

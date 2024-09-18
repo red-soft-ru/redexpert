@@ -68,7 +68,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     private static final String GSS_AUTH = "GSS";
     private static final String BASIC_AUTH = bundleString("BasicAu");
-    private static final String MULTIFACTOR_AUTH = bundleString("Multifactor");
+    private static final String MULTI_FACTOR_AUTH = bundleString("MultiFactor");
 
     protected static final String OLD_SERVER = "Red Database (Firebird) 2.X";
     protected static final String NEW_SERVER = "Red Database (Firebird) 3+";
@@ -114,7 +114,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected JLabel authLabel;
 
     protected JTabbedPane tabPane;
-    protected JPanel multifactorPanel;
+    protected JPanel multiFactorPanel;
     protected AdvancedPropertiesPanel propertiesPanel;
 
     protected RequiredFieldPainter hostRequire;
@@ -149,7 +149,7 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected void init() {
 
         String[] availableServers = new String[]{OLD_SERVER, NEW_SERVER};
-        String[] authMethods = new String[]{BASIC_AUTH, GSS_AUTH, MULTIFACTOR_AUTH};
+        String[] authMethods = new String[]{BASIC_AUTH, GSS_AUTH, MULTI_FACTOR_AUTH};
 
         tabPane = WidgetFactory.createTabbedPane("tabPane");
         propertiesPanel = new AdvancedPropertiesPanel(connection, controller);
@@ -208,19 +208,19 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected void arrange() {
         GridBagHelper gbh;
 
-        // --- multifactor panel ---
+        // --- multi-factor panel ---
 
-        multifactorPanel = WidgetFactory.createPanel("multifactorPanel");
-        multifactorPanel.setBorder(BorderFactory.createTitledBorder(bundleString("multifactorPanel")));
+        multiFactorPanel = WidgetFactory.createPanel("multiFactorPanel");
+        multiFactorPanel.setBorder(BorderFactory.createTitledBorder(bundleString("multiFactorPanel")));
 
         gbh = new GridBagHelper().setInsets(5, 5, 5, 0).anchorNorthWest().fillHorizontally();
-        multifactorPanel.add(WidgetFactory.createLabel(bundleString("certField")), gbh.setMinWeightX().get());
-        multifactorPanel.add(certField, gbh.nextCol().setWidth(3).leftGap(0).setMaxWeightX().get());
-        multifactorPanel.add(browseCertFileButton, gbh.nextCol().setWidth(1).setMinWeightX().get());
-        multifactorPanel.add(WidgetFactory.createLabel(bundleString("containerPasswordField")), gbh.nextRowFirstCol().leftGap(5).get());
-        multifactorPanel.add(contPasswordField, gbh.nextCol().leftGap(0).setMaxWeightX().spanX().get());
-        multifactorPanel.add(storeContPasswordCheck, gbh.nextRow().leftGap(-3).bottomGap(5).setMinWeightX().setWidth(1).get());
-        multifactorPanel.add(verifyCertCheck, gbh.nextCol().leftGap(0).spanX().get());
+        multiFactorPanel.add(WidgetFactory.createLabel(bundleString("certField")), gbh.setMinWeightX().get());
+        multiFactorPanel.add(certField, gbh.nextCol().setWidth(3).leftGap(0).setMaxWeightX().get());
+        multiFactorPanel.add(browseCertFileButton, gbh.nextCol().setWidth(1).setMinWeightX().get());
+        multiFactorPanel.add(WidgetFactory.createLabel(bundleString("containerPasswordField")), gbh.nextRowFirstCol().leftGap(5).get());
+        multiFactorPanel.add(contPasswordField, gbh.nextCol().leftGap(0).setMaxWeightX().spanX().get());
+        multiFactorPanel.add(storeContPasswordCheck, gbh.nextRow().leftGap(-3).bottomGap(5).setMinWeightX().setWidth(1).get());
+        multiFactorPanel.add(verifyCertCheck, gbh.nextCol().leftGap(0).spanX().get());
     }
 
     protected void initComponentsLists() {
@@ -281,15 +281,15 @@ public abstract class AbstractConnectionPanel extends JPanel
             certRequire.disable();
             userPasswordRequire.disable();
 
-            multifactorPanel.setVisible(false);
+            multiFactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, false);
 
-        } else if (isMultifactorAuthSelected()) {
+        } else if (isMultiFactorAuthSelected()) {
             userRequire.enable();
             userPasswordRequire.disable();
             certRequire.setEnable(!isNewServerSelected());
 
-            multifactorPanel.setVisible(true);
+            multiFactorPanel.setVisible(true);
             setEnabledComponents(basicAuthComponents, true);
 
         } else {
@@ -297,7 +297,7 @@ public abstract class AbstractConnectionPanel extends JPanel
             certRequire.disable();
             userPasswordRequire.enable();
 
-            multifactorPanel.setVisible(false);
+            multiFactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, true);
         }
     }
@@ -383,7 +383,7 @@ public abstract class AbstractConnectionPanel extends JPanel
             return;
 
         if (isNewServerSelected()) {
-            authCombo.setSelectedItem(MULTIFACTOR_AUTH);
+            authCombo.setSelectedItem(MULTI_FACTOR_AUTH);
             authLabel.setEnabled(false);
             authCombo.setEnabled(false);
 
@@ -559,20 +559,20 @@ public abstract class AbstractConnectionPanel extends JPanel
 
         if (!properties.containsKey("isc_dpb_trusted_auth")
                 && !properties.containsKey("isc_dpb_multi_factor_auth")
-                && isMultifactorAuthSelected()) {
+                && isMultiFactorAuthSelected()) {
 
             properties.setProperty("isc_dpb_trusted_auth", "1");
             properties.setProperty("isc_dpb_multi_factor_auth", "1");
         }
 
-        if (!certField.getText().isEmpty() && isMultifactorAuthSelected())
+        if (!certField.getText().isEmpty() && isMultiFactorAuthSelected())
             loadCertificate(properties, certField.getText());
 
         if (!MiscUtils.isNull(contPasswordField.getPassword())
-                && isMultifactorAuthSelected())
+                && isMultiFactorAuthSelected())
             properties.setProperty("isc_dpb_repository_pin", contPasswordField.getPassword());
 
-        if (verifyCertCheck.isSelected() && isMultifactorAuthSelected())
+        if (verifyCertCheck.isSelected() && isMultiFactorAuthSelected())
             properties.setProperty("isc_dpb_verify_server", "1");
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
@@ -745,8 +745,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         return Objects.equals(authCombo.getSelectedItem(), GSS_AUTH);
     }
 
-    protected boolean isMultifactorAuthSelected() {
-        return Objects.equals(authCombo.getSelectedItem(), MULTIFACTOR_AUTH);
+    protected boolean isMultiFactorAuthSelected() {
+        return Objects.equals(authCombo.getSelectedItem(), MULTI_FACTOR_AUTH);
     }
 
     protected boolean isNewServerSelected() {

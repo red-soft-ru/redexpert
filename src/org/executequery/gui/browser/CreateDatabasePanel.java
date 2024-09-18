@@ -115,7 +115,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillBoth();
         mainPanel.add(leftPanel, gbh.setMaxWeightX().get());
         mainPanel.add(rightPanel, gbh.nextCol().get());
-        mainPanel.add(multifactorPanel, gbh.nextRowFirstCol().spanX().get());
+        mainPanel.add(multiFactorPanel, gbh.nextRowFirstCol().spanX().get());
         mainPanel.add(createButton, gbh.nextRowFirstCol().setMinWeightX().fillNone().get());
         mainPanel.add(new JPanel(), gbh.nextRow().fillBoth().setMaxWeightY().spanX().spanY().get());
 

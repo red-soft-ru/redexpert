@@ -221,7 +221,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillBoth();
         mainPanel.add(leftPanel, gbh.setMaxWeightX().get());
         mainPanel.add(rightPanel, gbh.nextCol().spanX().get());
-        mainPanel.add(multifactorPanel, gbh.nextRowFirstCol().leftGap(5).get());
+        mainPanel.add(multiFactorPanel, gbh.nextRowFirstCol().leftGap(5).get());
         mainPanel.add(sshPanel, gbh.nextRow().get());
         mainPanel.add(buttonsPanel, gbh.nextRow().fillNone().get());
         mainPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().fillBoth().spanY().get());
@@ -481,7 +481,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         if (isEmbeddedConnectionSelected()) {
             setEnabledComponents(nativeServerComponents, false);
-            multifactorPanel.setVisible(false);
+            multiFactorPanel.setVisible(false);
             userPasswordRequire.disable();
             hostRequire.disable();
             portRequire.disable();

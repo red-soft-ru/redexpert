@@ -119,10 +119,10 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected RequiredFieldPainter hostRequire;
     protected RequiredFieldPainter portRequire;
+    protected RequiredFieldPainter certRequire;
+    protected RequiredFieldPainter userRequire;
+    protected RequiredFieldPainter userPasswordRequire;
 
-    private RequiredFieldPainter certRequire;
-    private RequiredFieldPainter userRequire;
-    private RequiredFieldPainter userPasswordRequire;
     private List<RequiredFieldPainter> requiredPainters;
 
     // ---

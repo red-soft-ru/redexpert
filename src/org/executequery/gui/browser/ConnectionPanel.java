@@ -50,7 +50,7 @@ import java.util.List;
 public class ConnectionPanel extends AbstractConnectionPanel
         implements DocumentListener {
 
-    private List<JComponent> basicServerComponents;
+    private List<JComponent> nativeServerComponents;
     private List<RequiredFieldPainter> sshRequired;
 
     private int connectButtonWidth;
@@ -94,7 +94,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     protected void init() {
         super.init();
 
-        basicServerComponents = new ArrayList<>();
+        nativeServerComponents = new ArrayList<>();
 
         roleField = WidgetFactory.createTextField("roleField");
         sshHostField = WidgetFactory.createTextField("sshHostField");
@@ -251,11 +251,21 @@ public class ConnectionPanel extends AbstractConnectionPanel
                 getNearComponent(userPasswordField, -7)
         ));
 
-        basicServerComponents.addAll(Arrays.asList(
+        nativeServerComponents.addAll(Arrays.asList(
                 hostField,
                 portField,
+                authCombo,
+                authLabel,
+                roleField,
+                serverCombo,
+                userPasswordField,
+                storePasswordCheck,
+                encryptPasswordCheck,
                 getNearComponent(hostField, -5),
-                getNearComponent(portField, -5)
+                getNearComponent(portField, -5),
+                getNearComponent(roleField, -7),
+                getNearComponent(serverCombo, -7),
+                getNearComponent(userPasswordField, -7)
         ));
     }
 
@@ -470,16 +480,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
     protected void updateVisibleComponents() {
 
         if (isEmbeddedConnectionSelected()) {
-            super.updateVisibleComponents();
-
-            setEnabledComponents(basicAuthComponents, false);
-            setEnabledComponents(basicServerComponents, false);
+            setEnabledComponents(nativeServerComponents, false);
+            multifactorPanel.setVisible(false);
+            userPasswordRequire.disable();
             hostRequire.disable();
             portRequire.disable();
+            certRequire.disable();
+            userRequire.disable();
 
         } else {
-            setEnabledComponents(basicAuthComponents, true);
-            setEnabledComponents(basicServerComponents, true);
+            setEnabledComponents(nativeServerComponents, true);
             hostRequire.enable();
             portRequire.enable();
 

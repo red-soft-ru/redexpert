@@ -300,6 +300,10 @@ public abstract class AbstractConnectionPanel extends JPanel
             multiFactorPanel.setVisible(false);
             setEnabledComponents(basicAuthComponents, true);
         }
+
+        boolean newServerSelected = isNewServerSelected();
+        authLabel.setEnabled(!newServerSelected);
+        authCombo.setEnabled(!newServerSelected);
     }
 
     protected final JComponent getNearComponent(JComponent comp, int zOffset) {
@@ -382,17 +386,15 @@ public abstract class AbstractConnectionPanel extends JPanel
         if (!isSelected(e))
             return;
 
-        if (isNewServerSelected()) {
+        boolean newServerSelected = isNewServerSelected();
+        if (newServerSelected) {
             authCombo.setSelectedItem(MULTI_FACTOR_AUTH);
-            authLabel.setEnabled(false);
-            authCombo.setEnabled(false);
-
-        } else {
-            authLabel.setEnabled(true);
-            authCombo.setEnabled(true);
+            updateVisibleComponents();
         }
 
-        updateVisibleComponents();
+        authLabel.setEnabled(!newServerSelected);
+        authCombo.setEnabled(!newServerSelected);
+
         handleEvent(e);
     }
 

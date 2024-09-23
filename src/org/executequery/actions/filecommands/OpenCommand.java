@@ -145,12 +145,11 @@ public class OpenCommand implements BaseCommand {
                 }
 
                 if (!openNewEditor) {
-                    String loadedText = FileUtils.loadFile(file);
-
-                    queryEditor.loadText(loadedText);
+                    queryEditor.setAutosaveEnabled(false);
+                    queryEditor.loadText(FileUtils.loadFile(file));
                     queryEditor.setOpenFilePath(file.getAbsolutePath());
-                    GUIUtilities.setTabTitleForComponent(centralPane, queryEditor.getDisplayName());
 
+                    GUIUtilities.setTabTitleForComponent(centralPane, queryEditor.getDisplayName());
                     fireFileOpened(file);
                     return true;
                 }
@@ -182,7 +181,12 @@ public class OpenCommand implements BaseCommand {
         GUIUtilities.addCentralPane(
                 QueryEditor.TITLE,
                 QueryEditor.FRAME_ICON,
-                new QueryEditor(contents, file.getAbsolutePath(), -1),
+                new QueryEditor(
+                        contents,
+                        file.getAbsolutePath(),
+                        -1,
+                        false
+                ),
                 null,
                 true
         );

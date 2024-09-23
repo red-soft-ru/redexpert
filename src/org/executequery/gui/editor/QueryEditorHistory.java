@@ -34,8 +34,8 @@ public class QueryEditorHistory {
         return historyParameters;
     }
 
-    public static void addEditor(String connectionID, String editor, int number, int splitDividerLocation) {
-        addEditor(connectionID, new PathNumber(editor, number, splitDividerLocation));
+    public static void addEditor(String connectionID, String editor, int number, int splitDividerLocation, boolean autosaveEnabled) {
+        addEditor(connectionID, new PathNumber(editor, number, splitDividerLocation, autosaveEnabled));
     }
 
     public static void addEditor(String connectionID, PathNumber pathNumber) {
@@ -87,7 +87,7 @@ public class QueryEditorHistory {
         PathNumber pathNumber = getEditors(oldConnectionID).get(indexOfEditor(editor, getEditors(oldConnectionID)));
 
         removeEditor(oldConnectionID, editor);
-        addEditor(newConnectionID, editor, pathNumber.number, pathNumber.splitDividerLocation);
+        addEditor(newConnectionID, editor, pathNumber.number, pathNumber.splitDividerLocation, pathNumber.autosaveEnabled);
     }
 
     public static List<PathNumber> getEditors(DatabaseConnection connection) {
@@ -159,7 +159,7 @@ public class QueryEditorHistory {
                 String[] strings = strLine.split(";");
                 if (!editors.containsKey(strings[0]))
                     editors.put(strings[0], new ArrayList<>());
-                editors.get(strings[0]).add(new PathNumber(strings[1], Integer.parseInt(strings[2]), Integer.parseInt(strings[3])));
+                editors.get(strings[0]).add(new PathNumber(strings[1], Integer.parseInt(strings[2]), Integer.parseInt(strings[3]), Boolean.parseBoolean(strings[4])));
             }
         } catch (IOException e) {
             Log.error(e.getMessage(), e);
@@ -195,7 +195,8 @@ public class QueryEditorHistory {
                     writer.append(key).append(";")
                             .append(pathNumber.path).append(";")
                             .append(String.valueOf(pathNumber.number)).append(";")
-                            .append(String.valueOf(pathNumber.splitDividerLocation)).append("\n");
+                            .append(String.valueOf(pathNumber.splitDividerLocation)).append(";")
+                            .append(String.valueOf(pathNumber.autosaveEnabled)).append("\n");
                 }
             }
             writer.flush();
@@ -277,7 +278,7 @@ public class QueryEditorHistory {
                 File file = new File(copy.get(i).path);
                 if (file.exists()) {
                     String contents = FileUtils.loadFile(file, encoding);
-                    QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path, copy.get(i).splitDividerLocation);
+                    QueryEditor queryEditor = new QueryEditor(contents, copy.get(i).path, copy.get(i).splitDividerLocation, copy.get(i).autosaveEnabled);
                     if (connection != null)
                         queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
@@ -286,7 +287,7 @@ public class QueryEditorHistory {
                             null,
                             true);
                 } else {
-                    QueryEditor queryEditor = new QueryEditor("", copy.get(i).path, copy.get(i).splitDividerLocation);
+                    QueryEditor queryEditor = new QueryEditor("", copy.get(i).path, copy.get(i).splitDividerLocation, copy.get(i).autosaveEnabled);
                     if (connection != null)
                         queryEditor.setSelectedConnection(connection);
                     GUIUtilities.addCentralPane(QueryEditor.TITLE,
@@ -303,12 +304,14 @@ public class QueryEditorHistory {
 
     public static class PathNumber {
         private final int splitDividerLocation;
+        private final boolean autosaveEnabled;
         public String path;
         public int number;
 
-        public PathNumber(String path, int number, int splitDividerLocation) {
+        public PathNumber(String path, int number, int splitDividerLocation, boolean autosaveEnabled) {
             this.path = path;
             this.number = number;
+            this.autosaveEnabled = autosaveEnabled;
             this.splitDividerLocation = splitDividerLocation;
         }
 

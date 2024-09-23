@@ -737,27 +737,22 @@ public class QueryDispatcher {
             }
 
             start = System.currentTimeMillis();
-            PreparedStatement statement = null;
-            CallableStatement callableStatement = null;
+
             SqlStatementResult result;
+            PreparedStatement statement;
+
             if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
                 statement = querySender.getPreparedStatement(queryToExecute);
-            else {
-                if (query.getQueryType() != QueryTypes.CALL) {
-                    statement = prepareStatementWithParameters(queryToExecute, "");
-                } else {
-                    callableStatement = prepareCallableStatementWithParameters(queryToExecute, "");
-                }
-            }
-            if (statement != null)
-                result = querySender.execute(type, statement);
+
+            else if (query.getQueryType() == QueryTypes.CALL)
+                statement = prepareStatement(queryToExecute);
             else
-                result = querySender.execute(type, callableStatement);
+                statement = prepareStatementWithParameters(queryToExecute, "");
 
-            if (statementCancelled || Thread.interrupted()) {
+            result = querySender.execute(type, statement);
 
+            if (statementCancelled || Thread.interrupted())
                 throw new InterruptedException();
-            }
 
             if (result.isResultSet()) {
 
@@ -1113,6 +1108,8 @@ public class QueryDispatcher {
                         statement = null;
                     else if (query.getQueryType() == QueryTypes.INSERT)
                         statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
+                    else if (query.getQueryType() == QueryTypes.CALL)
+                        statement = prepareStatement(queryToExecute);
                     else
                         statement = prepareStatementWithParameters(queryToExecute, getVariables(queryToExecute));
 
@@ -1344,6 +1341,10 @@ public class QueryDispatcher {
         return DONE;
     }
 
+    private PreparedStatement prepareStatement(String sql) throws SQLException {
+        return querySender.getPreparedStatement(new SqlParser(sql).getProcessedSql());
+    }
+
     PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
         return prepareStatementWithParameters(sql, variables, true);
     }
@@ -1418,50 +1419,6 @@ public class QueryDispatcher {
             statementCancelled = true;
             throw new DataSourceException("Canceled");
         }
-    }
-
-    private CallableStatement prepareCallableStatementWithParameters(String sql, String parameters) throws SQLException {
-        SqlParser parser = new SqlParser(sql, parameters);
-        String queryToExecute = parser.getProcessedSql();
-        CallableStatement statement = querySender.getCallableStatement(queryToExecute);
-        statement.setEscapeProcessing(true);
-        ParameterMetaData pmd = statement.getParameterMetaData();
-        List<Parameter> params = parser.getParameters();
-        List<Parameter> displayParams = parser.getDisplayParameters();
-        for (int i = 0; i < params.size(); i++) {
-            params.get(i).setType(pmd.getParameterType(i + 1));
-            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-        }
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
-            for (int i = 0; i < displayParams.size(); i++) {
-                Parameter dp = displayParams.get(i);
-                for (int g = 0; g < oldParams.size(); g++) {
-                    Parameter p = oldParams.get(g);
-                    if (p.getType() == dp.getType() && p.getName().contentEquals(dp.getName())) {
-                        dp.setValue(p.getValue());
-                        oldParams.remove(p);
-                        break;
-                    }
-                }
-            }
-        }
-        if (!displayParams.isEmpty()) {
-            InputParametersDialog spd = new InputParametersDialog(displayParams);
-            spd.display();
-            if (spd.isCanceled()) {
-                statementCancelled = true;
-                throw new DataSourceException("Canceled");
-            }
-        }
-        for (int i = 0; i < params.size(); i++) {
-            if (params.get(i).isNull())
-                statement.setNull(i + 1, params.get(i).getType());
-            else
-                statement.setObject(i + 1, params.get(i).getPreparedValue());
-        }
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
-        return statement;
     }
 
     private void printTableStat(Map<String, IFBTableStatistics> before, boolean anyConnections) {

@@ -21,7 +21,6 @@ import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -445,7 +444,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (!targetConnection.isConnected())
                 ConnectionMediator.getInstance().connect(targetConnection, true);
 
-        } catch (DataSourceException e) {
+        } catch (Throwable e) {
             Log.error(e.getMessage(), e);
             GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
                     "UnableCompareNoConnections.extract" :

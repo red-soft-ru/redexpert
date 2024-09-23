@@ -1066,6 +1066,7 @@ public class QueryDispatcher {
             start = System.currentTimeMillis();
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
+            boolean moreThanOneQuery = executableQueries.size() > 1;
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
@@ -1291,9 +1292,11 @@ public class QueryDispatcher {
 
             long timeTaken = end - start;
             totalDuration += timeTaken;
-            logExecutionTime(timeTaken, anyConnections);
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
+            if (moreThanOneQuery)
+                logExecutionTime("Total execution time: %s", timeTaken, anyConnections);
+
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
                 String nodemetakey = metaTagNode.getMetaDataKey();
                 if (metaTagNode.isSystem()) {
@@ -1689,27 +1692,11 @@ public class QueryDispatcher {
             }
         }
 
-        long end = System.currentTimeMillis();
-
         outputWarnings(result.getSqlWarning(), anyConnection);
-
-        logExecutionTime(start, end, anyConnection);
-
+        logExecutionTime(System.currentTimeMillis() - start, anyConnection);
         statementExecuted(sql);
 
         return DONE;
-    }
-
-    /**
-     * Logs the execution duration within the output
-     * pane for the specified start and end values.
-     *
-     * @param start the start time in millis
-     * @param end   the end time in millis
-     */
-    private void logExecutionTime(long start, long end, boolean anyConnections) {
-
-        logExecutionTime(end - start, anyConnections);
     }
 
     /**
@@ -1719,8 +1706,24 @@ public class QueryDispatcher {
      * @param time the time in millis
      */
     private void logExecutionTime(long time, boolean anyConnections) {
-        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
-                "Execution time: " + formatDuration(time), false, anyConnections);
+        logExecutionTime("Statement execution time: %s", time, anyConnections);
+    }
+
+    /**
+     * Logs the execution duration within the output
+     * pane for the specified value.
+     *
+     * @param time    the time in millis
+     * @param message the message to show
+     */
+    private void logExecutionTime(String message, long time, boolean anyConnections) {
+        setOutputMessage(
+                querySender.getDatabaseConnection(),
+                SqlMessages.PLAIN_MESSAGE,
+                String.format(message, formatDuration(time)),
+                false,
+                anyConnections
+        );
     }
 
     /**

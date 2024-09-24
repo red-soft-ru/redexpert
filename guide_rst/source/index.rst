@@ -25,6 +25,7 @@ Welcome to Red_Expert's documentation!
    sec-system
    app-toolbar
    app-options
+   app-settings
 
 
 

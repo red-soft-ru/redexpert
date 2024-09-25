@@ -302,14 +302,26 @@ public class QueryEditor extends DefaultTabView
         if (e.getStateChange() != ItemEvent.SELECTED)
             return;
 
-        String idConnection = oldConnection != null ?
+        DatabaseConnection newConnection = getSelectedConnection();
+
+        String oldConnectionId = oldConnection != null ?
                 oldConnection.getId() :
                 QueryEditorHistory.NULL_CONNECTION;
 
-        QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
-        oldConnection = getSelectedConnection();
-        editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
-        transactionParametersPanel.setDatabaseConnection(getSelectedConnection());
+        String newConnectionId = newConnection != null ?
+                newConnection.getId() :
+                QueryEditorHistory.NULL_CONNECTION;
+
+        if (Objects.equals(oldConnectionId, newConnectionId))
+            return;
+
+        QueryEditorHistory.changedConnectionEditor(oldConnectionId, newConnectionId, scriptFile.getAbsolutePath());
+        oldConnection = newConnection;
+
+        if (editorPanel != null)
+            editorPanel.getQueryArea().setDatabaseConnection(newConnection);
+        if (transactionParametersPanel != null)
+            transactionParametersPanel.setDatabaseConnection(newConnection);
     }
 
     private void updateExecuteDestination(boolean toggle) {

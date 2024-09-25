@@ -1407,6 +1407,7 @@ public class QueryEditor extends DefaultTabView
         toolBar = null;
         editorPanel = null;
 
+        Arrays.stream(connectionsCombo.getItemListeners()).forEach(l -> connectionsCombo.removeItemListener(l));
         delegate.disconnected(getSelectedConnection());
 
         removeAll();

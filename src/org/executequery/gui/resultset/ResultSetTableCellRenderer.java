@@ -75,7 +75,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
 
     ResultSetTableCellRenderer() {
 
-        focusBorder = loadUIBorder("Table.focusCellHighlightBorder");
+        focusBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
         editableForeground = loadUIColour("Table.focusCellForeground");
         editableBackground = loadUIColour("Table.focusCellBackground");
         selectionForeground = loadUIColour("Table.selectionForeground");
@@ -85,66 +85,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         applyUserPreferences();
     }
 
-    private Border loadUIBorder(String key) {
-        return UIManager.getBorder(key);
-    }
-
     private Color loadUIColour(String key) {
         return UIManager.getColor(key);
-    }
-
-    private void alignNumeric(Object value) {
-
-        RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
-            return;
-
-        int sqlType = recordDataItem.getDataType();
-        switch (sqlType) {
-
-            case Types.TINYINT:
-            case Types.INT128:
-            case Types.BIGINT:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-            case Types.INTEGER:
-            case Types.SMALLINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-                setHorizontalAlignment(SwingConstants.RIGHT);
-                break;
-
-            default:
-                //setHorizontalAlignment(SwingConstants.LEFT);
-                break;
-        }
-
-    }
-
-    private void alignText(Object value) {
-
-        RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
-            return;
-
-        int sqlType = recordDataItem.getDataType();
-        switch (sqlType) {
-
-            case Types.VARCHAR:
-            case Types.LONGNVARCHAR:
-            case Types.CHAR:
-            case Types.CLOB:
-            case Types.NCHAR:
-            case Types.NCLOB:
-            case Types.NVARCHAR:
-                setHorizontalAlignment(SwingConstants.LEFT);
-                break;
-
-            default:
-                break;
-        }
-
     }
 
     protected void setAlign(String align) {

@@ -69,6 +69,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     public CreateIndexPanel(DatabaseConnection dc, ActionContainer dialog, DefaultDatabaseIndex index, String tableName) {
         super(dc, dialog, index, new Object[]{tableName});
+        this.tableName.setEnabled(false);
     }
 
     @Override

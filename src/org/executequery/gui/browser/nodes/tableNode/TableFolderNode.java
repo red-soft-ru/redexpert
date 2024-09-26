@@ -9,7 +9,7 @@ import org.underworldlabs.jdbc.DataSourceException;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class TableFolderNode extends DatabaseObjectNode {
+public abstract class TableFolderNode extends DatabaseObjectNode {
 
     protected DatabaseTable databaseTable;
     protected List<DatabaseObjectNode> children;

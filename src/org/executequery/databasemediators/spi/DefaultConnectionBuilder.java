@@ -58,18 +58,18 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
         ConnectionBuilder connectionBuilder = this;
         ConnectionProgressDialog progressDialog = new ConnectionProgressDialog(this);
-        Integer connectionTimeout = SystemProperties.getIntProperty("user", "connection.connect.timeout");
 
         worker = new SwingWorker("Connection to " + databaseConnection.getName()) {
+            private Properties props;
 
             @Override
             public Object construct() {
 
                 try {
 
-                    Properties props = databaseConnection.getJdbcProperties();
+                    props = databaseConnection.getJdbcProperties();
                     if (!props.containsKey("connectTimeout"))
-                        props.setProperty("connectTimeout", String.valueOf(connectionTimeout));
+                        props.setProperty("connectTimeout", SystemProperties.getProperty("user", "connection.connect.timeout"));
 
                     String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
                     if (!MiscUtils.isNull(ApplicationContext.getInstance().getExternalPID()))
@@ -96,7 +96,7 @@ public class DefaultConnectionBuilder implements ConnectionBuilder {
 
                     if (e.getMessage().contains("java.sql.SQLTimeoutException") && progressDialog.isActive()) {
                         cancel();
-                        GUIUtilities.displayWarningMessage(Bundles.get(DefaultConnectionBuilder.class, "TimeoutException", connectionTimeout));
+                        GUIUtilities.displayWarningMessage(Bundles.get(DefaultConnectionBuilder.class, "TimeoutException", props.getProperty("connectTimeout")));
 
                     } else if (e.getMessage().contentEquals("Connection cancelled"))
                         cancel();

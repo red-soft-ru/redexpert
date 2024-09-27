@@ -166,6 +166,7 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel {
         primaryPanel = WidgetFactory.createPanel("primaryPanel");
 
         checkTextArea = WidgetFactory.createSimpleSqlTextPanel("checkPanel");
+        checkTextArea.setSQLText("CHECK(\n\t/* your code here */\n)");
 
         // ---
 

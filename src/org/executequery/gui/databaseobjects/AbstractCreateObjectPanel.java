@@ -193,17 +193,15 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
 
-        gbh = new GridBagHelper().leftGap(5).topGap(5).fillHorizontally().anchorNorthEast();
+        gbh = new GridBagHelper().setInsets(5, 0, 0, 5).fillHorizontally().anchorNorthEast();
         buttonPanel.add(new JPanel(), gbh.setMaxWeightX().get());
         buttonPanel.add(actionButton, gbh.nextCol().setMinWeightX().fillNone().get());
         buttonPanel.add(submitButton, gbh.nextCol().get());
-        buttonPanel.add(cancelButton, gbh.nextCol().get());
+        buttonPanel.add(cancelButton, gbh.nextCol().rightGap(5).get());
 
         // --- main panel ---
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        if (parent != null)
-            mainPanel.setBorder(BorderFactory.createEtchedBorder());
 
         gbh = new GridBagHelper().setDefaultsStatic().fullDefaults();
         mainPanel.add(topPanel, gbh.setMaxWeightX().fillHorizontally().get());

@@ -21,9 +21,11 @@
 package org.executequery.gui;
 
 import org.executequery.Constants;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.underworldlabs.swing.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
@@ -615,6 +617,49 @@ public final class WidgetFactory {
         panel.setName(name);
 
         return panel;
+    }
+
+    /**
+     * Create named <code>SimpleSqlTextPanel</code> class instance.
+     *
+     * @param name the component's name
+     */
+    public static SimpleSqlTextPanel createSimpleSqlTextPanel(String name) {
+
+        SimpleSqlTextPanel sqlTextPanel = new SimpleSqlTextPanel();
+        sqlTextPanel.setName(name);
+
+        return sqlTextPanel;
+    }
+
+    /**
+     * Create named <code>ListSelectionPanel</code> class instance.
+     *
+     * @param name   the component's name
+     * @param values the available values list
+     */
+    public static ListSelectionPanel createListSelectionPanel(String name, List<?> values) {
+
+        ListSelectionPanel listSelectionPanel = new ListSelectionPanel();
+        listSelectionPanel.createAvailableList(values);
+        listSelectionPanel.setName(name);
+
+        return listSelectionPanel;
+    }
+
+    /**
+     * Create named <code>ListSelectionPanel</code> class instance.
+     *
+     * @param name   the component's name
+     * @param values the available values list
+     * @param border the border to be rendered for this component
+     */
+    public static ListSelectionPanel createListSelectionPanel(String name, List<?> values, Border border) {
+
+        ListSelectionPanel listSelectionPanel = createListSelectionPanel(name, values);
+        listSelectionPanel.setBorder(border);
+
+        return listSelectionPanel;
     }
 
     /**

@@ -31,40 +31,33 @@ import java.util.regex.Pattern;
  */
 public final class ApplicationVersion {
 
-    public static final int SNAPSHOT = 0;
-    public static final int ALPHA = SNAPSHOT + 1;
-    public static final int BETA = ALPHA + 1;
-    public static final int RC = BETA + 1;
+    public static final int RC = 0;
     public static final int RELEASE = RC + 1;
+    public static final int SNAPSHOT = RELEASE + 1;
 
     private final static String VERSION_PATTERN =
-            "^(?<x>\\d+)\\.(?<y>\\d+)(\\.(?<z>\\d+))?(.(?<abc>\\d))?(-(?<tag>[a-zA-Z]+)(\\.(?<build>\\d+))?)?$";
+            "^(?<x>\\d+)\\.(?<y>\\d+)(\\.(?<z>\\d+))?(-(?<tag>[a-zA-Z]+)(\\.(?<build>\\d+))?)?$";
 
     private final static Map<String, Integer> TAGS_VALUES = new HashMap<String, Integer>() {{
-        put("SNAPSHOT", SNAPSHOT);
-        put("ALPHA", ALPHA);
-        put("BETA", BETA);
         put("RC", RC);
         put("", RELEASE);
+        put("SNAPSHOT", SNAPSHOT);
     }};
 
-    private int abc;
     private int build;
     private int xValue;
     private int yValue;
     private int zValue;
-
     private String tag;
+
     private String version;
 
     public ApplicationVersion(String version) {
-
         tag = "";
         build = -1;
         xValue = -1;
         yValue = -1;
         zValue = -1;
-        abc = 99999;
 
         setVersion(version);
     }
@@ -78,9 +71,6 @@ public final class ApplicationVersion {
 
             if (matcher.group("z") != null)
                 zValue = Integer.parseInt(matcher.group("z"));
-
-            if (matcher.group("abc") != null)
-                abc = Integer.parseInt(matcher.group("abc"));
 
             if (matcher.group("tag") != null) {
                 tag = matcher.group("tag");
@@ -105,9 +95,6 @@ public final class ApplicationVersion {
 
         if (!Objects.equals(zValue, comparedVersion.zValue))
             return zValue > comparedVersion.zValue;
-
-        if (!Objects.equals(abc, comparedVersion.abc))
-            return abc > comparedVersion.abc;
 
         if (!Objects.equals(tag, comparedVersion.tag))
             return getTagValue() > comparedVersion.getTagValue();

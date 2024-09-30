@@ -5,6 +5,7 @@ import java.io.File;
 /**
  * This class provides validation methods for file names. It follows a builder pattern, allowing for method chaining to
  * apply multiple validation rules.
+ * @author Maxim Kozhinov
  */
 public class FileValidator {
 

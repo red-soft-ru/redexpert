@@ -16,6 +16,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
  * Service class responsible for managing database backup and restore operations using the FBBackupManager. Provides
  * methods for initiating and managing backup and restore processes, including setting the required options, paths, and
  * logging output.
+ * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestoreService {
 

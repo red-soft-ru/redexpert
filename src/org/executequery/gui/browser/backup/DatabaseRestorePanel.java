@@ -22,6 +22,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
  * for customizing the restore process, such as deactivating indices, disabling shadow tables, and restoring metadata
  * only. The panel also includes input fields for specifying the restore and backup file names, page size, and the
  * number of parallel workers.
+ * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
 

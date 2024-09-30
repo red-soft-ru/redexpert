@@ -22,6 +22,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
  * for customizing the backup process, such as ignoring checksums, disabling garbage collection, and using
  * non-transportable backups. The panel also includes input fields for specifying the backup file and the number of
  * parallel workers.
+ * @author Maxim Kozhinov
  */
 public class DatabaseBackupPanel implements Serializable {
 

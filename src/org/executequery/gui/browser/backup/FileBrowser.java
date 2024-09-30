@@ -7,6 +7,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  * Utility class for handling file browsing operations with customized settings. Provides methods for selecting files
  * via a JFileChooser dialog.
+ * @author Maxim Kozhinov
  */
 public class FileBrowser {
 

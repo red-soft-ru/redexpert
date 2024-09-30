@@ -27,6 +27,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
  * perform a backup or a restore operation. Logging options are also available.
+ * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestorePanel extends JPanel {
 

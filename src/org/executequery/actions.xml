@@ -513,6 +513,14 @@
             description="Database Statistic"
             execute-class="org.executequery.actions.toolscommands.DatabaseStatisticCommands"/>
 
+    <action id="database-backup-restore-command"
+            name="Database Backup/Restore"
+            mnemonic="DBR"
+            accel-editable="true"
+            small-icon="icon_backup_restore"
+            description="Database Backup/Restore"
+            execute-class="org.executequery.actions.toolscommands.DatabaseBackupRestoreCommands"/>
+
     <action id="profiler-command"
             name="Profiler"
             mnemonic="PF"

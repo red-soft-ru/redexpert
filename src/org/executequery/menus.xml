@@ -49,6 +49,11 @@
         <menu-item id="export-connections-command"
                    class="org.underworldlabs.swing.menu.MainMenuItem"/>
 
+        <menu-item id="separator"/>
+
+        <menu-item id="database-backup-restore-command"
+          class="org.underworldlabs.swing.menu.MainMenuItem"/>
+
     </menu>
 
     <menu name="Edit"

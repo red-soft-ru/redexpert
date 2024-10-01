@@ -39,7 +39,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private DatabaseBackupPanel backupHelper;
     private DatabaseRestorePanel restoreHelper;
 
-    private ConnectionsComboBox dbMasterComboBox;
+    private ConnectionsComboBox connectionCombo;
     private JTextField databaseFileField;
     private JTextField hostField;
     private JTextField portField;
@@ -69,7 +69,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
         restoreHelper.getRestoreButton().addActionListener(e -> performRestore());
 
         // Initialize connection-related fields
-        dbMasterComboBox = WidgetFactory.createConnectionComboBox("dbMasterComboBox", false);
+        connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false);
         databaseFileField = WidgetFactory.createTextField("databaseFileField");
         hostField = WidgetFactory.createTextField("hostField");
         portField = WidgetFactory.createTextField("portField");
@@ -86,7 +86,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
         loggingOutputPanel.setBorder(BorderFactory.createTitledBorder(bundleString("loggingOutput")));
         loggingOutputPanel.clear();
 
-        dbMasterComboBox.addActionListener(e -> changeDatabaseConnection());
+        connectionCombo.addActionListener(e -> changeDatabaseConnection());
     }
 
     /**
@@ -128,7 +128,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * backup and restore operations.
      */
     private void arrange() {
-        setLayout(new BorderLayout());
+        setLayout(new GridBagLayout());
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(bundleString("Backup"), backupHelper.arrange());
@@ -139,7 +139,8 @@ public class DatabaseBackupRestorePanel extends JPanel {
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, commonPanel, tabbedPane);
         splitPane.setResizeWeight(0.5);
 
-        add(splitPane, BorderLayout.CENTER);
+        GridBagHelper gbh = new GridBagHelper().setInsets(5, 0, 5, 0).fillBoth().spanX().spanY();
+        add(splitPane, gbh.get());
     }
 
     /**
@@ -149,11 +150,12 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private JPanel createCommonPanel() {
         JPanel commonPanel = WidgetFactory.createPanel("commonPanel");
-        GridBagHelper gbh = new GridBagHelper().bottomGap(5).anchorNorthWest().fillHorizontally();
+        GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 5).anchorNorthWest().fillHorizontally();
 
-        commonPanel.add(WidgetFactory.createLabel(bundleString("connections")), gbh.setMinWeightX().leftGap(0).get());
-        commonPanel.add(dbMasterComboBox, gbh.nextCol().setMaxWeightX().leftGap(5).spanX().get());
+        commonPanel.add(WidgetFactory.createLabel(bundleString("connections")), gbh.setMinWeightX().get());
+        commonPanel.add(connectionCombo, gbh.nextCol().setMaxWeightX().spanX().get());
 
+        gbh.topGap(0);
         addFieldWithLabel(commonPanel, gbh, bundleString("database"), databaseFileField);
         addFieldWithLabel(commonPanel, gbh, bundleString("host"), hostField);
         addFieldWithLabel(commonPanel, gbh, bundleString("port"), portField);
@@ -161,11 +163,11 @@ public class DatabaseBackupRestorePanel extends JPanel {
         addFieldWithLabel(commonPanel, gbh, bundleString("password"), passwordField);
 
         commonPanel.add(logToFileBox, gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
-        commonPanel.add(fileLogField, gbh.nextCol().setMaxWeightX().leftGap(5).get());
+        commonPanel.add(fileLogField, gbh.nextCol().setMaxWeightX().get());
         commonPanel.add(fileLogButton, gbh.nextCol().setMinWeightX().get());
 
-        commonPanel.add(loggingOutputPanel,
-                gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().fillBoth().spanX().spanY().get());
+        gbh.setMaxWeightX().setMaxWeightY().fillBoth().spanX().spanY();
+        commonPanel.add(loggingOutputPanel, gbh.nextRowFirstCol().get());
 
         return commonPanel;
     }
@@ -180,14 +182,14 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void addFieldWithLabel(JPanel panel, GridBagHelper gbh, String label, JTextField field) {
         panel.add(WidgetFactory.createLabel(label), gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
-        panel.add(field, gbh.nextCol().setMaxWeightX().leftGap(5).spanX().get());
+        panel.add(field, gbh.nextCol().setMaxWeightX().spanX().get());
     }
 
     /**
      * Switches the UI fields based on the selected database connection.
      */
     private void changeDatabaseConnection() {
-        DatabaseConnection dc = (DatabaseConnection) dbMasterComboBox.getSelectedItem();
+        DatabaseConnection dc = (DatabaseConnection) connectionCombo.getSelectedItem();
         if (dc != null) {
             databaseFileField.setText(dc.getSourceName());
             userField.setText(dc.getUserName());
@@ -215,7 +217,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performBackup() {
         try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
-            backupHelper.performBackup(dbMasterComboBox.getSelectedConnection(), backupOutputStream);
+            backupHelper.performBackup(connectionCombo.getSelectedConnection(), backupOutputStream);
             GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
             populateLogs(backupOutputStream);
 
@@ -233,7 +235,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performRestore() {
         try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
-            restoreHelper.performRestore(dbMasterComboBox.getSelectedConnection(), restoreOutputStream);
+            restoreHelper.performRestore(connectionCombo.getSelectedConnection(), restoreOutputStream);
             GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
             populateLogs(restoreOutputStream);
 

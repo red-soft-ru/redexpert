@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
@@ -113,16 +112,15 @@ public class DatabaseRestorePanel implements Serializable {
 
         // Main panel layout
         JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
-        gbh = new GridBagHelper().anchorNorthWest().bottomGap(10).fillBoth();
-        mainPanel.add(textOptionsPanel, gbh.setMaxWeightX().topGap(10).spanX().get());
-        mainPanel.add(checkBoxPanel, gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
-        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().setMinWeightX().setWidth(1).get());
-        mainPanel.add(new JPanel(), gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().fillBoth().spanY().get());
+        gbh = new GridBagHelper().setInsets(0, 5, 0, 15).anchorNorthWest().fillBoth();
+        mainPanel.add(textOptionsPanel, gbh.setMinWeightY().spanX().get());
+        mainPanel.add(checkBoxPanel, gbh.nextRowFirstCol().topGap(0).get());
+        mainPanel.add(buttonPanel, gbh.nextRowFirstCol().get());
+        mainPanel.add(new JPanel(), gbh.nextRowFirstCol().setMaxWeightY().get());
+        mainPanel.add(progressBar, gbh.nextRowFirstCol().bottomGap(6).setMinWeightY().get());
 
-        gbh = new GridBagHelper().anchorNorthWest().bottomGap(10).fillBoth();
-        restorePanel.add(mainPanel, gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().get());
-        restorePanel.add(progressBar,
-                gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
+        gbh = new GridBagHelper().anchorNorthWest().fillBoth();
+        restorePanel.add(mainPanel, gbh.setMaxWeightX().setMaxWeightY().get());
 
         return restorePanel;
     }
@@ -134,13 +132,13 @@ public class DatabaseRestorePanel implements Serializable {
      */
     private JPanel createCheckBoxPanel() {
         JPanel checkBoxPanel = WidgetFactory.createPanel("checkBoxPanel");
-        GridBagHelper gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
         checkBoxPanel.add(deactivateIdxCheckBox, gbh.get());
+        checkBoxPanel.add(metadataOnlyCheckBox, gbh.nextCol().leftGap(5).get());
         checkBoxPanel.add(noShadowCheckBox, gbh.nextCol().get());
-        checkBoxPanel.add(noValidityCheckBox, gbh.nextRowFirstCol().get());
-        checkBoxPanel.add(metadataOnlyCheckBox, gbh.nextCol().get());
+        checkBoxPanel.add(noValidityCheckBox, gbh.nextRowFirstCol().leftGap(0).topGap(5).get());
+        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextCol().setWidth(2).leftGap(5).get());
         checkBoxPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
-        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextRowFirstCol().get());
         return checkBoxPanel;
     }
 
@@ -150,21 +148,24 @@ public class DatabaseRestorePanel implements Serializable {
      * @return JPanel containing the text input fields.
      */
     private JPanel createTextOptionsPanel() {
+
         JPanel textOptionsPanel = WidgetFactory.createPanel("textOptionsPanel");
-        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().topGap(10).fillHorizontally();
-        textOptionsPanel.add(new JLabel(bundleString("pageSizeField")), gbh.setMinWeightX().leftGap(0).get());
-        textOptionsPanel.add(pageSizeField, gbh.nextCol().leftGap(5).rightGap(5).setMaxWeightX().spanX().get());
-        textOptionsPanel.add(new JLabel(bundleString("parallelWorkersField")),
-                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).rightGap(5).setMaxWeightX().spanX().get());
-        textOptionsPanel.add(new JLabel(bundleString("backupFileField")),
-                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(backupFileField, gbh.nextCol().setMaxWeightX().leftGap(5).get());
-        textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
-        textOptionsPanel.add(new JLabel(bundleString("restoredFileField")),
-                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+        GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
+
+        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("backupFileField")), gbh.setMinWeightX().get());
+        textOptionsPanel.add(backupFileField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
+        textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().get());
+
+        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("restoredFileField")), gbh.nextRowFirstCol().leftGap(0).topGap(5).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(restoredFileField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
-        textOptionsPanel.add(browseRestoreFileButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
+        textOptionsPanel.add(browseRestoreFileButton, gbh.nextCol().setMinWeightX().get());
+
+        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("pageSizeField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+        textOptionsPanel.add(pageSizeField, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
+
+        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+        textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
+
         return textOptionsPanel;
     }
 

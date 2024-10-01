@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import javax.swing.*;
 
+import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.LoggingOutputPanel;
@@ -33,7 +34,6 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     public static final String TITLE = bundleString("title");
     public static final String BACKUP_ICON = "icon_backup_restore";
-    private static final String ERROR_TITLE = bundleString("Error");
 
     private DatabaseBackupPanel backupHelper;
     private DatabaseRestorePanel restoreHelper;
@@ -211,14 +211,15 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private void performBackup() {
         try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
             backupHelper.performBackup(dbMasterComboBox.getSelectedConnection(), backupOutputStream);
-            JOptionPane.showMessageDialog(this, bundleString("backupSucceed"), bundleString("Success"),
-                                          JOptionPane.INFORMATION_MESSAGE);
+            GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
             populateLogs(backupOutputStream);
+
         } catch (InvalidBackupFileException e) {
-            showErrorDialog(e.getMessage());
-        } catch (Exception ex) {
+            GUIUtilities.displayWarningMessage(e.getMessage());
+
+        } catch (Exception e) {
             backupHelper.getProgressBar().setValue(0);
-            showErrorDialog(bundleString("backupFailed") + " " + ex.getMessage());
+            GUIUtilities.displayExceptionErrorDialog(bundleString("backupFailed", e.getMessage()), e, getClass());
         }
     }
 
@@ -228,14 +229,15 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private void performRestore() {
         try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
             restoreHelper.performRestore(dbMasterComboBox.getSelectedConnection(), restoreOutputStream);
-            JOptionPane.showMessageDialog(this, bundleString("restoreSucceed"), bundleString("Success"),
-                                          JOptionPane.INFORMATION_MESSAGE);
+            GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
             populateLogs(restoreOutputStream);
+
         } catch (InvalidBackupFileException e) {
-            showErrorDialog(e.getMessage());
-        } catch (Exception ex) {
+            GUIUtilities.displayWarningMessage(e.getMessage());
+
+        } catch (Exception e) {
             restoreHelper.getProgressBar().setValue(0);
-            showErrorDialog(bundleString("restoreFailed") + " " + ex.getMessage());
+            GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
         }
     }
 
@@ -258,16 +260,8 @@ public class DatabaseBackupRestorePanel extends JPanel {
             }
         } catch (IOException e) {
             Log.error(e.getMessage(), e);
-            showErrorDialog(e.getMessage());
+            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, getClass());
         }
-    }
-
-    /**
-     * Displays an error dialog with the specified message.
-     * @param message The error message to display.
-     */
-    private void showErrorDialog(String message) {
-        JOptionPane.showMessageDialog(this, message, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -289,7 +283,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * @param key The key for the string.
      * @return The localized string.
      */
-    public static String bundleString(String key) {
-        return Bundles.get(DatabaseBackupRestorePanel.class, key);
+    public static String bundleString(String key, Object... args) {
+        return Bundles.get(DatabaseBackupRestorePanel.class, key, args);
     }
 }

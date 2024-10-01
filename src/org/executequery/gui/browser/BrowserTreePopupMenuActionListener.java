@@ -145,9 +145,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     @SuppressWarnings("unused")
     public void backupRestore(ActionEvent e) {
-        if (currentSelection != null) {
-            new DatabaseBackupRestoreCommands().openTab();
-        }
+        if (currentSelection != null)
+            new DatabaseBackupRestoreCommands().execute(null);
     }
 
     @SuppressWarnings("unused")

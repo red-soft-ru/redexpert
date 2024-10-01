@@ -29,18 +29,4 @@ public class DatabaseBackupRestoreCommands extends OpenFrameCommand implements B
         );
     }
 
-    public void openTab() {
-        String title = DatabaseBackupRestorePanel.TITLE;
-        if (isCentralPaneOpen(title)) {
-            return;
-        }
-
-        GUIUtilities.addCentralPane(
-                title,
-                DatabaseBackupRestorePanel.BACKUP_ICON,
-                new DatabaseBackupRestorePanel(),
-                null,
-                true
-        );
-    }
 }

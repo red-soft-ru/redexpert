@@ -34,12 +34,14 @@ class BrowserTreeHostPopupMenu extends JPopupMenu {
 
         add(createMenuItem(bundleString("ExtractMetadata"), "extractMetadata", listener, connectItems));
         add(createMenuItem(bundleString("BackupRestore"), "backupRestore", listener, connectItems));
-        add(createMenuItem(bundleString("MoveToFolder"), "moveToFolder", listener));
-        add(createMenuItem(bundleString("Duplicate"), "duplicateConnection", listener));
         add(createMenuItem(bundleString("Delete"), "deleteConnection", listener, disconnectItems));
         addSeparator();
 
         add(createMenuItem(bundleString("CopyName"), "copyName", listener));
+        add(createMenuItem(bundleString("MoveToFolder"), "moveToFolder", listener));
+        add(createMenuItem(bundleString("Duplicate"), "duplicateConnection", listener));
+        addSeparator();
+
         add(createMenuItem(bundleString("ShowInformation"), "showConnectionInfo", listener));
     }
 

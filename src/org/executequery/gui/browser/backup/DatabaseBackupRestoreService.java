@@ -1,11 +1,13 @@
 package org.executequery.gui.browser.backup;
 
 import biz.redsoft.IFBBackupManager;
+
 import java.io.OutputStream;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map.Entry;
 import java.util.Optional;
+
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
@@ -16,6 +18,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
  * Service class responsible for managing database backup and restore operations using the FBBackupManager. Provides
  * methods for initiating and managing backup and restore processes, including setting the required options, paths, and
  * logging output.
+ *
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestoreService {
@@ -28,6 +31,7 @@ public class DatabaseBackupRestoreService {
 
     /**
      * Executes the database restore process using the given parameters.
+     *
      * @param dc                    the database connection details
      * @param fromFile              path to the backup source file
      * @param toFile                path where the restored data will be saved
@@ -56,7 +60,7 @@ public class DatabaseBackupRestoreService {
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
                 GUIUtilities.displayExceptionErrorDialog("Unable to restore database", e,
-                                                         DatabaseBackupRestoreService.class);
+                        DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -65,6 +69,7 @@ public class DatabaseBackupRestoreService {
 
     /**
      * Executes the database backup process using the given parameters.
+     *
      * @param connection            the database connection details
      * @param backupPath            the path where the backup will be saved
      * @param options               backup options
@@ -89,7 +94,7 @@ public class DatabaseBackupRestoreService {
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
                 GUIUtilities.displayExceptionErrorDialog("Unable to create database backup", e,
-                                                         DatabaseBackupRestoreService.class);
+                        DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -98,6 +103,7 @@ public class DatabaseBackupRestoreService {
 
     /**
      * Retrieves the IFBBackupManager instance based on the given database connection.
+     *
      * @param dc the database connection details
      * @return an Optional containing the IFBBackupManager if successfully initialized, or an empty Optional if not
      */
@@ -105,7 +111,7 @@ public class DatabaseBackupRestoreService {
         try {
             Driver driver = getDriverFromDbConnection(dc);
             IFBBackupManager backupManager = (IFBBackupManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                driver.getMajorVersion(), driver, "FBBackupManagerImpl"
+                    driver.getMajorVersion(), driver, "FBBackupManagerImpl"
             );
             backupManager.setHost(dc.getHost());
             backupManager.setPort(dc.getPortInt());
@@ -120,7 +126,7 @@ public class DatabaseBackupRestoreService {
 
         } catch (ClassNotFoundException | SQLException e) {
             GUIUtilities.displayExceptionErrorDialog(
-                "Unable to initialize IFBBackupManager instance", e, DatabaseBackupRestoreService.class);
+                    "Unable to initialize IFBBackupManager instance", e, DatabaseBackupRestoreService.class);
         }
 
         return Optional.empty();
@@ -128,6 +134,7 @@ public class DatabaseBackupRestoreService {
 
     /**
      * Retrieves the appropriate driver for the current database connection.
+     *
      * @param dc the database connection details
      * @return the appropriate driver for the current database connection
      * @throws SQLException if unable to load the driver
@@ -135,9 +142,9 @@ public class DatabaseBackupRestoreService {
     private static Driver getDriverFromDbConnection(DatabaseConnection dc) throws SQLException {
         String driverId = String.valueOf(dc.getDriverId());
         return DefaultDriverLoader.getLoadedDrivers().entrySet().stream()
-            .filter(nameToDriverEntry -> nameToDriverEntry.getKey().startsWith(driverId))
-            .findFirst().map(Entry::getValue)
-            .orElse(DefaultDriverLoader.getDefaultDriver());
+                .filter(nameToDriverEntry -> nameToDriverEntry.getKey().startsWith(driverId))
+                .findFirst().map(Entry::getValue)
+                .orElse(DefaultDriverLoader.getDefaultDriver());
     }
 
 }

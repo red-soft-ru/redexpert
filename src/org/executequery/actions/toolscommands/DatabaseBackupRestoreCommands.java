@@ -16,9 +16,8 @@ public class DatabaseBackupRestoreCommands extends OpenFrameCommand implements B
     public void execute(ActionEvent e) {
 
         String title = DatabaseBackupRestorePanel.TITLE;
-        if (isCentralPaneOpen(title)) {
+        if (isCentralPaneOpen(title))
             return;
-        }
 
         GUIUtilities.addCentralPane(
                 title,

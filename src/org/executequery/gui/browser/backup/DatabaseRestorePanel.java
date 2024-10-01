@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.backup;
 
 import biz.redsoft.IFBBackupManager;
+
 import java.io.OutputStream;
 import java.io.Serializable;
 import javax.swing.JButton;
@@ -10,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -22,6 +24,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
  * for customizing the restore process, such as deactivating indices, disabling shadow tables, and restoring metadata
  * only. The panel also includes input fields for specifying the restore and backup file names, page size, and the
  * number of parallel workers.
+ *
  * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
@@ -77,11 +80,11 @@ public class DatabaseRestorePanel implements Serializable {
      */
     private void createRestoreOptions() {
         deactivateIdxCheckBox = WidgetFactory.createCheckBox("deactivateIdxCheckBox",
-                                                             bundleString("deactivateIdxCheckBox"));
+                bundleString("deactivateIdxCheckBox"));
         noShadowCheckBox = WidgetFactory.createCheckBox("noShadowCheckBox", bundleString("noShadowCheckBox"));
         noValidityCheckBox = WidgetFactory.createCheckBox("noValidityCheckBox", bundleString("noValidityCheckBox"));
         metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox",
-                                                            bundleString("metadataOnlyCheckBox"));
+                bundleString("metadataOnlyCheckBox"));
         oneAtATimeCheckBox = WidgetFactory.createCheckBox("oneAtATimeCheckBox", bundleString("oneAtATimeCheckBox"));
         pageSizeField = WidgetFactory.createNumberTextField("pageSizeRestore", "8192");
         parallelWorkersField = WidgetFactory.createNumberTextField("parallelWorkersRestore", "1");
@@ -97,6 +100,7 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Arranges the components within the panel using a grid layout.
+     *
      * @return JPanel containing the UI components for restore configuration.
      */
     public JPanel arrange() {
@@ -118,13 +122,14 @@ public class DatabaseRestorePanel implements Serializable {
         gbh = new GridBagHelper().anchorNorthWest().bottomGap(10).fillBoth();
         restorePanel.add(mainPanel, gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().get());
         restorePanel.add(progressBar,
-                         gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
+                gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
 
         return restorePanel;
     }
 
     /**
      * Creates the panel for the restore options checkboxes.
+     *
      * @return JPanel containing the checkboxes.
      */
     private JPanel createCheckBoxPanel() {
@@ -141,6 +146,7 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Creates the panel for the text options (page size, parallel workers, and file fields).
+     *
      * @return JPanel containing the text input fields.
      */
     private JPanel createTextOptionsPanel() {
@@ -149,14 +155,14 @@ public class DatabaseRestorePanel implements Serializable {
         textOptionsPanel.add(new JLabel(bundleString("pageSizeField")), gbh.setMinWeightX().leftGap(0).get());
         textOptionsPanel.add(pageSizeField, gbh.nextCol().leftGap(5).rightGap(5).setMaxWeightX().spanX().get());
         textOptionsPanel.add(new JLabel(bundleString("parallelWorkersField")),
-                             gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).rightGap(5).setMaxWeightX().spanX().get());
         textOptionsPanel.add(new JLabel(bundleString("backupFileField")),
-                             gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(backupFileField, gbh.nextCol().setMaxWeightX().leftGap(5).get());
         textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
         textOptionsPanel.add(new JLabel(bundleString("restoredFileField")),
-                             gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(restoredFileField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
         textOptionsPanel.add(browseRestoreFileButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
         return textOptionsPanel;
@@ -164,6 +170,7 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Creates the panel for the restore action button.
+     *
      * @return JPanel containing the restore button.
      */
     private JPanel createButtonPanel() {
@@ -177,25 +184,27 @@ public class DatabaseRestorePanel implements Serializable {
     /**
      * Initiates the restore process using the selected database connection and writes the output to the provided output
      * stream.
+     *
      * @param databaseConnection The database connection to be restored.
      * @param os                 The output stream where the restore will be written.
      * @throws InvalidBackupFileException If the backup or restore file name is invalid.
      */
     public void performRestore(DatabaseConnection databaseConnection, OutputStream os)
-        throws InvalidBackupFileException {
+            throws InvalidBackupFileException {
         String fromFile = getBackupFileName();
         String toFile = getRestoreFileName();
         int pageSize = pageSizeField.getValue();
         int options = getCheckBoxOptions();
         int parallelWorkersCount = parallelWorkersField.getValue();
         DatabaseBackupRestoreService.restoreDatabase(databaseConnection, fromFile, toFile, options, pageSize,
-                                                     parallelWorkersCount, os);
+                parallelWorkersCount, os);
 
         progressBar.setValue(100);
     }
 
     /**
      * Retrieves the options selected by the user via checkboxes and returns them as an integer.
+     *
      * @return The combined options as an integer.
      */
     private int getCheckBoxOptions() {
@@ -249,32 +258,35 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Retrieves and validates the backup file name entered by the user.
+     *
      * @return The validated backup file name.
      * @throws InvalidBackupFileException If the backup file name is invalid or empty.
      */
     private String getBackupFileName() throws InvalidBackupFileException {
         String fileName = backupFileField.getText();
         FileValidator.createValidator(fileName)
-            .notEmpty()
-            .hasExtension(".fbk");
+                .notEmpty()
+                .hasExtension(".fbk");
         return fileName;
     }
 
     /**
      * Retrieves and validates the restore file name entered by the user.
+     *
      * @return The validated restore file name.
      * @throws InvalidBackupFileException If the restore file name is invalid or empty.
      */
     private String getRestoreFileName() throws InvalidBackupFileException {
         String fileName = restoredFileField.getText();
         FileValidator.createValidator(fileName)
-            .notEmpty()
-            .hasExtension(".fdb");
+                .notEmpty()
+                .hasExtension(".fdb");
         return fileName;
     }
 
     /**
      * Returns the restore button, allowing external classes to trigger the restore process.
+     *
      * @return The JButton used for restoring databases.
      */
     public JButton getRestoreButton() {
@@ -283,6 +295,7 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Returns the progress bar used to track the progress of the restore process.
+     *
      * @return The JProgressBar used to display restore progress.
      */
     public JProgressBar getProgressBar() {
@@ -291,6 +304,7 @@ public class DatabaseRestorePanel implements Serializable {
 
     /**
      * Utility method to retrieve localized strings.
+     *
      * @param key The key for the string.
      * @return The localized string.
      */

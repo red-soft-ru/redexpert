@@ -7,6 +7,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  * Utility class for handling file browsing operations with customized settings. Provides methods for selecting files
  * via a JFileChooser dialog.
+ *
  * @author Maxim Kozhinov
  */
 public class FileBrowser {
@@ -15,6 +16,7 @@ public class FileBrowser {
 
     /**
      * Constructs a FileBrowser with the specified title and file filter.
+     *
      * @param title      the title of the file chooser dialog
      * @param fileFilter the file filter to restrict file types in the chooser
      */
@@ -28,6 +30,7 @@ public class FileBrowser {
 
     /**
      * Opens a file chooser dialog for selecting a file and returns the absolute file path.
+     *
      * @return the absolute path of the selected file, or null if no file is selected
      */
     public String getChosenFilePath() {
@@ -36,6 +39,7 @@ public class FileBrowser {
 
     /**
      * Opens a file chooser dialog for selecting or saving a file, based on the specified mode.
+     *
      * @param dialogType the dialog type, either JFileChooser.OPEN_DIALOG or JFileChooser.SAVE_DIALOG
      * @return the absolute path of the selected file, or null if no file is selected
      */

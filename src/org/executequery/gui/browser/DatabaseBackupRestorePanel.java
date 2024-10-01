@@ -28,6 +28,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
  * perform a backup or a restore operation. Logging options are also available.
+ *
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestorePanel extends JPanel {
@@ -90,6 +91,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     /**
      * Triggered when the "Log to file" checkbox is selected or deselected. Enables or disables file logging.
+     *
      * @param event The action event from the checkbox.
      */
     private void logToFileBoxTriggered(ActionEvent event) {
@@ -101,6 +103,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     /**
      * Helper method to choose a log file.
+     *
      * @param event ActionEvent from the button press.
      */
     private void chooseLoggingFile(ActionEvent event) {
@@ -141,6 +144,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     /**
      * Creates the common panel on the left side for connection fields, logging options, and logs.
+     *
      * @return JPanel for the common fields.
      */
     private JPanel createCommonPanel() {
@@ -161,13 +165,14 @@ public class DatabaseBackupRestorePanel extends JPanel {
         commonPanel.add(fileLogButton, gbh.nextCol().setMinWeightX().get());
 
         commonPanel.add(loggingOutputPanel,
-                        gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().fillBoth().spanX().spanY().get());
+                gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().fillBoth().spanX().spanY().get());
 
         return commonPanel;
     }
 
     /**
      * Helper method to add a field and its label to the common panel.
+     *
      * @param panel The panel to which the field is added.
      * @param gbh   GridBagHelper instance for layout.
      * @param label The label for the field.
@@ -243,6 +248,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     /**
      * Populates the logs into the logging panel and optionally writes them to the file.
+     *
      * @param os ByteArrayOutputStream containing the logs.
      */
     private void populateLogs(ByteArrayOutputStream os) {
@@ -256,7 +262,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
                     Files.createDirectories(path.getParent());
                 }
                 Files.write(path, logs.getBytes(), StandardOpenOption.CREATE,
-                            StandardOpenOption.TRUNCATE_EXISTING);
+                        StandardOpenOption.TRUNCATE_EXISTING);
             }
         } catch (IOException e) {
             Log.error(e.getMessage(), e);
@@ -280,6 +286,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
     /**
      * Utility method to retrieve localized strings.
+     *
      * @param key The key for the string.
      * @return The localized string.
      */

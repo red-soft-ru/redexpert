@@ -1,6 +1,7 @@
 package org.executequery.gui.browser.backup;
 
 import biz.redsoft.IFBBackupManager;
+
 import java.io.OutputStream;
 import java.io.Serializable;
 import javax.swing.JButton;
@@ -10,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -22,6 +24,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
  * for customizing the backup process, such as ignoring checksums, disabling garbage collection, and using
  * non-transportable backups. The panel also includes input fields for specifying the backup file and the number of
  * parallel workers.
+ *
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupPanel implements Serializable {
@@ -68,13 +71,13 @@ public class DatabaseBackupPanel implements Serializable {
      */
     private void createBackupOptions() {
         ignoreChecksumsCheckBox = WidgetFactory.createCheckBox("ignoreChecksumsCheckBox",
-                                                               bundleString("ignoreChecksumsCheckBox"));
+                bundleString("ignoreChecksumsCheckBox"));
         noGarbageCollectCheckBox = WidgetFactory.createCheckBox("noGarbageCollectCheckBox",
-                                                                bundleString("noGarbageCollectCheckBox"));
+                bundleString("noGarbageCollectCheckBox"));
         metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox",
-                                                            bundleString("metadataOnlyCheckBox"));
+                bundleString("metadataOnlyCheckBox"));
         nonTransportableCheckBox = WidgetFactory.createCheckBox("nonTransportableCheckBox",
-                                                                bundleString("nonTransportableCheckBox"));
+                bundleString("nonTransportableCheckBox"));
         parallelWorkersField = WidgetFactory.createNumberTextField("parallelWorkers", "1");
     }
 
@@ -88,6 +91,7 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Arranges the components within the panel using a grid layout.
+     *
      * @return JPanel containing the UI components for backup configuration.
      */
     public JPanel arrange() {
@@ -109,13 +113,14 @@ public class DatabaseBackupPanel implements Serializable {
         gbh = new GridBagHelper().anchorNorthWest().bottomGap(10).fillBoth();
         backupPanel.add(mainPanel, gbh.nextRowFirstCol().setMaxWeightX().setMaxWeightY().get());
         backupPanel.add(progressBar,
-                        gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
+                gbh.nextRowFirstCol().topGap(0).leftGap(5).bottomGap(5).setMinWeightY().spanX().get());
 
         return backupPanel;
     }
 
     /**
      * Creates the panel for the backup options checkboxes.
+     *
      * @return JPanel containing the checkboxes.
      */
     private JPanel createCheckBoxPanel() {
@@ -131,6 +136,7 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Creates the panel for the text options (parallel workers and backup file fields).
+     *
      * @return JPanel containing the text input fields.
      */
     private JPanel createTextOptionsPanel() {
@@ -139,7 +145,7 @@ public class DatabaseBackupPanel implements Serializable {
         textOptionsPanel.add(new JLabel(bundleString("parallelWorkersAmount")), gbh.setMinWeightX().leftGap(0).get());
         textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).rightGap(5).setMaxWeightX().spanX().get());
         textOptionsPanel.add(new JLabel(bundleString("backupFile")),
-                             gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
+                gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(backupFileField, gbh.nextCol().setMaxWeightX().leftGap(5).get());
         textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().rightGap(5).get());
         return textOptionsPanel;
@@ -147,6 +153,7 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Creates the panel for the backup action button.
+     *
      * @return JPanel containing the backup button.
      */
     private JPanel createButtonPanel() {
@@ -160,23 +167,25 @@ public class DatabaseBackupPanel implements Serializable {
     /**
      * Initiates the backup process using the selected database connection and writes the output to the provided output
      * stream.
+     *
      * @param databaseConnection The database connection to be backed up.
      * @param os                 The output stream where the backup will be written.
      * @throws InvalidBackupFileException If the backup file name is invalid.
      */
     public void performBackup(DatabaseConnection databaseConnection, OutputStream os)
-        throws InvalidBackupFileException {
+            throws InvalidBackupFileException {
         String backupFileName = getNewFileName();
         int options = getCheckBoxOptions();
         int parallelWorkersAmount = parallelWorkersField.getValue();
         DatabaseBackupRestoreService.backupDatabase(databaseConnection, backupFileName, options, parallelWorkersAmount,
-                                                    os);
+                os);
 
         progressBar.setValue(100);
     }
 
     /**
      * Retrieves the options selected by the user via checkboxes and returns them as an integer.
+     *
      * @return The combined options as an integer.
      */
     private int getCheckBoxOptions() {
@@ -214,19 +223,21 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Retrieves and validates the backup file name entered by the user.
+     *
      * @return The validated backup file name.
      * @throws InvalidBackupFileException If the backup file name is invalid or empty.
      */
     private String getNewFileName() throws InvalidBackupFileException {
         String fileName = backupFileField.getText();
         FileValidator.createValidator(fileName)
-            .notEmpty()
-            .hasExtension(".fbk");
+                .notEmpty()
+                .hasExtension(".fbk");
         return fileName;
     }
 
     /**
      * Returns the backup button, allowing external classes to trigger the backup process.
+     *
      * @return The JButton used for creating backups.
      */
     public JButton getBackupButton() {
@@ -235,6 +246,7 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Returns the progress bar used to track the progress of the backup process.
+     *
      * @return The JProgressBar used to display backup progress.
      */
     public JProgressBar getProgressBar() {
@@ -243,6 +255,7 @@ public class DatabaseBackupPanel implements Serializable {
 
     /**
      * Utility method to retrieve localized strings.
+     *
      * @param key The key for the string.
      * @return The localized string.
      */

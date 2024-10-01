@@ -199,7 +199,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     @Override
     public void restoreDefaults() {
         lafSelectionPanel.restore();
-        preferencesPanel.savePreferences();
+        preferencesPanel.restoreDefaults();
         apply();
     }
 

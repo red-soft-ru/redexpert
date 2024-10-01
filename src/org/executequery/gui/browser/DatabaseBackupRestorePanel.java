@@ -56,6 +56,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
     public DatabaseBackupRestorePanel() {
         init();
         arrange();
+        changeDatabaseConnection();
         logToFileBoxTriggered(null);
     }
 

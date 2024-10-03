@@ -17,6 +17,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
@@ -351,11 +352,15 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
                     else
                         treePanel.reloadPath(currentPath.getParentPath());
 
-                    if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE]))
-                        ((DatabaseHostNode) node.getParent()).getChildObjects().stream()
-                                .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                                .findFirst()
-                                .ifPresent(child -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(child.getTreePath()));
+                    if (!(node instanceof TableFolderNode)) {
+                        if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
+
+                            ((DatabaseHostNode) node.getParent()).getChildObjects().stream()
+                                    .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
+                                    .findFirst()
+                                    .ifPresent(child -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(child.getTreePath()));
+                        }
+                    }
                 }
 
                 if (parent != null)

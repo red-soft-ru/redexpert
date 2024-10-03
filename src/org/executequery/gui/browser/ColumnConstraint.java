@@ -99,6 +99,7 @@ public class ColumnConstraint implements Serializable {
     private String updateRule;
     private String deleteRule;
     private String sorting;
+    private String indexName;
     private String tablespace;
 
     public static final String EMPTY = "";
@@ -148,6 +149,8 @@ public class ColumnConstraint implements Serializable {
         this.refColumnDisplayList = cc.getReferenceColumnDisplayList();
         setUpdateRule(cc.getUpdateRule());
         setDeleteRule(cc.getDeleteRule());
+        setSorting(cc.isIndexDesc() ? "DESCENDING" : "ASCENDING");
+        setIndexName(cc.getIndexName());
     }
 
     public boolean isForeignKey() {
@@ -296,6 +299,14 @@ public class ColumnConstraint implements Serializable {
 
     public void setSorting(String sorting) {
         this.sorting = sorting;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 
     public boolean isGeneratedName() {

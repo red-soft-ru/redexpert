@@ -114,6 +114,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
     protected static final String UPPER_BOUND = "UPPER_BOUND";
     protected static final String DEFAULT_COLLATE_NAME = "DEFAULT_COLLATE_NAME";
     protected static final String VALID_BLR = "VALID_BLR";
+    protected static final String INDEX_DESC = "INDEX_DESC";
+    protected static final String INDEX_NAME = "INDEX_NAME";
     protected boolean fullLoadCols = false;
 
 
@@ -631,6 +633,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         Table refColumn = Table.createTable("RDB$INDEX_SEGMENTS", "ISGMT_REF");
         Table refCons = Table.createTable("RDB$REF_CONSTRAINTS", "REF_CONS");
         Table relationFields = Table.createTable("RDB$RELATION_FIELDS", "RF");
+        Table indices = Table.createTable("RDB$INDICES", "IND");
         Field relName = Field.createField(constraints1, RELATION_NAME);
         sb.appendField(relName);
         Field fieldName = Field.createField(indexSegments, FIELD_NAME);
@@ -670,6 +673,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(Field.createField(refColumn, fieldName.getAlias()).setAlias(REF_COLUMN));
         sb.appendField(Field.createField(refCons, UPDATE_RULE));
         sb.appendField(Field.createField(refCons, DELETE_RULE));
+        sb.appendField(Field.createField(indices, "RDB$INDEX_TYPE", INDEX_DESC));
+        sb.appendField(Field.createField(constraints, INDEX_NAME));
         sb.appendJoin(Join.createInnerJoin().appendFields(relName, Field.createField(relations, relName.getAlias())));
         sb.appendJoin(Join.createInnerJoin()
                 .appendFields(Field.createField(constraints1, "INDEX_NAME"), Field.createField(indexSegments, "INDEX_NAME"))
@@ -685,6 +690,7 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(refTable, "INDEX_NAME"),
                         Field.createField(refColumn, "INDEX_NAME"))
                 .appendFields(Field.createField(indexSegments, "FIELD_POSITION"), Field.createField(refColumn, "FIELD_POSITION")));
+        sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(constraints, "INDEX_NAME"), Field.createField(indices, "INDEX_NAME")));
         if (allTables)
             sb = builderForInfoAllObjects(sb);
         return sb;
@@ -736,6 +742,8 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
         sb.appendField(Field.createField().setNull(true).setAlias(REF_COLUMN));
         sb.appendField(Field.createField().setNull(true).setAlias(UPDATE_RULE));
         sb.appendField(Field.createField().setNull(true).setAlias(DELETE_RULE));
+        sb.appendField(Field.createField().setNull(true).setAlias(INDEX_DESC));
+        sb.appendField(Field.createField().setNull(true).setAlias(INDEX_NAME));
         sb.appendJoin(Join.createInnerJoin().appendFields(getObjectField(), relName));
         sb.appendJoin(Join.createInnerJoin().appendFields(fieldSource, Field.createField(fields, FIELD_NAME)));
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(fields, CHARACTER_SET_ID),
@@ -1001,18 +1009,24 @@ public abstract class AbstractDatabaseObject extends AbstractNamedObject
                     previousColumn.setPrimaryKey(true);
                     TableColumnConstraint constraint = new TableColumnConstraint(null, ColumnConstraint.PRIMARY_KEY);
                     constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
+                    constraint.setIndexDesc(rs.getInt(INDEX_DESC) == 1);
+                    constraint.setIndexName(getFromResultSet(rs, INDEX_NAME));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "UNIQUE":
                     previousColumn.setUnique(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.UNIQUE_KEY);
                     constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
+                    constraint.setIndexDesc(rs.getInt(INDEX_DESC) == 1);
+                    constraint.setIndexName(getFromResultSet(rs, INDEX_NAME));
                     previousColumn.addConstraint(constraint);
                     break;
                 case "FOREIGN KEY":
                     previousColumn.setForeignKey(true);
                     constraint = new TableColumnConstraint(null, ColumnConstraint.FOREIGN_KEY);
                     constraint.setName(MiscUtils.trimEnd(rs.getString(CONSTRAINT_NAME)));
+                    constraint.setIndexDesc(rs.getInt(INDEX_DESC) == 1);
+                    constraint.setIndexName(getFromResultSet(rs, INDEX_NAME));
                     constraint.setReferencedTable(MiscUtils.trimEnd(rs.getString(REF_TABLE)));
                     constraint.setReferencedColumn(MiscUtils.trimEnd(rs.getString(REF_COLUMN)));
                     String rule = rs.getString(UPDATE_RULE);

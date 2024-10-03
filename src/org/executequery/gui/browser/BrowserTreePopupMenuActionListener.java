@@ -23,6 +23,7 @@ package org.executequery.gui.browser;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.actions.toolscommands.ComparerDBCommands;
+import org.executequery.actions.toolscommands.DatabaseBackupRestoreCommands;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -139,6 +140,13 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (currentPath != null) {
             DatabaseHostNode node = (DatabaseHostNode) currentPath.getLastPathComponent();
             new ComparerDBCommands().exportMetadata(node.getDatabaseConnection());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void backupRestore(ActionEvent e) {
+        if (currentSelection != null) {
+            new DatabaseBackupRestoreCommands().openTab();
         }
     }
 

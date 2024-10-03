@@ -44,7 +44,13 @@ To build a project you need create a jar file:
 $ mvn package
 ```
 
-To run RedExpert go to target directory and run:
+To run RedExpert go to target directory
+
+```sh
+$ cd modules/redexpert/target
+```
+
+And run:
 
 ```sh
 $ java -jar RedExpert.jar

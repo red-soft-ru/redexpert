@@ -171,18 +171,16 @@ public class DatabaseBackupPanel implements Serializable {
      * Initiates the backup process using the selected database connection and writes the output to the provided output
      * stream.
      *
-     * @param databaseConnection The database connection to be backed up.
-     * @param os                 The output stream where the backup will be written.
+     * @param dc The database connection to be backed up.
+     * @param os The output stream where the backup will be written.
      * @throws InvalidBackupFileException If the backup file name is invalid.
      */
-    public void performBackup(DatabaseConnection databaseConnection, OutputStream os)
-            throws InvalidBackupFileException {
+    public void performBackup(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
         String backupFileName = getNewFileName();
         int options = getCheckBoxOptions();
         int parallelWorkersAmount = parallelWorkersField.getValue();
-        DatabaseBackupRestoreService.backupDatabase(databaseConnection, backupFileName, options, parallelWorkersAmount,
-                os);
 
+        DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, parallelWorkersAmount, os);
         progressBar.setValue(100);
     }
 

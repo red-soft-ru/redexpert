@@ -226,7 +226,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performBackup() {
         try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
-            backupHelper.performBackup(connectionCombo.getSelectedConnection(), backupOutputStream);
+            backupHelper.performBackup(getDatabaseConnection(), backupOutputStream);
             GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
             populateLogs(backupOutputStream);
 
@@ -244,7 +244,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performRestore() {
         try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
-            restoreHelper.performRestore(connectionCombo.getSelectedConnection(), restoreOutputStream);
+            restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream);
             GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
             populateLogs(restoreOutputStream);
 
@@ -313,6 +313,22 @@ public class DatabaseBackupRestorePanel extends JPanel {
         }
 
         return charsets;
+    }
+
+    /**
+     * Returns copy of the selected <code>DatabaseConnection</code>
+     * with the properties from the connection fields
+     */
+    private DatabaseConnection getDatabaseConnection() {
+        DatabaseConnection dc = connectionCombo.getSelectedConnection().copy();
+        dc.setCharset(charsetsCombo.getSelectedIndex() != 0 ? (String) charsetsCombo.getSelectedItem() : "UTF8");
+        dc.setPassword(String.valueOf(passwordField.getPassword()));
+        dc.setSourceName(databaseFileField.getText());
+        dc.setUserName(userField.getText());
+        dc.setHost(hostField.getText());
+        dc.setPort(portField.getText());
+
+        return dc;
     }
 
     /**

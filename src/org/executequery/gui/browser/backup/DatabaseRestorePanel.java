@@ -188,20 +188,18 @@ public class DatabaseRestorePanel implements Serializable {
      * Initiates the restore process using the selected database connection and writes the output to the provided output
      * stream.
      *
-     * @param databaseConnection The database connection to be restored.
-     * @param os                 The output stream where the restore will be written.
+     * @param dc The database connection to be restored.
+     * @param os The output stream where the restore will be written.
      * @throws InvalidBackupFileException If the backup or restore file name is invalid.
      */
-    public void performRestore(DatabaseConnection databaseConnection, OutputStream os)
-            throws InvalidBackupFileException {
+    public void performRestore(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
         String fromFile = getBackupFileName();
         String toFile = getRestoreFileName();
         int pageSize = pageSizeField.getValue();
         int options = getCheckBoxOptions();
         int parallelWorkersCount = parallelWorkersField.getValue();
-        DatabaseBackupRestoreService.restoreDatabase(databaseConnection, fromFile, toFile, options, pageSize,
-                parallelWorkersCount, os);
 
+        DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, parallelWorkersCount, os);
         progressBar.setValue(100);
     }
 

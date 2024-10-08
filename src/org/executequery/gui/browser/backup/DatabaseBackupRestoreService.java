@@ -14,6 +14,7 @@ import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
+import org.underworldlabs.util.MiscUtils;
 
 /**
  * Service class responsible for managing database backup and restore operations using the FBBackupManager. Provides
@@ -117,10 +118,8 @@ public class DatabaseBackupRestoreService {
             backupManager.setUser(dc.getUserName());
             backupManager.setPassword(dc.getUnencryptedPassword());
             backupManager.setDatabase(dc.getSourceName());
+            backupManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset(dc.getCharset()));
 
-            if (dc.getCharset() != null && !dc.getCharset().equalsIgnoreCase("NONE")) {
-                backupManager.setCharSet(dc.getCharset());
-            }
             return Optional.of(backupManager);
 
         } catch (ClassNotFoundException | SQLException e) {

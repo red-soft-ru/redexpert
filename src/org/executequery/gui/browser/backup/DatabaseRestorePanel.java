@@ -4,10 +4,8 @@ import biz.redsoft.IFBBackupManager;
 
 import java.io.OutputStream;
 import java.io.Serializable;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import java.util.Arrays;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -39,7 +37,7 @@ public class DatabaseRestorePanel implements Serializable {
     private JCheckBox noValidityCheckBox;
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox oneAtATimeCheckBox;
-    private NumberTextField pageSizeField;
+    private JComboBox<Integer> pageSizeCombo;
     private NumberTextField parallelWorkersField;
 
     /**
@@ -77,14 +75,15 @@ public class DatabaseRestorePanel implements Serializable {
      * Creates and initializes components for restore options like checkboxes and page size/parallel workers fields.
      */
     private void createRestoreOptions() {
-        deactivateIdxCheckBox = WidgetFactory.createCheckBox("deactivateIdxCheckBox",
-                bundleString("deactivateIdxCheckBox"));
+        deactivateIdxCheckBox = WidgetFactory.createCheckBox("deactivateIdxCheckBox", bundleString("deactivateIdxCheckBox"));
         noShadowCheckBox = WidgetFactory.createCheckBox("noShadowCheckBox", bundleString("noShadowCheckBox"));
         noValidityCheckBox = WidgetFactory.createCheckBox("noValidityCheckBox", bundleString("noValidityCheckBox"));
-        metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox",
-                bundleString("metadataOnlyCheckBox"));
+        metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox", bundleString("metadataOnlyCheckBox"));
         oneAtATimeCheckBox = WidgetFactory.createCheckBox("oneAtATimeCheckBox", bundleString("oneAtATimeCheckBox"));
-        pageSizeField = WidgetFactory.createNumberTextField("pageSizeRestore", "8192");
+
+        pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList(4096, 8192, 16384, 32768));
+        pageSizeCombo.setSelectedIndex(1);
+
         parallelWorkersField = WidgetFactory.createNumberTextField("parallelWorkersRestore", "1");
     }
 
@@ -151,7 +150,7 @@ public class DatabaseRestorePanel implements Serializable {
         textOptionsPanel.add(browseRestoreFileButton, gbh.nextCol().setMinWeightX().get());
 
         textOptionsPanel.add(WidgetFactory.createLabel(bundleString("pageSizeField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(pageSizeField, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
+        textOptionsPanel.add(pageSizeCombo, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
 
         textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
@@ -183,7 +182,7 @@ public class DatabaseRestorePanel implements Serializable {
     public void performRestore(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
         String fromFile = getBackupFileName();
         String toFile = getRestoreFileName();
-        int pageSize = pageSizeField.getValue();
+        int pageSize = getSelectedPageSize();
         int options = getCheckBoxOptions();
         int parallelWorkersCount = parallelWorkersField.getValue();
 
@@ -290,6 +289,11 @@ public class DatabaseRestorePanel implements Serializable {
                 .notEmpty()
                 .hasExtension(".fdb");
         return fileName;
+    }
+
+    private int getSelectedPageSize() {
+        Integer value = (Integer) pageSizeCombo.getSelectedItem();
+        return value != null ? value : 8192;
     }
 
     /**

@@ -134,6 +134,7 @@ public class QueryEditor extends DefaultTabView
     private boolean useMultipleConnections;
     private boolean isQueryEditorClosed;
     private boolean isContentChanged;
+    private boolean autosaveEnabled;
     private boolean executeToFile;
 
     public QueryEditor() {
@@ -145,7 +146,12 @@ public class QueryEditor extends DefaultTabView
     }
 
     public QueryEditor(String text, String absolutePath, int splitDividerLocation) {
+        this(text, absolutePath, splitDividerLocation, true);
+    }
+
+    public QueryEditor(String text, String absolutePath, int splitDividerLocation, boolean autosaveEnabled) {
         super(new GridBagLayout());
+        this.autosaveEnabled = autosaveEnabled;
 
         init();
         arrange();
@@ -169,7 +175,7 @@ public class QueryEditor extends DefaultTabView
         if (splitDividerLocation > 0)
             splitPane.setDividerLocation(splitDividerLocation);
 
-        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber, splitPane.getDividerLocation());
+        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber, splitPane.getDividerLocation(), autosaveEnabled);
         splitPane.addPropertyChangeListener("dividerLocation", this);
         isContentChanged = false;
 
@@ -296,14 +302,26 @@ public class QueryEditor extends DefaultTabView
         if (e.getStateChange() != ItemEvent.SELECTED)
             return;
 
-        String idConnection = oldConnection != null ?
+        DatabaseConnection newConnection = getSelectedConnection();
+
+        String oldConnectionId = oldConnection != null ?
                 oldConnection.getId() :
                 QueryEditorHistory.NULL_CONNECTION;
 
-        QueryEditorHistory.changedConnectionEditor(idConnection, getSelectedConnection().getId(), scriptFile.getAbsolutePath());
-        oldConnection = getSelectedConnection();
-        editorPanel.getQueryArea().setDatabaseConnection(getSelectedConnection());
-        transactionParametersPanel.setDatabaseConnection(getSelectedConnection());
+        String newConnectionId = newConnection != null ?
+                newConnection.getId() :
+                QueryEditorHistory.NULL_CONNECTION;
+
+        if (Objects.equals(oldConnectionId, newConnectionId))
+            return;
+
+        QueryEditorHistory.changedConnectionEditor(oldConnectionId, newConnectionId, scriptFile.getAbsolutePath());
+        oldConnection = newConnection;
+
+        if (editorPanel != null)
+            editorPanel.getQueryArea().setDatabaseConnection(newConnection);
+        if (transactionParametersPanel != null)
+            transactionParametersPanel.setDatabaseConnection(newConnection);
     }
 
     private void updateExecuteDestination(boolean toggle) {
@@ -873,7 +891,7 @@ public class QueryEditor extends DefaultTabView
                     QueryEditorHistory.removeFile(oldPath);
 
                 scriptFile.setAbsolutePath(newPath);
-                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1, splitPane.getDividerLocation());
+                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1, splitPane.getDividerLocation(), autosaveEnabled);
 
             } else
                 return false;
@@ -1143,7 +1161,8 @@ public class QueryEditor extends DefaultTabView
      */
     public void setEditorText(String text) {
         editorPanel.setQueryAreaText(text);
-        save(false);
+        if (autosaveEnabled)
+            save(false);
     }
 
     /**
@@ -1324,7 +1343,7 @@ public class QueryEditor extends DefaultTabView
                     getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
             QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
             QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
+            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation(), autosaveEnabled);
         }
         return SaveFunction.SAVE_COMPLETE;
     }
@@ -1351,12 +1370,14 @@ public class QueryEditor extends DefaultTabView
      * the original or previously saved state.
      */
     public void setContentChanged(boolean contentChanged) {
+        isContentChanged = contentChanged;
 
-        this.isContentChanged = contentChanged;
-        if (this.isContentChanged) {
+        if (isContentChanged && autosaveEnabled) {
+            isContentChanged = false;
             save(false);
-            this.isContentChanged = false;
-        }
+
+        } else if (isContentChanged)
+            statusBar.setStatus(bundleString("UnsavedChanges"));
     }
 
     // ---------------------------------------------
@@ -1386,6 +1407,7 @@ public class QueryEditor extends DefaultTabView
         toolBar = null;
         editorPanel = null;
 
+        Arrays.stream(connectionsCombo.getItemListeners()).forEach(l -> connectionsCombo.removeItemListener(l));
         delegate.disconnected(getSelectedConnection());
 
         removeAll();
@@ -1503,6 +1525,10 @@ public class QueryEditor extends DefaultTabView
 
     }
 
+    public void setAutosaveEnabled(boolean autosaveEnabled) {
+        this.autosaveEnabled = autosaveEnabled;
+    }
+
     private static String bundleString(String key, Object... args) {
         return Bundles.get(QueryEditor.class, key, args);
     }
@@ -1562,7 +1588,7 @@ public class QueryEditor extends DefaultTabView
 
         QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
         QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-        QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation());
+        QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation(), autosaveEnabled);
     }
 
 }

@@ -376,6 +376,10 @@ public class QueryEditorResultsPanel extends SimpleCloseTabbedPane
     public synchronized int setResultSet(ResultSet rset, boolean showRowNumber, int maxRecords, String query, DatabaseConnection dc) throws SQLException {
 
         ResultSetTableModel model = new ResultSetTableModel(rset, maxRecords, query, false);
+        if (model.getException() != null) {
+            setOutputMessage(dc,
+                    SqlMessages.ERROR_MESSAGE, model.getException().getMessage(), true);
+        }
 
         int rowCount = getResultSetRowCount(model, showRowNumber);
         if (rowCount == 0) {

@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Maintains a register of open central tab panels
@@ -159,24 +160,18 @@ public class OpenComponentRegister implements DockedTabListener {
     /**
      * Returns the open panel component with the specified name.
      *
-     * @param the name to search for
+     * @param name panel title to search for
      * @return the component, or null if not found
      */
     public Component getOpenPanel(String name) {
 
-        if (componentPanels == null || componentPanels.isEmpty()) {
-
+        if (componentPanels == null || componentPanels.isEmpty())
             return null;
-        }
 
-        for (ComponentPanel object : componentPanels) {
-
-            if (object.getName().startsWith(name)) {
-
+        for (ComponentPanel object : componentPanels)
+            if (Objects.equals(object.getName(), name))
                 return object.getComponent();
-            }
 
-        }
         return null;
     }
 

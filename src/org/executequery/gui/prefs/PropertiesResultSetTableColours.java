@@ -58,6 +58,13 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 bundledStaticString("DefaultCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
+        key = "results.alternating.row.background";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                bundledStaticString("AlternatingRowBackground"),
+                SystemProperties.getColourProperty("user", key)));
+
         key = "results.table.cell.null.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
@@ -84,20 +91,6 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 UserPreference.COLOUR_TYPE,
                 key,
                 bundledStaticString("ChangedValueCellBackground"),
-                SystemProperties.getColourProperty("user", key)));
-
-        key = "results.table.cell.deleted.background.colour";
-        list.add(new UserPreference(
-                UserPreference.COLOUR_TYPE,
-                key,
-                bundledStaticString("DeletedValueCellBackground"),
-                SystemProperties.getColourProperty("user", key)));
-
-        key = "results.table.cell.new.background.colour";
-        list.add(new UserPreference(
-                UserPreference.COLOUR_TYPE,
-                key,
-                bundledStaticString("NewValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
         key = "results.table.cell.char.background.colour";
@@ -149,14 +142,21 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 bundledStaticString("FocusRowBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
-        key = "results.alternating.row.background";
+        key = "results.table.cell.new.background.colour";
         list.add(new UserPreference(
                 UserPreference.COLOUR_TYPE,
                 key,
-                bundledStaticString("AlternatingRowBackground"),
+                bundledStaticString("NewValueCellBackground"),
                 SystemProperties.getColourProperty("user", key)));
 
-        UserPreference[] preferences = list.toArray(new UserPreference[list.size()]);
+        key = "results.table.cell.deleted.background.colour";
+        list.add(new UserPreference(
+                UserPreference.COLOUR_TYPE,
+                key,
+                bundledStaticString("DeletedValueCellBackground"),
+                SystemProperties.getColourProperty("user", key)));
+
+        UserPreference[] preferences = list.toArray(new UserPreference[0]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
 

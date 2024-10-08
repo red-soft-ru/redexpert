@@ -169,4 +169,12 @@ public interface ColumnConstraint extends DatabaseObjectElement {
 
     String getDeleteRule();
 
+    boolean isIndexDesc();
+
+    void setIndexDesc(boolean indexDesc);
+
+    String getIndexName();
+
+    void setIndexName(String indexName);
+
 }

@@ -35,6 +35,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -111,6 +112,13 @@ public class ResultSetTable extends JTable implements StandardTable {
         cellRenderer.setFont(getFont());
 
         applyUserPreferences();
+
+        setTransferHandler(new TransferHandler() {
+            @Override
+            public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
+                copySelectedCells();
+            }
+        });
     }
 
     private void setDefaultColumnOptions() {
@@ -251,7 +259,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
             for (int j = 0; j < cols; j++) {
                 sb.append(quote);
-                sb.append(getValueAt(selectedRows[i], selectedCols[j]));
+                sb.append(ValueFormatter.formatted(getValueAt(selectedRows[i], selectedCols[j])));
                 sb.append(quote);
                 sb.append(delimiter);
             }

@@ -104,6 +104,8 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     private ResultSetTable table;
 
+    SQLException exception;
+
     public ResultSetTableModel(boolean isTable) throws SQLException {
 
         this(null, -1, isTable);
@@ -334,20 +336,34 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     }
 
     private void fetchOneRecord(ResultSet resultSet, int count) throws SQLException, InterruptedException {
-        if (resultSet.next())
-            addingRecord(resultSet, count);
-        else {
+        try {
+            if (resultSet.next())
+                addingRecord(resultSet, count);
+            else {
+                resultSet.close();
+                rsClose = true;
+            }
+        } catch (SQLException e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+            exception = e;
             resultSet.close();
             rsClose = true;
         }
     }
 
     private void fetchAllRecords(ResultSet resultSet, int count) throws SQLException, InterruptedException {
-        while (resultSet.next())
-            addingRecord(resultSet, count);
-        fireTableDataChanged();
-        resultSet.close();
-        rsClose = true;
+        try {
+            while (resultSet.next())
+                addingRecord(resultSet, count);
+        } catch (SQLException e) {
+            GUIUtilities.displayErrorMessage(e.getMessage());
+            exception = e;
+        } finally {
+            fireTableDataChanged();
+            resultSet.close();
+            rsClose = true;
+        }
+
     }
 
     public synchronized void createTableFromMetaData(ResultSet resultSet, DatabaseConnection dc, List<ColumnData> columnDataList) {
@@ -1179,4 +1195,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         fireTableDataChanged();
     }
 
+    public SQLException getException() {
+        return exception;
+    }
 }

@@ -35,6 +35,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.gui.table.EditConstraintPanel;
@@ -369,11 +370,16 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
                 panel = new CreateProcedurePanel(connection, dialog);
                 break;
 
-            case NamedObject.TRIGGERS_FOLDER_NODE:
-                type = NamedObject.TRIGGER;
             case NamedObject.TRIGGER:
-            case NamedObject.DATABASE_TRIGGER:
+            case NamedObject.TRIGGERS_FOLDER_NODE:
+                String triggerTableName = getTableName(node, type);
+                panel = triggerTableName != null ?
+                        new CreateTriggerPanel(connection, dialog, NamedObject.TRIGGER, triggerTableName) :
+                        new CreateTriggerPanel(connection, dialog, NamedObject.TRIGGER);
+                break;
+
             case NamedObject.DDL_TRIGGER:
+            case NamedObject.DATABASE_TRIGGER:
                 panel = new CreateTriggerPanel(connection, dialog, type);
                 break;
 
@@ -383,7 +389,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
             case NamedObject.INDEX:
             case NamedObject.INDEXES_FOLDER_NODE:
-                panel = new CreateIndexPanel(connection, dialog);
+                String indexTableName = getTableName(node, type);
+                panel = indexTableName != null ?
+                        new CreateIndexPanel(connection, dialog, indexTableName) :
+                        new CreateIndexPanel(connection, dialog);
                 break;
 
             case NamedObject.FUNCTION:
@@ -442,6 +451,23 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         }
 
         return panel;
+    }
+
+    private static String getTableName(DatabaseObjectNode node, int type) {
+        String tableName = null;
+
+        if (type == NamedObject.INDEX || type == NamedObject.TRIGGER) {
+            TreeNode parentNode = node.getParent();
+            if (parentNode instanceof TableFolderNode) {
+                TableFolderNode tableFolderNode = (TableFolderNode) parentNode;
+                tableName = tableFolderNode.getShortName();
+            }
+
+        } else if (type == NamedObject.INDEXES_FOLDER_NODE || type == NamedObject.TRIGGERS_FOLDER_NODE) {
+            tableName = node.getShortName();
+        }
+
+        return tableName;
     }
 
     private String getDropQuery(DatabaseObjectNode node, int nodeType) {

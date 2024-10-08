@@ -100,6 +100,9 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     private String check;
 
+    private boolean indexDesc = false;
+    private String indexName;
+
     /**
      * Creates a new instance of TableColumnConstraint
      */
@@ -393,98 +396,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         return !(copy.getName().equalsIgnoreCase(getName()));
     }
 
-    /**
-     * Returns the ALTER TABLE statement to modify this constraint.
-     */
-    public String getAlteredSQLText() {
-        if (!isAltered() && !isNewConstraint()) {
-            return "";
-        }
 
-        // if its a new constraint return the create text
-        if (isNewConstraint()) {
-            return getCreateSQLText();
-        }
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("ALTER TABLE ");
-        sb.append(getTableName());
-
-        // check for a pending deletion
-        if (isMarkedDeleted()) {
-            sb.append(" DROP CONSTRAINT ");
-            if (copy == null) {
-                sb.append(getName());
-            } else {
-                sb.append(copy.getName());
-            }
-        } else {
-            // check for a name change
-            if (!(copy.getName().equalsIgnoreCase(getName()))) {
-                sb.append(" RENAME CONSTRAINT ");
-                sb.append(copy.getName());
-                sb.append(" TO ");
-                sb.append(getName());
-            }
-        }
-
-        sb.append(";");
-        return sb.toString();
-    }
-
-    /**
-     * Returns the CONSTRAINT portion of the SQL statement
-     * for this constraint.
-     */
-    public String getConstraintSQLText() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("CONSTRAINT ");
-        sb.append(getName() == null ? "" : getName());
-
-        int _type = getKeyType();
-        switch (_type) {
-            case PRIMARY_KEY:
-                sb.append(" PRIMARY KEY (");
-                break;
-            case FOREIGN_KEY:
-                sb.append(" FOREIGN KEY (");
-                break;
-            case UNIQUE_KEY:
-                sb.append(" UNIQUE (");
-                break;
-            case CHECK_KEY:
-                sb.append(" CHECK (");
-                break;
-        }
-        if (_type != CHECK_KEY) {
-            sb.append(getColumnName());
-        } else {
-            sb.append(getCheck());
-        }
-        sb.append(")");
-
-        if (_type == FOREIGN_KEY) {
-            sb.append(" REFERENCES ");
-            sb.append(getReferencedTable());
-            sb.append("(");
-            sb.append(getReferencedColumn());
-            sb.append(")");
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * Returns the ALTER TABLE statement to create this constraint.
-     */
-    public String getCreateSQLText() {
-        String sb = "ALTER TABLE " +
-                getTableName() +
-                " ADD " +
-                getConstraintSQLText() +
-                ";";
-        return sb;
-    }
 
     /**
      * Makes a copy of itself. A copy of this object may
@@ -526,6 +438,7 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
         destination.setReferencedColumn(source.getReferencedColumn());
         destination.setName(source.getName());
         destination.setCheck(source.getCheck());
+        destination.setIndexDesc(source.isIndexDesc());
     }
 
     /**
@@ -695,6 +608,25 @@ public class TableColumnConstraint extends AbstractDatabaseObjectElement
 
     }
 
+    @Override
+    public boolean isIndexDesc() {
+        return indexDesc;
+    }
+
+    @Override
+    public void setIndexDesc(boolean indexDesc) {
+        this.indexDesc = indexDesc;
+    }
+
+    @Override
+    public String getIndexName() {
+        return indexName;
+    }
+
+    @Override
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
 }
 
 

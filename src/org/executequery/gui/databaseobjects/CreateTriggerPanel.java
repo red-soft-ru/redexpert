@@ -70,6 +70,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, int triggerType, String table) {
         this(dc, parent, null, triggerType);
         tableCombo.setSelectedItem(table);
+        tableCombo.setEnabled(false);
     }
 
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, DefaultDatabaseTrigger trigger, int triggerType) {

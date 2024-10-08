@@ -48,6 +48,7 @@ public class QueryTokenizer {
     private static final int AS = NORMAL + 1;
     private static final int DECLARE = AS + 1;
     private static final int BEGIN_END = DECLARE + 1;
+    private static final int BRACKET = BEGIN_END + 1;
 
     public QueryTokenizer() {
         stringTokens = new ArrayList<>();
@@ -247,6 +248,7 @@ public class QueryTokenizer {
         int state = NORMAL;
         int beginCount = 0;
         int startIndex = 0;
+        int bracketCount = 0;
         while (true) {
 
             org.antlr.v4.runtime.Token antlrToken = lexer.nextToken();
@@ -269,6 +271,10 @@ public class QueryTokenizer {
 
                 }
             } else if (state == DECLARE) {
+                if (antlrToken.getType() == SqlLexer.SEPARATOR && antlrToken.getText().equalsIgnoreCase("(")) {
+                    state = BRACKET;
+                    bracketCount++;
+                }
                 if (antlrToken.getType() == SqlLexer.OPERATOR && antlrToken.getText().equalsIgnoreCase(";")) {
                     declareBlockTokens.add(new Token(TokenTypes.DECLARE_BLOCK, startIndex, antlrToken.getStopIndex()));
                     state = AS;
@@ -286,6 +292,18 @@ public class QueryTokenizer {
                         if (beginCount <= 0) {
                             beginEndBlockTokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, startIndex, antlrToken.getStopIndex()));
                             state = AS;
+                        }
+                    }
+                }
+            } else if (state == BRACKET) {
+                if (antlrToken.getType() == SqlLexer.SEPARATOR) {
+                    if (antlrToken.getText().equalsIgnoreCase("(")) {
+                        bracketCount++;
+                    } else if (antlrToken.getText().equalsIgnoreCase(")")) {
+                        bracketCount--;
+                        if (bracketCount <= 0) {
+                            //beginEndBlockTokens.add(new Token(TokenTypes.BEGIN_END_BLOCK, startIndex, antlrToken.getStopIndex()));
+                            state = DECLARE;
                         }
                     }
                 }

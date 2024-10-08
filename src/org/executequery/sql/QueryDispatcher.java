@@ -55,9 +55,9 @@ import org.executequery.util.ThreadUtils;
 import org.executequery.util.ThreadWorker;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
-import org.underworldlabs.sqlParser.REDDATABASESqlBaseListener;
-import org.underworldlabs.sqlParser.REDDATABASESqlLexer;
-import org.underworldlabs.sqlParser.REDDATABASESqlParser;
+import org.underworldlabs.procedureParser.ProcedureParserBaseListener;
+import org.underworldlabs.procedureParser.ProcedureParserLexer;
+import org.underworldlabs.procedureParser.ProcedureParserParser;
 import org.underworldlabs.sqlParser.SqlParser;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.KeyValuePair;
@@ -737,27 +737,22 @@ public class QueryDispatcher {
             }
 
             start = System.currentTimeMillis();
-            PreparedStatement statement = null;
-            CallableStatement callableStatement = null;
+
             SqlStatementResult result;
+            PreparedStatement statement;
+
             if (queryToExecute.toLowerCase().trim().contentEquals("commit") || queryToExecute.toLowerCase().trim().contentEquals("rollback"))
                 statement = querySender.getPreparedStatement(queryToExecute);
-            else {
-                if (query.getQueryType() != QueryTypes.CALL) {
-                    statement = prepareStatementWithParameters(queryToExecute, "");
-                } else {
-                    callableStatement = prepareCallableStatementWithParameters(queryToExecute, "");
-                }
-            }
-            if (statement != null)
-                result = querySender.execute(type, statement);
+
+            else if (query.getQueryType() == QueryTypes.CALL)
+                statement = prepareCallStatement(queryToExecute);
             else
-                result = querySender.execute(type, callableStatement);
+                statement = prepareStatementWithParameters(queryToExecute, "");
 
-            if (statementCancelled || Thread.interrupted()) {
+            result = querySender.execute(type, statement);
 
+            if (statementCancelled || Thread.interrupted())
                 throw new InterruptedException();
-            }
 
             if (result.isResultSet()) {
 
@@ -966,9 +961,9 @@ public class QueryDispatcher {
 
     private static String getVariables(String sql) {
 
-        REDDATABASESqlLexer lexer = new REDDATABASESqlLexer(CharStreams.fromString(sql));
+        ProcedureParserLexer lexer = new ProcedureParserLexer(CharStreams.fromString(sql));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        REDDATABASESqlParser sqlParser = new REDDATABASESqlParser(tokens);
+        ProcedureParserParser sqlParser = new ProcedureParserParser(tokens);
         List<? extends ANTLRErrorListener> listeners = sqlParser.getErrorListeners();
         for (ANTLRErrorListener listener : listeners) {
             if (listener instanceof ConsoleErrorListener)
@@ -979,21 +974,22 @@ public class QueryDispatcher {
         ParseTreeWalker walker = new ParseTreeWalker();
         StringBuilder variables = new StringBuilder();
 
-        walker.walk(new REDDATABASESqlBaseListener() {
+        walker.walk(new ProcedureParserBaseListener() {
             @Override
-            public void enterDeclare_block(REDDATABASESqlParser.Declare_blockContext ctx) {
+            public void enterDeclare_block(ProcedureParserParser.Declare_blockContext ctx) {
 
-                List<REDDATABASESqlParser.Input_parameterContext> in_pars = ctx.input_parameter();
-                for (REDDATABASESqlParser.Input_parameterContext inPar : in_pars)
+                List<ProcedureParserParser.Input_parameterContext> in_pars = ctx.input_parameter();
+                for (ProcedureParserParser.Input_parameterContext inPar : in_pars)
                     variables.append("<").append(inPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
 
-                List<REDDATABASESqlParser.Output_parameterContext> out_pars = ctx.output_parameter();
-                for (REDDATABASESqlParser.Output_parameterContext outPar : out_pars)
+                List<ProcedureParserParser.Output_parameterContext> out_pars = ctx.output_parameter();
+                for (ProcedureParserParser.Output_parameterContext outPar : out_pars)
                     variables.append("<").append(outPar.desciption_parameter().parameter_name().getRuleContext().getText()).append(">");
 
-                List<REDDATABASESqlParser.Local_variableContext> vars = ctx.local_variable();
-                for (REDDATABASESqlParser.Local_variableContext var : vars)
-                    variables.append("<").append(var.variable_name().getRuleContext().getText()).append(">");
+                List<ProcedureParserParser.Declare_stmtContext> vars = ctx.declare_stmt();
+                for (ProcedureParserParser.Declare_stmtContext var : vars)
+                    if (var.local_variable() != null)
+                        variables.append("<").append(var.local_variable().variable_name().getRuleContext().getText()).append(">");
             }
         }, tree);
 
@@ -1066,6 +1062,7 @@ public class QueryDispatcher {
             start = System.currentTimeMillis();
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
+            boolean moreThanOneQuery = executableQueries.size() > 1;
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
@@ -1112,6 +1109,8 @@ public class QueryDispatcher {
                         statement = null;
                     else if (query.getQueryType() == QueryTypes.INSERT)
                         statement = prepareStatementWithParameters(queryToExecute, blobFilePath);
+                    else if (query.getQueryType() == QueryTypes.CALL)
+                        statement = prepareCallStatement(queryToExecute);
                     else
                         statement = prepareStatementWithParameters(queryToExecute, getVariables(queryToExecute));
 
@@ -1291,9 +1290,11 @@ public class QueryDispatcher {
 
             long timeTaken = end - start;
             totalDuration += timeTaken;
-            logExecutionTime(timeTaken, anyConnections);
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
 
+            if (moreThanOneQuery)
+                logExecutionTime("Total execution time: %s", timeTaken, anyConnections);
+
+            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
                 String nodemetakey = metaTagNode.getMetaDataKey();
                 if (metaTagNode.isSystem()) {
@@ -1341,11 +1342,11 @@ public class QueryDispatcher {
         return DONE;
     }
 
-    PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
+    private PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
         return prepareStatementWithParameters(sql, variables, true);
     }
 
-    PreparedStatement prepareStatementWithParameters(String sql, String variables, boolean showInputDialog) throws SQLException {
+    private PreparedStatement prepareStatementWithParameters(String sql, String variables, boolean showInputDialog) throws SQLException {
 
         SqlParser parser = new SqlParser(sql, variables);
         List<Parameter> params = parser.getParameters();
@@ -1406,6 +1407,67 @@ public class QueryDispatcher {
         return statement;
     }
 
+    private PreparedStatement prepareCallStatement(String sql) throws SQLException {
+
+        SqlParser parser = new SqlParser(sql, "");
+        List<Parameter> params = parser.getParameters();
+        List<Parameter> displayParams = parser.getDisplayParameters();
+
+        PreparedStatement statement = querySender.getPreparedStatement(sql);
+        statement.setEscapeProcessing(true);
+
+        ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+        params = params.subList(0, parameterMetaData.getParameterCount());
+        displayParams = displayParams.subList(0, parameterMetaData.getParameterCount());
+
+        for (int i = 0; i < params.size(); i++) {
+            params.get(i).setType(parameterMetaData.getParameterType(i + 1));
+            params.get(i).setTypeName(parameterMetaData.getParameterTypeName(i + 1));
+        }
+
+        // restore old params if needed
+        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+
+            for (Parameter displayParam : displayParams) {
+                for (Parameter oldParam : oldParams) {
+
+                    if (displayParam.getValue() == null
+                            && oldParam.getType() == displayParam.getType()
+                            && oldParam.getName().contentEquals(displayParam.getName())) {
+
+                        displayParam.setValue(oldParam.getValue());
+                        oldParams.remove(oldParam);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for input params
+        if (!displayParams.isEmpty()) {
+
+            if (displayParams.stream().noneMatch(Parameter::isNeedUpdateValue)) {
+                if (displayParams.stream().anyMatch(Parameter::isNull))
+                    showInputParametersDialog(displayParams);
+            } else
+                showInputParametersDialog(displayParams);
+        }
+
+        // remember inputted params
+        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+
+        // add params to the statement
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).isNull())
+                statement.setNull(i + 1, params.get(i).getType());
+            else
+                statement.setObject(i + 1, params.get(i).getPreparedValue());
+        }
+
+        return statement;
+    }
+
     private void showInputParametersDialog(List<Parameter> displayParams) {
 
         InputParametersDialog dialog = new InputParametersDialog(displayParams);
@@ -1415,50 +1477,6 @@ public class QueryDispatcher {
             statementCancelled = true;
             throw new DataSourceException("Canceled");
         }
-    }
-
-    private CallableStatement prepareCallableStatementWithParameters(String sql, String parameters) throws SQLException {
-        SqlParser parser = new SqlParser(sql, parameters);
-        String queryToExecute = parser.getProcessedSql();
-        CallableStatement statement = querySender.getCallableStatement(queryToExecute);
-        statement.setEscapeProcessing(true);
-        ParameterMetaData pmd = statement.getParameterMetaData();
-        List<Parameter> params = parser.getParameters();
-        List<Parameter> displayParams = parser.getDisplayParameters();
-        for (int i = 0; i < params.size(); i++) {
-            params.get(i).setType(pmd.getParameterType(i + 1));
-            params.get(i).setTypeName(pmd.getParameterTypeName(i + 1));
-        }
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
-            for (int i = 0; i < displayParams.size(); i++) {
-                Parameter dp = displayParams.get(i);
-                for (int g = 0; g < oldParams.size(); g++) {
-                    Parameter p = oldParams.get(g);
-                    if (p.getType() == dp.getType() && p.getName().contentEquals(dp.getName())) {
-                        dp.setValue(p.getValue());
-                        oldParams.remove(p);
-                        break;
-                    }
-                }
-            }
-        }
-        if (!displayParams.isEmpty()) {
-            InputParametersDialog spd = new InputParametersDialog(displayParams);
-            spd.display();
-            if (spd.isCanceled()) {
-                statementCancelled = true;
-                throw new DataSourceException("Canceled");
-            }
-        }
-        for (int i = 0; i < params.size(); i++) {
-            if (params.get(i).isNull())
-                statement.setNull(i + 1, params.get(i).getType());
-            else
-                statement.setObject(i + 1, params.get(i).getPreparedValue());
-        }
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
-        return statement;
     }
 
     private void printTableStat(Map<String, IFBTableStatistics> before, boolean anyConnections) {
@@ -1689,27 +1707,11 @@ public class QueryDispatcher {
             }
         }
 
-        long end = System.currentTimeMillis();
-
         outputWarnings(result.getSqlWarning(), anyConnection);
-
-        logExecutionTime(start, end, anyConnection);
-
+        logExecutionTime(System.currentTimeMillis() - start, anyConnection);
         statementExecuted(sql);
 
         return DONE;
-    }
-
-    /**
-     * Logs the execution duration within the output
-     * pane for the specified start and end values.
-     *
-     * @param start the start time in millis
-     * @param end   the end time in millis
-     */
-    private void logExecutionTime(long start, long end, boolean anyConnections) {
-
-        logExecutionTime(end - start, anyConnections);
     }
 
     /**
@@ -1719,8 +1721,24 @@ public class QueryDispatcher {
      * @param time the time in millis
      */
     private void logExecutionTime(long time, boolean anyConnections) {
-        setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE,
-                "Execution time: " + formatDuration(time), false, anyConnections);
+        logExecutionTime("Statement execution time: %s", time, anyConnections);
+    }
+
+    /**
+     * Logs the execution duration within the output
+     * pane for the specified value.
+     *
+     * @param time    the time in millis
+     * @param message the message to show
+     */
+    private void logExecutionTime(String message, long time, boolean anyConnections) {
+        setOutputMessage(
+                querySender.getDatabaseConnection(),
+                SqlMessages.PLAIN_MESSAGE,
+                String.format(message, formatDuration(time)),
+                false,
+                anyConnections
+        );
     }
 
     /**

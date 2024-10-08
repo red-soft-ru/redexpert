@@ -109,8 +109,12 @@ public final class ActionBuilder {
                     KeyStroke.getKeyStroke(keyStrokeString);
 
             BaseActionCommand command = (BaseActionCommand) actionsMap.get(actionId);
-            if (command != null)
-                command.putValue(Action.ACCELERATOR_KEY, keyStroke);
+            if (command != null) {
+                command.putValue(
+                        Action.ACCELERATOR_KEY,
+                        !Objects.equals(keyStrokeString, INVALID_KEYSTROKE) ? keyStroke : null
+                );
+            }
 
             Arrays.stream(inputMap.allKeys())
                     .filter(key -> Objects.equals(inputMap.get(key), actionId))

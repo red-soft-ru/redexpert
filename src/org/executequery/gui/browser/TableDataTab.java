@@ -953,64 +953,40 @@ public class TableDataTab extends JPanel
         //tableModel.AddRow(row);
     }
 
-    void delete_record() {
-        int row = table.getSelectedRow();
-        if (row >= 0) {
-            String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
-            String order = "";
-            boolean first = true;
-            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
-                if (!databaseObject.getColumns().get(i).isGenerated()) {
-                    String value = "";
-                    ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-                    int sqlType = rsch.getDataType();
-                    boolean str = false;
-                    switch (sqlType) {
+    private String getDeleteRecordQuery(int row) {
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM ").append(databaseObject.getNameForQuery()).append("\nWHERE");
 
-                        case Types.LONGVARCHAR:
-                        case Types.LONGNVARCHAR:
-                        case Types.CHAR:
-                        case Types.NCHAR:
-                        case Types.VARCHAR:
-                        case Types.NVARCHAR:
-                        case Types.CLOB:
-                        case Types.DATE:
-                        case Types.TIME:
-                        case Types.TIMESTAMP:
-                            value = "'";
-                            str = true;
-                            break;
-                        default:
-                            break;
-                    }
-                    String temp = String.valueOf(table.getValueAt(row, i));
-                    if (temp == null) {
-                        value = "NULL";
-                    } else
-                        value += temp;
-                    if (str && value != "NULL")
-                        value += "'";
-                    if (first) {
-                        first = false;
-                        order = rsch.getName();
-                    } else query += " AND";
-                    //if(value=="'null'")
-                    if (value == "NULL")
-                        query = query + " (" + rsch.getName() + " IS " + value + " )";
-                    else
-                        query = query + " (" + rsch.getName() + " = " + value + " )";
+        String order = "";
+        boolean first = true;
+        for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
+            if (!databaseObject.getColumns().get(i).isGenerated()) {
+                ResultSetColumnHeader columnHeader = tableModel.getColumnHeaders().get(i);
+                String temp = String.valueOf(table.getValueAt(row, i));
 
+                String value = temp != null ?
+                        isStringValue(columnHeader.getDataType()) ?
+                                ("'" + temp + "'") :
+                                temp :
+                        "NULL";
 
-                }
-            }
-            query += "\nORDER BY " + order + "\n";
-            query += "ROWS 1";
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Delete record", query, databaseObject.getHost().getDatabaseConnection(), true);
-            eqd.display();
-            if (eqd.getCommit()) {
-                loadDataForTable(databaseObject);
+                if (first) {
+                    order = columnHeader.getName();
+                    first = false;
+                } else
+                    query.append("\nAND");
+
+                if (value.equals("NULL"))
+                    query.append(" (").append(columnHeader.getName()).append(" IS ").append(value).append(" )");
+                else
+                    query.append(" (").append(columnHeader.getName()).append(" = ").append(value).append(" )");
             }
         }
+        query.append("\nORDER BY ").append(order).append("\n");
+        query.append("ROWS 1");
+        query.append(";\n");
+
+        return query.toString();
     }
 
     public ResultSetTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
@@ -1080,29 +1056,8 @@ public class TableDataTab extends JPanel
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
-        deleteRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+        deleteRolloverButton.addActionListener(e -> deleteRecords());
 
-                boolean useForm = SystemProperties.getBooleanProperty(
-                        Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
-                if (useForm) {
-                    delete_record();
-
-                } else {
-
-                    Arrays.stream(table.getSelectedRows())
-                            .filter(row -> row >= 0)
-                            .forEach(row -> {
-                                tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                            });
-
-                    table.clearSelection();
-                }
-
-                markedForReload = true;
-            }
-        });
         bar.add(deleteRolloverButton);
         tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
@@ -1222,6 +1177,42 @@ public class TableDataTab extends JPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
+    }
+
+    private void deleteRecords() {
+        boolean useForm = SystemProperties.getBooleanProperty(
+                Constants.USER_PROPERTIES_KEY,
+                "results.table.use.form.adding.deleting"
+        );
+
+        if (useForm) {
+
+            StringBuilder query = new StringBuilder();
+            for (int row : table.getSelectedRows())
+                if (row >= 0)
+                    query.append(getDeleteRecordQuery(row));
+
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(
+                    bundleString("DeleteRecord"),
+                    query.toString(),
+                    databaseObject.getHost().getDatabaseConnection(),
+                    true
+            );
+
+            eqd.display();
+            if (eqd.getCommit())
+                loadDataForTable(databaseObject);
+
+        } else {
+
+            for (int row : table.getSelectedRows())
+                if (row >= 0)
+                    tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+
+            table.clearSelection();
+        }
+
+        markedForReload = true;
     }
 
     public void stopEditing() {
@@ -1412,6 +1403,21 @@ public class TableDataTab extends JPanel
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private static boolean isStringValue(int sqlType) {
+        return sqlType == Types.LONGVARCHAR
+                || sqlType == Types.LONGNVARCHAR
+                || sqlType == Types.CHAR
+                || sqlType == Types.NCHAR
+                || sqlType == Types.VARCHAR
+                || sqlType == Types.NVARCHAR
+                || sqlType == Types.CLOB
+                || sqlType == Types.DATE
+                || sqlType == Types.TIME
+                || sqlType == Types.TIMESTAMP
+                || sqlType == Types.TIME_WITH_TIMEZONE
+                || sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
     public void cleanup() {

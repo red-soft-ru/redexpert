@@ -22,15 +22,12 @@ package org.executequery.gui.resultset;
 
 import org.executequery.Constants;
 import org.executequery.databaseobjects.Types;
-import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
 
 // much of this from the article Christmas Tree Applications at
 // http://java.sun.com/products/jfc/tsc/articles/ChristmasTree
@@ -76,16 +73,9 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     private String alignNull;
     private String alignOther;
 
-
-    private DateTimeFormatter dateFormat;
-    private DateTimeFormatter timeFormat;
-    private DateTimeFormatter timestampFormat;
-    private DateTimeFormatter timeTimezoneFormat;
-    private DateTimeFormatter timestampTimezoneFormat;
-
     ResultSetTableCellRenderer() {
 
-        focusBorder = loadUIBorder("Table.focusCellHighlightBorder");
+        focusBorder = UIManager.getBorder("Table.focusCellHighlightBorder");
         editableForeground = loadUIColour("Table.focusCellForeground");
         editableBackground = loadUIColour("Table.focusCellBackground");
         selectionForeground = loadUIColour("Table.selectionForeground");
@@ -95,66 +85,8 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         applyUserPreferences();
     }
 
-    private Border loadUIBorder(String key) {
-        return UIManager.getBorder(key);
-    }
-
     private Color loadUIColour(String key) {
         return UIManager.getColor(key);
-    }
-
-    private void alignNumeric(Object value) {
-
-        RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
-            return;
-
-        int sqlType = recordDataItem.getDataType();
-        switch (sqlType) {
-
-            case Types.TINYINT:
-            case Types.INT128:
-            case Types.BIGINT:
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-            case Types.INTEGER:
-            case Types.SMALLINT:
-            case Types.FLOAT:
-            case Types.REAL:
-            case Types.DOUBLE:
-                setHorizontalAlignment(SwingConstants.RIGHT);
-                break;
-
-            default:
-                //setHorizontalAlignment(SwingConstants.LEFT);
-                break;
-        }
-
-    }
-
-    private void alignText(Object value) {
-
-        RecordDataItem recordDataItem = (RecordDataItem) value;
-        if (recordDataItem == null || recordDataItem.isDisplayValueNull())
-            return;
-
-        int sqlType = recordDataItem.getDataType();
-        switch (sqlType) {
-
-            case Types.VARCHAR:
-            case Types.LONGNVARCHAR:
-            case Types.CHAR:
-            case Types.CLOB:
-            case Types.NCHAR:
-            case Types.NCLOB:
-            case Types.NVARCHAR:
-                setHorizontalAlignment(SwingConstants.LEFT);
-                break;
-
-            default:
-                break;
-        }
-
     }
 
     protected void setAlign(String align) {
@@ -275,19 +207,7 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         }
 
         if (isDateValue) {
-
-            if (value instanceof LocalDate)
-                setValue(dateFormatted((LocalDate) value));
-            else if (value instanceof LocalTime)
-                setValue(timeFormatted((LocalTime) value));
-            else if (value instanceof LocalDateTime)
-                setValue(timestampFormatted((LocalDateTime) value));
-            else if (value instanceof OffsetTime)
-                setValue(timeTimezoneFormatted((OffsetTime) value));
-            else if (value instanceof OffsetDateTime)
-                setValue(timestampTimezoneFormatted((OffsetDateTime) value));
-            else
-                setValue(value);
+            setValue(ValueFormatter.formatted(value));
 
         } else if (isBlobValue) {
             setValue(recordDataItem.getDisplayValue());
@@ -327,27 +247,6 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
     }
 
     public void applyUserPreferences() {
-
-        String datePattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "results.date.pattern");
-        dateFormat = !MiscUtils.isNull(datePattern) ? DateTimeFormatter.ofPattern(datePattern) : null;
-
-        String timePattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "results.time.pattern");
-        timeFormat = !MiscUtils.isNull(timePattern) ? DateTimeFormatter.ofPattern(timePattern) : null;
-
-        String timeTimezonePattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "results.time.timezone.pattern");
-        timeTimezoneFormat = !MiscUtils.isNull(timeTimezonePattern) ? DateTimeFormatter.ofPattern(timeTimezonePattern) : null;
-
-        String timestampPattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
-        timestampFormat = !MiscUtils.isNull(timestampPattern) ? DateTimeFormatter.ofPattern(timestampPattern) : null;
-
-        String timestampTimezonePattern = SystemProperties.getProperty(
-                Constants.USER_PROPERTIES_KEY, "results.timestamp.timezone.pattern");
-        timestampTimezoneFormat = !MiscUtils.isNull(timestampTimezonePattern) ? DateTimeFormatter.ofPattern(timestampTimezonePattern) : null;
-
 
         alignNumeric = SystemProperties.getStringProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.align.numeric");
@@ -412,26 +311,6 @@ class ResultSetTableCellRenderer extends DefaultTableCellRenderer {
         focusRowBackground = SystemProperties.getColourProperty(
                 Constants.USER_PROPERTIES_KEY, "results.table.focus.row.background.colour");
 
-    }
-
-    private String dateFormatted(LocalDate date) {
-        return (dateFormat != null) ? dateFormat.format(date) : date.toString();
-    }
-
-    private String timeFormatted(LocalTime date) {
-        return (timeFormat != null) ? timeFormat.format(date) : date.toString();
-    }
-
-    private String timestampFormatted(LocalDateTime date) {
-        return (timestampFormat != null) ? timestampFormat.format(date) : date.toString();
-    }
-
-    private String timeTimezoneFormatted(OffsetTime date) {
-        return (timeTimezoneFormat != null) ? timeTimezoneFormat.format(date) : date.toString();
-    }
-
-    private String timestampTimezoneFormatted(OffsetDateTime date) {
-        return (timestampTimezoneFormat != null) ? timestampTimezoneFormat.format(date) : date.toString();
     }
 
     public void setTableBackground(Color c) {

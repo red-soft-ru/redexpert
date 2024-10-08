@@ -1,5 +1,7 @@
 package org.executequery.gui.browser.backup;
 
+import org.executequery.localization.Bundles;
+
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -26,6 +28,7 @@ public class FileBrowser {
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setDialogTitle(title);
         fileChooser.setFileFilter(fileFilter);
+        fileChooser.setApproveButtonText(Bundles.get("common.select"));
         fileChooser.setSelectedFile(new File(defaultFileName));
     }
 

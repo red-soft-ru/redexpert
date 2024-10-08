@@ -13,7 +13,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -38,7 +37,7 @@ public class DatabaseRestorePanel implements Serializable {
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox oneAtATimeCheckBox;
     private JComboBox<Integer> pageSizeCombo;
-    private NumberTextField parallelWorkersField;
+    private JSpinner workersSpinner;
 
     /**
      * Constructs a new DatabaseRestorePanel and initializes the UI components.
@@ -84,7 +83,8 @@ public class DatabaseRestorePanel implements Serializable {
         pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList(4096, 8192, 16384, 32768));
         pageSizeCombo.setSelectedIndex(1);
 
-        parallelWorkersField = WidgetFactory.createNumberTextField("parallelWorkersRestore", "1");
+        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
+        ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
     }
 
     /**
@@ -153,7 +153,7 @@ public class DatabaseRestorePanel implements Serializable {
         textOptionsPanel.add(pageSizeCombo, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
 
         textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(parallelWorkersField, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
+        textOptionsPanel.add(workersSpinner, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
 
         return textOptionsPanel;
     }
@@ -180,13 +180,13 @@ public class DatabaseRestorePanel implements Serializable {
      * @throws InvalidBackupFileException If the backup or restore file name is invalid.
      */
     public void performRestore(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
+        int workersCount = (int) workersSpinner.getValue();
         String fromFile = getBackupFileName();
         String toFile = getRestoreFileName();
         int pageSize = getSelectedPageSize();
         int options = getCheckBoxOptions();
-        int parallelWorkersCount = parallelWorkersField.getValue();
 
-        DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, parallelWorkersCount, os);
+        DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, workersCount, os);
     }
 
     /**

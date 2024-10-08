@@ -4,11 +4,7 @@ import biz.redsoft.IFBBackupManager;
 
 import java.io.OutputStream;
 import java.io.Serializable;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
@@ -16,7 +12,6 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
 
@@ -37,7 +32,7 @@ public class DatabaseBackupPanel implements Serializable {
     private JCheckBox noGarbageCollectCheckBox;
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox nonTransportableCheckBox;
-    private NumberTextField parallelWorkersField;
+    private JSpinner workersSpinner;
 
     /**
      * Constructs a new DatabaseBackupPanel and initializes the UI components.
@@ -77,7 +72,9 @@ public class DatabaseBackupPanel implements Serializable {
                 bundleString("metadataOnlyCheckBox"));
         nonTransportableCheckBox = WidgetFactory.createCheckBox("nonTransportableCheckBox",
                 bundleString("nonTransportableCheckBox"));
-        parallelWorkersField = WidgetFactory.createNumberTextField("parallelWorkers", "1");
+
+        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
+        ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
     }
 
     /**
@@ -138,7 +135,7 @@ public class DatabaseBackupPanel implements Serializable {
         textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().get());
 
         textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersAmount")), gbh.nextRowFirstCol().leftGap(0).topGap(5).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(parallelWorkersField, gbh.nextCol().setMaxWeightX().leftGap(5).spanX().get());
+        textOptionsPanel.add(workersSpinner, gbh.nextCol().setMaxWeightX().leftGap(5).spanX().get());
 
         return textOptionsPanel;
     }
@@ -165,11 +162,11 @@ public class DatabaseBackupPanel implements Serializable {
      * @throws InvalidBackupFileException If the backup file name is invalid.
      */
     public void performBackup(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
+        int workersCount = (int) workersSpinner.getValue();
         String backupFileName = getNewFileName();
         int options = getCheckBoxOptions();
-        int parallelWorkersAmount = parallelWorkersField.getValue();
 
-        DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, parallelWorkersAmount, os);
+        DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, workersCount, os);
     }
 
     /**

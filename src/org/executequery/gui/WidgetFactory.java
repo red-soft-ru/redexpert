@@ -29,8 +29,7 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -372,6 +371,20 @@ public final class WidgetFactory {
         JSpinner spinner = createSpinner(name);
         spinner.setModel(model);
 
+        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField().addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mousePressed(final MouseEvent e) {
+                        SwingUtilities.invokeLater(() -> {
+                            JTextField tf = (JTextField) e.getSource();
+                            int offset = tf.viewToModel(e.getPoint());
+                            tf.setCaretPosition(offset);
+                        });
+                    }
+                }
+        );
+
         return spinner;
     }
 
@@ -393,6 +406,23 @@ public final class WidgetFactory {
         spinnerModel.setValue(value);
 
         return createSpinner(name, spinnerModel);
+    }
+
+    /**
+     * Create named JSpinner class instance
+     *
+     * @param name      the component's name
+     * @param maximum   the maximum (non-null) number
+     * @param alignment the value alignment
+     */
+    public static JSpinner createSpinner(String name, int maximum, int alignment) {
+
+        JSpinner spinner = createSpinner(name, 1, 1, maximum, 1);
+
+        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) spinner.getEditor();
+        editor.getTextField().setHorizontalAlignment(alignment);
+
+        return spinner;
     }
 
     /**

@@ -606,20 +606,6 @@ public final class WidgetFactory {
     }
 
     /**
-     * Create named <code>ComponentTitledPanel</code> class instance,
-     * that has border with the <code>JComponents</code> instead of title.
-     *
-     * @param name the component's name
-     */
-    public static ComponentTitledPanel createComponentTitledPanel(String name, JComponent component) {
-
-        ComponentTitledPanel panel = new ComponentTitledPanel(component);
-        panel.setName(name);
-
-        return panel;
-    }
-
-    /**
      * Create named <code>SimpleSqlTextPanel</code> class instance.
      *
      * @param name the component's name

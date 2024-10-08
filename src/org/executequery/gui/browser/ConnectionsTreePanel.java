@@ -40,6 +40,7 @@ import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
+import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
 import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
@@ -968,6 +969,12 @@ public class ConnectionsTreePanel extends TreePanel
             GUIUtilities.showWaitCursor();
 
             DatabaseObjectNode node = (DatabaseObjectNode) object;
+            if (node instanceof TableFolderNode) {
+                reloadPath(path.getParentPath());
+                GUIUtils.invokeLater(() -> doNodeExpansion(node));
+                return;
+            }
+
             node.reset();
 
             nodeStructureChanged(node);

@@ -24,12 +24,15 @@ import org.apache.commons.io.FileExistsException;
 import org.executequery.*;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
+import org.executequery.gui.resultset.ResultSetCellAlign;
 import org.executequery.localization.Bundles;
+import org.executequery.localization.InterfaceLanguage;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.table.*;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
@@ -319,26 +322,58 @@ public class SimplePreferencesPanel extends JPanel
         for (UserPreference preference : preferences) {
             switch (preference.getType()) {
 
-                case UserPreference.ENUM_TYPE:
                 case UserPreference.STRING_TYPE:
                 case UserPreference.INTEGER_TYPE:
                 case UserPreference.FILE_TYPE:
                 case UserPreference.DIR_TYPE:
-                    preference.reset(SystemProperties.getProperty("defaults", preference.getKey()));
-                    if (preference.getKey().equals("startup.java.path"))
+                    preference.reset(getDefaultStringValue(preference));
+                    if (Objects.equals(preference.getKey(), "startup.java.path"))
                         JavaFileProperty.restore();
                     break;
 
+                case UserPreference.ENUM_TYPE:
+                    preference.reset(getDefaultEnumValue(preference));
+                    break;
+
                 case UserPreference.BOOLEAN_TYPE:
-                    preference.reset(Boolean.valueOf(SystemProperties.getProperty("defaults", preference.getKey())));
+                    preference.reset(getDefaultBooleanValue(preference));
                     break;
 
                 case UserPreference.COLOUR_TYPE:
-                    preference.reset(SystemProperties.getColourProperty("defaults", preference.getKey()));
+                    preference.reset(getDefaultColorValue(preference));
                     break;
             }
         }
         fireTableDataChanged();
+    }
+
+    private static String getDefaultStringValue(UserPreference preference) {
+        return SystemProperties.getProperty("defaults", preference.getKey());
+    }
+
+    private static Color getDefaultColorValue(UserPreference preference) {
+        return SystemProperties.getColourProperty("defaults", preference.getKey());
+    }
+
+    private static Boolean getDefaultBooleanValue(UserPreference preference) {
+        return Boolean.valueOf(getDefaultStringValue(preference));
+    }
+
+    private static Object getDefaultEnumValue(UserPreference preference) {
+
+        Class<?> clazz = preference.getValue().getClass();
+        if (Objects.equals(clazz, LabelValuePair.class))
+            clazz = ((LabelValuePair) preference.getValue()).getValue().getClass();
+
+        String value = getDefaultStringValue(preference);
+        if (Objects.equals(clazz, LookAndFeelType.class))
+            return LookAndFeelType.valueOf(value);
+        if (Objects.equals(clazz, InterfaceLanguage.class))
+            return InterfaceLanguage.valueOf(value);
+        if (Objects.equals(clazz, ResultSetCellAlign.class))
+            return ResultSetCellAlign.valueOf(value);
+
+        return value;
     }
 
     protected void fireTableDataChanged() {

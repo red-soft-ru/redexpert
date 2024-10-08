@@ -4,6 +4,7 @@ import biz.redsoft.IFBBackupManager;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -179,7 +180,9 @@ public class DatabaseRestorePanel implements Serializable {
      * @param os The output stream where the restore will be written.
      * @throws InvalidBackupFileException If the backup or restore file name is invalid.
      */
-    public void performRestore(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
+    public void performRestore(DatabaseConnection dc, OutputStream os)
+            throws InvalidBackupFileException, SQLException, ClassNotFoundException {
+
         int workersCount = (int) workersSpinner.getValue();
         String fromFile = getBackupFileName();
         String toFile = getRestoreFileName();

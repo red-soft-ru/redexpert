@@ -4,6 +4,7 @@ import biz.redsoft.IFBBackupManager;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.sql.SQLException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -161,7 +162,9 @@ public class DatabaseBackupPanel implements Serializable {
      * @param os The output stream where the backup will be written.
      * @throws InvalidBackupFileException If the backup file name is invalid.
      */
-    public void performBackup(DatabaseConnection dc, OutputStream os) throws InvalidBackupFileException {
+    public void performBackup(DatabaseConnection dc, OutputStream os)
+            throws InvalidBackupFileException, SQLException, ClassNotFoundException {
+
         int workersCount = (int) workersSpinner.getValue();
         String backupFileName = getNewFileName();
         int options = getCheckBoxOptions();

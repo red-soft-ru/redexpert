@@ -8,10 +8,8 @@ import java.sql.SQLException;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
-import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
@@ -34,71 +32,61 @@ public class DatabaseBackupRestoreService {
     /**
      * Executes the database restore process using the given parameters.
      *
-     * @param dc                    the database connection details
-     * @param fromFile              path to the backup source file
-     * @param toFile                path where the restored data will be saved
-     * @param options               restore logic options
-     * @param pageSize              the page size to be used during restore
-     * @param parallelWorkersAmount the number of parallel workers to be used during the restore
-     * @param os                    an optional output stream for logging
+     * @param dc           the database connection details
+     * @param fromFile     path to the backup source file
+     * @param toFile       path where the restored data will be saved
+     * @param options      restore logic options
+     * @param pageSize     the page size to be used during restore
+     * @param workersCount the number of parallel workers to be used during the restore
+     * @param os           an optional output stream for logging
      */
     public static void restoreDatabase(DatabaseConnection dc, String fromFile, String toFile, int options, int pageSize,
-                                       int parallelWorkersAmount, OutputStream os) {
-        Optional<IFBBackupManager> backupManagerOptional = getBackupManager(dc);
-        if (backupManagerOptional.isPresent()) {
-            IFBBackupManager backupManager = backupManagerOptional.get();
-            try {
-                backupManager.clearRestorePaths();
-                if (os != null) {
-                    backupManager.setLogger(os);
-                    backupManager.setVerbose(true);
-                }
-                backupManager.addBackupPath(fromFile);
-                backupManager.addBackupPath(toFile);
-                backupManager.setRestorePageSize(pageSize);
-                backupManager.restoreDatabase(options, parallelWorkersAmount);
-                Log.info("Database restored successfully from: " + fromFile + " to: " + toFile);
+                                       int workersCount, OutputStream os) throws SQLException, ClassNotFoundException {
 
-            } catch (SQLException e) {
-                Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog(bundleString("restoreException", e.getMessage()), e, DatabaseBackupRestoreService.class);
-            }
-        } else {
-            Log.warning("No backup manager available");
+        Optional<IFBBackupManager> backupManagerOptional = getBackupManager(dc);
+        if (!backupManagerOptional.isPresent())
+            throw new ClassNotFoundException("Couldn't initialise IFBBackupManager");
+
+        IFBBackupManager backupManager = backupManagerOptional.get();
+        backupManager.clearRestorePaths();
+        if (os != null) {
+            backupManager.setLogger(os);
+            backupManager.setVerbose(true);
         }
+        backupManager.addBackupPath(fromFile);
+        backupManager.addBackupPath(toFile);
+        backupManager.setRestorePageSize(pageSize);
+
+        backupManager.restoreDatabase(options, workersCount);
+        Log.info("Database restored successfully from: " + fromFile + " to: " + toFile);
     }
 
     /**
      * Executes the database backup process using the given parameters.
      *
-     * @param connection            the database connection details
-     * @param backupPath            the path where the backup will be saved
-     * @param options               backup options
-     * @param parallelWorkersAmount the number of parallel workers to be used during the backup
-     * @param os                    an optional output stream for logging
+     * @param connection   the database connection details
+     * @param backupPath   the path where the backup will be saved
+     * @param options      backup options
+     * @param workersCount the number of parallel workers to be used during the backup
+     * @param os           an optional output stream for logging
      */
     public static void backupDatabase(DatabaseConnection connection, String backupPath, int options,
-                                      int parallelWorkersAmount, OutputStream os) {
-        Optional<IFBBackupManager> backupManagerOptional = getBackupManager(connection);
-        if (backupManagerOptional.isPresent()) {
-            IFBBackupManager backupManager = backupManagerOptional.get();
-            try {
-                backupManager.clearBackupPaths();
-                if (os != null) {
-                    backupManager.setLogger(os);
-                    backupManager.setVerbose(true);
-                }
-                backupManager.addBackupPath(backupPath);
-                backupManager.backupDatabase(options, parallelWorkersAmount);
-                Log.info("Backup successfully created at: " + backupPath);
+                                      int workersCount, OutputStream os) throws SQLException, ClassNotFoundException {
 
-            } catch (SQLException e) {
-                Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog(bundleString("backupException", e.getMessage()), e, DatabaseBackupRestoreService.class);
-            }
-        } else {
-            Log.warning("No backup manager available");
+        Optional<IFBBackupManager> backupManagerOptional = getBackupManager(connection);
+        if (!backupManagerOptional.isPresent())
+            throw new ClassNotFoundException("Couldn't initialise IFBBackupManager");
+
+        IFBBackupManager backupManager = backupManagerOptional.get();
+        backupManager.clearBackupPaths();
+        if (os != null) {
+            backupManager.setLogger(os);
+            backupManager.setVerbose(true);
         }
+        backupManager.addBackupPath(backupPath);
+
+        backupManager.backupDatabase(options, workersCount);
+        Log.info("Backup successfully created at: " + backupPath);
     }
 
     /**
@@ -107,26 +95,20 @@ public class DatabaseBackupRestoreService {
      * @param dc the database connection details
      * @return an Optional containing the IFBBackupManager if successfully initialized, or an empty Optional if not
      */
-    private static Optional<IFBBackupManager> getBackupManager(DatabaseConnection dc) {
-        try {
-            Driver driver = getDriverFromDbConnection(dc);
-            IFBBackupManager backupManager = (IFBBackupManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                    driver.getMajorVersion(), driver, "FBBackupManagerImpl"
-            );
-            backupManager.setHost(dc.getHost());
-            backupManager.setPort(dc.getPortInt());
-            backupManager.setUser(dc.getUserName());
-            backupManager.setPassword(dc.getUnencryptedPassword());
-            backupManager.setDatabase(dc.getSourceName());
-            backupManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset(dc.getCharset()));
+    private static Optional<IFBBackupManager> getBackupManager(DatabaseConnection dc) throws SQLException, ClassNotFoundException {
 
-            return Optional.of(backupManager);
+        Driver driver = getDriverFromDbConnection(dc);
+        IFBBackupManager backupManager = (IFBBackupManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
+                driver.getMajorVersion(), driver, "FBBackupManagerImpl"
+        );
+        backupManager.setHost(dc.getHost());
+        backupManager.setPort(dc.getPortInt());
+        backupManager.setUser(dc.getUserName());
+        backupManager.setPassword(dc.getUnencryptedPassword());
+        backupManager.setDatabase(dc.getSourceName());
+        backupManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset(dc.getCharset()));
 
-        } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("initializeException", e.getMessage()), e, DatabaseBackupRestoreService.class);
-        }
-
-        return Optional.empty();
+        return Optional.of(backupManager);
     }
 
     /**
@@ -142,10 +124,6 @@ public class DatabaseBackupRestoreService {
                 .filter(nameToDriverEntry -> nameToDriverEntry.getKey().startsWith(driverId))
                 .findFirst().map(Entry::getValue)
                 .orElse(DefaultDriverLoader.getDefaultDriver());
-    }
-
-    private static String bundleString(String key, Object... args) {
-        return Bundles.get(DatabaseBackupRestoreService.class, key, args);
     }
 
 }

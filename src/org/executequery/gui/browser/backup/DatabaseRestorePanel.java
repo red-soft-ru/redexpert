@@ -15,6 +15,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
+import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
@@ -345,6 +346,6 @@ public class DatabaseRestorePanel implements Serializable {
      * @return The localized string.
      */
     public static String bundleString(String key) {
-        return Bundles.get(DatabaseRestorePanel.class, key);
+        return Bundles.get(DatabaseBackupRestorePanel.class, key);
     }
 }

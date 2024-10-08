@@ -12,6 +12,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -276,6 +277,6 @@ public class DatabaseBackupPanel implements Serializable {
      * @return The localized string.
      */
     public static String bundleString(String key) {
-        return Bundles.get(DatabaseBackupPanel.class, key);
+        return Bundles.get(DatabaseBackupRestorePanel.class, key);
     }
 }

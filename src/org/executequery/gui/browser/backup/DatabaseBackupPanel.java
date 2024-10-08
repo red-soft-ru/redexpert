@@ -9,11 +9,14 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -25,6 +28,7 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupPanel implements Serializable {
+    private boolean override;
 
     private JTextField backupFileField;
     private JButton browseBackupFileButton;
@@ -57,8 +61,10 @@ public class DatabaseBackupPanel implements Serializable {
     private void createFileChooserComponents() {
         browseBackupFileButton = WidgetFactory.createButton("browseBackupFileButton", "...");
         browseBackupFileButton.addActionListener(e -> browseBackupFile());
-        backupFileField = WidgetFactory.createTextField("backupFileField");
         backupButton = WidgetFactory.createButton("backupButton", bundleString("backupButton"));
+
+        backupFileField = WidgetFactory.createTextField("backupFileField");
+        backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
     }
 
     /**
@@ -162,14 +168,24 @@ public class DatabaseBackupPanel implements Serializable {
      * @param os The output stream where the backup will be written.
      * @throws InvalidBackupFileException If the backup file name is invalid.
      */
-    public void performBackup(DatabaseConnection dc, OutputStream os)
+    public boolean performBackup(DatabaseConnection dc, OutputStream os)
             throws InvalidBackupFileException, SQLException, ClassNotFoundException {
 
-        int workersCount = (int) workersSpinner.getValue();
         String backupFileName = getNewFileName();
+        if (FileUtils.fileExists(backupFileName) && !override) {
+            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
+            if (result != JOptionPane.YES_OPTION)
+                return false;
+
+            override = true;
+        }
+
+        int workersCount = (int) workersSpinner.getValue();
         int options = getCheckBoxOptions();
+        override = false;
 
         DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, workersCount, os);
+        return true;
     }
 
     /**
@@ -211,12 +227,22 @@ public class DatabaseBackupPanel implements Serializable {
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);
 
         String filePath = fileBrowser.getChosenFilePath();
-        if (filePath != null) {
-            String originalExtension = FilenameUtils.getExtension(filePath);
-            if (MiscUtils.isNull(originalExtension))
-                filePath += ".fbk";
+        if (filePath == null)
+            return;
 
-            backupFileField.setText(filePath);
+        String originalExtension = FilenameUtils.getExtension(filePath);
+        if (MiscUtils.isNull(originalExtension))
+            filePath += ".fbk";
+
+        backupFileField.setText(filePath);
+
+        if (FileUtils.fileExists(filePath)) {
+            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
+            if (result != JOptionPane.YES_OPTION) {
+                browseBackupFile();
+                return;
+            }
+            override = true;
         }
     }
 

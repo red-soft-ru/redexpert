@@ -227,8 +227,9 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performBackup() {
         try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
-            backupHelper.performBackup(getDatabaseConnection(), backupOutputStream);
-            GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
+            boolean success = backupHelper.performBackup(getDatabaseConnection(), backupOutputStream);
+            if (success)
+                GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
             populateLogs(backupOutputStream);
 
         } catch (InvalidBackupFileException e) {
@@ -244,8 +245,9 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performRestore() {
         try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
-            restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream);
-            GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
+            boolean success = restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream);
+            if (success)
+                GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
             populateLogs(restoreOutputStream);
 
         } catch (InvalidBackupFileException e) {

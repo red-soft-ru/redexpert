@@ -10,11 +10,14 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -26,6 +29,7 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
+    private boolean override;
 
     private JTextField restoredFileField;
     private JTextField backupFileField;
@@ -67,8 +71,10 @@ public class DatabaseRestorePanel implements Serializable {
         browseRestoreFileButton.addActionListener(e -> browseRestoreFile());
 
         backupFileField = WidgetFactory.createTextField("backupFileField");
-        restoredFileField = WidgetFactory.createTextField("restoredFileField");
         restoreButton = WidgetFactory.createButton("restoreButton", bundleString("restoreButton"));
+
+        restoredFileField = WidgetFactory.createTextField("restoredFileField");
+        restoredFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
     }
 
     /**
@@ -180,16 +186,26 @@ public class DatabaseRestorePanel implements Serializable {
      * @param os The output stream where the restore will be written.
      * @throws InvalidBackupFileException If the backup or restore file name is invalid.
      */
-    public void performRestore(DatabaseConnection dc, OutputStream os)
+    public boolean performRestore(DatabaseConnection dc, OutputStream os)
             throws InvalidBackupFileException, SQLException, ClassNotFoundException {
+
+        String toFile = getRestoreFileName();
+        if (FileUtils.fileExists(toFile) && !override) {
+            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
+            if (result != JOptionPane.YES_OPTION)
+                return false;
+
+            override = true;
+        }
 
         int workersCount = (int) workersSpinner.getValue();
         String fromFile = getBackupFileName();
-        String toFile = getRestoreFileName();
         int pageSize = getSelectedPageSize();
         int options = getCheckBoxOptions();
+        override = false;
 
         DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, workersCount, os);
+        return true;
     }
 
     /**
@@ -218,6 +234,10 @@ public class DatabaseRestorePanel implements Serializable {
         if (oneAtATimeCheckBox.isSelected()) {
             options |= IFBBackupManager.RESTORE_ONE_AT_A_TIME;
             Log.info("Restoring one table at a time is enabled");
+        }
+        if (override) {
+            options |= IFBBackupManager.RESTORE_OVERWRITE;
+            Log.info("Override restoring file is enabled");
         }
         return options;
     }
@@ -257,12 +277,22 @@ public class DatabaseRestorePanel implements Serializable {
         FileBrowser fileBrowser = new FileBrowser(bundleString("restoreFileSelection"), fdbFilter, defaultFileName);
 
         String filePath = fileBrowser.getChosenFilePath();
-        if (filePath != null) {
-            String originalExtension = FilenameUtils.getExtension(filePath);
-            if (MiscUtils.isNull(originalExtension))
-                filePath += ".fdb";
+        if (filePath == null)
+            return;
 
-            restoredFileField.setText(filePath);
+        String originalExtension = FilenameUtils.getExtension(filePath);
+        if (MiscUtils.isNull(originalExtension))
+            filePath += ".fdb";
+
+        restoredFileField.setText(filePath);
+
+        if (FileUtils.fileExists(filePath)) {
+            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
+            if (result != JOptionPane.YES_OPTION) {
+                browseRestoreFile();
+                return;
+            }
+            override = true;
         }
     }
 

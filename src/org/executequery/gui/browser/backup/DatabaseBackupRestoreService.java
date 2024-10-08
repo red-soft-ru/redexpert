@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -59,8 +60,7 @@ public class DatabaseBackupRestoreService {
 
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog("Unable to restore database", e,
-                        DatabaseBackupRestoreService.class);
+                GUIUtilities.displayExceptionErrorDialog(bundleString("restoreException"), e, DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -93,8 +93,7 @@ public class DatabaseBackupRestoreService {
 
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog("Unable to create database backup", e,
-                        DatabaseBackupRestoreService.class);
+                GUIUtilities.displayExceptionErrorDialog(bundleString("backupException"), e, DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -125,8 +124,7 @@ public class DatabaseBackupRestoreService {
             return Optional.of(backupManager);
 
         } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to initialize IFBBackupManager instance", e, DatabaseBackupRestoreService.class);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("initializeException"), e, DatabaseBackupRestoreService.class);
         }
 
         return Optional.empty();
@@ -145,6 +143,10 @@ public class DatabaseBackupRestoreService {
                 .filter(nameToDriverEntry -> nameToDriverEntry.getKey().startsWith(driverId))
                 .findFirst().map(Entry::getValue)
                 .orElse(DefaultDriverLoader.getDefaultDriver());
+    }
+
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(DatabaseBackupRestoreService.class, key, args);
     }
 
 }

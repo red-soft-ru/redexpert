@@ -214,7 +214,7 @@ public class DatabaseBackupPanel implements Serializable {
      * Opens a file chooser dialog for selecting a backup file and sets the chosen path in the backupFileField.
      */
     private void browseBackupFile() {
-        FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter("Firebird Backup Files (*.fbk)", "fbk");
+        FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter);
         String filePath = fileBrowser.getChosenFilePath();
         if (filePath != null) {

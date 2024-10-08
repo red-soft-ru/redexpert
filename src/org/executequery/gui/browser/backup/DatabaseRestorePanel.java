@@ -237,7 +237,7 @@ public class DatabaseRestorePanel implements Serializable {
      * Opens a file chooser dialog for selecting a backup file and sets the chosen path in the backupFileField.
      */
     private void browseBackupFile() {
-        FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter("Firebird Backup Files (*.fbk)", "fbk");
+        FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter);
         String filePath = fileBrowser.getChosenFilePath();
         if (filePath != null) {
@@ -249,7 +249,7 @@ public class DatabaseRestorePanel implements Serializable {
      * Opens a file chooser dialog for selecting a restore file and sets the chosen path in the restoredFileField.
      */
     private void browseRestoreFile() {
-        FileNameExtensionFilter fdbFilter = new FileNameExtensionFilter("Firebird Restore Files (*.fdb)", "fdb");
+        FileNameExtensionFilter fdbFilter = new FileNameExtensionFilter(Bundles.get("common.fdb.files"), "fdb");
         FileBrowser fileBrowser = new FileBrowser(bundleString("restoreFileSelection"), fdbFilter);
         String filePath = fileBrowser.getChosenFilePath();
         if (filePath != null) {

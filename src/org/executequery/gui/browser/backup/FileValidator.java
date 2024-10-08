@@ -1,5 +1,7 @@
 package org.executequery.gui.browser.backup;
 
+import org.executequery.localization.Bundles;
+
 import java.io.File;
 
 /**
@@ -8,6 +10,7 @@ import java.io.File;
  *
  * @author Maxim Kozhinov
  */
+@SuppressWarnings("UnusedReturnValue")
 public class FileValidator {
 
     private final String fileName;
@@ -38,9 +41,8 @@ public class FileValidator {
      * @throws InvalidBackupFileException if the file name is null or empty.
      */
     public FileValidator notEmpty() throws InvalidBackupFileException {
-        if (fileName == null || fileName.trim().isEmpty()) {
-            throw new InvalidBackupFileException("The file name must not be empty.");
-        }
+        if (fileName == null || fileName.trim().isEmpty())
+            throw new InvalidBackupFileException(bundleString("nameEmpty"));
         return this;
     }
 
@@ -52,9 +54,8 @@ public class FileValidator {
      * @throws InvalidBackupFileException if the file does not have the specified extension.
      */
     public FileValidator hasExtension(String extension) throws InvalidBackupFileException {
-        if (!fileName.endsWith(extension)) {
-            throw new InvalidBackupFileException("The file must have the " + extension + " extension.");
-        }
+        if (!fileName.endsWith(extension))
+            throw new InvalidBackupFileException(bundleString("extensionEmpty", extension));
         return this;
     }
 
@@ -65,10 +66,13 @@ public class FileValidator {
      * @throws InvalidBackupFileException if the file does not exist.
      */
     public FileValidator exists() throws InvalidBackupFileException {
-        File file = new File(fileName);
-        if (!file.exists()) {
-            throw new InvalidBackupFileException("The file '" + fileName + "' does not exist.");
-        }
+        if (!new File(fileName).exists())
+            throw new InvalidBackupFileException(bundleString("fileNotExists"));
         return this;
     }
+
+    private static String bundleString(String key, Object... args) {
+        return Bundles.get(FileValidator.class, key, args);
+    }
+
 }

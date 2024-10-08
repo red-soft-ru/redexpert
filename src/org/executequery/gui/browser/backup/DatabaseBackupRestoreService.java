@@ -61,7 +61,7 @@ public class DatabaseBackupRestoreService {
 
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog(bundleString("restoreException"), e, DatabaseBackupRestoreService.class);
+                GUIUtilities.displayExceptionErrorDialog(bundleString("restoreException", e.getMessage()), e, DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -94,7 +94,7 @@ public class DatabaseBackupRestoreService {
 
             } catch (SQLException e) {
                 Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog(bundleString("backupException"), e, DatabaseBackupRestoreService.class);
+                GUIUtilities.displayExceptionErrorDialog(bundleString("backupException", e.getMessage()), e, DatabaseBackupRestoreService.class);
             }
         } else {
             Log.warning("No backup manager available");
@@ -123,7 +123,7 @@ public class DatabaseBackupRestoreService {
             return Optional.of(backupManager);
 
         } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("initializeException"), e, DatabaseBackupRestoreService.class);
+            GUIUtilities.displayExceptionErrorDialog(bundleString("initializeException", e.getMessage()), e, DatabaseBackupRestoreService.class);
         }
 
         return Optional.empty();

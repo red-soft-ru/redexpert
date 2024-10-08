@@ -235,7 +235,6 @@ public class DatabaseBackupRestorePanel extends JPanel {
             GUIUtilities.displayWarningMessage(e.getMessage());
 
         } catch (Exception e) {
-            backupHelper.getProgressBar().setValue(0);
             GUIUtilities.displayExceptionErrorDialog(bundleString("backupFailed", e.getMessage()), e, getClass());
         }
     }
@@ -253,7 +252,6 @@ public class DatabaseBackupRestorePanel extends JPanel {
             GUIUtilities.displayWarningMessage(e.getMessage());
 
         } catch (Exception e) {
-            restoreHelper.getProgressBar().setValue(0);
             GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
         }
     }

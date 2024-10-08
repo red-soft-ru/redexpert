@@ -7,7 +7,6 @@ import java.io.Serializable;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -35,7 +34,6 @@ public class DatabaseRestorePanel implements Serializable {
     private JButton restoreButton;
     private JButton browseBackupFileButton;
     private JButton browseRestoreFileButton;
-    private JProgressBar progressBar;
     private JCheckBox deactivateIdxCheckBox;
     private JCheckBox noShadowCheckBox;
     private JCheckBox noValidityCheckBox;
@@ -58,7 +56,6 @@ public class DatabaseRestorePanel implements Serializable {
     private void init() {
         createFileChooserComponents();
         createRestoreOptions();
-        createProgressComponents();
     }
 
     /**
@@ -92,14 +89,6 @@ public class DatabaseRestorePanel implements Serializable {
     }
 
     /**
-     * Creates and initializes progress bar components for restore progress.
-     */
-    private void createProgressComponents() {
-        progressBar = WidgetFactory.createProgressBar("restoreProgressBar");
-        progressBar.setStringPainted(true);
-    }
-
-    /**
      * Arranges the components within the panel using a grid layout.
      *
      * @return JPanel containing the UI components for restore configuration.
@@ -119,7 +108,6 @@ public class DatabaseRestorePanel implements Serializable {
         mainPanel.add(checkBoxPanel, gbh.nextRowFirstCol().topGap(0).get());
         mainPanel.add(buttonPanel, gbh.nextRowFirstCol().get());
         mainPanel.add(new JPanel(), gbh.nextRowFirstCol().setMaxWeightY().get());
-        mainPanel.add(progressBar, gbh.nextRowFirstCol().bottomGap(6).setMinWeightY().get());
 
         gbh = new GridBagHelper().anchorNorthWest().fillBoth();
         restorePanel.add(mainPanel, gbh.setMaxWeightX().setMaxWeightY().get());
@@ -200,7 +188,6 @@ public class DatabaseRestorePanel implements Serializable {
         int parallelWorkersCount = parallelWorkersField.getValue();
 
         DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, parallelWorkersCount, os);
-        progressBar.setValue(100);
     }
 
     /**
@@ -312,15 +299,6 @@ public class DatabaseRestorePanel implements Serializable {
      */
     public JButton getRestoreButton() {
         return restoreButton;
-    }
-
-    /**
-     * Returns the progress bar used to track the progress of the restore process.
-     *
-     * @return The JProgressBar used to display restore progress.
-     */
-    public JProgressBar getProgressBar() {
-        return progressBar;
     }
 
     /**

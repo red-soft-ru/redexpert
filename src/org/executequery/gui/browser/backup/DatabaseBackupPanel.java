@@ -33,7 +33,6 @@ public class DatabaseBackupPanel implements Serializable {
     private JTextField backupFileField;
     private JButton browseBackupFileButton;
     private JButton backupButton;
-    private JProgressBar progressBar;
     private JCheckBox ignoreChecksumsCheckBox;
     private JCheckBox noGarbageCollectCheckBox;
     private JCheckBox metadataOnlyCheckBox;
@@ -54,7 +53,6 @@ public class DatabaseBackupPanel implements Serializable {
     private void init() {
         createFileChooserComponents();
         createBackupOptions();
-        createProgressComponents();
     }
 
     /**
@@ -83,14 +81,6 @@ public class DatabaseBackupPanel implements Serializable {
     }
 
     /**
-     * Creates and initializes progress bar components for backup progress.
-     */
-    private void createProgressComponents() {
-        progressBar = WidgetFactory.createProgressBar("backupProgressBar");
-        progressBar.setStringPainted(true);
-    }
-
-    /**
      * Arranges the components within the panel using a grid layout.
      *
      * @return JPanel containing the UI components for backup configuration.
@@ -110,7 +100,6 @@ public class DatabaseBackupPanel implements Serializable {
         mainPanel.add(checkBoxPanel, gbh.nextRowFirstCol().topGap(0).get());
         mainPanel.add(buttonPanel, gbh.nextRowFirstCol().get());
         mainPanel.add(new JPanel(), gbh.nextRowFirstCol().setMaxWeightY().get());
-        mainPanel.add(progressBar, gbh.nextRowFirstCol().bottomGap(6).setMinWeightY().get());
 
         gbh = new GridBagHelper().anchorNorthWest().fillBoth();
         backupPanel.add(mainPanel, gbh.setMaxWeightX().setMaxWeightY().get());
@@ -181,7 +170,6 @@ public class DatabaseBackupPanel implements Serializable {
         int parallelWorkersAmount = parallelWorkersField.getValue();
 
         DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, parallelWorkersAmount, os);
-        progressBar.setValue(100);
     }
 
     /**
@@ -253,15 +241,6 @@ public class DatabaseBackupPanel implements Serializable {
      */
     public JButton getBackupButton() {
         return backupButton;
-    }
-
-    /**
-     * Returns the progress bar used to track the progress of the backup process.
-     *
-     * @return The JProgressBar used to display backup progress.
-     */
-    public JProgressBar getProgressBar() {
-        return progressBar;
     }
 
     /**

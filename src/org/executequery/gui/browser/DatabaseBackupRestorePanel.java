@@ -27,6 +27,7 @@ import org.executequery.gui.browser.backup.InvalidBackupFileException;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
+import org.underworldlabs.swing.ViewablePasswordField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -46,12 +47,12 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private DatabaseRestorePanel restoreHelper;
 
     private ConnectionsComboBox connectionCombo;
+    private ViewablePasswordField passwordField;
     private JComboBox<String> charsetsCombo;
     private JTextField databaseFileField;
     private JTextField hostField;
     private JTextField portField;
     private JTextField userField;
-    private JPasswordField passwordField;
 
     protected transient FileOutputStream fileLog;
     protected JButton fileLogButton;
@@ -79,11 +80,11 @@ public class DatabaseBackupRestorePanel extends JPanel {
         // Initialize connection-related fields
         connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false);
         charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", loadCharsets());
+        passwordField = WidgetFactory.createViewablePasswordField("passwordField");
         databaseFileField = WidgetFactory.createTextField("databaseFileField");
         hostField = WidgetFactory.createTextField("hostField");
         portField = WidgetFactory.createTextField("portField");
         userField = WidgetFactory.createTextField("userField");
-        passwordField = WidgetFactory.createPasswordField("passwordField");
 
         fileLogButton = WidgetFactory.createButton("fileLogButtonBackup", "...");
         fileLogButton.addActionListener(this::chooseLoggingFile);
@@ -198,10 +199,10 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private void changeDatabaseConnection() {
         DatabaseConnection dc = (DatabaseConnection) connectionCombo.getSelectedItem();
         if (dc != null) {
+            passwordField.setPassword(dc.getUnencryptedPassword());
             databaseFileField.setText(dc.getSourceName());
             charsetsCombo.setSelectedItem(dc.getCharset());
             userField.setText(dc.getUserName());
-            passwordField.setText(dc.getUnencryptedPassword());
             hostField.setText(dc.getHost());
             portField.setText(dc.getPort());
         } else {
@@ -215,8 +216,8 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private void resetConnectionFields() {
         charsetsCombo.setSelectedItem("NONE");
         databaseFileField.setText("");
+        passwordField.setPassword("");
         userField.setText("");
-        passwordField.setText("");
         hostField.setText("");
         portField.setText("3050");  // Default port
     }

@@ -10,6 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.*;
 
 import org.executequery.GUIUtilities;
@@ -24,6 +28,8 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.MiscUtils;
 
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
@@ -40,6 +46,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private DatabaseRestorePanel restoreHelper;
 
     private ConnectionsComboBox connectionCombo;
+    private JComboBox<String> charsetsCombo;
     private JTextField databaseFileField;
     private JTextField hostField;
     private JTextField portField;
@@ -71,6 +78,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
 
         // Initialize connection-related fields
         connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false);
+        charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", loadCharsets());
         databaseFileField = WidgetFactory.createTextField("databaseFileField");
         hostField = WidgetFactory.createTextField("hostField");
         portField = WidgetFactory.createTextField("portField");
@@ -151,24 +159,22 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private JPanel createCommonPanel() {
         JPanel commonPanel = WidgetFactory.createPanel("commonPanel");
-        GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 5).anchorNorthWest().fillHorizontally();
+        GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 0).anchorNorthWest().fillHorizontally();
 
-        commonPanel.add(WidgetFactory.createLabel(bundleString("connections")), gbh.setMinWeightX().get());
-        commonPanel.add(connectionCombo, gbh.nextCol().setMaxWeightX().spanX().get());
-
-        gbh.topGap(0);
+        addFieldWithLabel(commonPanel, gbh, bundleString("connections"), connectionCombo);
         addFieldWithLabel(commonPanel, gbh, bundleString("database"), databaseFileField);
         addFieldWithLabel(commonPanel, gbh, bundleString("host"), hostField);
         addFieldWithLabel(commonPanel, gbh, bundleString("port"), portField);
         addFieldWithLabel(commonPanel, gbh, bundleString("username"), userField);
         addFieldWithLabel(commonPanel, gbh, bundleString("password"), passwordField);
+        addFieldWithLabel(commonPanel, gbh, bundleString("charset"), charsetsCombo);
 
         commonPanel.add(logToFileBox, gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
         commonPanel.add(fileLogField, gbh.nextCol().setMaxWeightX().get());
         commonPanel.add(fileLogButton, gbh.nextCol().setMinWeightX().get());
 
         gbh.setMaxWeightX().setMaxWeightY().fillBoth().spanX().spanY();
-        commonPanel.add(loggingOutputPanel, gbh.nextRowFirstCol().get());
+        commonPanel.add(loggingOutputPanel, gbh.nextRowFirstCol().bottomGap(5).get());
 
         return commonPanel;
     }
@@ -181,7 +187,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * @param label The label for the field.
      * @param field The JTextField to be added.
      */
-    private void addFieldWithLabel(JPanel panel, GridBagHelper gbh, String label, JTextField field) {
+    private void addFieldWithLabel(JPanel panel, GridBagHelper gbh, String label, JComponent field) {
         panel.add(WidgetFactory.createLabel(label), gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
         panel.add(field, gbh.nextCol().setMaxWeightX().spanX().get());
     }
@@ -193,6 +199,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
         DatabaseConnection dc = (DatabaseConnection) connectionCombo.getSelectedItem();
         if (dc != null) {
             databaseFileField.setText(dc.getSourceName());
+            charsetsCombo.setSelectedItem(dc.getCharset());
             userField.setText(dc.getUserName());
             passwordField.setText(dc.getUnencryptedPassword());
             hostField.setText(dc.getHost());
@@ -206,6 +213,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * Resets all connection fields to their default empty state.
      */
     private void resetConnectionFields() {
+        charsetsCombo.setSelectedItem("NONE");
         databaseFileField.setText("");
         userField.setText("");
         passwordField.setText("");
@@ -285,6 +293,26 @@ public class DatabaseBackupRestorePanel extends JPanel {
                 Log.error(e.getMessage(), e);
             }
         }
+    }
+
+    /// Loads character sets from the <code>charsets.properties</code> file
+    private List<String> loadCharsets() {
+        List<String> charsets;
+
+        try {
+            String resource = FileUtils.loadResource("org/executequery/charsets.properties");
+            charsets = Arrays.stream(resource.split("\n"))
+                    .filter(s -> !MiscUtils.isNull(s))
+                    .filter(s -> !s.startsWith("#"))
+                    .sorted().collect(Collectors.toList());
+            charsets.add(0, "NONE");
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+            charsets = Collections.singletonList("NONE");
+        }
+
+        return charsets;
     }
 
     /**

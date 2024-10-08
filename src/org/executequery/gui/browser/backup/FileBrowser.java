@@ -20,12 +20,13 @@ public class FileBrowser {
      * @param title      the title of the file chooser dialog
      * @param fileFilter the file filter to restrict file types in the chooser
      */
-    public FileBrowser(String title, FileNameExtensionFilter fileFilter) {
+    public FileBrowser(String title, FileNameExtensionFilter fileFilter, String defaultFileName) {
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setDialogTitle(title);
         fileChooser.setFileFilter(fileFilter);
+        fileChooser.setSelectedFile(new File(defaultFileName));
     }
 
     /**

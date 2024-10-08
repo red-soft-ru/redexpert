@@ -11,12 +11,14 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 /**
  * This class is responsible for creating the user interface panel for database backup operations. It provides options
@@ -214,10 +216,20 @@ public class DatabaseBackupPanel implements Serializable {
      * Opens a file chooser dialog for selecting a backup file and sets the chosen path in the backupFileField.
      */
     private void browseBackupFile() {
+
+        String defaultFileName = backupFileField.getText();
+        if (MiscUtils.isNull(defaultFileName))
+            defaultFileName = "backup.fbk";
+
         FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
-        FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter);
+        FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);
+
         String filePath = fileBrowser.getChosenFilePath();
         if (filePath != null) {
+            String originalExtension = FilenameUtils.getExtension(filePath);
+            if (MiscUtils.isNull(originalExtension))
+                filePath += ".fbk";
+
             backupFileField.setText(filePath);
         }
     }

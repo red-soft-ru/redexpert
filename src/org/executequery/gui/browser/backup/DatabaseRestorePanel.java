@@ -10,15 +10,12 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
-import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 
 /**
@@ -30,15 +27,13 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
-    private boolean override;
 
-    private JTextField restoredFileField;
     private JTextField backupFileField;
     private JButton restoreButton;
     private JButton browseBackupFileButton;
-    private JButton browseRestoreFileButton;
     private JCheckBox deactivateIdxCheckBox;
     private JCheckBox noShadowCheckBox;
+    private JCheckBox restoreOverrideCheck;
     private JCheckBox noValidityCheckBox;
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox oneAtATimeCheckBox;
@@ -68,14 +63,8 @@ public class DatabaseRestorePanel implements Serializable {
         browseBackupFileButton = WidgetFactory.createButton("browseBackupFileButton", "...");
         browseBackupFileButton.addActionListener(e -> browseBackupFile());
 
-        browseRestoreFileButton = WidgetFactory.createButton("browseRestoreFileButton", "...");
-        browseRestoreFileButton.addActionListener(e -> browseRestoreFile());
-
         backupFileField = WidgetFactory.createTextField("backupFileField");
         restoreButton = WidgetFactory.createButton("restoreButton", bundleString("restoreButton"));
-
-        restoredFileField = WidgetFactory.createTextField("restoredFileField");
-        restoredFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
     }
 
     /**
@@ -87,6 +76,9 @@ public class DatabaseRestorePanel implements Serializable {
         noValidityCheckBox = WidgetFactory.createCheckBox("noValidityCheckBox", bundleString("noValidityCheckBox"));
         metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox", bundleString("metadataOnlyCheckBox"));
         oneAtATimeCheckBox = WidgetFactory.createCheckBox("oneAtATimeCheckBox", bundleString("oneAtATimeCheckBox"));
+
+        restoreOverrideCheck = WidgetFactory.createCheckBox("restoreOverrideCheck", bundleString("restoreOverrideCheck"));
+        restoreOverrideCheck.setSelected(true);
 
         pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList(4096, 8192, 16384, 32768));
         pageSizeCombo.setSelectedIndex(1);
@@ -130,11 +122,12 @@ public class DatabaseRestorePanel implements Serializable {
     private JPanel createCheckBoxPanel() {
         JPanel checkBoxPanel = WidgetFactory.createPanel("checkBoxPanel");
         GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
-        checkBoxPanel.add(deactivateIdxCheckBox, gbh.get());
-        checkBoxPanel.add(metadataOnlyCheckBox, gbh.nextCol().leftGap(5).get());
-        checkBoxPanel.add(noShadowCheckBox, gbh.nextCol().get());
-        checkBoxPanel.add(noValidityCheckBox, gbh.nextRowFirstCol().leftGap(0).topGap(5).get());
-        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextCol().setWidth(2).leftGap(5).get());
+        checkBoxPanel.add(restoreOverrideCheck, gbh.get());
+        checkBoxPanel.add(deactivateIdxCheckBox, gbh.nextCol().leftGap(5).get());
+        checkBoxPanel.add(metadataOnlyCheckBox, gbh.nextCol().get());
+        checkBoxPanel.add(noShadowCheckBox, gbh.nextRowFirstCol().leftGap(0).topGap(5).get());
+        checkBoxPanel.add(noValidityCheckBox, gbh.nextCol().leftGap(5).get());
+        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextCol().get());
         checkBoxPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
         return checkBoxPanel;
     }
@@ -153,15 +146,11 @@ public class DatabaseRestorePanel implements Serializable {
         textOptionsPanel.add(backupFileField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
         textOptionsPanel.add(browseBackupFileButton, gbh.nextCol().setMinWeightX().get());
 
-        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("restoredFileField")), gbh.nextRowFirstCol().leftGap(0).topGap(5).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(restoredFileField, gbh.nextCol().leftGap(5).setMaxWeightX().get());
-        textOptionsPanel.add(browseRestoreFileButton, gbh.nextCol().setMinWeightX().get());
+        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersField")), gbh.nextRowFirstCol().leftGap(0).topGap(5).setWidth(1).setMinWeightX().get());
+        textOptionsPanel.add(workersSpinner, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
 
         textOptionsPanel.add(WidgetFactory.createLabel(bundleString("pageSizeField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
         textOptionsPanel.add(pageSizeCombo, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
-
-        textOptionsPanel.add(WidgetFactory.createLabel(bundleString("parallelWorkersField")), gbh.nextRowFirstCol().leftGap(0).setWidth(1).setMinWeightX().get());
-        textOptionsPanel.add(workersSpinner, gbh.nextCol().leftGap(5).setMaxWeightX().spanX().get());
 
         return textOptionsPanel;
     }
@@ -190,22 +179,13 @@ public class DatabaseRestorePanel implements Serializable {
     public boolean performRestore(DatabaseConnection dc, OutputStream os)
             throws InvalidBackupFileException, SQLException, ClassNotFoundException {
 
-        String toFile = getRestoreFileName();
-        if (FileUtils.fileExists(toFile) && !override) {
-            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
-            if (result != JOptionPane.YES_OPTION)
-                return false;
-
-            override = true;
-        }
-
         int workersCount = (int) workersSpinner.getValue();
-        String fromFile = getBackupFileName();
+        String databaseFile = dc.getSourceName();
+        String backupFile = getBackupFileName();
         int pageSize = getSelectedPageSize();
         int options = getCheckBoxOptions();
-        override = false;
 
-        DatabaseBackupRestoreService.restoreDatabase(dc, fromFile, toFile, options, pageSize, workersCount, os);
+        DatabaseBackupRestoreService.restoreDatabase(dc, backupFile, databaseFile, options, pageSize, workersCount, os);
         return true;
     }
 
@@ -236,7 +216,7 @@ public class DatabaseRestorePanel implements Serializable {
             options |= IFBBackupManager.RESTORE_ONE_AT_A_TIME;
             Log.info("Restoring one table at a time is enabled");
         }
-        if (override) {
+        if (restoreOverrideCheck.isSelected()) {
             options |= IFBBackupManager.RESTORE_OVERWRITE;
             Log.info("Override restoring file is enabled");
         }
@@ -266,38 +246,6 @@ public class DatabaseRestorePanel implements Serializable {
     }
 
     /**
-     * Opens a file chooser dialog for selecting a restore file and sets the chosen path in the restoredFileField.
-     */
-    private void browseRestoreFile() {
-
-        String defaultFileName = restoredFileField.getText();
-        if (MiscUtils.isNull(defaultFileName))
-            defaultFileName = "restored.fdb";
-
-        FileNameExtensionFilter fdbFilter = new FileNameExtensionFilter(Bundles.get("common.fdb.files"), "fdb");
-        FileBrowser fileBrowser = new FileBrowser(bundleString("restoreFileSelection"), fdbFilter, defaultFileName);
-
-        String filePath = fileBrowser.getChosenFilePath();
-        if (filePath == null)
-            return;
-
-        String originalExtension = FilenameUtils.getExtension(filePath);
-        if (MiscUtils.isNull(originalExtension))
-            filePath += ".fdb";
-
-        restoredFileField.setText(filePath);
-
-        if (FileUtils.fileExists(filePath)) {
-            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
-            if (result != JOptionPane.YES_OPTION) {
-                browseRestoreFile();
-                return;
-            }
-            override = true;
-        }
-    }
-
-    /**
      * Retrieves and validates the backup file name entered by the user.
      *
      * @return The validated backup file name.
@@ -308,20 +256,6 @@ public class DatabaseRestorePanel implements Serializable {
         FileValidator.createValidator(fileName)
                 .notEmpty()
                 .hasExtension(".fbk");
-        return fileName;
-    }
-
-    /**
-     * Retrieves and validates the restore file name entered by the user.
-     *
-     * @return The validated restore file name.
-     * @throws InvalidBackupFileException If the restore file name is invalid or empty.
-     */
-    private String getRestoreFileName() throws InvalidBackupFileException {
-        String fileName = restoredFileField.getText();
-        FileValidator.createValidator(fileName)
-                .notEmpty()
-                .hasExtension(".fdb");
         return fileName;
     }
 

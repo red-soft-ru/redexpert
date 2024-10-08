@@ -15,7 +15,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -23,6 +25,7 @@ import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.backup.DatabaseBackupPanel;
 import org.executequery.gui.browser.backup.DatabaseRestorePanel;
+import org.executequery.gui.browser.backup.FileBrowser;
 import org.executequery.gui.browser.backup.InvalidBackupFileException;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -54,8 +57,10 @@ public class DatabaseBackupRestorePanel extends JPanel {
     private JTextField portField;
     private JTextField userField;
 
-    protected transient FileOutputStream fileLog;
     protected JButton fileLogButton;
+    protected JButton browseDatabaseButton;
+
+    protected transient FileOutputStream fileLog;
     protected JTextField fileLogField;
     protected JCheckBox logToFileBox;
 
@@ -96,6 +101,9 @@ public class DatabaseBackupRestorePanel extends JPanel {
         loggingOutputPanel.setBorder(BorderFactory.createTitledBorder(bundleString("loggingOutput")));
         loggingOutputPanel.clear();
 
+        browseDatabaseButton = WidgetFactory.createButton("browseDatabaseButton", "...");
+        browseDatabaseButton.addActionListener(e -> browseDatabase());
+
         connectionCombo.addActionListener(e -> changeDatabaseConnection());
     }
 
@@ -134,6 +142,28 @@ public class DatabaseBackupRestorePanel extends JPanel {
     }
 
     /**
+     * Opens a file chooser dialog for selecting a database file.
+     */
+    private void browseDatabase() {
+
+        String defaultFileName = databaseFileField.getText();
+        if (MiscUtils.isNull(defaultFileName))
+            defaultFileName = "database.fdb";
+
+        FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fdb.files"), "fdb");
+        FileBrowser fileBrowser = new FileBrowser(bundleString("databaseFileSelection"), fbkFilter, defaultFileName);
+
+        String filePath = fileBrowser.getChosenFilePath();
+        if (filePath != null) {
+            String originalExtension = FilenameUtils.getExtension(filePath);
+            if (MiscUtils.isNull(originalExtension))
+                filePath += ".fdb";
+
+            databaseFileField.setText(filePath);
+        }
+    }
+
+    /**
      * Arrange the layout of the panel, dividing into a common section for connection and logging and a tabbed pane for
      * backup and restore operations.
      */
@@ -163,7 +193,9 @@ public class DatabaseBackupRestorePanel extends JPanel {
         GridBagHelper gbh = new GridBagHelper().setInsets(0, 5, 5, 0).anchorNorthWest().fillHorizontally();
 
         addFieldWithLabel(commonPanel, gbh, bundleString("connections"), connectionCombo);
-        addFieldWithLabel(commonPanel, gbh, bundleString("database"), databaseFileField);
+        commonPanel.add(WidgetFactory.createLabel(bundleString("database")), gbh.nextRowFirstCol().setWidth(1).setMinWeightX().get());
+        commonPanel.add(databaseFileField, gbh.nextCol().setMaxWeightX().get());
+        commonPanel.add(browseDatabaseButton, gbh.nextCol().setMinWeightX().get());
         addFieldWithLabel(commonPanel, gbh, bundleString("host"), hostField);
         addFieldWithLabel(commonPanel, gbh, bundleString("port"), portField);
         addFieldWithLabel(commonPanel, gbh, bundleString("username"), userField);

@@ -64,7 +64,7 @@ public class DatabaseBackupPanel implements Serializable {
         browseBackupFileButton.addActionListener(e -> browseBackupFile());
         backupButton = WidgetFactory.createButton("backupButton", bundleString("backupButton"));
 
-        backupFileField = WidgetFactory.createTextField("backupFileField");
+        backupFileField = WidgetFactory.createTextField("backupFileField", DatabaseBackupRestorePanel.getLastBackupFilePath());
         backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
     }
 
@@ -185,6 +185,7 @@ public class DatabaseBackupPanel implements Serializable {
         int options = getCheckBoxOptions();
         override = false;
 
+        DatabaseBackupRestorePanel.setLastBackupFilePath(backupFileName);
         DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, workersCount, os);
         return true;
     }
@@ -222,7 +223,7 @@ public class DatabaseBackupPanel implements Serializable {
 
         String defaultFileName = backupFileField.getText();
         if (MiscUtils.isNull(defaultFileName))
-            defaultFileName = "backup.fbk";
+            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath();
 
         FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);

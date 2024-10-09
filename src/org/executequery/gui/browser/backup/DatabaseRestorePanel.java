@@ -54,6 +54,12 @@ public class DatabaseRestorePanel implements Serializable {
     private void init() {
         createFileChooserComponents();
         createRestoreOptions();
+        updateBackupFilePath();
+    }
+
+    /// Sets last used backup file path to the <code>backupFileField</code>
+    public void updateBackupFilePath() {
+        backupFileField.setText(DatabaseBackupRestorePanel.getLastBackupFilePath());
     }
 
     /**
@@ -230,7 +236,7 @@ public class DatabaseRestorePanel implements Serializable {
 
         String defaultFileName = backupFileField.getText();
         if (MiscUtils.isNull(defaultFileName))
-            defaultFileName = "backup.fbk";
+            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath();
 
         FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);

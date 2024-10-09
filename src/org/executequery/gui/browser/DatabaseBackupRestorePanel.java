@@ -6,10 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +31,7 @@ import org.underworldlabs.swing.ViewablePasswordField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.PanelsStateProperties;
 
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
@@ -42,9 +40,12 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestorePanel extends JPanel {
-
     public static final String TITLE = bundleString("title");
     public static final String BACKUP_ICON = "icon_backup_restore";
+
+    private static String lastBackupFilePath;
+
+    // --- gui components ---
 
     private DatabaseBackupPanel backupHelper;
     private DatabaseRestorePanel restoreHelper;
@@ -65,6 +66,8 @@ public class DatabaseBackupRestorePanel extends JPanel {
     protected JCheckBox logToFileBox;
 
     private LoggingOutputPanel loggingOutputPanel;
+
+    // ---
 
     public DatabaseBackupRestorePanel() {
         init();
@@ -173,6 +176,10 @@ public class DatabaseBackupRestorePanel extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(bundleString("Backup"), backupHelper.arrange());
         tabbedPane.addTab(bundleString("Restore"), restoreHelper.arrange());
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedIndex() == 1)
+                restoreHelper.updateBackupFilePath();
+        });
 
         JPanel commonPanel = createCommonPanel();
 
@@ -362,6 +369,27 @@ public class DatabaseBackupRestorePanel extends JPanel {
         dc.setPort(portField.getText());
 
         return dc;
+    }
+
+    /// Returns last used backup file path or default (<code>~/backup.fbk</code>)
+    public static String getLastBackupFilePath() {
+        if (lastBackupFilePath == null) {
+            PanelsStateProperties stateProperties = new PanelsStateProperties(DatabaseBackupRestorePanel.class.getName());
+            lastBackupFilePath = stateProperties.get("lastBackupFilePath");
+            if (MiscUtils.isNull(lastBackupFilePath))
+                setLastBackupFilePath(System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "backup.fbk");
+        }
+
+        return lastBackupFilePath;
+    }
+
+    /// Update last used backup file path and save it to the<br><code>./redexpert/\<build-number\>/re.user.panels.state</code>
+    public static void setLastBackupFilePath(String lastBackupFilePath) {
+        DatabaseBackupRestorePanel.lastBackupFilePath = lastBackupFilePath;
+
+        PanelsStateProperties stateProperties = new PanelsStateProperties(DatabaseBackupRestorePanel.class.getName());
+        stateProperties.put("lastBackupFilePath", lastBackupFilePath);
+        stateProperties.save();
     }
 
     /**

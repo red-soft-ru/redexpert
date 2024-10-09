@@ -304,6 +304,10 @@ public class DatabaseRestorePanel implements Serializable {
         return restoreButton;
     }
 
+    public JButton getBrowseBackupFileButton() {
+        return browseBackupFileButton;
+    }
+
     /**
      * Utility method to retrieve localized strings.
      *

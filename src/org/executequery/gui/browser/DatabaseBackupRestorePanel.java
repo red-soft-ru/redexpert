@@ -21,6 +21,7 @@ import org.executequery.gui.browser.backup.DatabaseBackupPanel;
 import org.executequery.gui.browser.backup.DatabaseRestorePanel;
 import org.executequery.gui.browser.backup.FileBrowser;
 import org.executequery.gui.browser.backup.InvalidBackupFileException;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
@@ -112,6 +113,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         browseDatabaseButton.addActionListener(e -> browseDatabase());
 
         connectionCombo.addActionListener(e -> changeDatabaseConnection());
+        hostField.getDocument().addDocumentListener(new SimpleDocumentListener(this::hostChanged));
     }
 
     private void initParameterSaver() {
@@ -120,6 +122,16 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         components.put(fileLogField.getName(), fileLogField);
 
         parameterSaver.add(components);
+    }
+
+    /// Triggered when the <code>hostField</code> value changed.<br>Enables or disables browse file buttons.
+    private void hostChanged() {
+        String host = hostField.getText().trim();
+        boolean isLocalhost = Objects.equals(host, "localhost") || Objects.equals(host, "127.0.0.1");
+
+        browseDatabaseButton.setEnabled(isLocalhost);
+        backupHelper.getBrowseBackupFileButton().setEnabled(isLocalhost);
+        restoreHelper.getBrowseBackupFileButton().setEnabled(isLocalhost);
     }
 
     /**

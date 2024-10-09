@@ -2,31 +2,30 @@ package org.executequery.listeners;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.event.ActionListener;
 
 /**
  * @author Aleksey Kozlov
  */
 public class SimpleDocumentListener implements DocumentListener {
-    private final ActionListener listener;
+    private final Runnable runnable;
 
-    public SimpleDocumentListener(ActionListener listener) {
-        this.listener = listener;
+    public SimpleDocumentListener(Runnable runnable) {
+        this.runnable = runnable;
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        listener.actionPerformed(null);
+        runnable.run();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        listener.actionPerformed(null);
+        runnable.run();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        listener.actionPerformed(null);
+        runnable.run();
     }
 
 }

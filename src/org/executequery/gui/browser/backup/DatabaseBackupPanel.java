@@ -74,7 +74,7 @@ public class DatabaseBackupPanel implements Serializable {
         backupButton = WidgetFactory.createButton("backupButton", bundleString("backupButton"));
 
         backupFileField = WidgetFactory.createTextField("backupFileField", DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver));
-        backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
+        backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> override = false));
     }
 
     /**
@@ -289,6 +289,10 @@ public class DatabaseBackupPanel implements Serializable {
      */
     public JButton getBackupButton() {
         return backupButton;
+    }
+
+    public JButton getBrowseBackupFileButton() {
+        return browseBackupFileButton;
     }
 
     private String buildName(Component component) {

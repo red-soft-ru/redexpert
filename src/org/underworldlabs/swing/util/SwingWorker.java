@@ -20,6 +20,8 @@
 
 package org.underworldlabs.swing.util;
 
+import org.executequery.Constants;
+
 import javax.swing.*;
 
 /**
@@ -183,15 +185,18 @@ public abstract class SwingWorker {
             t.start();
         }
     }
+
+    public static void run(String name, Runnable runnable) {
+        SwingWorker worker = new SwingWorker(name) {
+
+            @Override
+            public Object construct() {
+                runnable.run();
+                return Constants.WORKER_SUCCESS;
+            }
+        };
+
+        worker.start();
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-

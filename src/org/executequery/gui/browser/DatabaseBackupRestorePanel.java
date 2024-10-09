@@ -29,6 +29,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.ViewablePasswordField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.PanelsStateProperties;
@@ -81,9 +82,9 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void init() {
         backupHelper = new DatabaseBackupPanel();
-        backupHelper.getBackupButton().addActionListener(e -> performBackup());
+        backupHelper.getBackupButton().addActionListener(e -> runDaemon("backup", this::performBackup));
         restoreHelper = new DatabaseRestorePanel();
-        restoreHelper.getRestoreButton().addActionListener(e -> performRestore());
+        restoreHelper.getRestoreButton().addActionListener(e -> runDaemon("restore", this::performRestore));
 
         // Initialize connection-related fields
         connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false);
@@ -266,8 +267,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performBackup() {
         try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
-            boolean success = backupHelper.performBackup(getDatabaseConnection(), backupOutputStream);
-            if (success)
+            if (backupHelper.performBackup(getDatabaseConnection(), backupOutputStream))
                 GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
             populateLogs(backupOutputStream);
 
@@ -284,8 +284,7 @@ public class DatabaseBackupRestorePanel extends JPanel {
      */
     private void performRestore() {
         try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
-            boolean success = restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream);
-            if (success)
+            if (restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream))
                 GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
             populateLogs(restoreOutputStream);
 
@@ -390,6 +389,12 @@ public class DatabaseBackupRestorePanel extends JPanel {
         PanelsStateProperties stateProperties = new PanelsStateProperties(DatabaseBackupRestorePanel.class.getName());
         stateProperties.put("lastBackupFilePath", lastBackupFilePath);
         stateProperties.save();
+    }
+
+    /// Executes <code>Runnable</code> as background process via <code>SwingWorker</code>
+    private void runDaemon(String action, Runnable r) {
+        DatabaseConnection dc = getDatabaseConnection();
+        SwingWorker.run(String.format("Performing '%s' %s", dc.getSourceName(), action), r);
     }
 
     /**

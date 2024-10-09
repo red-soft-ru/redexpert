@@ -2,9 +2,12 @@ package org.executequery.gui.browser.backup;
 
 import biz.redsoft.IFBBackupManager;
 
+import java.awt.*;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -19,6 +22,9 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.ParameterSaver;
+
+import static org.executequery.gui.browser.DatabaseBackupRestorePanel.BACKUP_FILE;
 
 /**
  * This class is responsible for creating the user interface panel for database backup operations. It provides options
@@ -29,6 +35,7 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupPanel implements Serializable {
+    private final ParameterSaver parameterSaver;
     private boolean override;
 
     private JTextField backupFileField;
@@ -43,7 +50,8 @@ public class DatabaseBackupPanel implements Serializable {
     /**
      * Constructs a new DatabaseBackupPanel and initializes the UI components.
      */
-    public DatabaseBackupPanel() {
+    public DatabaseBackupPanel(ParameterSaver parameterSaver) {
+        this.parameterSaver = parameterSaver;
         init();
     }
 
@@ -54,6 +62,7 @@ public class DatabaseBackupPanel implements Serializable {
     private void init() {
         createFileChooserComponents();
         createBackupOptions();
+        initParameterSaver();
     }
 
     /**
@@ -64,7 +73,7 @@ public class DatabaseBackupPanel implements Serializable {
         browseBackupFileButton.addActionListener(e -> browseBackupFile());
         backupButton = WidgetFactory.createButton("backupButton", bundleString("backupButton"));
 
-        backupFileField = WidgetFactory.createTextField("backupFileField", DatabaseBackupRestorePanel.getLastBackupFilePath());
+        backupFileField = WidgetFactory.createTextField("backupFileField", DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver));
         backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(e -> override = false));
     }
 
@@ -83,6 +92,17 @@ public class DatabaseBackupPanel implements Serializable {
 
         workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
         ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
+    }
+
+    private void initParameterSaver() {
+        Map<String, Component> components = new HashMap<>();
+        components.put(buildName(noGarbageCollectCheckBox), noGarbageCollectCheckBox);
+        components.put(buildName(nonTransportableCheckBox), nonTransportableCheckBox);
+        components.put(buildName(ignoreChecksumsCheckBox), ignoreChecksumsCheckBox);
+        components.put(buildName(metadataOnlyCheckBox), metadataOnlyCheckBox);
+        components.put(buildName(workersSpinner), workersSpinner);
+
+        parameterSaver.add(components);
     }
 
     /**
@@ -185,7 +205,7 @@ public class DatabaseBackupPanel implements Serializable {
         int options = getCheckBoxOptions();
         override = false;
 
-        DatabaseBackupRestorePanel.setLastBackupFilePath(backupFileName);
+        parameterSaver.getProperties().put(BACKUP_FILE, backupFileName).save();
         DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, workersCount, os);
         return true;
     }
@@ -223,7 +243,7 @@ public class DatabaseBackupPanel implements Serializable {
 
         String defaultFileName = backupFileField.getText();
         if (MiscUtils.isNull(defaultFileName))
-            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath();
+            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver);
 
         FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);
@@ -269,6 +289,10 @@ public class DatabaseBackupPanel implements Serializable {
      */
     public JButton getBackupButton() {
         return backupButton;
+    }
+
+    private String buildName(Component component) {
+        return component.getName() + ".backup";
     }
 
     /**

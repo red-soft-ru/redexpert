@@ -1,6 +1,7 @@
 package org.underworldlabs.util;
 
 import org.executequery.Constants;
+import org.executequery.log.Log;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,13 +21,17 @@ public final class ParameterSaver {
         components = new HashMap<>();
     }
 
-    public void put(String name, Component component) {
-        components.put(name, component);
-    }
-
     public void set(Map<String, Component> components) {
         this.components.clear();
+        add(components);
+    }
+
+    public void add(Map<String, Component> components) {
         this.components.putAll(components);
+    }
+
+    public PanelsStateProperties getProperties() {
+        return stateProperties;
     }
 
     public void save() {
@@ -43,6 +48,9 @@ public final class ParameterSaver {
 
             } else if (component instanceof JComboBox) {
                 value = ((JComboBox<?>) component).getSelectedItem();
+
+            } else if (component instanceof JSpinner) {
+                value = ((JSpinner) component).getValue();
             }
 
             if (value == null)
@@ -60,17 +68,25 @@ public final class ParameterSaver {
             Component component = components.get(key);
 
             String value = stateProperties.get(key);
-            if (value == null)
+            if (MiscUtils.isNull(value))
                 continue;
 
-            if (component instanceof JCheckBox) {
-                ((JCheckBox) component).setSelected(value.equalsIgnoreCase("true"));
+            try {
+                if (component instanceof JCheckBox) {
+                    ((JCheckBox) component).setSelected(value.equalsIgnoreCase("true"));
 
-            } else if (component instanceof JTextField) {
-                ((JTextField) component).setText(value);
+                } else if (component instanceof JTextField) {
+                    ((JTextField) component).setText(value);
 
-            } else if (component instanceof JComboBox) {
-                ((JComboBox<?>) component).setSelectedItem(value);
+                } else if (component instanceof JComboBox) {
+                    ((JComboBox<?>) component).setSelectedItem(value);
+
+                } else if (component instanceof JSpinner) {
+                    ((JSpinner) component).setValue(Integer.valueOf(value));
+                }
+
+            } catch (Throwable e) {
+                Log.debug(e.getMessage());
             }
         }
     }

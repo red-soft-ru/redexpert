@@ -2,10 +2,13 @@ package org.executequery.gui.browser.backup;
 
 import biz.redsoft.IFBBackupManager;
 
+import java.awt.*;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -17,6 +20,7 @@ import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
+import org.underworldlabs.util.ParameterSaver;
 
 /**
  * This class is responsible for creating the user interface panel for database restore operations. It provides options
@@ -27,6 +31,7 @@ import org.underworldlabs.util.MiscUtils;
  * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
+    private final ParameterSaver parameterSaver;
 
     private JTextField backupFileField;
     private JButton restoreButton;
@@ -37,13 +42,14 @@ public class DatabaseRestorePanel implements Serializable {
     private JCheckBox noValidityCheckBox;
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox oneAtATimeCheckBox;
-    private JComboBox<Integer> pageSizeCombo;
+    private JComboBox<String> pageSizeCombo;
     private JSpinner workersSpinner;
 
     /**
      * Constructs a new DatabaseRestorePanel and initializes the UI components.
      */
-    public DatabaseRestorePanel() {
+    public DatabaseRestorePanel(ParameterSaver parameterSaver) {
+        this.parameterSaver = parameterSaver;
         init();
     }
 
@@ -55,11 +61,12 @@ public class DatabaseRestorePanel implements Serializable {
         createFileChooserComponents();
         createRestoreOptions();
         updateBackupFilePath();
+        initParameterSaver();
     }
 
     /// Sets last used backup file path to the <code>backupFileField</code>
     public void updateBackupFilePath() {
-        backupFileField.setText(DatabaseBackupRestorePanel.getLastBackupFilePath());
+        backupFileField.setText(DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver));
     }
 
     /**
@@ -86,11 +93,25 @@ public class DatabaseRestorePanel implements Serializable {
         restoreOverrideCheck = WidgetFactory.createCheckBox("restoreOverrideCheck", bundleString("restoreOverrideCheck"));
         restoreOverrideCheck.setSelected(true);
 
-        pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList(4096, 8192, 16384, 32768));
+        pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList("4096", "8192", "16384", "32768"));
         pageSizeCombo.setSelectedIndex(1);
 
         workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
         ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
+    }
+
+    private void initParameterSaver() {
+        Map<String, Component> components = new HashMap<>();
+        components.put(buildName(deactivateIdxCheckBox), deactivateIdxCheckBox);
+        components.put(buildName(restoreOverrideCheck), restoreOverrideCheck);
+        components.put(buildName(metadataOnlyCheckBox), metadataOnlyCheckBox);
+        components.put(buildName(noValidityCheckBox), noValidityCheckBox);
+        components.put(buildName(oneAtATimeCheckBox), oneAtATimeCheckBox);
+        components.put(buildName(noShadowCheckBox), noShadowCheckBox);
+        components.put(buildName(workersSpinner), workersSpinner);
+        components.put(buildName(pageSizeCombo), pageSizeCombo);
+
+        parameterSaver.add(components);
     }
 
     /**
@@ -236,7 +257,7 @@ public class DatabaseRestorePanel implements Serializable {
 
         String defaultFileName = backupFileField.getText();
         if (MiscUtils.isNull(defaultFileName))
-            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath();
+            defaultFileName = DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver);
 
         FileNameExtensionFilter fbkFilter = new FileNameExtensionFilter(Bundles.get("common.fbk.files"), "fbk");
         FileBrowser fileBrowser = new FileBrowser(bundleString("backupFileSelection"), fbkFilter, defaultFileName);
@@ -266,8 +287,12 @@ public class DatabaseRestorePanel implements Serializable {
     }
 
     private int getSelectedPageSize() {
-        Integer value = (Integer) pageSizeCombo.getSelectedItem();
-        return value != null ? value : 8192;
+        String value = (String) pageSizeCombo.getSelectedItem();
+        return value != null ? Integer.parseInt(value) : 8192;
+    }
+
+    private String buildName(Component component) {
+        return component.getName() + ".restore";
     }
 
     /**

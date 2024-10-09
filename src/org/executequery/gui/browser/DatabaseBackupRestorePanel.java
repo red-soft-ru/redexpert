@@ -4,8 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -15,6 +14,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.AbstractDockedTabPanel;
 import org.executequery.gui.LoggingOutputPanel;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.backup.DatabaseBackupPanel;
@@ -29,7 +29,7 @@ import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.PanelsStateProperties;
+import org.underworldlabs.util.ParameterSaver;
 
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
@@ -37,11 +37,12 @@ import org.underworldlabs.util.PanelsStateProperties;
  *
  * @author Maxim Kozhinov
  */
-public class DatabaseBackupRestorePanel extends JPanel {
+public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     public static final String TITLE = bundleString("title");
     public static final String BACKUP_ICON = "icon_backup_restore";
+    public static final String BACKUP_FILE = "lastBackupFilePath";
 
-    private static String lastBackupFilePath;
+    private ParameterSaver parameterSaver;
 
     // --- gui components ---
 
@@ -70,7 +71,10 @@ public class DatabaseBackupRestorePanel extends JPanel {
     public DatabaseBackupRestorePanel() {
         init();
         arrange();
+        initParameterSaver();
         changeDatabaseConnection();
+
+        parameterSaver.restore();
         logToFileBoxTriggered(null);
     }
 
@@ -78,9 +82,11 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * Initializes the components used in the panel, such as connection fields, log components, etc.
      */
     private void init() {
-        backupHelper = new DatabaseBackupPanel();
+        parameterSaver = new ParameterSaver(DatabaseBackupRestorePanel.class.getName());
+
+        backupHelper = new DatabaseBackupPanel(parameterSaver);
         backupHelper.getBackupButton().addActionListener(e -> runDaemon("backup", this::performBackup));
-        restoreHelper = new DatabaseRestorePanel();
+        restoreHelper = new DatabaseRestorePanel(parameterSaver);
         restoreHelper.getRestoreButton().addActionListener(e -> runDaemon("restore", this::performRestore));
 
         // Initialize connection-related fields
@@ -106,6 +112,14 @@ public class DatabaseBackupRestorePanel extends JPanel {
         browseDatabaseButton.addActionListener(e -> browseDatabase());
 
         connectionCombo.addActionListener(e -> changeDatabaseConnection());
+    }
+
+    private void initParameterSaver() {
+        Map<String, Component> components = new HashMap<>();
+        components.put(logToFileBox.getName(), logToFileBox);
+        components.put(fileLogField.getName(), fileLogField);
+
+        parameterSaver.add(components);
     }
 
     /**
@@ -346,24 +360,15 @@ public class DatabaseBackupRestorePanel extends JPanel {
     }
 
     /// Returns last used backup file path or default (<code>~/backup.fbk</code>)
-    public static String getLastBackupFilePath() {
-        if (lastBackupFilePath == null) {
-            PanelsStateProperties stateProperties = new PanelsStateProperties(DatabaseBackupRestorePanel.class.getName());
-            lastBackupFilePath = stateProperties.get("lastBackupFilePath");
-            if (MiscUtils.isNull(lastBackupFilePath))
-                setLastBackupFilePath(System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "backup.fbk");
+    public static String getLastBackupFilePath(ParameterSaver parameterSaver) {
+
+        String lastBackupFilePath = parameterSaver.getProperties().get(BACKUP_FILE);
+        if (MiscUtils.isNull(lastBackupFilePath)) {
+            lastBackupFilePath = System.getProperty("user.home") + FileSystems.getDefault().getSeparator() + "backup.fbk";
+            parameterSaver.getProperties().put(BACKUP_FILE, lastBackupFilePath).save();
         }
 
         return lastBackupFilePath;
-    }
-
-    /// Update last used backup file path and save it to the<br><code>./redexpert/\<build-number\>/re.user.panels.state</code>
-    public static void setLastBackupFilePath(String lastBackupFilePath) {
-        DatabaseBackupRestorePanel.lastBackupFilePath = lastBackupFilePath;
-
-        PanelsStateProperties stateProperties = new PanelsStateProperties(DatabaseBackupRestorePanel.class.getName());
-        stateProperties.put("lastBackupFilePath", lastBackupFilePath);
-        stateProperties.save();
     }
 
     /// Executes <code>Runnable</code> as background process via <code>SwingWorker</code>
@@ -381,4 +386,30 @@ public class DatabaseBackupRestorePanel extends JPanel {
     public static String bundleString(String key, Object... args) {
         return Bundles.get(DatabaseBackupRestorePanel.class, key, args);
     }
+
+    // --- TabView impl ---
+
+    @Override
+    public boolean tabViewClosing() {
+        parameterSaver.save();
+        return true;
+    }
+
+    // --- DockedTabView impl ---
+
+    @Override
+    public String getPropertyKey() {
+        return null;
+    }
+
+    @Override
+    public String getMenuItemKey() {
+        return "database-backup-restore-command";
+    }
+
+    @Override
+    public String getTitle() {
+        return TITLE;
+    }
+
 }

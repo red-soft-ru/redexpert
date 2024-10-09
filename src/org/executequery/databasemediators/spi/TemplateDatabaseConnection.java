@@ -804,6 +804,10 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     return isAutoConnected;
   }
 
+  @Override
+  public void setValues(DatabaseConnection source) {
+  }
+
 }
 
 

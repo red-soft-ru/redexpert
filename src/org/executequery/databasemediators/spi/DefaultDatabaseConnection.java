@@ -855,6 +855,16 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return keywords;
     }
 
+    @Override
+    public void setValues(DatabaseConnection source) {
+        setSourceName(source.getSourceName());
+        setUserName(source.getUserName());
+        setPassword(source.getPassword());
+        setCharset(source.getCharset());
+        setHost(source.getHost());
+        setPort(source.getPort());
+    }
+
     private KeywordRepository keywords() {
         return (KeywordRepository) RepositoryCache.load(KeywordRepository.REPOSITORY_ID);
     }

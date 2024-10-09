@@ -252,4 +252,5 @@ public interface DatabaseConnection extends Serializable {
             setJdbcProperties(properties);
     }
 
+    void setValues(DatabaseConnection source);
 }

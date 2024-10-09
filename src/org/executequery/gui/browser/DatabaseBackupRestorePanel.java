@@ -2,6 +2,8 @@ package org.executequery.gui.browser;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
@@ -32,6 +34,8 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.ParameterSaver;
 
+import static org.underworldlabs.swing.ConnectionsComboBox.USER_DEFINED_CONNECTION_ID;
+
 /**
  * A panel that provides backup and restore functionality for a database. Users can select a connection, and then either
  * perform a backup or a restore operation. Logging options are also available.
@@ -44,6 +48,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     public static final String BACKUP_FILE = "lastBackupFilePath";
 
     private ParameterSaver parameterSaver;
+    private SimpleDocumentListener connectionChangeListener;
 
     // --- gui components ---
 
@@ -66,16 +71,18 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     protected JCheckBox logToFileBox;
 
     private LoggingOutputPanel loggingOutputPanel;
+    private ItemListener connectionComboListener;
 
     // ---
 
     public DatabaseBackupRestorePanel() {
         init();
         arrange();
+        initListeners();
         initParameterSaver();
-        changeDatabaseConnection();
 
         parameterSaver.restore();
+        changeDatabaseConnection(null);
         logToFileBoxTriggered(null);
     }
 
@@ -111,9 +118,21 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
         browseDatabaseButton = WidgetFactory.createButton("browseDatabaseButton", "...");
         browseDatabaseButton.addActionListener(e -> browseDatabase());
+    }
 
-        connectionCombo.addActionListener(e -> changeDatabaseConnection());
+    private void initListeners() {
+        connectionChangeListener = new SimpleDocumentListener(this::connectionChanged);
+        connectionComboListener = this::changeDatabaseConnection;
+
+        connectionCombo.addItemListener(connectionComboListener);
         hostField.getDocument().addDocumentListener(new SimpleDocumentListener(this::hostChanged));
+
+        passwordField.getPasswordField().getDocument().addDocumentListener(connectionChangeListener);
+        databaseFileField.getDocument().addDocumentListener(connectionChangeListener);
+        hostField.getDocument().addDocumentListener(connectionChangeListener);
+        portField.getDocument().addDocumentListener(connectionChangeListener);
+        userField.getDocument().addDocumentListener(connectionChangeListener);
+        charsetsCombo.addItemListener(e -> connectionChangeListener.invoke());
     }
 
     private void initParameterSaver() {
@@ -132,6 +151,16 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         browseDatabaseButton.setEnabled(isLocalhost);
         backupHelper.getBrowseBackupFileButton().setEnabled(isLocalhost);
         restoreHelper.getBrowseBackupFileButton().setEnabled(isLocalhost);
+    }
+
+    /// Triggered when the one of the connection fields value changed.
+    private void connectionChanged() {
+        DatabaseConnection dc = getDatabaseConnection();
+        if (!Objects.equals(dc.getId(), USER_DEFINED_CONNECTION_ID)) {
+            connectionCombo.removeItemListener(connectionComboListener);
+            connectionCombo.selectCustomConnection(dc);
+            connectionCombo.addItemListener(connectionComboListener);
+        }
     }
 
     /**
@@ -259,18 +288,26 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     /**
      * Switches the UI fields based on the selected database connection.
      */
-    private void changeDatabaseConnection() {
+    private void changeDatabaseConnection(ItemEvent e) {
+        if (e != null && e.getStateChange() != ItemEvent.SELECTED)
+            return;
+
         DatabaseConnection dc = (DatabaseConnection) connectionCombo.getSelectedItem();
-        if (dc != null) {
-            passwordField.setPassword(dc.getUnencryptedPassword());
-            databaseFileField.setText(dc.getSourceName());
-            charsetsCombo.setSelectedItem(dc.getCharset());
-            userField.setText(dc.getUserName());
-            hostField.setText(dc.getHost());
-            portField.setText(dc.getPort());
-        } else {
+        if (dc == null) {
             resetConnectionFields();
+            return;
         }
+
+        connectionChangeListener.setEnabled(false);
+
+        passwordField.setPassword(dc.getUnencryptedPassword());
+        databaseFileField.setText(dc.getSourceName());
+        charsetsCombo.setSelectedItem(dc.getCharset());
+        userField.setText(dc.getUserName());
+        hostField.setText(dc.getHost());
+        portField.setText(dc.getPort());
+
+        connectionChangeListener.setEnabled(true);
     }
 
     /**

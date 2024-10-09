@@ -8,24 +8,35 @@ import javax.swing.event.DocumentListener;
  */
 public class SimpleDocumentListener implements DocumentListener {
     private final Runnable runnable;
+    private boolean enabled;
 
     public SimpleDocumentListener(Runnable runnable) {
         this.runnable = runnable;
+        this.enabled = true;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        runnable.run();
+        invoke();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        runnable.run();
+        invoke();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        runnable.run();
+        invoke();
+    }
+
+    public void invoke() {
+        if (enabled)
+            runnable.run();
     }
 
 }

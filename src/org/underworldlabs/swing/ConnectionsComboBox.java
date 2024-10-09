@@ -7,6 +7,7 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.IconManager;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +17,8 @@ import static org.executequery.gui.browser.BrowserConstants.*;
 
 public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         implements ConnectionListener {
+
+    public static final String USER_DEFINED_CONNECTION_ID = "USER_DEFINED_CONNECTION";
 
     public ConnectionsComboBox(boolean showOnlyActiveConnections) {
         super();
@@ -36,6 +39,25 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
     public DatabaseConnection getSelectedConnection() {
         return (DatabaseConnection) getSelectedItem();
+    }
+
+    public void selectCustomConnection(DatabaseConnection connection) {
+        connection.setName(Bundles.get("common.user-defined"));
+        connection.setId(USER_DEFINED_CONNECTION_ID);
+        connection.setConnected(false);
+
+        for (int i = 0; i < getItemCount(); i++) {
+            DatabaseConnection dc = getItemAt(i);
+            if (Objects.equals(dc.getId(), USER_DEFINED_CONNECTION_ID)) {
+                dc.setValues(connection);
+                setSelectedItem(dc);
+                return;
+            }
+        }
+
+        super.addItem(connection);
+        setSelectedItem(connection);
+        updateEnable();
     }
 
     public boolean hasConnection(DatabaseConnection connection) {

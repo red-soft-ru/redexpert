@@ -20,7 +20,6 @@
 
 package org.executequery.gui.exportData;
 
-import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
@@ -30,10 +29,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
-import org.underworldlabs.util.FileUtils;
-import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.PanelsStateProperties;
-import org.underworldlabs.util.SystemProperties;
+import org.underworldlabs.util.*;
 
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
@@ -101,11 +97,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     private final Object exportData;
     private final String tableNameForExport;
-    private final ParametersSaver parametersSaver;
+    private final ParameterSaver parametersSaver;
     private final List<DatabaseColumn> databaseColumns;
-
-    private Map<String, Component> components;
-    private static String columnDelimiterComboName = "";
 
     // ---
 
@@ -117,7 +110,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         super(GUIUtilities.getParentFrame(), TITLE, true);
 
         this.exportData = exportData;
-        this.parametersSaver = new ParametersSaver();
+        this.parametersSaver = new ParameterSaver(ExportDataPanel.class.getName());
         this.tableNameForExport = tableNameForExport;
         this.databaseColumns = databaseColumns;
 
@@ -132,8 +125,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     private void init() {
-
-        components = new HashMap<>();
+        Map<String, Component> components = new HashMap<>();
 
         columnTable = new JTable(new ColumnTableModel(databaseColumns));
         columnTable.setFillsViewportHeight(true);
@@ -172,7 +164,6 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         String[] columnDelimiters = {";", "|", ",", "#"};
         columnDelimiterCombo = WidgetFactory.createComboBox("columnDelimiterCombo", columnDelimiters);
-        columnDelimiterComboName = columnDelimiterCombo.getName();
         columnDelimiterCombo.setEditable(true);
         components.put(columnDelimiterCombo.getName(), columnDelimiterCombo);
 
@@ -233,6 +224,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         delimiterLabel = new JLabel(bundleString("delimiterLabel"));
         exportTableNameLabel = new JLabel(bundleString("exportTableNameField"));
+
+        parametersSaver.set(components);
     }
 
     private void arrange() {
@@ -287,7 +280,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         tabbedPane.addTab(bundleString("OptionsTab"), optionsPanel);
         showDelimiterPanel();
-        parametersSaver.restore(components);
+        parametersSaver.restore();
 
         replaceEndlField.setEnabled(replaceEndlCheck.isSelected());
         replaceNullField.setEnabled(replaceNullCheck.isSelected());
@@ -690,69 +683,6 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     // --- inner classes ---
 
-    private static class ParametersSaver {
-        private final PanelsStateProperties stateProperties;
-
-        public ParametersSaver() {
-            stateProperties = new PanelsStateProperties(ExportDataPanel.class.getName());
-        }
-
-        void save(Map<String, Component> components) {
-
-            for (String key : components.keySet()) {
-                Object value = null;
-
-                Component component = components.get(key);
-                if (component instanceof JCheckBox) {
-                    value = ((JCheckBox) component).isSelected();
-
-                } else if (component instanceof JTextField) {
-                    value = ((JTextField) component).getText().trim();
-
-                } else if (component instanceof JComboBox) {
-
-                    if (component.getName().equals(columnDelimiterComboName))
-                        value = ((JComboBox<?>) component).getSelectedItem();
-                    else
-                        value = ((JComboBox<?>) component).getSelectedIndex();
-                }
-
-                if (value == null)
-                    value = Constants.EMPTY;
-
-                stateProperties.put(key, value.toString());
-            }
-
-            stateProperties.save();
-        }
-
-        void restore(Map<String, Component> components) {
-
-            for (String key : components.keySet()) {
-                Component component = components.get(key);
-
-                String value = stateProperties.get(key);
-                if (value == null)
-                    continue;
-
-                if (component instanceof JCheckBox) {
-                    ((JCheckBox) component).setSelected(value.equalsIgnoreCase("true"));
-
-                } else if (component instanceof JTextField) {
-                    ((JTextField) component).setText(value);
-
-                } else if (component instanceof JComboBox) {
-
-                    if (component.getName().equals(columnDelimiterComboName))
-                        ((JComboBox<?>) component).setSelectedItem(value);
-                    else
-                        ((JComboBox<?>) component).setSelectedIndex(Integer.parseInt(value));
-                }
-            }
-        }
-
-    } // class ParameterSaver
-
     private static class ColumnTableModel implements TableModel {
 
         private final List<ColumnTableData> rows = new ArrayList<>();
@@ -886,7 +816,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     @Override
     public void dispose() {
-        parametersSaver.save(components);
+        parametersSaver.save();
         super.dispose();
     }
 

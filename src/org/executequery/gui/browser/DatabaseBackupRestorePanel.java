@@ -2,10 +2,7 @@ package org.executequery.gui.browser;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Collections;
@@ -266,10 +263,11 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * Performs the backup operation, using the backupHelper to manage the backup process.
      */
     private void performBackup() {
-        try (ByteArrayOutputStream backupOutputStream = new ByteArrayOutputStream()) {
-            if (backupHelper.performBackup(getDatabaseConnection(), backupOutputStream))
+        try (LoggingOutputPanel.LoggingStream loggingStream = loggingOutputPanel.getLoggingStream()) {
+            loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
+
+            if (backupHelper.performBackup(getDatabaseConnection(), loggingStream))
                 GUIUtilities.displayInformationMessage(bundleString("backupSucceed"));
-            populateLogs(backupOutputStream);
 
         } catch (InvalidBackupFileException e) {
             GUIUtilities.displayWarningMessage(e.getMessage());
@@ -283,40 +281,17 @@ public class DatabaseBackupRestorePanel extends JPanel {
      * Performs the restore operation, using the restoreHelper to manage the restore process.
      */
     private void performRestore() {
-        try (ByteArrayOutputStream restoreOutputStream = new ByteArrayOutputStream()) {
-            if (restoreHelper.performRestore(getDatabaseConnection(), restoreOutputStream))
+        try (LoggingOutputPanel.LoggingStream loggingStream = loggingOutputPanel.getLoggingStream()) {
+            loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
+
+            if (restoreHelper.performRestore(getDatabaseConnection(), loggingStream))
                 GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
-            populateLogs(restoreOutputStream);
 
         } catch (InvalidBackupFileException e) {
             GUIUtilities.displayWarningMessage(e.getMessage());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
-        }
-    }
-
-    /**
-     * Populates the logs into the logging panel and optionally writes them to the file.
-     *
-     * @param os ByteArrayOutputStream containing the logs.
-     */
-    private void populateLogs(ByteArrayOutputStream os) {
-        try {
-            String logs = os.toString();
-            loggingOutputPanel.append(logs);
-            if (logToFileBox.isSelected()) {
-                String logFilePath = fileLogField.getText();
-                Path path = Paths.get(logFilePath);
-                if (Files.notExists(path.getParent())) {
-                    Files.createDirectories(path.getParent());
-                }
-                Files.write(path, logs.getBytes(), StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
-            }
-        } catch (IOException e) {
-            Log.error(e.getMessage(), e);
-            GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, getClass());
         }
     }
 

@@ -1,4 +1,4 @@
-package org.executequery.gui.importData;
+package org.executequery.gui.importdata;
 
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;

@@ -1,4 +1,4 @@
-package org.executequery.gui.importData;
+package org.executequery.gui.importdata;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

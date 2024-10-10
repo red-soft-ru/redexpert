@@ -16,7 +16,7 @@ import java.awt.*;
  */
 public class ViewablePasswordField extends JPanel {
 
-    private boolean visible;
+    private boolean passwordHidden;
 
     // --- gui components ---
 
@@ -32,7 +32,7 @@ public class ViewablePasswordField extends JPanel {
     }
 
     private void init() {
-        visible = false;
+        passwordHidden = true;
 
         passwordField = WidgetFactory.createPasswordField("passwordField");
         passwordField.setBorder(null);
@@ -57,21 +57,21 @@ public class ViewablePasswordField extends JPanel {
 
     private void update() {
 
-        toggleButton.setToolTipText(bundleString(visible ?
-                "buttonTooltip.hide" :
-                "buttonTooltip.show"
+        toggleButton.setToolTipText(bundleString(passwordHidden ?
+                "buttonTooltip.show" :
+                "buttonTooltip.hide"
         ));
 
-        toggleButton.setIcon(IconManager.getIcon(visible ?
-                "icon_password_show" :
-                "icon_password_hide"
+        toggleButton.setIcon(IconManager.getIcon(passwordHidden ?
+                "icon_password_hide" :
+                "icon_password_show"
         ));
 
-        passwordField.setEchoChar(visible ? (char) 0 : 8226);
+        passwordField.setEchoChar(passwordHidden ? 8226 : (char) 0);
     }
 
     private void togglePasswordVisible() {
-        this.visible = !visible;
+        this.passwordHidden = !passwordHidden;
         update();
     }
 

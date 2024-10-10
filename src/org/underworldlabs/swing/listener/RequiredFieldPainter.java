@@ -8,19 +8,22 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.io.Serializable;
 
 /**
  * JComponent required painting class.
  *
  * @author Alexey Kozlov
  */
-public class RequiredFieldPainter {
+public class RequiredFieldPainter implements Serializable {
+    private static final long serialVersionUID = -6536280488360814432L;
+
     private static final Color REQUIRED_COLOR = new Color(205, 61, 60); // #CD3D3C
 
     private boolean enable;
-    private DocumentPainter painter;
-    private final Border defaultBorder;
-    private final Border reqiuredBorder;
+    private transient DocumentPainter painter;
+    private final transient Border defaultBorder;
+    private final transient Border reqiuredBorder;
 
     private RequiredFieldPainter(JComponent component) {
         this.enable = true;

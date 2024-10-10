@@ -36,10 +36,11 @@ public final class ParameterSaver {
 
     public void save() {
 
-        for (String key : components.keySet()) {
-            Object value = null;
+        for (Map.Entry<String, Component> entry : components.entrySet()) {
+            Component component = entry.getValue();
+            String key = entry.getKey();
 
-            Component component = components.get(key);
+            Object value = null;
             if (component instanceof JCheckBox) {
                 value = ((JCheckBox) component).isSelected();
 
@@ -64,10 +65,10 @@ public final class ParameterSaver {
 
     public void restore() {
 
-        for (String key : components.keySet()) {
-            Component component = components.get(key);
+        for (Map.Entry<String, Component> entry : components.entrySet()) {
+            String value = stateProperties.get(entry.getKey());
+            Component component = entry.getValue();
 
-            String value = stateProperties.get(key);
             if (MiscUtils.isNull(value))
                 continue;
 
@@ -85,7 +86,7 @@ public final class ParameterSaver {
                     ((JSpinner) component).setValue(Integer.valueOf(value));
                 }
 
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 Log.debug(e.getMessage());
             }
         }

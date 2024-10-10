@@ -102,8 +102,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     // ---
 
+    private transient ImportHelper importHelper;
     private DefaultDatabaseHost targetHost;
-    private ImportHelper importHelper;
     private List<String> sourceHeaders;
     private List<String> targetTablesList;
     private List<String> sourceTablesList;
@@ -117,6 +117,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     public ImportDataPanel() {
         super(new BorderLayout());
         init();
+
+        sourceConnectionChanged();
+        targetConnectionChanged();
     }
 
     private void init() {

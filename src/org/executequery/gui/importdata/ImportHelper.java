@@ -34,4 +34,12 @@ interface ImportHelper {
 
     int getAddedRecordsCount();
 
+    default boolean isCSV() {
+        return this instanceof ImportHelperCSV;
+    }
+
+    default boolean isXLSX() {
+        return this instanceof ImportHelperXLSX;
+    }
+
 }

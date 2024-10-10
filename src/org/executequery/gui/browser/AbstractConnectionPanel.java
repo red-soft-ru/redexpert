@@ -79,11 +79,11 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected DatabaseHost host;
     protected DatabaseConnection connection;
-    protected final BrowserController controller;
+    protected final transient BrowserController controller;
 
-    protected List<String> charsets;
-    protected List<DatabaseDriver> jdbcDrivers;
-    protected final List<JComponent> basicAuthComponents;
+    private List<String> charsets;
+    private List<DatabaseDriver> jdbcDrivers;
+    private final List<JComponent> basicAuthComponents;
 
     // --- gui components ---
 
@@ -127,7 +127,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     // ---
 
-    public AbstractConnectionPanel(BrowserController controller) {
+    protected AbstractConnectionPanel(BrowserController controller) {
         super(new GridBagLayout());
         this.controller = controller;
         this.driverChangeEnable = true;
@@ -323,6 +323,10 @@ public abstract class AbstractConnectionPanel extends JPanel
         components.stream().filter(Objects::nonNull).forEach(c -> c.setEnabled(enabled));
     }
 
+    protected void addBasicAuthComponents(List<JComponent> componentList) {
+        basicAuthComponents.addAll(componentList);
+    }
+
     // --- handlers ---
 
     private void addDriver() {
@@ -340,7 +344,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         }
 
         FileChooserDialog fileChooser = new FileChooserDialog();
-        fileChooser.setFileSelectionMode(FileChooserDialog.FILES_ONLY);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.addChoosableFileFilter(filter);
 
         int dialogResult = fileChooser.showOpenDialog(this);
@@ -543,22 +547,41 @@ public abstract class AbstractConnectionPanel extends JPanel
         Properties properties = null;
         if (connection != null)
             properties = connection.getJdbcProperties();
-
         if (properties == null)
             properties = new Properties();
 
+        putConnectTimeout(properties);
+        putCharacterSet(properties);
+        putUseGssAuth(properties);
+        putMultifactorAuth(properties);
+        putCertificate(properties);
+        putRepositoryPin(properties);
+        putVerifyServer(properties);
+        putProcessPid(properties);
+        putProcessName(properties);
+
+        return properties;
+    }
+
+    private void putConnectTimeout(Properties properties) {
         if (!properties.containsKey("connectTimeout")) {
             String connectTimeout = String.valueOf(SystemProperties.getIntProperty("user", "connection.connect.timeout"));
             properties.setProperty("connectTimeout", connectTimeout);
         }
+    }
 
+    private void putCharacterSet(Properties properties) {
         properties.setProperty("lc_ctype", (String) charsetsCombo.getSelectedItem());
+    }
 
+    private void putUseGssAuth(Properties properties) {
         if (isGssAuthSelected())
             properties.setProperty("useGSSAuth", "true");
         else
             properties.remove("useGSSAuth");
+    }
 
+    private void putMultifactorAuth(Properties properties) {
         if (!properties.containsKey("isc_dpb_trusted_auth")
                 && !properties.containsKey("isc_dpb_multi_factor_auth")
                 && isMultiFactorAuthSelected()) {
@@ -566,17 +589,25 @@ public abstract class AbstractConnectionPanel extends JPanel
             properties.setProperty("isc_dpb_trusted_auth", "1");
             properties.setProperty("isc_dpb_multi_factor_auth", "1");
         }
+    }
 
+    private void putCertificate(Properties properties) {
         if (!certField.getText().isEmpty() && isMultiFactorAuthSelected())
             loadCertificate(properties, certField.getText());
+    }
 
+    private void putRepositoryPin(Properties properties) {
         if (!MiscUtils.isNull(contPasswordField.getPassword())
                 && isMultiFactorAuthSelected())
             properties.setProperty("isc_dpb_repository_pin", contPasswordField.getPassword());
+    }
 
+    private void putVerifyServer(Properties properties) {
         if (verifyCertCheck.isSelected() && isMultiFactorAuthSelected())
             properties.setProperty("isc_dpb_verify_server", "1");
+    }
 
+    private void putProcessPid(Properties properties) {
         String name = ManagementFactory.getRuntimeMXBean().getName();
 
         String pid = name.split("@")[0];
@@ -585,7 +616,9 @@ public abstract class AbstractConnectionPanel extends JPanel
             pid = ApplicationContext.getInstance().getExternalPID();
         }
         properties.setProperty("process_id", pid);
+    }
 
+    private void putProcessName(Properties properties) {
         String path = null;
         if (ApplicationContext.getInstance().getExternalProcessName() != null &&
                 !ApplicationContext.getInstance().getExternalProcessName().isEmpty()) {
@@ -600,7 +633,6 @@ public abstract class AbstractConnectionPanel extends JPanel
         } catch (URISyntaxException e) {
             Log.error(e.getMessage(), e);
         }
-        return properties;
     }
 
     /**

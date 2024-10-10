@@ -121,7 +121,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
 
         // --- tab pane ---
 
-        tabPane.setTabPlacement(JTabbedPane.BOTTOM);
+        tabPane.setTabPlacement(SwingConstants.BOTTOM);
         tabPane.addTab(bundleString("Basic"), mainPanel);
         tabPane.addTab(bundleString("Advanced"), propertiesPanel);
 
@@ -158,107 +158,135 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
 
     private void createDatabase(DatabaseDriver databaseDriver, String connectionName) {
 
-        Object dbObject = null;
+        Driver driver = loadDriver(databaseDriver);
+        if (driver == null)
+            return;
+
+        int driverVersion = driver.getMajorVersion();
+        if (driverVersion < 3) {
+            GUIUtilities.displayWarningMessage(bundleString("driverVersionNotSupported"));
+            return;
+        }
+
+        Log.info("Database creation via jaybird");
+        Log.info("Driver version: " + driverVersion + "." + driver.getMinorVersion());
+
+        initCryptoPlugin(driverVersion, driver);
+
+        IFBCreateDatabase createDatabase = loadCreateDatabaseInterface(driverVersion, driver);
+        if (createDatabase == null)
+            return;
+
+        int port = portField.getValue() != 0 ? portField.getValue() : 3050;
+        int pageSize = Integer.parseInt(Objects.requireNonNull((String) pageSizeCombo.getSelectedItem()));
+
+        createDatabase.setPort(port);
+        createDatabase.setUser(userField.getText());
+        createDatabase.setServer(hostField.getText());
+        createDatabase.setEncoding((String) charsetsCombo.getSelectedItem());
+        createDatabase.setPassword(userPasswordField.getPassword());
+        createDatabase.setDatabaseName(fileField.getText());
+        createDatabase.setPageSize(pageSize);
+        storeJdbcProperties(createDatabase);
+
+        boolean success = false;
+        try {
+            GUIUtilities.showWaitCursor();
+            createDatabase.exec();
+            success = true;
+
+        } catch (UnsatisfiedLinkError e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("fbclientNotFound"), e, this.getClass());
+
+        } catch (Exception e) {
+            GUIUtilities.displayExceptionErrorDialog(bundleString("connectionNotEstablished"), e, this.getClass());
+
+        } finally {
+            GUIUtilities.showNormalCursor();
+        }
+
+        if (!success)
+            registerDatabase(databaseDriver, connectionName, port);
+        GUIUtilities.closeSelectedCentralPane();
+    }
+
+    private void registerDatabase(DatabaseDriver databaseDriver, String connectionName, int port) {
+
+        int shouldRegister = GUIUtilities.displayYesNoDialog(
+                bundleString("registration.message"),
+                bundleString("registration")
+        );
+
+        if (shouldRegister != JOptionPane.YES_OPTION)
+            return;
+
+        DatabaseConnectionFactory databaseConnectionFactory = new DatabaseConnectionFactoryImpl();
+        DatabaseConnection databaseConnection = databaseConnectionFactory.create(connectionName);
+
+        databaseConnection.setHost(hostField.getText());
+        databaseConnection.setUserName(userField.getText());
+        databaseConnection.setCharset((String) charsetsCombo.getSelectedItem());
+        storeJdbcProperties(databaseConnection);
+        databaseConnection.setPassword(userPasswordField.getPassword());
+        databaseConnection.setPort(String.valueOf(port));
+        databaseConnection.setJDBCDriver(databaseDriver);
+        databaseConnection.setCertificate(certField.getText());
+        databaseConnection.setDriverId(databaseDriver.getId());
+        databaseConnection.setDriverName(databaseDriver.getName());
+        databaseConnection.setConnType(ConnectionType.PURE_JAVA.name());
+        databaseConnection.setPasswordStored(storePasswordCheck.isSelected());
+        databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
+        databaseConnection.setContainerPassword(contPasswordField.getPassword());
+        databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+        databaseConnection.setAuthMethodMode((String) serverCombo.getSelectedItem());
+        databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
+        databaseConnection.setSourceName(fileField.getText().replace("\\", "/"));
+        databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
+
+        JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (tabComponent instanceof ConnectionsTreePanel)
+            ((ConnectionsTreePanel) tabComponent).newConnection(databaseConnection);
+    }
+
+    // ---
+
+    private static Driver loadDriver(DatabaseDriver databaseDriver) {
+        Driver driver = null;
         try (URLClassLoader classLoader = new URLClassLoader(MiscUtils.loadURLs(databaseDriver.getPath()))) {
-
             Class<?> driverClass = classLoader.loadClass(databaseDriver.getClassName());
-            Driver driver = (Driver) driverClass.newInstance();
-            int driverVersion = driver.getMajorVersion();
-
-            Log.info("Database creation via jaybird");
-            Log.info("Driver version: " + driverVersion + "." + driver.getMinorVersion());
-
-            if (driverVersion < 3) {
-                GUIUtilities.displayWarningMessage(bundleString("driverVersionNotSupported"));
-                return;
-            }
-
-            try {
-                Object cryptoPluginObject = DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, driver, "FBCryptoPluginInitImpl");
-                IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) cryptoPluginObject;
-                cryptoPlugin.init();
-
-            } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError | NoClassDefFoundError e) {
-                Log.warning("Unable to initialize cryptographic plugin");
-                Log.warning("Authentication using cryptographic mechanisms will not be available.");
-                Log.warning("Please install the crypto pro library to enable cryptographic modules.");
-            }
-
-            dbObject = DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, driver, "FBCreateDatabaseImpl");
+            driver = (Driver) driverClass.getDeclaredConstructor().newInstance();
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
         }
 
-        IFBCreateDatabase createDatabase = (IFBCreateDatabase) dbObject;
-        if (createDatabase == null)
-            throw new NullPointerException("DynamicLibraryLoader::loadingObjectFromClassLoader return null");
+        return driver;
+    }
 
-        String user = userField.getText();
-        String path = fileField.getText();
-        String server = hostField.getText();
-        String password = userPasswordField.getPassword();
-        String charset = (String) charsetsCombo.getSelectedItem();
-        int port = portField.getValue() != 0 ? portField.getValue() : 3050;
-        int pageSize = Integer.parseInt(Objects.requireNonNull((String) pageSizeCombo.getSelectedItem()));
-
-        createDatabase.setPort(port);
-        createDatabase.setUser(user);
-        createDatabase.setServer(server);
-        createDatabase.setEncoding(charset);
-        createDatabase.setPassword(password);
-        createDatabase.setDatabaseName(path);
-        createDatabase.setPageSize(pageSize);
-        storeJdbcProperties(createDatabase);
-
+    private static IFBCreateDatabase loadCreateDatabaseInterface(int driverVersion, Driver driver) {
+        IFBCreateDatabase createDatabase = null;
         try {
-            createDatabase.exec();
+            Object dbObject = DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, driver, "FBCreateDatabaseImpl");
+            createDatabase = (IFBCreateDatabase) dbObject;
 
-        } catch (UnsatisfiedLinkError e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("fbclientNotFound"), e, this.getClass());
-            return;
-
-        } catch (Throwable e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("connectionNotEstablished"), e, this.getClass());
-            return;
-
-        } finally {
-            GUIUtilities.showNormalCursor();
-            System.gc();
+        } catch (ClassNotFoundException e) {
+            Log.error(e.getMessage(), e);
         }
 
-        int result = GUIUtilities.displayYesNoDialog(bundleString("registration.message"), bundleString("registration"));
-        if (result == JOptionPane.YES_OPTION) {
+        return createDatabase;
+    }
 
-            DatabaseConnectionFactory databaseConnectionFactory = new DatabaseConnectionFactoryImpl();
-            DatabaseConnection databaseConnection = databaseConnectionFactory.create(connectionName);
+    private static void initCryptoPlugin(int driverVersion, Driver driver) {
+        try {
+            Object cryptoPluginObject = DynamicLibraryLoader.loadingObjectFromClassLoader(driverVersion, driver, "FBCryptoPluginInitImpl");
+            IFBCryptoPluginInit cryptoPlugin = (IFBCryptoPluginInit) cryptoPluginObject;
+            cryptoPlugin.init();
 
-            databaseConnection.setHost(server);
-            databaseConnection.setUserName(user);
-            databaseConnection.setCharset(charset);
-            storeJdbcProperties(databaseConnection);
-            databaseConnection.setPassword(password);
-            databaseConnection.setPort(portField.getText());
-            databaseConnection.setJDBCDriver(databaseDriver);
-            databaseConnection.setCertificate(certField.getText());
-            databaseConnection.setDriverId(databaseDriver.getId());
-            databaseConnection.setDriverName(databaseDriver.getName());
-            databaseConnection.setConnType(ConnectionType.PURE_JAVA.name());
-            databaseConnection.setPasswordStored(storePasswordCheck.isSelected());
-            databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
-            databaseConnection.setContainerPassword(contPasswordField.getPassword());
-            databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
-            databaseConnection.setAuthMethodMode((String) serverCombo.getSelectedItem());
-            databaseConnection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
-            databaseConnection.setSourceName(path.replace("\\", "/"));
-            databaseConnection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-
-            JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-            if (tabComponent instanceof ConnectionsTreePanel)
-                ((ConnectionsTreePanel) tabComponent).newConnection(databaseConnection);
+        } catch (NoSuchMethodError | Exception | UnsatisfiedLinkError | NoClassDefFoundError e) {
+            Log.warning("Unable to initialize cryptographic plugin");
+            Log.warning("Authentication using cryptographic mechanisms will not be available.");
+            Log.warning("Please install the crypto pro library to enable cryptographic modules.");
         }
-
-        GUIUtilities.closeSelectedCentralPane();
     }
 
     // ---

@@ -228,7 +228,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         // --- tab pane ---
 
-        tabPane.setTabPlacement(JTabbedPane.BOTTOM);
+        tabPane.setTabPlacement(SwingConstants.BOTTOM);
         tabPane.addTab(bundleString("Basic"), new JScrollPane(mainPanel));
         tabPane.addTab(bundleString("Advanced"), propertiesPanel);
 
@@ -240,7 +240,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     @Override
     protected void initComponentsLists() {
-        basicAuthComponents.addAll(Arrays.asList(
+        addBasicAuthComponents(Arrays.asList(
                 roleField,
                 userField,
                 userPasswordField,
@@ -498,10 +498,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
             if (useNativeCheck.isSelected())
                 useEmbeddedCheck.setSelected(false);
 
-        } else if (Objects.equals(source, useEmbeddedCheck)) {
-            if (isEmbeddedConnectionSelected())
-                useNativeCheck.setSelected(false);
-        }
+        } else if (Objects.equals(source, useEmbeddedCheck) && isEmbeddedConnectionSelected())
+            useNativeCheck.setSelected(false);
 
         useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
         updateVisibleComponents();
@@ -865,6 +863,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         @Override
         public void focusGained(FocusEvent e) {
+            // do nothing
         }
 
         @Override

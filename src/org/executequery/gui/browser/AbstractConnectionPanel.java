@@ -36,6 +36,7 @@ import org.executequery.event.DatabaseDriverListener;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.connection.AdvancedPropertiesPanel;
 import org.executequery.gui.drivers.CreateDriverDialog;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -142,6 +143,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         addListeners();
         initComponentsLists();
         updateVisibleComponents();
+        hostChanged();
 
         EventMediator.registerListener(this);
     }
@@ -253,6 +255,8 @@ public abstract class AbstractConnectionPanel extends JPanel
         storePasswordCheck.addActionListener(this::setStorePassword);
         encryptPasswordCheck.addActionListener(this::setEncryptPassword);
         storeContPasswordCheck.addActionListener(this::setStoreContPassword);
+
+        SimpleDocumentListener.initialize(hostField, this::hostChanged);
     }
 
     protected void addRequired() {
@@ -410,6 +414,10 @@ public abstract class AbstractConnectionPanel extends JPanel
     protected void driverChanged(ItemEvent e) {
         if (isSelected(e) && isDriverChangeEnable())
             handleEvent(e);
+    }
+
+    private void hostChanged() {
+        browseFileButton.setEnabled(DatabaseConnection.isLocalhost(hostField.getText()));
     }
 
     protected void handleEvent(AWTEvent event) {

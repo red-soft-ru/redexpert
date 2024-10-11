@@ -1,4 +1,4 @@
-package org.executequery.gui.importData;
+package org.executequery.gui.importdata;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 
@@ -33,5 +33,13 @@ interface ImportHelper {
     String getDelimiter();
 
     int getAddedRecordsCount();
+
+    default boolean isCSV() {
+        return this instanceof ImportHelperCSV;
+    }
+
+    default boolean isXLSX() {
+        return this instanceof ImportHelperXLSX;
+    }
 
 }

@@ -1,4 +1,4 @@
-package org.executequery.gui.importData;
+package org.executequery.gui.importdata;
 
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;

@@ -1,4 +1,4 @@
-package org.executequery.gui.importData;
+package org.executequery.gui.importdata;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -17,6 +17,7 @@ import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -101,8 +102,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     // ---
 
+    private transient ImportHelper importHelper;
     private DefaultDatabaseHost targetHost;
-    private ImportHelper importHelper;
     private List<String> sourceHeaders;
     private List<String> targetTablesList;
     private List<String> sourceTablesList;
@@ -116,6 +117,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     public ImportDataPanel() {
         super(new BorderLayout());
         init();
+
+        sourceConnectionChanged();
+        targetConnectionChanged();
     }
 
     private void init() {
@@ -198,7 +202,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             connectionPreviewTable = new ResultSetTable();
             connectionPreviewTable.setModel(new TableSorter(connectionPreviewTableModel));
             connectionPreviewTable.addMouseListener(new ResultSetTablePopupMenu(connectionPreviewTable, null));
-        } catch (SQLException ignored) {
+        } catch (SQLException e) {
+            Log.debug(e);
         }
 
         // --- column mapping table ---
@@ -219,11 +224,9 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
                 int selectedRow = columnMappingTable.getSelectedRow();
                 int selectedColumn = columnMappingTable.getSelectedColumn();
 
-                if (selectedColumn == 3) {
-                    if (isBlobType(columnMappingTable.getValueAt(selectedRow, 1).toString())) {
-                        String oldValue = columnMappingTable.getValueAt(selectedRow, selectedColumn).toString();
-                        columnMappingTable.setValueAt(!oldValue.equals("true"), selectedRow, selectedColumn);
-                    }
+                if (selectedColumn == 3 && isBlobType(columnMappingTable.getValueAt(selectedRow, 1).toString())) {
+                    String oldValue = columnMappingTable.getValueAt(selectedRow, selectedColumn).toString();
+                    columnMappingTable.setValueAt(!oldValue.equals("true"), selectedRow, selectedColumn);
                 }
 
                 columnMappingTable.repaint();
@@ -299,16 +302,16 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         // --- scroll panes ---
 
         JScrollPane filePreviewScrollPane = new JScrollPane(filePreviewTable,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         JScrollPane connectionPreviewScrollPane = new JScrollPane(connectionPreviewTable,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         JScrollPane mappingTableScrollPane = new JScrollPane(columnMappingTable,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         // --- csv properties panel ---
 
@@ -416,13 +419,10 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         if (targetNotSelected(true) || importHelper == null)
             return;
 
-        if (importHelper instanceof ImportHelperCSV || importHelper instanceof ImportHelperXLSX) {
-            if (!firstRowIsNamesCheck.isSelected()) {
-
-                for (int i = 0; i < columnMappingTable.getRowCount() && i < importHelper.getHeaders().size(); i++)
-                    columnMappingTable.setValueAt(importHelper.getHeaders().get(i), i, 2);
-                return;
-            }
+        if (!firstRowIsNamesCheck.isSelected() && (importHelper.isCSV() || importHelper.isXLSX())) {
+            for (int i = 0; i < columnMappingTable.getRowCount() && i < importHelper.getHeaders().size(); i++)
+                columnMappingTable.setValueAt(importHelper.getHeaders().get(i), i, 2);
+            return;
         }
 
         for (int i = 0; i < columnMappingTable.getRowCount(); i++) {
@@ -465,11 +465,8 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
 
     private synchronized void previewSourceFile(boolean displayWarnings) {
 
-        if (fileNameField.getText().isEmpty()) {
-            if (displayWarnings)
-                GUIUtilities.displayWarningMessage(bundleString("NoFileSelectedMessage"));
+        if (fileNameEmpty(displayWarnings))
             return;
-        }
 
         File sourceFile = new File(fileNameField.getText());
         String oldPathToFile = pathToFile;
@@ -477,17 +474,23 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
         fileName = FilenameUtils.getBaseName(sourceFile.getName());
         fileType = FileNameUtils.getExtension(sourceFile.getName()).toLowerCase();
 
-        if (!fileType.equals("csv") && !fileType.equals("xlsx") && !fileType.equals("xml")) {
-            if (displayWarnings)
-                GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
-            fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
+        if (fileTypeNotSupported(displayWarnings, oldPathToFile))
             return;
-        }
 
         importHelper = getImportHelper(fileType);
         if (importHelper == null)
             return;
 
+        previewData(displayWarnings);
+
+        firstRowIsNamesCheck.setVisible(fileType.equals("csv") || fileType.equals("xlsx"));
+        csvPropsPanel.setVisible(fileType.equals("csv"));
+        xlsxPropsPanel.setVisible(fileType.equals("xlsx"));
+
+        updateMappingTable();
+    }
+
+    private void previewData(boolean displayWarnings) {
         try {
             List<String> readData = importHelper.getPreviewData();
 
@@ -517,12 +520,28 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
             if (displayWarnings)
                 GUIUtilities.displayWarningMessage(bundleString("FileReadingErrorMessage") + "\n" + e.getMessage());
         }
+    }
 
-        firstRowIsNamesCheck.setVisible(fileType.equals("csv") || fileType.equals("xlsx"));
-        csvPropsPanel.setVisible(fileType.equals("csv"));
-        xlsxPropsPanel.setVisible(fileType.equals("xlsx"));
+    private boolean fileNameEmpty(boolean displayWarnings) {
+        if (fileNameField.getText().isEmpty()) {
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("NoFileSelectedMessage"));
+            return true;
+        }
 
-        updateMappingTable();
+        return false;
+    }
+
+    private boolean fileTypeNotSupported(boolean displayWarnings, String oldPathToFile) {
+        if (!fileType.equals("csv") && !fileType.equals("xlsx") && !fileType.equals("xml")) {
+            if (displayWarnings)
+                GUIUtilities.displayWarningMessage(bundleString("FileTypeNotSupported"));
+
+            fileNameField.setText(oldPathToFile != null ? oldPathToFile : "");
+            return true;
+        }
+
+        return false;
     }
 
     private synchronized void previewSourceTable() {
@@ -703,51 +722,51 @@ public class ImportDataPanel extends DefaultTabViewActionPanel
     // --- helper methods ---
 
     private ImportHelper getImportHelper(String fileType) {
-
-        ImportHelper importHelper = null;
         switch (fileType) {
 
-            case ("csv"):
-                importHelper = new ImportHelperCSV(
+            case ("csv"): {
+                return new ImportHelperCSV(
                         this,
                         pathToFile,
                         pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );
-                break;
+            }
 
-            case ("xlsx"):
-                importHelper = new ImportHelperXLSX(
+            case ("xlsx"): {
+                return new ImportHelperXLSX(
                         this,
                         pathToFile,
                         pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );
-                break;
+            }
 
-            case ("xml"):
-                importHelper = new ImportHelperXML(
+            case ("xml"): {
+                return new ImportHelperXML(
                         this,
                         pathToFile,
                         pathToLob,
                         PREVIEW_ROWS_COUNT,
                         firstRowIsNamesCheck.isSelected()
                 );
-                break;
+            }
 
-            case ("db"):
-                importHelper = new ImportHelperDB(
+            case ("db"): {
+                return new ImportHelperDB(
                         this,
                         fileName,
                         PREVIEW_ROWS_COUNT,
                         sourceConnectionsCombo.getSelectedConnection()
                 );
-                break;
-        }
+            }
 
-        return importHelper;
+            default: {
+                return null;
+            }
+        }
     }
 
     private void eraseTable(String tableName) {

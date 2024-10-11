@@ -339,17 +339,10 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     private void browseFile(JTextField textField) {
 
-        FileNameExtensionFilter filter = null;
-        if (Objects.equals(textField, fileField)) {
-            filter = new FileNameExtensionFilter(bundleString("databaseFile"), "fdb", "rdb");
-
-        } else if (Objects.equals(textField, certField)) {
-            filter = new FileNameExtensionFilter(bundleString("certFile"), "cer", "der");
-        }
-
         FileChooserDialog fileChooser = new FileChooserDialog();
+        fileChooser.setFileFilter(getExtensionFilter(textField));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.addChoosableFileFilter(filter);
+        fileChooser.setSelectedFile(new File(getDefaultFileName(textField)));
 
         int dialogResult = fileChooser.showOpenDialog(this);
         if (dialogResult == JFileChooser.APPROVE_OPTION) {
@@ -781,6 +774,26 @@ public abstract class AbstractConnectionPanel extends JPanel
             GUIUtilities.displayWarningMessage(bundleString("somethingEmpty"));
 
         return anyRequiredFieldEmpty;
+    }
+
+    private FileNameExtensionFilter getExtensionFilter(JTextField textField) {
+        if (Objects.equals(textField, fileField))
+            return new FileNameExtensionFilter(bundleString("databaseFile"), "fdb", "rdb");
+        else if (Objects.equals(textField, certField))
+            return new FileNameExtensionFilter(bundleString("certFile"), "cer", "der");
+        else
+            return null;
+    }
+
+    private String getDefaultFileName(JTextField textField) {
+
+        String defaultFileName = null;
+        if (Objects.equals(textField, fileField))
+            defaultFileName = fileField.getText().trim();
+        else if (Objects.equals(textField, certField))
+            defaultFileName = certField.getText().trim();
+
+        return defaultFileName;
     }
 
     protected boolean isGssAuthSelected() {

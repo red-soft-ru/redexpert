@@ -35,7 +35,7 @@ import static org.executequery.gui.browser.DatabaseBackupRestorePanel.BACKUP_FIL
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupPanel implements Serializable {
-    private final ParameterSaver parameterSaver;
+    private final transient ParameterSaver parameterSaver;
     private boolean override;
 
     private JTextField backupFileField;
@@ -90,7 +90,7 @@ public class DatabaseBackupPanel implements Serializable {
         nonTransportableCheckBox = WidgetFactory.createCheckBox("nonTransportableCheckBox",
                 bundleString("nonTransportableCheckBox"));
 
-        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
+        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, SwingConstants.LEFT);
         ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
     }
 

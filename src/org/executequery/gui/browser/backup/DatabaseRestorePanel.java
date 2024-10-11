@@ -31,7 +31,7 @@ import org.underworldlabs.util.ParameterSaver;
  * @author Maxim Kozhinov
  */
 public class DatabaseRestorePanel implements Serializable {
-    private final ParameterSaver parameterSaver;
+    private final transient ParameterSaver parameterSaver;
 
     private JTextField backupFileField;
     private JButton restoreButton;
@@ -96,7 +96,7 @@ public class DatabaseRestorePanel implements Serializable {
         pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList("4096", "8192", "16384", "32768"));
         pageSizeCombo.setSelectedIndex(1);
 
-        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, JTextField.LEFT);
+        workersSpinner = WidgetFactory.createSpinner("workersSpinner", 1024, SwingConstants.LEFT);
         ((JSpinner.NumberEditor) workersSpinner.getEditor()).getFormat().setGroupingUsed(false);
     }
 

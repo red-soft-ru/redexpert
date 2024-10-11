@@ -47,31 +47,29 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     public static final String BACKUP_ICON = "icon_backup_restore";
     public static final String BACKUP_FILE = "lastBackupFilePath";
 
-    private ParameterSaver parameterSaver;
-    private SimpleDocumentListener connectionChangeListener;
+    private transient ParameterSaver parameterSaver;
+    private transient ItemListener connectionComboListener;
+    private transient SimpleDocumentListener connectionChangeListener;
 
     // --- gui components ---
 
     private DatabaseBackupPanel backupHelper;
     private DatabaseRestorePanel restoreHelper;
+    private LoggingOutputPanel loggingOutputPanel;
 
     private ConnectionsComboBox connectionCombo;
     private ViewablePasswordField passwordField;
     private JComboBox<String> charsetsCombo;
-    private JTextField databaseFileField;
+    private JCheckBox logToFileBox;
+
     private JTextField hostField;
     private JTextField portField;
     private JTextField userField;
+    private JTextField fileLogField;
+    private JTextField databaseFileField;
 
-    protected JButton fileLogButton;
-    protected JButton browseDatabaseButton;
-
-    protected transient FileOutputStream fileLog;
-    protected JTextField fileLogField;
-    protected JCheckBox logToFileBox;
-
-    private LoggingOutputPanel loggingOutputPanel;
-    private ItemListener connectionComboListener;
+    private JButton fileLogButton;
+    private JButton browseDatabaseButton;
 
     // ---
 
@@ -172,7 +170,6 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         boolean enabled = logToFileBox.isSelected();
         fileLogField.setEnabled(enabled);
         fileLogButton.setEnabled(enabled);
-        closeFileLog();
     }
 
     /**
@@ -184,16 +181,8 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         final FileChooserDialog fileChooser = new FileChooserDialog();
         int returnVal = fileChooser.showSaveDialog(fileLogButton);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            closeFileLog();  // Close any previously opened file log
             File file = fileChooser.getSelectedFile();
             fileLogField.setText(file.getAbsolutePath());
-            try {
-                fileLog = new FileOutputStream(file, false);
-                fileLog.close();  // Immediately close after initializing
-                fileLog = null;
-            } catch (IOException e) {
-                Log.error("Error occurred while handling the log file", e);
-            }
         }
     }
 
@@ -355,20 +344,6 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
-        }
-    }
-
-    /**
-     * Closes the file log stream if it is open.
-     */
-    private void closeFileLog() {
-        if (fileLog != null) {
-            try {
-                fileLog.close();
-                fileLog = null;
-            } catch (IOException e) {
-                Log.error(e.getMessage(), e);
-            }
         }
     }
 

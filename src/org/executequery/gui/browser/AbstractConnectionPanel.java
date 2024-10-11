@@ -65,7 +65,7 @@ import java.util.*;
 import java.util.List;
 
 public abstract class AbstractConnectionPanel extends JPanel
-        implements DatabaseDriverListener, KeyListener {
+        implements DatabaseDriverListener {
 
     private static final String GSS_AUTH = "GSS";
     private static final String BASIC_AUTH = bundleString("BasicAu");
@@ -238,14 +238,6 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void addListeners() {
 
-        hostField.addKeyListener(this);
-        userField.addKeyListener(this);
-        portField.addKeyListener(this);
-        fileField.addKeyListener(this);
-        certField.addKeyListener(this);
-        contPasswordField.getField().addKeyListener(this);
-        userPasswordField.getField().addKeyListener(this);
-
         authCombo.addItemListener(this::authChanged);
         serverCombo.addItemListener(this::serverChanged);
         driverCombo.addItemListener(this::driverChanged);
@@ -257,6 +249,12 @@ public abstract class AbstractConnectionPanel extends JPanel
         storeContPasswordCheck.addActionListener(this::setStoreContPassword);
 
         SimpleDocumentListener.initialize(hostField, this::hostChanged);
+        SimpleDocumentListener.initialize(userField, this::userChanged);
+        SimpleDocumentListener.initialize(portField, this::portChanged);
+        SimpleDocumentListener.initialize(fileField, this::fileChanged);
+        SimpleDocumentListener.initialize(certField, this::certChanged);
+        SimpleDocumentListener.initialize(userPasswordField.getField(), this::userPasswordChanged);
+        SimpleDocumentListener.initialize(contPasswordField.getField(), this::contPasswordChanged);
     }
 
     protected void addRequired() {
@@ -354,31 +352,47 @@ public abstract class AbstractConnectionPanel extends JPanel
     private void setStorePassword(ActionEvent e) {
         boolean value = storePasswordCheck.isSelected();
         encryptPasswordCheck.setEnabled(value);
-        handleEvent(e);
+
+        if (hasConnection()) {
+            connection.setPasswordStored(value);
+            storeJdbcProperties();
+        }
     }
 
     protected void setEncryptPassword(ActionEvent e) {
-        boolean value = encryptPasswordCheck.isSelected() || storePasswordCheck.isSelected();
-        storePasswordCheck.setSelected(value);
-        handleEvent(e);
+        boolean value = encryptPasswordCheck.isSelected();
+        storePasswordCheck.setSelected(value || storePasswordCheck.isSelected());
+
+        if (hasConnection()) {
+            connection.setPasswordEncrypted(value);
+            storeJdbcProperties();
+        }
     }
 
     private void setStoreContPassword(ActionEvent e) {
-        boolean value = storeContPasswordCheck.isSelected();
-        connection.setContainerPasswordStored(value);
-        handleEvent(e);
+        if (hasConnection()) {
+            connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
+            storeJdbcProperties();
+        }
     }
 
     private void setVerifyCertCheck(ActionEvent e) {
-        boolean value = verifyCertCheck.isSelected();
-        connection.setVerifyServerCertCheck(value);
-        handleEvent(e);
+        if (hasConnection()) {
+            connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+            storeJdbcProperties();
+        }
     }
 
     private void authChanged(ItemEvent e) {
-        if (isSelected(e)) {
-            updateVisibleComponents();
-            handleEvent(e);
+
+        if (!isSelected(e))
+            return;
+
+        updateVisibleComponents();
+
+        if (hasConnection()) {
+            connection.setAuthMethod((String) authCombo.getSelectedItem());
+            storeJdbcProperties();
         }
     }
 
@@ -396,83 +410,85 @@ public abstract class AbstractConnectionPanel extends JPanel
         authLabel.setEnabled(!newServerSelected);
         authCombo.setEnabled(!newServerSelected);
 
-        handleEvent(e);
+        if (hasConnection()) {
+            connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
+            storeJdbcProperties();
+        }
     }
 
     private void charsetChanged(ItemEvent e) {
-        if (isSelected(e))
-            handleEvent(e);
+        if (isSelected(e) && hasConnection()) {
+            connection.setCharset((String) charsetsCombo.getSelectedItem());
+            storeJdbcProperties();
+        }
     }
 
     protected void driverChanged(ItemEvent e) {
-        if (isSelected(e) && isDriverChangeEnable())
-            handleEvent(e);
-    }
 
-    private void hostChanged() {
-        browseFileButton.setEnabled(DatabaseConnection.isLocalhost(hostField.getText()));
-    }
-
-    protected void handleEvent(AWTEvent event) {
-
-        if (event == null || connection == null)
+        if (!isSelected(e) || !hasConnection() || !isDriverChangeEnable())
             return;
 
-        Object source = event.getSource();
-        if (Objects.equals(source, hostField)) {
-            connection.setHost(hostField.getText().trim());
-
-        } else if (Objects.equals(source, portField)) {
-            connection.setPort(portField.getText().trim());
-
-        } else if (Objects.equals(source, fileField)) {
-            connection.setSourceName(fileField.getText().trim());
-
-        } else if (Objects.equals(source, charsetsCombo)) {
-            connection.setCharset((String) charsetsCombo.getSelectedItem());
-
-        } else if (Objects.equals(source, driverCombo)) {
-
-            DatabaseDriver driver = (DatabaseDriver) driverCombo.getSelectedItem();
-            if (driver != null) {
-                connection.setJDBCDriver(driver);
-                connection.setDriverId(driver.getId());
-                connection.setDriverName(driver.getName());
-                connection.setDatabaseType(Integer.toString(driver.getType()));
-            }
-
-        } else if (Objects.equals(source, authCombo)) {
-            connection.setAuthMethod((String) authCombo.getSelectedItem());
-
-        } else if (Objects.equals(source, serverCombo)) {
-            connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
-
-        } else if (Objects.equals(source, userField)) {
-            connection.setUserName(userField.getText().trim());
-
-        } else if (Objects.equals(source, userPasswordField)) {
-            connection.setPassword(userPasswordField.getPassword());
-
-        } else if (Objects.equals(source, storePasswordCheck)) {
-            connection.setPasswordStored(storePasswordCheck.isSelected());
-
-        } else if (Objects.equals(source, encryptPasswordCheck)) {
-            connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
-
-        } else if (Objects.equals(source, certField)) {
-            connection.setCertificate(certField.getText().trim());
-
-        } else if (Objects.equals(source, contPasswordField)) {
-            connection.setContainerPassword(contPasswordField.getPassword());
-
-        } else if (Objects.equals(source, storeContPasswordCheck)) {
-            connection.setContainerPasswordStored(storeContPasswordCheck.isSelected());
-
-        } else if (Objects.equals(source, verifyCertCheck)) {
-            connection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
+        DatabaseDriver driver = (DatabaseDriver) driverCombo.getSelectedItem();
+        if (driver != null) {
+            connection.setJDBCDriver(driver);
+            connection.setDriverId(driver.getId());
+            connection.setDriverName(driver.getName());
+            connection.setDatabaseType(Integer.toString(driver.getType()));
         }
 
         storeJdbcProperties();
+    }
+
+    private void hostChanged() {
+        String value = hostField.getText().trim();
+        browseFileButton.setEnabled(DatabaseConnection.isLocalhost(value));
+
+        if (hasConnection()) {
+            connection.setHost(value);
+            storeJdbcProperties();
+        }
+    }
+
+    private void userChanged() {
+        if (hasConnection()) {
+            connection.setUserName(userField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void portChanged() {
+        if (hasConnection()) {
+            connection.setPort(portField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void fileChanged() {
+        if (hasConnection()) {
+            connection.setSourceName(fileField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void certChanged() {
+        if (hasConnection()) {
+            connection.setCertificate(certField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void userPasswordChanged() {
+        if (hasConnection()) {
+            connection.setPassword(userPasswordField.getPassword());
+            storeJdbcProperties();
+        }
+    }
+
+    private void contPasswordChanged() {
+        if (hasConnection()) {
+            connection.setContainerPassword(contPasswordField.getPassword());
+            storeJdbcProperties();
+        }
     }
 
     /**
@@ -481,7 +497,7 @@ public abstract class AbstractConnectionPanel extends JPanel
      */
     protected void populateConnectionObject() {
 
-        if (connection == null)
+        if (!hasConnection())
             return;
 
         // --- basic ---
@@ -687,7 +703,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     protected void selectActualDriver() {
 
-        if (connection == null)
+        if (!hasConnection())
             return;
 
         long driverId = connection.getDriverId();
@@ -812,6 +828,10 @@ public abstract class AbstractConnectionPanel extends JPanel
         return e.getStateChange() == ItemEvent.SELECTED;
     }
 
+    protected boolean hasConnection() {
+        return connection != null;
+    }
+
     protected static String bundleString(String key, Object... args) {
         return Bundles.get(AbstractConnectionPanel.class, key, args);
     }
@@ -828,21 +848,6 @@ public abstract class AbstractConnectionPanel extends JPanel
     @Override
     public boolean canHandleEvent(ApplicationEvent event) {
         return event instanceof DatabaseDriverEvent;
-    }
-
-    // --- KeyListener impl ---
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        handleEvent(e);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
     }
 
 }

@@ -28,6 +28,7 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.event.*;
 import org.executequery.gui.WidgetFactory;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.NumberTextField;
@@ -37,8 +38,6 @@ import org.underworldlabs.swing.listener.RequiredFieldPainter;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -47,8 +46,7 @@ import java.util.List;
 /**
  * @author Takis Diakoumis
  */
-public class ConnectionPanel extends AbstractConnectionPanel
-        implements DocumentListener {
+public class ConnectionPanel extends AbstractConnectionPanel {
 
     private List<JComponent> nativeServerComponents;
     private List<RequiredFieldPainter> sshRequired;
@@ -84,8 +82,8 @@ public class ConnectionPanel extends AbstractConnectionPanel
         super(controller);
 
         updateConnectionState();
-        useSshCheckTriggered(null);
-        useNewApiCheckTriggered(null);
+        useSshCheckTriggered();
+        useNewApiCheckTriggered();
     }
 
     // --- AbstractConnectionPanel impl ---
@@ -280,31 +278,26 @@ public class ConnectionPanel extends AbstractConnectionPanel
             checkNameUpdate();
         });
 
-        roleField.addKeyListener(this);
-        sshHostField.addKeyListener(this);
-        sshPortField.addKeyListener(this);
-        sshUserField.addKeyListener(this);
-        sshPasswordField.getField().addKeyListener(this);
+        SimpleDocumentListener.initialize(hostField, this::enableApplyButton);
+        SimpleDocumentListener.initialize(userField, this::enableApplyButton);
+        SimpleDocumentListener.initialize(portField, this::enableApplyButton);
+        SimpleDocumentListener.initialize(fileField, this::enableApplyButton);
+        SimpleDocumentListener.initialize(certField, this::enableApplyButton);
+        SimpleDocumentListener.initialize(userPasswordField.getField(), this::enableApplyButton);
+        SimpleDocumentListener.initialize(contPasswordField.getField(), this::enableApplyButton);
 
-        hostField.getDocument().addDocumentListener(this);
-        userField.getDocument().addDocumentListener(this);
-        portField.getDocument().addDocumentListener(this);
-        fileField.getDocument().addDocumentListener(this);
-        certField.getDocument().addDocumentListener(this);
-        roleField.getDocument().addDocumentListener(this);
-        sshHostField.getDocument().addDocumentListener(this);
-        sshPortField.getDocument().addDocumentListener(this);
-        sshUserField.getDocument().addDocumentListener(this);
-        sshPasswordField.getField().getDocument().addDocumentListener(this);
-        contPasswordField.getField().getDocument().addDocumentListener(this);
-        userPasswordField.getField().getDocument().addDocumentListener(this);
+        SimpleDocumentListener.initialize(roleField, this::roleChanged);
+        SimpleDocumentListener.initialize(sshHostField, this::sshHostChanged);
+        SimpleDocumentListener.initialize(sshPortField, this::sshPortChanged);
+        SimpleDocumentListener.initialize(sshUserField, this::sshUserChanged);
+        SimpleDocumentListener.initialize(sshPasswordField, this::sshPasswordChanged);
 
-        useNewApiCheck.addActionListener(this::handleEvent);
-        namesToUpperCheck.addActionListener(this::handleEvent);
         useNativeCheck.addActionListener(this::connTypeChanged);
         useEmbeddedCheck.addActionListener(this::connTypeChanged);
-        useSshCheck.addActionListener(this::useSshCheckTriggered);
-        storeSshPasswordCheck.addActionListener(this::handleEvent);
+        useSshCheck.addActionListener(e -> useSshCheckTriggered());
+        useNewApiCheck.addActionListener(e -> useNewApiCheckTriggered());
+        namesToUpperCheck.addActionListener(e -> namesToUpperCheckTriggered());
+        storeSshPasswordCheck.addActionListener(e -> storeSshPasswordCheckTriggered());
     }
 
     @Override
@@ -334,65 +327,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     protected void driverChanged(ItemEvent e) {
         super.driverChanged(e);
         if (isSelected(e))
-            useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
-    }
-
-    @Override
-    protected void handleEvent(AWTEvent event) {
-        setApplyButtonEnabled(true);
-
-        boolean processed = false;
-        if (event == null || connection == null)
-            return;
-
-        Object source = event.getSource();
-        if (Objects.equals(source, roleField)) {
-            connection.setRole(roleField.getText().trim());
-            processed = true;
-
-        } else if (Objects.equals(source, namesToUpperCheck)) {
-            connection.setNamesToUpperCase(namesToUpperCheck.isSelected());
-            processed = true;
-
-        } else if (Objects.equals(source, useSshCheck)) {
-            connection.setSshTunnel(useSshCheck.isSelected());
-            processed = true;
-
-        } else if (Objects.equals(source, useNewApiCheck)) {
-            connection.setUseNewAPI(useNewApiCheck.isSelected());
-            processed = true;
-
-        } else if (Objects.equals(source, sshHostField)) {
-            connection.setSshHost(sshHostField.getText().trim());
-            processed = true;
-
-        } else if (Objects.equals(source, sshPortField)) {
-            connection.setSshPort(sshPortField.getValue());
-            processed = true;
-
-        } else if (Objects.equals(source, sshUserField)) {
-            connection.setSshUserName(sshUserField.getText().trim());
-            processed = true;
-
-        } else if (Objects.equals(source, sshPasswordField)) {
-            connection.setSshPassword(sshPasswordField.getPassword());
-            processed = true;
-
-        } else if (Objects.equals(source, storeSshPasswordCheck)) {
-            connection.setSshPasswordStored(storeSshPasswordCheck.isSelected());
-            processed = true;
-
-        } else if (Objects.equals(source, useNativeCheck) || Objects.equals(source, useEmbeddedCheck)) {
-            connection.setConnType(ConnectionType.getConnType(useNativeCheck.isSelected(), isEmbeddedConnectionSelected()).name());
-            processed = true;
-        }
-
-        if (processed) {
-            storeJdbcProperties();
-            return;
-        }
-
-        super.handleEvent(event);
+            useNewApiCheckTriggered();
     }
 
     @Override
@@ -439,7 +374,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
     @Override
     protected void selectActualDriver() {
         super.selectActualDriver();
-        useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
+        useNewApiCheckTriggered();
     }
 
     @Override
@@ -501,12 +436,17 @@ public class ConnectionPanel extends AbstractConnectionPanel
         } else if (Objects.equals(source, useEmbeddedCheck) && isEmbeddedConnectionSelected())
             useNativeCheck.setSelected(false);
 
-        useNewApiCheckTriggered(new ActionEvent(useNewApiCheck, -1, null));
+        useNewApiCheckTriggered();
         updateVisibleComponents();
-        handleEvent(e);
+
+        if (hasConnection()) {
+            ConnectionType type = ConnectionType.getConnType(useNativeCheck.isSelected(), isEmbeddedConnectionSelected());
+            connection.setConnType(type.name());
+            storeJdbcProperties();
+        }
     }
 
-    private void useSshCheckTriggered(ActionEvent e) {
+    private void useSshCheckTriggered() {
 
         boolean enabled = useSshCheck.isSelected();
         if (enabled) {
@@ -521,10 +461,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
             sshRequired.forEach(RequiredFieldPainter::disable);
         }
 
-        handleEvent(e);
+        if (hasConnection()) {
+            connection.setSshTunnel(useSshCheck.isSelected());
+            storeJdbcProperties();
+        }
     }
 
-    private void useNewApiCheckTriggered(ActionEvent e) {
+    private void useNewApiCheckTriggered() {
 
         DatabaseDriver selectedDriver = (DatabaseDriver) driverCombo.getSelectedItem();
         int majorVersion = selectedDriver != null ? selectedDriver.getMajorVersion() : -1;
@@ -546,7 +489,66 @@ public class ConnectionPanel extends AbstractConnectionPanel
         } else
             useNewApiCheck.setEnabled(true);
 
-        handleEvent(e);
+        if (hasConnection()) {
+            connection.setUseNewAPI(useNewApiCheck.isSelected());
+            storeJdbcProperties();
+        }
+    }
+
+    private void namesToUpperCheckTriggered() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setNamesToUpperCase(namesToUpperCheck.isSelected());
+            storeJdbcProperties();
+        }
+    }
+
+    private void storeSshPasswordCheckTriggered() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setSshPasswordStored(storeSshPasswordCheck.isSelected());
+            storeJdbcProperties();
+        }
+    }
+
+    private void roleChanged() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setRole(roleField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void sshHostChanged() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setSshHost(sshHostField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void sshPortChanged() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setSshPort(sshPortField.getValue());
+            storeJdbcProperties();
+        }
+    }
+
+    private void sshUserChanged() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setSshUserName(sshUserField.getText().trim());
+            storeJdbcProperties();
+        }
+    }
+
+    private void sshPasswordChanged() {
+        enableApplyButton();
+        if (hasConnection()) {
+            connection.setSshPassword(sshPasswordField.getPassword());
+            storeJdbcProperties();
+        }
     }
 
     // --- ssh ---
@@ -824,7 +826,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         useEmbeddedCheck.setSelected(Objects.equals(connType, ConnectionType.EMBEDDED));
 
         selectActualDriver();
-        useSshCheckTriggered(null);
+        useSshCheckTriggered();
         enableFields(connection.isConnected());
         propertiesPanel.setConnection(connection);
         updateVisibleComponents();
@@ -834,26 +836,13 @@ public class ConnectionPanel extends AbstractConnectionPanel
         tabPane.addTab(title, component);
     }
 
+    private void enableApplyButton() {
+        setApplyButtonEnabled(true);
+    }
+
     private void setApplyButtonEnabled(boolean value) {
-        value &= connection != null && !connection.isConnected();
+        value &= hasConnection() && !connection.isConnected();
         saveButton.setEnabled(value);
-    }
-
-    // --- DocumentListener impl ---
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        setApplyButtonEnabled(true);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        setApplyButtonEnabled(true);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        setApplyButtonEnabled(true);
     }
 
     // ---

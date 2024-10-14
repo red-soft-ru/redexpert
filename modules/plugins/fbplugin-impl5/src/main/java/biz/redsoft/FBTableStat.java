@@ -1,57 +1,66 @@
 package biz.redsoft;
 
-import org.firebirdsql.management.TableStatistics;
+import org.firebirdsql.logging.LoggerFactory;
+
+import java.util.Objects;
 
 public class FBTableStat implements IFBTableStatistics {
-    TableStatistics ts;
+    private final String tableName;
+    private final long readSeqCount;
+    private final long readIdxCount;
+    private final long insertCount;
+    private final long updateCount;
+    private final long deleteCount;
+    private final long backoutCount;
+    private final long purgeCount;
+    private final long expungeCount;
 
-    public FBTableStat(TableStatistics ts) {
-        this.ts = ts;
+    private FBTableStat(String tableName, long readSeqCount, long readIdxCount, long insertCount, long updateCount, long deleteCount, long backoutCount, long purgeCount, long expungeCount) {
+        this.tableName = Objects.requireNonNull(tableName, "tableName");
+        this.readSeqCount = readSeqCount;
+        this.readIdxCount = readIdxCount;
+        this.insertCount = insertCount;
+        this.updateCount = updateCount;
+        this.deleteCount = deleteCount;
+        this.backoutCount = backoutCount;
+        this.purgeCount = purgeCount;
+        this.expungeCount = expungeCount;
     }
 
-    @Override
     public String tableName() {
-        return ts.tableName();
+        return this.tableName;
     }
 
-    @Override
     public long readSeqCount() {
-        return ts.readSeqCount();
+        return this.readSeqCount;
     }
 
-    @Override
     public long readIdxCount() {
-        return ts.readIdxCount();
+        return this.readIdxCount;
     }
 
-    @Override
     public long insertCount() {
-        return ts.insertCount();
+        return this.insertCount;
     }
 
-    @Override
     public long updateCount() {
-        return ts.updateCount();
+        return this.updateCount;
     }
 
-    @Override
     public long deleteCount() {
-        return ts.deleteCount();
+        return this.deleteCount;
     }
 
-    @Override
     public long backoutCount() {
-        return ts.backoutCount();
+        return this.backoutCount;
     }
 
-    @Override
     public long purgeCount() {
-        return ts.purgeCount();
+        return this.purgeCount;
     }
 
-    @Override
     public long expungeCount() {
-        return ts.expungeCount();
+        return this.expungeCount;
     }
 
     @Override
@@ -59,8 +68,66 @@ public class FBTableStat implements IFBTableStatistics {
         return new long[]{readSeqCount(), readIdxCount(), insertCount(), updateCount(), deleteCount(), backoutCount(), purgeCount(), expungeCount()};
     }
 
-    @Override
     public String toString() {
-        return ts.toString();
+        return "TableStatistics{tableName='" + this.tableName + '\'' + ", readSeqCount=" + this.readSeqCount + ", readIdxCount=" + this.readIdxCount + ", insertCount=" + this.insertCount + ", updateCount=" + this.updateCount + ", deleteCount=" + this.deleteCount + ", backoutCount=" + this.backoutCount + ", purgeCount=" + this.purgeCount + ", expungeCount=" + this.expungeCount + '}';
     }
+
+    static TableStatisticsBuilder builder(String tableName) {
+        return new TableStatisticsBuilder(tableName);
+    }
+
+    static final class TableStatisticsBuilder {
+        private final String tableName;
+        private long readSeqCount;
+        private long readIdxCount;
+        private long insertCount;
+        private long updateCount;
+        private long deleteCount;
+        private long backoutCount;
+        private long purgeCount;
+        private long expungeCount;
+
+        private TableStatisticsBuilder(String tableName) {
+            this.tableName = tableName;
+        }
+
+        void addStatistic(int statistic, long value) {
+            switch (statistic) {
+                case 23:
+                    this.readSeqCount = value;
+                    break;
+                case 24:
+                    this.readIdxCount = value;
+                    break;
+                case 25:
+                    this.insertCount = value;
+                    break;
+                case 26:
+                    this.updateCount = value;
+                    break;
+                case 27:
+                    this.deleteCount = value;
+                    break;
+                case 28:
+                    this.backoutCount = value;
+                    break;
+                case 29:
+                    this.purgeCount = value;
+                    break;
+                case 30:
+                    this.expungeCount = value;
+                    break;
+                default:
+                    LoggerFactory.getLogger(TableStatisticsBuilder.class).debugf("Unexpected information item %d with value %d, this is likely an implementation bug.", statistic, value);
+            }
+
+        }
+
+
+        FBTableStat toTableStatistics() {
+            return new FBTableStat(this.tableName, this.readSeqCount, this.readIdxCount, this.insertCount, this.updateCount, this.deleteCount, this.backoutCount, this.purgeCount, this.expungeCount);
+        }
+    }
+
+
 }

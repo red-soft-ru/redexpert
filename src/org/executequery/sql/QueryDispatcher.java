@@ -37,6 +37,8 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
@@ -724,6 +726,7 @@ public class QueryDispatcher {
                     if (driver.getMajorVersion() >= 5) {
                         IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
                         try {
+                            tsm.setTables(getTableMap(databaseConnection));
                             beforeQuery = tsm.getTableStatistics();
 
                         } catch (SQLException e) {
@@ -1046,6 +1049,7 @@ public class QueryDispatcher {
                     if (driver.getMajorVersion() >= 5) {
                         IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
                         try {
+                            tsm.setTables(getTableMap(databaseConnection));
                             beforeQuery = tsm.getTableStatistics();
 
                         } catch (SQLException e) {
@@ -1063,6 +1067,7 @@ public class QueryDispatcher {
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
             boolean moreThanOneQuery = executableQueries.size() > 1;
+            boolean updateSystemTree = false;
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
@@ -1194,6 +1199,7 @@ public class QueryDispatcher {
                                     if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
                                             || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                         createsMetaNames.add(query.getMetaName());
+                                        updateSystemTree = true;
                                     }
                                     if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
 
@@ -1297,7 +1303,7 @@ public class QueryDispatcher {
             DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
             for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
                 String nodemetakey = metaTagNode.getMetaDataKey();
-                if (metaTagNode.isSystem()) {
+                if (updateSystemTree && metaTagNode.isSystem() && !nodemetakey.contentEquals(NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE])) {
                     ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
                 } else
                     for (String metaName : createsMetaNames)
@@ -1498,6 +1504,8 @@ public class QueryDispatcher {
                 Map<String, IFBTableStatistics> after = null;
                 try {
                     IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+
+                    tsm.setTables(getTableMap(databaseConnection));
                     after = tsm.getTableStatistics();
 
                 } catch (SQLException | ClassNotFoundException e) {
@@ -1553,6 +1561,16 @@ public class QueryDispatcher {
 
         }
 
+    }
+
+    protected Map<Integer, String> getTableMap(DatabaseConnection databaseConnection) {
+        Map<Integer, String> map = new HashMap<>();
+        List<NamedObject> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables();
+        for (NamedObject t : tables) {
+            if (!(t instanceof DefaultDatabaseView))
+                map.put(((AbstractTableObject) t).getRelationID(), t.getName());
+        }
+        return map;
     }
 
     private void printExecutionPlan(IFBPerformanceInfo before, boolean anyConnections) {

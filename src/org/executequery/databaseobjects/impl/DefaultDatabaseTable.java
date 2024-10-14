@@ -47,6 +47,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     protected static final String CONSTRAINT_NAME = "CONSTRAINT_NAME";
     protected static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
     protected static final String TRIGGER_SOURCE = "TRIGGER_SOURCE";
+    protected static final String RELATION_ID = "RELATION_ID";
 
     private static final long serialVersionUID = -963831243178078154L;
 
@@ -1267,15 +1268,14 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         sb.appendField(Field.createField(rels, TABLESPACE + "_NAME").setAlias(TABLESPACE).
                 setNull(!tablespaceCheck()));
         sb.appendField(Field.createField(rels, DESCRIPTION));
+        sb.appendField(Field.createField(rels, RELATION_ID));
         sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(relCons, getObjectField().getAlias())));
         sb.appendJoin(Join.createLeftJoin().appendFields(conName, Field.createField(checkCons, conName.getAlias())));
         sb.appendJoin(Join.createLeftJoin().appendFields(Field.createField(checkCons, "TRIGGER_NAME"),
-                Field.createField(triggers, "TRIGGER_NAME")));
-
-        sb.appendCondition(Condition.createCondition()
+                Field.createField(triggers, "TRIGGER_NAME")).setCondition(Condition.createCondition()
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "=", "1"))
                 .appendCondition(Condition.createCondition(Field.createField(triggers, "TRIGGER_TYPE"), "IS", "NULL"))
-                .setLogicOperator("OR"));
+                .setLogicOperator("OR")));
         sb.setOrdering(getObjectField().getFieldTable());
 
         return sb;
@@ -1303,6 +1303,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
             setExternalFile(getFromResultSet(rs, EXTERNAL_FILE));
             setAdapter(getFromResultSet(rs, ADAPTER));
             setTablespace(getFromResultSet(rs, TABLESPACE));
+            setRelationID(rs.getInt(RELATION_ID));
         }
         addingConstraint(rs);
         return null;

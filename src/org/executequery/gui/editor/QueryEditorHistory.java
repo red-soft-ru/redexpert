@@ -10,6 +10,9 @@ import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class QueryEditorHistory {
@@ -260,9 +263,13 @@ public class QueryEditorHistory {
     }
 
     public static void removeFile(String path) {
-        File f = new File(path);
-        if (f.exists())
-            f.delete();
+        try {
+            Path fileToDeletePath = Paths.get(path);
+            Files.delete(fileToDeletePath);
+
+        } catch (IOException e) {
+            Log.debug(String.format("Error occurred deleting %s", path), e);
+        }
     }
 
     public static void restoreTabs(DatabaseConnection connection) {

@@ -59,8 +59,6 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -642,18 +640,8 @@ public class TableDataTab extends JPanel
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
-            table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    if (table.getSelectedRow() >= table.getRowCount() - 1) {
-                        int row = table.getSelectedRow();
-                        int col = table.getSelectedColumn();
-                        fetchMoreData();
-                        table.setRowSelectionInterval(row, row);
-                        table.setColumnSelectionInterval(col, col);
-                    }
-                }
-            });
+
+            table.getSelectionModel().addListSelectionListener(e -> tableCellSelected());
 
         } catch (DataSourceException e) {
 
@@ -676,6 +664,19 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    private void tableCellSelected() {
+
+        if (table.getSelectedRow() <= table.getRowCount())
+            return;
+
+        int row = table.getSelectedRow();
+        int col = table.getSelectedColumn();
+
+        fetchMoreData();
+        table.setRowSelectionInterval(row, row);
+        table.setColumnSelectionInterval(col, col);
     }
 
     private void fetchMoreData() {

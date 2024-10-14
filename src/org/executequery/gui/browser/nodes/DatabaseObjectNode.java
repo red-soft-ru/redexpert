@@ -250,7 +250,7 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
     }
 
     public boolean isRootNode() {
-        return this instanceof RootDatabaseObjectNode;
+        return false;
     }
 
     public boolean isHostNode() {

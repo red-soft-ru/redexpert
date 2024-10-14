@@ -2,6 +2,12 @@ package org.executequery.gui.browser.nodes.tableNode;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 class ForeignKeysFolderNode extends TableFolderNode {
 
@@ -10,8 +16,13 @@ class ForeignKeysFolderNode extends TableFolderNode {
     }
 
     @Override
-    protected void buildObjectNodes() {
-        buildObjectNodes(databaseTable.getForeignKeys());
+    protected List<DatabaseObjectNode> buildObjectNodes() {
+
+        List<ColumnConstraint> values = databaseTable.getForeignKeys();
+        if (values == null)
+            return new ArrayList<>();
+
+        return values.stream().map(DatabaseObjectNode::new).collect(Collectors.toList());
     }
 
     @Override

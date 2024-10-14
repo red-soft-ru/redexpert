@@ -4,9 +4,12 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 
@@ -17,12 +20,16 @@ class TriggersFolderNode extends TableFolderNode {
     }
 
     @Override
-    protected void buildObjectNodes() {
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[TRIGGER]);
+    protected List<DatabaseObjectNode> buildObjectNodes() {
 
-        List<DefaultDatabaseTrigger> triggers = databaseTable.getTriggers();
-        triggers.stream().filter(Objects::nonNull).forEach(trigger -> trigger.setParent(metaTag));
-        buildObjectNodes(triggers);
+        List<DefaultDatabaseTrigger> values = databaseTable.getTriggers();
+        if (values == null)
+            return new ArrayList<>();
+
+        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[TRIGGER]);
+        values.stream().filter(Objects::nonNull).forEach(val -> val.setParent(metaTag));
+
+        return values.stream().map(DatabaseObjectNode::new).collect(Collectors.toList());
     }
 
     @Override

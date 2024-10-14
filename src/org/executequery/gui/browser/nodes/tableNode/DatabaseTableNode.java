@@ -26,9 +26,11 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.jdbc.DataSourceException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DatabaseTableNode extends DatabaseObjectNode {
+    private List<DatabaseObjectNode> childrenList;
 
     public DatabaseTableNode(NamedObject databaseObject) {
         super(databaseObject);
@@ -36,16 +38,31 @@ public class DatabaseTableNode extends DatabaseObjectNode {
 
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
+
+        if (childrenList == null) {
+            childrenList = new ArrayList<>();
+            childrenList.addAll(buildObjectNodes());
+        }
+
+        return childrenList;
+    }
+
+    private List<DatabaseObjectNode> buildObjectNodes() {
         DatabaseTable databaseTable = (DatabaseTable) getDatabaseObject();
 
-        List<DatabaseObjectNode> nodes = new ArrayList<>();
-        nodes.add(new ColumnFolderNode(databaseTable));
-        nodes.add(new PrimaryKeysFolderNode(databaseTable));
-        nodes.add(new ForeignKeysFolderNode(databaseTable));
-        nodes.add(new IndexesFolderNode(databaseTable));
-        nodes.add(new TriggersFolderNode(databaseTable));
+        return Arrays.asList(
+                new ColumnFolderNode(databaseTable),
+                new PrimaryKeysFolderNode(databaseTable),
+                new ForeignKeysFolderNode(databaseTable),
+                new IndexesFolderNode(databaseTable),
+                new TriggersFolderNode(databaseTable)
+        );
+    }
 
-        return nodes;
+    @Override
+    public void reset() {
+        super.reset();
+        childrenList = null;
     }
 
 }

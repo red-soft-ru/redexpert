@@ -4,8 +4,12 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.INDEX;
 import static org.executequery.databaseobjects.NamedObject.META_TYPES;
@@ -17,12 +21,16 @@ class IndexesFolderNode extends TableFolderNode {
     }
 
     @Override
-    protected void buildObjectNodes() {
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[INDEX]);
+    protected List<DatabaseObjectNode> buildObjectNodes() {
 
-        List<DefaultDatabaseIndex> indices = databaseTable.getIndexes();
-        indices.forEach(index -> index.setParent(metaTag));
-        buildObjectNodes(indices);
+        List<DefaultDatabaseIndex> values = databaseTable.getIndexes();
+        if (values == null)
+            return new ArrayList<>();
+
+        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[INDEX]);
+        values.stream().filter(Objects::nonNull).forEach(val -> val.setParent(metaTag));
+
+        return values.stream().map(DatabaseObjectNode::new).collect(Collectors.toList());
     }
 
     @Override

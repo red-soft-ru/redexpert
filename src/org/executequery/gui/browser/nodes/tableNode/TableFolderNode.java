@@ -12,31 +12,34 @@ import java.util.List;
 public abstract class TableFolderNode extends DatabaseObjectNode {
 
     protected DatabaseTable databaseTable;
-    protected List<DatabaseObjectNode> children;
+    private List<DatabaseObjectNode> childrenList;
 
     protected TableFolderNode(DatabaseTable databaseTable) {
         super(databaseTable);
         this.databaseTable = databaseTable;
-        this.children = new ArrayList<>();
-        buildObjectNodes();
+        getChildObjects();
     }
 
-    protected abstract void buildObjectNodes();
+    protected abstract List<DatabaseObjectNode> buildObjectNodes();
 
-    protected void buildObjectNodes(List<? extends NamedObject> values) {
-        if (values != null)
-            for (NamedObject value : values)
-                children.add(new DatabaseObjectNode(value));
+    private boolean hasChildrenList() {
+        return childrenList != null;
     }
 
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
-        return children;
+
+        if (childrenList == null) {
+            childrenList = new ArrayList<>();
+            childrenList.addAll(buildObjectNodes());
+        }
+
+        return childrenList;
     }
 
     @Override
     public boolean isLeaf() {
-        return children.isEmpty();
+        return hasChildrenList() && childrenList.isEmpty();
     }
 
     @Override
@@ -51,7 +54,13 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
 
     @Override
     public String getDisplayName() {
-        return getName() + String.format(" (%d)", children.size());
+        return String.format("%s (%d)", getName(), (hasChildrenList() ? childrenList.size() : 0));
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        childrenList = null;
     }
 
     @Override

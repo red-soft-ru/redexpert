@@ -269,7 +269,7 @@ public final class SQLUtils {
                                 sb.append(" ON DELETE ").append(cc.getDeleteRule());
                         }
                     }
-                    if (cc.getSorting().contentEquals("DESCENDING") || (cc.getIndexName() != null && !cc.getIndexName().contentEquals(cc.getName()))) {
+                    if (Objects.equals(cc.getSorting(), "DESCENDING") || (cc.getIndexName() != null && !cc.getIndexName().contentEquals(cc.getName()))) {
                         sb.append(" USING ").append(cc.getSorting()).append(" INDEX ").append(cc.getIndexName());
                     }
                     if (!MiscUtils.isNull(cc.getTablespace()))

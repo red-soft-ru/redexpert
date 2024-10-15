@@ -157,14 +157,6 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 SystemProperties.getStringProperty("user", key)
         ));
 
-        key = "results.table.double-click.record.dialog";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("CellDouble-clickOpensDataItemViewer"),
-                Boolean.valueOf(stringUserProperty(key))
-        ));
-
         key = "results.table.single.row.transpose";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

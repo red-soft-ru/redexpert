@@ -38,10 +38,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -469,9 +467,16 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
-
+        if (e.getID() == MouseEvent.MOUSE_CLICKED && e.getClickCount() >= 2)
+            editCellAt(getSelectedRow(), getSelectedColumn());
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
+    }
+
+    public boolean editCellAt(int row, int column, EventObject e) {
+        if ((e instanceof MouseEvent) && ((MouseEvent) e).getID() == MouseEvent.MOUSE_PRESSED)
+            return false;
+        return super.editCellAt(row, column, e);
     }
 
     private int getUserPreferredColumnWidth() {

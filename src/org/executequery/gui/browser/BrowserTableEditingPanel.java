@@ -30,6 +30,7 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.*;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -59,6 +60,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
@@ -1144,6 +1146,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     @Override
     public void deleteRow() {
 
+        int metaType = -1;
         int tabIndex = tabPane.getSelectedIndex();
         if (tabIndex == TABLE_COLUMNS_INDEX) {
             descriptionTable.deleteSelectedColumn();
@@ -1155,6 +1158,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             String query = null;
             if (tabIndex == TABLE_INDEXES_INDEX) {
+                metaType = NamedObject.INDEX;
 
                 if (columnIndexTable.getSelectedRow() >= 0) {
                     int row = ((TableSorter) columnIndexTable.getModel()).modelIndex(columnIndexTable.getSelectedRow());
@@ -1163,6 +1167,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
 
             } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
+                metaType = NamedObject.TRIGGER;
 
                 if (triggersTable.getSelectedRow() >= 0) {
                     int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
@@ -1181,8 +1186,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 );
                 executeQueryDialog.display();
 
-                if (executeQueryDialog.getCommit())
+                if (executeQueryDialog.getCommit()) {
+                    reloadNodes(metaType);
                     refresh();
+                }
             }
         }
 
@@ -1347,6 +1354,22 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
         } catch (DataSourceException e) {
             GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
+        }
+    }
+
+    private void reloadNodes(int type) {
+
+        if (type < NamedObject.DOMAIN)
+            return;
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        TreePath pathToReload = treePanel.getMetaTagNodePath(getSelectedConnection(), type);
+        if (pathToReload != null) {
+            treePanel.reloadPath(pathToReload);
+            treePanel.reloadRelatedNodes((DatabaseObjectNode) pathToReload.getLastPathComponent());
         }
     }
 

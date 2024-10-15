@@ -38,6 +38,11 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
     }
 
     @Override
+    public boolean isTableFolder() {
+        return true;
+    }
+
+    @Override
     public boolean isLeaf() {
         return hasChildrenList() && childrenList.isEmpty();
     }

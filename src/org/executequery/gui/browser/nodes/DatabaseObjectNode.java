@@ -22,22 +22,18 @@ package org.executequery.gui.browser.nodes;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.AbstractTableObject;
-import org.executequery.databaseobjects.impl.DatabaseTableColumn;
-import org.executequery.databaseobjects.impl.DefaultDatabaseColumn;
-import org.executequery.databaseobjects.impl.DefaultDatabaseView;
+import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.nodes.tableNode.DatabaseTableNode;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -249,6 +245,14 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return databaseObject.isSystem();
     }
 
+    public boolean isMetaTag() {
+        return databaseObject.isMetaTag();
+    }
+
+    public boolean isTableFolder() {
+        return false;
+    }
+
     public boolean isRootNode() {
         return false;
     }
@@ -274,6 +278,27 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
 
     public boolean isDraggable() {
         return getType() == NamedObject.TABLE || getType() == NamedObject.INDEX;
+    }
+
+    /**
+     * Check if the object metadata key equals to the <code>NamedObject.META_TYPES[type]</code>.
+     * @param type index of the <code>NamedObject.META_TYPES</code> value.
+     */
+    public boolean typeOf(int type) {
+        String metadataKey = getMetaDataKey();
+        if (MiscUtils.isNull(metadataKey))
+            return false;
+
+        return Objects.equals(metadataKey.toUpperCase(), NamedObject.META_TYPES[type]);
+    }
+
+    /**
+     * Check if the object metadata key equals at least to the one of the
+     * <code>NamedObject.META_TYPES</code> value with the specified indicies.
+     * @param types <code>NamedObject.META_TYPES</code> values indicies to check.
+     */
+    public boolean typeOf(int... types) {
+        return Arrays.stream(types).anyMatch(this::typeOf);
     }
 
     /**

@@ -64,6 +64,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Takis Diakoumis
@@ -1216,6 +1217,41 @@ public class ConnectionsTreePanel extends TreePanel
             return false;
         }
     }
+
+    // ---
+
+    public void reloadRelatedNodes(DatabaseObjectNode node) {
+
+        DatabaseHostNode hostNode = getDatabaseHostNode(node);
+        if (hostNode == null) {
+            Log.debug("Related nodes will not be reloaded, DatabaseHostNode is null");
+            return;
+        }
+
+        Stream<DatabaseObjectNode> nodeStream = hostNode.getChildObjects().stream();
+        if (node.typeOf(NamedObject.TABLE)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX, NamedObject.TRIGGER));
+
+        } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TABLE));
+
+        } else if (node.typeOf(NamedObject.INDEXES_FOLDER_NODE)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX));
+
+        } else if (node.typeOf(NamedObject.TRIGGERS_FOLDER_NODE)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TRIGGER));
+        }
+
+        nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
+    }
+
+    private static DatabaseHostNode getDatabaseHostNode(DatabaseObjectNode node) {
+        if (node != null && !node.isMetaTag())
+            return getDatabaseHostNode((DatabaseObjectNode) node.getParent());
+        return node != null ? (DatabaseHostNode) node.getParent() : null;
+    }
+
+    // ---
 
     private boolean checkShowActiveMenu(TreePath treePathForLocation) {
         return selectedTriggersOrIndexesOnly() && checkPathForLocationInSelectedTree(treePathForLocation);

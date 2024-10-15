@@ -1221,6 +1221,10 @@ public class ConnectionsTreePanel extends TreePanel
     // ---
 
     public void reloadRelatedNodes(DatabaseObjectNode node) {
+        reloadRelatedNodes(node, null);
+    }
+
+    public void reloadRelatedNodes(DatabaseObjectNode node, String tableName) {
 
         DatabaseHostNode hostNode = getDatabaseHostNode(node);
         if (hostNode == null) {
@@ -1232,8 +1236,9 @@ public class ConnectionsTreePanel extends TreePanel
         if (node.typeOf(NamedObject.TABLE)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX, NamedObject.TRIGGER));
 
-        } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER)) {
+        } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER, NamedObject.TABLE_COLUMN)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TABLE));
+            nodeStream = getTableStream(nodeStream, tableName);
 
         } else if (node.typeOf(NamedObject.INDEXES_FOLDER_NODE)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX));
@@ -1243,6 +1248,17 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
+    }
+
+    private static Stream<DatabaseObjectNode> getTableStream(Stream<DatabaseObjectNode> nodeStream, String tableName) {
+
+        if (tableName != null) {
+            DatabaseObjectNode childNode = nodeStream.findFirst().orElse(null);
+            if (childNode != null)
+                nodeStream = childNode.getChildObjects().stream().filter(table -> Objects.equals(table.getName(), tableName));
+        }
+
+        return nodeStream;
     }
 
     private static DatabaseHostNode getDatabaseHostNode(DatabaseObjectNode node) {

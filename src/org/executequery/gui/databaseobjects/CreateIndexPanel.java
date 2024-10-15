@@ -267,6 +267,11 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
             table_name = (String) params[0];
     }
 
+    @Override
+    protected void reloadNodes() {
+        reloadNodes(table_name);
+    }
+
     private void updateListTables() {
         try {
 

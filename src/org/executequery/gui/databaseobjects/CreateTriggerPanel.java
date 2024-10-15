@@ -61,6 +61,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     // ---
 
     private int triggerType;
+    private String tableName;
     private DefaultDatabaseTrigger trigger;
 
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, int triggerType) {
@@ -399,13 +400,11 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     @Override
     protected String generateQuery() {
 
-        String table = null;
         String selectedItem = (String) triggerTypeCombo.getSelectedItem();
-
         if (Objects.equals(selectedItem, TABLE_TRIGGER)) {
-            table = (String) tableCombo.getSelectedItem();
-            if (table != null)
-                table = table.trim();
+            tableName = (String) tableCombo.getSelectedItem();
+            if (tableName != null)
+                tableName = tableName.trim();
         }
 
         StringBuilder triggerType = new StringBuilder();
@@ -454,7 +453,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
         return SQLUtils.generateCreateTriggerStatement(
                 nameField.getText(),
-                table,
+                tableName,
                 activeCheck.isSelected(),
                 triggerType.toString(),
                 (int) positionField.getValue(),
@@ -501,6 +500,11 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     @Override
     public void setParameters(Object[] params) {
         this.triggerType = (int) params[0];
+    }
+
+    @Override
+    protected void reloadNodes() {
+        reloadNodes(tableName);
     }
 
 }

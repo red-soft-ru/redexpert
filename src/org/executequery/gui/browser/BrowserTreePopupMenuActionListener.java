@@ -195,6 +195,8 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             return;
 
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        String tableName = getTableName(node.getDatabaseObject());
+
         String query = getDropQuery(node, node.getType());
         if (query == null)
             return;
@@ -208,7 +210,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
         executeDialog.display();
         if (executeDialog.getCommit())
-            reloadNodes();
+            reloadNodes(tableName);
     }
 
     @SuppressWarnings("unused")
@@ -288,7 +290,7 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     // --- handlers helper methods ---
 
-    private void reloadNodes() {
+    private void reloadNodes(String tableName) {
 
         if (treePanel == null || currentPath == null)
             return;
@@ -296,8 +298,16 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         TreePath parentPath = currentPath.getParentPath();
         if (parentPath != null) {
             treePanel.reloadPath(parentPath);
-            treePanel.reloadRelatedNodes((DatabaseObjectNode) parentPath.getLastPathComponent());
+            treePanel.reloadRelatedNodes((DatabaseObjectNode) parentPath.getLastPathComponent(), tableName);
         }
+    }
+
+    private static String getTableName(NamedObject namedObject) {
+        if (namedObject instanceof DefaultDatabaseIndex)
+            return ((DefaultDatabaseIndex) namedObject).getTableName();
+        if (namedObject instanceof DefaultDatabaseTrigger)
+            return ((DefaultDatabaseTrigger) namedObject).getTriggerTableName();
+        return null;
     }
 
     public void showCreateObjectDialog(DatabaseObjectNode node, DatabaseConnection connection, boolean editing) {

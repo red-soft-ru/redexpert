@@ -199,21 +199,16 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (query == null)
             return;
 
-        DatabaseObjectNode indecesNode = null;
-        if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
-            indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
-                    .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                    .findFirst().orElse(null);
-        }
+        ExecuteQueryDialog executeDialog = new ExecuteQueryDialog(
+                bundledString("DropObject"),
+                query,
+                currentSelection,
+                true
+        );
 
-        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(bundledString("DropObject"), query, currentSelection, true);
-        executeQueryDialog.display();
-
-        if (executeQueryDialog.getCommit()) {
-            treePanel.reloadPath(currentPath.getParentPath());
-            if (indecesNode != null)
-                treePanel.reloadPath(indecesNode.getTreePath());
-        }
+        executeDialog.display();
+        if (executeDialog.getCommit())
+            reloadNodes();
     }
 
     @SuppressWarnings("unused")
@@ -292,6 +287,18 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     // --- handlers helper methods ---
+
+    private void reloadNodes() {
+
+        if (treePanel == null || currentPath == null)
+            return;
+
+        TreePath parentPath = currentPath.getParentPath();
+        if (parentPath != null) {
+            treePanel.reloadPath(parentPath);
+            treePanel.reloadRelatedNodes((DatabaseObjectNode) parentPath.getLastPathComponent());
+        }
+    }
 
     public void showCreateObjectDialog(DatabaseObjectNode node, DatabaseConnection connection, boolean editing) {
         try {

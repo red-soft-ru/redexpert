@@ -285,6 +285,11 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
      * @param type index of the <code>NamedObject.META_TYPES</code> value.
      */
     public boolean typeOf(int type) {
+
+        int thisType = getType();
+        if (thisType != NamedObject.META_TAG)
+            return thisType == type;
+
         String metadataKey = getMetaDataKey();
         if (MiscUtils.isNull(metadataKey))
             return false;

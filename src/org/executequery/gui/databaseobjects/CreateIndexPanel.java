@@ -271,7 +271,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void reloadNodes() {
-        reloadNodes(table_name, globalTables.contains(table_name));
+        reloadNodes(getTableName(), globalTables.contains(getTableName()));
     }
 
     private void updateListTables() {
@@ -385,7 +385,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
                     nameField.getText(),
                     sortingBox.getSelectedIndex() == 1,
                     uniqueBox.isSelected(),
-                    tableName.getSelectedItem() != null ? tableName.getSelectedItem().toString() : "",
+                    getTableName(),
                     computedPanel.getSQLText(),
                     null,
                     fieldsPanel.getSelectedValues(),
@@ -398,6 +398,11 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         }
 
         return query;
+    }
+
+    private String getTableName() {
+        String table = (String) tableName.getSelectedItem();
+        return MiscUtils.isNull(table) ? "" : table;
     }
 
     private void createIndex() {

@@ -1221,10 +1221,10 @@ public class ConnectionsTreePanel extends TreePanel
     // ---
 
     public void reloadRelatedNodes(DatabaseObjectNode node) {
-        reloadRelatedNodes(node, null);
+        reloadRelatedNodes(node, null, false);
     }
 
-    public void reloadRelatedNodes(DatabaseObjectNode node, String tableName) {
+    public void reloadRelatedNodes(DatabaseObjectNode node, String tableName, boolean globalTemporary) {
 
         DatabaseHostNode hostNode = getDatabaseHostNode(node);
         if (hostNode == null) {
@@ -1233,12 +1233,11 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         Stream<DatabaseObjectNode> nodeStream = hostNode.getChildObjects().stream();
-        if (node.typeOf(NamedObject.TABLE)) {
+        if (node.typeOf(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY, NamedObject.VIEW)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX, NamedObject.TRIGGER));
 
         } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER, NamedObject.TABLE_COLUMN)) {
-            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TABLE));
-            nodeStream = getTableStream(nodeStream, tableName);
+            nodeStream = getTablesStream(nodeStream, tableName, globalTemporary);
 
         } else if (node.typeOf(NamedObject.INDEXES_FOLDER_NODE)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX));
@@ -1250,15 +1249,19 @@ public class ConnectionsTreePanel extends TreePanel
         nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
     }
 
-    private static Stream<DatabaseObjectNode> getTableStream(Stream<DatabaseObjectNode> nodeStream, String tableName) {
+    private Stream<DatabaseObjectNode> getTablesStream(Stream<DatabaseObjectNode> nodeStream, String tableName, boolean globalTemporary) {
 
-        if (tableName != null) {
-            DatabaseObjectNode childNode = nodeStream.findFirst().orElse(null);
-            if (childNode != null)
-                nodeStream = childNode.getChildObjects().stream().filter(table -> Objects.equals(table.getName(), tableName));
-        }
+        if (tableName == null)
+            return nodeStream.filter(child -> child.typeOf(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY));
 
-        return nodeStream;
+        List<DatabaseObjectNode> childNodes = globalTemporary ?
+                nodeStream.filter(child -> child.typeOf(NamedObject.GLOBAL_TEMPORARY)).collect(Collectors.toList()) :
+                nodeStream.filter(child -> child.typeOf(NamedObject.TABLE)).collect(Collectors.toList());
+
+        DatabaseObjectNode childNode = childNodes.get(0);
+        return childNode != null ?
+                childNode.getChildObjects().stream().filter(table -> Objects.equals(table.getName(), tableName)) :
+                childNodes.stream();
     }
 
     private static DatabaseHostNode getDatabaseHostNode(DatabaseObjectNode node) {

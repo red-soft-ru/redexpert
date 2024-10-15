@@ -3,6 +3,7 @@ package org.executequery.gui.databaseobjects;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.Types;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTablespace;
 import org.executequery.gui.ActionContainer;
@@ -44,6 +45,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     private DefaultDatabaseIndex databaseIndex;
 
     private List<NamedObject> tss;
+    private List<String> globalTables;
     private String table_name;
     private boolean changed = false;
     private boolean commentChanged = false;
@@ -269,31 +271,40 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
 
     @Override
     protected void reloadNodes() {
-        reloadNodes(table_name);
+        reloadNodes(table_name, globalTables.contains(table_name));
     }
 
     private void updateListTables() {
         try {
 
-            String query = "select rdb$relation_name" +
-                    "\nfrom rdb$relations" +
-                    "\nwhere rdb$view_blr is null" +
-                    "\norder by rdb$relation_name";
-
             free_sender = false;
-            ResultSet rs = sender.getResultSet(query).getResultSet();
             tableName.removeAllItems();
-            while (rs.next())
-                tableName.addItem(rs.getString(1).trim());
+            for (Object table : getTables())
+                tableName.addItem((String) table);
 
         } catch (Exception e) {
             Log.error("Error getting tables in CreateIndexPanel");
 
         } finally {
             free_sender = true;
-            sender.releaseResources();
             updateListFields();
         }
+    }
+
+    private Object[] getTables() {
+
+        DefaultDatabaseHost host = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(connection);
+        if (host == null)
+            return new Object[0];
+
+        globalTables = new ArrayList<>();
+        globalTables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
+
+        List<String> tables = new ArrayList<>();
+        tables.addAll(globalTables);
+        tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]));
+
+        return tables.toArray();
     }
 
     private void updateListFields() {

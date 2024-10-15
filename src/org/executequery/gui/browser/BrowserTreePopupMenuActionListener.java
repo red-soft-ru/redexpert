@@ -298,7 +298,11 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         TreePath parentPath = currentPath.getParentPath();
         if (parentPath != null) {
             treePanel.reloadPath(parentPath);
-            treePanel.reloadRelatedNodes((DatabaseObjectNode) parentPath.getLastPathComponent(), tableName);
+            treePanel.reloadRelatedNodes(
+                    (DatabaseObjectNode) parentPath.getLastPathComponent(),
+                    tableName,
+                    isGlobalTemporary(tableName)
+            );
         }
     }
 
@@ -308,6 +312,12 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
         if (namedObject instanceof DefaultDatabaseTrigger)
             return ((DefaultDatabaseTrigger) namedObject).getTriggerTableName();
         return null;
+    }
+
+    private boolean isGlobalTemporary(String tableName) {
+        DefaultDatabaseHost host = treePanel.getDefaultDatabaseHostFromConnection(currentSelection);
+        List<NamedObject> globalTables = host.getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
+        return globalTables != null && globalTables.stream().map(NamedObject::getName).anyMatch(name -> Objects.equals(name, tableName));
     }
 
     public void showCreateObjectDialog(DatabaseObjectNode node, DatabaseConnection connection, boolean editing) {

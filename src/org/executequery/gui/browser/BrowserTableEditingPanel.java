@@ -1369,7 +1369,11 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         TreePath pathToReload = treePanel.getMetaTagNodePath(getSelectedConnection(), type);
         if (pathToReload != null) {
             treePanel.reloadPath(pathToReload);
-            treePanel.reloadRelatedNodes((DatabaseObjectNode) pathToReload.getLastPathComponent(), getTableName());
+            treePanel.reloadRelatedNodes(
+                    (DatabaseObjectNode) pathToReload.getLastPathComponent(),
+                    getTableName(),
+                    table.isGlobalTemporary()
+            );
         }
     }
 

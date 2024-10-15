@@ -1212,6 +1212,11 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
         return adapter;
     }
 
+    @Override
+    public boolean isGlobalTemporary() {
+        return false;
+    }
+
     public void setAdapter(String adapter) {
         this.adapter = adapter;
     }

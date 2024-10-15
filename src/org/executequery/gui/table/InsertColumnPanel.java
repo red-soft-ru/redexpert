@@ -300,7 +300,7 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
 
     @Override
     protected void reloadNodes() {
-        reloadNodes(table.getName());
+        reloadNodes(table.getName(), table.isGlobalTemporary());
     }
 
     @Override

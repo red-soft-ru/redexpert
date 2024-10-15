@@ -62,6 +62,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     private int triggerType;
     private String tableName;
+    private List<String> globalTables;
     private DefaultDatabaseTrigger trigger;
 
     public CreateTriggerPanel(DatabaseConnection dc, ActionContainer parent, int triggerType) {
@@ -300,9 +301,12 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
         if (host == null)
             return new Object[0];
 
+        globalTables = new ArrayList<>();
+        globalTables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
+
         List<String> tables = new ArrayList<>();
+        tables.addAll(globalTables);
         tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.TABLE]));
-        tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]));
         tables.addAll(host.getDatabaseObjectNamesForMetaTag(NamedObject.META_TYPES[NamedObject.VIEW]));
 
         return tables.toArray();
@@ -504,7 +508,7 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
 
     @Override
     protected void reloadNodes() {
-        reloadNodes(tableName);
+        reloadNodes(tableName, globalTables.contains(tableName));
     }
 
 }

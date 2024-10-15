@@ -358,10 +358,10 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     }
 
     protected void reloadNodes() {
-        reloadNodes(null);
+        reloadNodes(null, false);
     }
 
-    protected void reloadNodes(String tableName) {
+    protected void reloadNodes(String tableName, boolean globalTemporary) {
 
         if (treePanel == null)
             return;
@@ -382,7 +382,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             }
         }
 
-        treePanel.reloadRelatedNodes(node, tableName);
+        treePanel.reloadRelatedNodes(node, tableName, globalTemporary);
     }
 
     private void finish() {

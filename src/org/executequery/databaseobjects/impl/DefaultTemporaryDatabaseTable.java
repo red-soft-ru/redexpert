@@ -188,6 +188,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     }
 
     @Override
+    public boolean isGlobalTemporary() {
+        return true;
+    }
+
+    @Override
     public int getType() {
         return GLOBAL_TEMPORARY;
     }

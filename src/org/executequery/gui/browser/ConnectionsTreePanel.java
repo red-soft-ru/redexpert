@@ -1251,6 +1251,18 @@ public class ConnectionsTreePanel extends TreePanel
         return node != null ? (DatabaseHostNode) node.getParent() : null;
     }
 
+    public TreePath getMetaTagNodePath(DatabaseConnection connection, int type) {
+
+        DatabaseHostNode hostNode = (DatabaseHostNode) getHostNode(connection);
+        if (hostNode == null)
+            return null;
+
+        return hostNode.getChildObjects().stream()
+                .filter(node -> node.typeOf(type))
+                .map(DatabaseObjectNode::getTreePath)
+                .findFirst().orElse(null);
+    }
+
     // ---
 
     private boolean checkShowActiveMenu(TreePath treePathForLocation) {

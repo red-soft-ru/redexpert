@@ -207,7 +207,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
                                 rsmd.getColumnName(i),
                                 rsmd.getColumnType(i),
                                 rsmd.getColumnTypeName(i),
-                                rsmd.getColumnDisplaySize(i)));
+                                rsmd));
             }
             interrupted = false;
 

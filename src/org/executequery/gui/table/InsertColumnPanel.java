@@ -188,6 +188,11 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     @Override
+    public int getType() {
+        return NamedObject.TABLE_COLUMN;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         columnEdited = (DatabaseColumn) databaseObject;
     }

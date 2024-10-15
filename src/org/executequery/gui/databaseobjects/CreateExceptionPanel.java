@@ -44,6 +44,11 @@ public class CreateExceptionPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.EXCEPTION;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         this.exception = (DefaultDatabaseException) databaseObject;
     }

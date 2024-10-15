@@ -489,6 +489,11 @@ public class CreateTriggerPanel extends AbstractCreateExternalObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.TRIGGER;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         trigger = (DefaultDatabaseTrigger) databaseObject;
     }

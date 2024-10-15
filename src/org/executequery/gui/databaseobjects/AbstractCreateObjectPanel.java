@@ -82,6 +82,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     public abstract String getTypeObject();
 
+    public abstract int getType();
+
     public abstract void setParameters(Object[] params);
 
     public abstract void setDatabaseObject(Object databaseObject);

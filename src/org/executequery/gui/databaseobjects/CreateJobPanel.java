@@ -191,6 +191,11 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.JOB;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         job = (DefaultDatabaseJob) databaseObject;
     }

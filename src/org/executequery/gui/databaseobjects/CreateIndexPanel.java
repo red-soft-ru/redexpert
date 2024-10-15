@@ -252,6 +252,11 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.INDEX;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         databaseIndex = (DefaultDatabaseIndex) databaseObject;
     }

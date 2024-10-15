@@ -650,6 +650,11 @@ public class EditConstraintPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.CONSTRAINT;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         constraint = (ColumnConstraint) databaseObject;
     }

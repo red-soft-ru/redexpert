@@ -220,6 +220,11 @@ public class CreateProcedurePanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.PROCEDURE;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         procedureName = (String) databaseObject;
     }

@@ -831,29 +831,7 @@ public class QueryDispatcher {
                                     || type == QueryTypes.RECREATE_OBJECT
                                     || type == QueryTypes.ALTER_OBJECT) {
 
-                                DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-                                String queryMetaName = query.getMetaName();
-
-                                for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-
-                                    String nodeMetaKey = metaTagNode.getMetaDataKey();
-                                    if (nodeMetaKey.contains(queryMetaName) || queryMetaName.contains(nodeMetaKey)) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-
-                                    } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].startsWith(queryMetaName)) && metaTagNode.isSystem()) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-
-                                    } else if (NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) && nodeMetaKey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY])) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                                    }
-
-                                    if (nodeMetaKey.contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
-                                        hostNode.getChildObjects().stream()
-                                                .filter(node -> node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                                                .findFirst()
-                                                .ifPresent(node -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(node.getTreePath()));
-                                    }
-                                }
+                                reloadNodes(query.getMetaName(), false);
                             }
 
                             if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK)
@@ -1301,18 +1279,7 @@ public class QueryDispatcher {
             if (moreThanOneQuery)
                 logExecutionTime("Total execution time: %s", timeTaken, anyConnections);
 
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                String nodemetakey = metaTagNode.getMetaDataKey();
-                if (updateSystemTree && metaTagNode.isSystem() && !nodemetakey.contentEquals(NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE])) {
-                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                } else
-                    for (String metaName : createsMetaNames)
-                        if (nodemetakey.contains(metaName) || metaName.contains(nodemetakey) || (nodemetakey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]) && metaName.contains("TABLE"))) {
-                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                        }
-
-            }
+            reloadNodes(createsMetaNames, updateSystemTree);
             statementExecuted(script);
 
         } catch (InterruptedException e) {
@@ -1711,19 +1678,12 @@ public class QueryDispatcher {
         SqlStatementResult result = querySender.execute(procQuery.getQueryType(), statement);
 
         if (result.getUpdateCount() == -1 || result.isException()) {
-
             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), anyConnection);
             setStatusMessage(ERROR_EXECUTING);
 
         } else {
             setResultText(querySender.getDatabaseConnection(), result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName(), anyConnection);
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-
-            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (metaTagNode.getMetaDataKey().contains(procQuery.getMetaName()) || metaTagNode.isSystem()) {
-                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                }
-            }
+            reloadNodes(procQuery.getMetaName(), true);
         }
 
         outputWarnings(result.getSqlWarning(), anyConnection);
@@ -1731,6 +1691,68 @@ public class QueryDispatcher {
         statementExecuted(sql);
 
         return DONE;
+    }
+
+    private void reloadNodes(String metaName, boolean isBeginEndQuery) {
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        DatabaseObjectNode hostNode = treePanel.getHostNode(querySender.getDatabaseConnection());
+        for (DatabaseObjectNode node : hostNode.getChildObjects()) {
+            if (shouldReload(node, metaName, isBeginEndQuery)) {
+                treePanel.reloadPath(node.getTreePath());
+                treePanel.reloadRelatedNodes(node);
+            }
+        }
+    }
+
+    private void reloadNodes(TreeSet<String> metaNames, boolean updateSystemTree) {
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        DatabaseObjectNode hostNode = treePanel.getHostNode(querySender.getDatabaseConnection());
+        for (DatabaseObjectNode node : hostNode.getChildObjects()) {
+            if (shouldReload(node, metaNames, updateSystemTree)) {
+                treePanel.reloadPath(node.getTreePath());
+                treePanel.reloadRelatedNodes(node);
+            }
+        }
+    }
+
+    private static boolean shouldReload(DatabaseObjectNode node, String metaName, boolean isBeginEndQuery) {
+
+        String metaKey = node.getMetaDataKey();
+        if (MiscUtils.isNull(metaKey))
+            return false;
+
+        if (isBeginEndQuery)
+            return metaKey.contains(metaName) || node.isSystem();
+
+        String table = NamedObject.META_TYPES[NamedObject.TABLE];
+        String globalTable = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+
+        return (metaKey.contains(metaName) || metaName.contains(metaKey))
+                || (node.isSystem() && (table.contentEquals(metaName) || globalTable.startsWith(metaName)))
+                || (table.contentEquals(metaName) && metaKey.contentEquals(globalTable));
+    }
+
+    private static boolean shouldReload(DatabaseObjectNode node, TreeSet<String> metaNames, boolean updateSystemTree) {
+
+        String metaKey = node.getMetaDataKey();
+        if (MiscUtils.isNull(metaKey))
+            return false;
+
+        String table = NamedObject.META_TYPES[NamedObject.TABLE];
+        String systemTable = NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE];
+        String globalTable = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+
+        return (updateSystemTree && node.isSystem() && !metaKey.contentEquals(systemTable))
+                || metaNames.stream().anyMatch(metaName -> metaKey.contains(metaName) || metaName.contains(metaKey))
+                || metaNames.stream().anyMatch(metaName -> metaKey.contentEquals(globalTable) && metaName.contains(table));
     }
 
     /**

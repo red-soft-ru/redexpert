@@ -298,6 +298,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     protected void reset() {}
 
+    @Override
+    protected void reloadNodes() {
+        reloadNodes(table.getName());
+    }
 
     @Override
     protected String generateQuery() {

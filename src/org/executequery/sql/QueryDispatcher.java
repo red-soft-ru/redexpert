@@ -1020,16 +1020,16 @@ public class QueryDispatcher {
 
             executing = true;
             List<DerivedQuery> executableQueries = getExecutableQueries(script);
-
+            DatabaseConnection databaseConnection = null;
+            Connection connection = null;
+            Driver driver = null;
             try {
-                DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+                databaseConnection = this.querySender.getDatabaseConnection();
                 Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                 DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
                 if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
                     try {
                         connection = querySender.getConnection().unwrap(Connection.class);
                     } catch (SQLException e) {
@@ -1046,16 +1046,6 @@ public class QueryDispatcher {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    if (driver.getMajorVersion() >= 5) {
-                        IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
-                        try {
-                            tsm.setTables(getTableMap(databaseConnection));
-                            beforeQuery = tsm.getTableStatistics();
-
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
 
             } catch (Exception e) {
@@ -1071,6 +1061,17 @@ public class QueryDispatcher {
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
+
+                if (driver.getMajorVersion() >= 5) {
+                    IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+                    try {
+                        tsm.setTables(getTableMap(databaseConnection));
+                        beforeQuery = tsm.getTableStatistics();
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
                 try {
                     DerivedQuery query = executableQueries.get(i);
                     setOutputMessage(querySender.getDatabaseConnection(),

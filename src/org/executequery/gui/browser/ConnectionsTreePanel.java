@@ -1237,7 +1237,7 @@ public class ConnectionsTreePanel extends TreePanel
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX, NamedObject.TRIGGER));
 
         } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER, NamedObject.TABLE_COLUMN)) {
-            nodeStream = getTablesStream(nodeStream, tableName, globalTemporary);
+            nodeStream = getTablesStream(nodeStream, node, tableName, globalTemporary);
 
         } else if (node.typeOf(NamedObject.INDEXES_FOLDER_NODE)) {
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX));
@@ -1249,19 +1249,46 @@ public class ConnectionsTreePanel extends TreePanel
         nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
     }
 
-    private Stream<DatabaseObjectNode> getTablesStream(Stream<DatabaseObjectNode> nodeStream, String tableName, boolean globalTemporary) {
+    private Stream<DatabaseObjectNode> getTablesStream(Stream<DatabaseObjectNode> nodeStream, DatabaseObjectNode node,
+                                                       String tableName, boolean globalTemporary) {
+
+        // --- all tables ---
 
         if (tableName == null)
             return nodeStream.filter(child -> child.typeOf(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY));
+
+        // --- all tables of the specified type ---
 
         List<DatabaseObjectNode> childNodes = globalTemporary ?
                 nodeStream.filter(child -> child.typeOf(NamedObject.GLOBAL_TEMPORARY)).collect(Collectors.toList()) :
                 nodeStream.filter(child -> child.typeOf(NamedObject.TABLE)).collect(Collectors.toList());
 
         DatabaseObjectNode childNode = childNodes.get(0);
-        return childNode != null ?
-                childNode.getChildObjects().stream().filter(table -> Objects.equals(table.getName(), tableName)) :
-                childNodes.stream();
+        if (childNode == null)
+            return childNodes.stream();
+
+        // --- single table ---
+
+        childNodes = childNode.getChildObjects().stream()
+                .filter(table -> Objects.equals(table.getName(), tableName))
+                .collect(Collectors.toList());
+
+        childNode = childNodes.get(0);
+        if (childNode == null)
+            return childNodes.stream();
+
+        // --- table catalog ---
+
+        if (isTableCatalogsEnable()) {
+            if (node.typeOf(NamedObject.TABLE_COLUMN))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.COLUMNS_FOLDER_NODE));
+            if (node.typeOf(NamedObject.INDEX))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.INDEXES_FOLDER_NODE));
+            if (node.typeOf(NamedObject.TRIGGER))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.TRIGGERS_FOLDER_NODE));
+        }
+
+        return childNodes.stream();
     }
 
     private static DatabaseHostNode getDatabaseHostNode(DatabaseObjectNode node) {
@@ -1368,6 +1395,10 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         return null;
+    }
+
+    private static boolean isTableCatalogsEnable() {
+        return SystemProperties.getBooleanProperty("user", TABLES_CATALOGS_KEY);
     }
 
     private boolean isADatabaseHostNode(Object object) {

@@ -467,14 +467,12 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
-        if (e.getID() == MouseEvent.MOUSE_CLICKED && e.getClickCount() >= 2)
-            editCellAt(getSelectedRow(), getSelectedColumn());
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
     }
 
     public boolean editCellAt(int row, int column, EventObject e) {
-        if ((e instanceof MouseEvent) && ((MouseEvent) e).getID() == MouseEvent.MOUSE_PRESSED)
+        if ((e instanceof MouseEvent) && (((MouseEvent) e).getClickCount() < 2))
             return false;
         return super.editCellAt(row, column, e);
     }

@@ -298,6 +298,9 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         if (MiscUtils.isNull(metadataKey))
             return false;
 
+        if (type >= NamedObject.META_TYPES.length)
+            return false;
+
         return Objects.equals(metadataKey.toUpperCase(), NamedObject.META_TYPES[type]);
     }
 

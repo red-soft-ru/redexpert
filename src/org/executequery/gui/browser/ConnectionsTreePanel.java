@@ -1214,6 +1214,9 @@ public class ConnectionsTreePanel extends TreePanel
 
     public void reloadRelatedNodes(DatabaseObjectNode node, String tableName, boolean globalTemporary) {
 
+        if (hasNoRelationsToReload(node))
+            return;
+
         DatabaseHostNode hostNode = getDatabaseHostNode(node);
         if (hostNode == null) {
             Log.debug("Related nodes will not be reloaded, DatabaseHostNode is null");
@@ -1235,6 +1238,19 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
+    }
+
+    private static boolean hasNoRelationsToReload(DatabaseObjectNode node) {
+        return !node.typeOf(
+                NamedObject.TABLE,
+                NamedObject.GLOBAL_TEMPORARY,
+                NamedObject.VIEW,
+                NamedObject.INDEX,
+                NamedObject.TRIGGER,
+                NamedObject.TABLE_COLUMN,
+                NamedObject.INDEXES_FOLDER_NODE,
+                NamedObject.TRIGGERS_FOLDER_NODE
+        );
     }
 
     private Stream<DatabaseObjectNode> getTablesStream(Stream<DatabaseObjectNode> nodeStream, DatabaseObjectNode node,

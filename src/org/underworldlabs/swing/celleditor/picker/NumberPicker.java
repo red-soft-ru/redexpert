@@ -1,13 +1,11 @@
 package org.underworldlabs.swing.celleditor.picker;
 
 import org.executequery.databaseobjects.Types;
+import org.executequery.log.Log;
 import org.underworldlabs.Constants;
 
 import javax.swing.*;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import javax.swing.text.PlainDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.math.BigInteger;
 
@@ -31,17 +29,9 @@ public class NumberPicker extends JTextField
         super();
         this.numberType = numberType;
 
-        setHorizontalAlignment(JTextField.LEFT);
+        setHorizontalAlignment(SwingConstants.LEFT);
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-
-        /*addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                processKeyTyping(e);
-            }
-        });*/
-        PlainDocument doc = (PlainDocument) getDocument();
-        doc.setDocumentFilter(new NumberFilter());
+        getDocument().setDocumentFilter(new NumberFilter());
     }
 
     @Override
@@ -59,11 +49,14 @@ public class NumberPicker extends JTextField
         return this;
     }
 
-    protected boolean checkValue(String value) {
+    @Override
+    public PlainDocument getDocument() {
+        return (PlainDocument) super.getDocument();
+    }
+
+    protected boolean validate(String value) {
 
         try {
-
-
             switch (numberType) {
 
                 case Types.BIGINT:
@@ -83,39 +76,60 @@ public class NumberPicker extends JTextField
                     if (int128.compareTo(INT128_MAX_VALUE) > 0 || int128.compareTo(INT128_MIN_VALUE) < 0)
                         throw new NumberFormatException();
                     break;
+
+                default:
+                    throw new IllegalArgumentException(
+                            String.format("Type [%d] is not supported by NumberPicker", numberType)
+                    );
             }
-            return true;
 
         } catch (NumberFormatException ex) {
+            Log.debug(ex.getMessage(), ex);
+            return false;
+
+        } catch (IllegalArgumentException ex) {
+            Log.error(ex.getMessage(), ex);
             return false;
         }
+
+        return true;
     }
 
-    class NumberFilter extends DocumentFilter {
-        public void insertString(FilterBypass fb, int offset, String string,
-                                 AttributeSet attr) throws BadLocationException {
-            StringBuilder sb = new StringBuilder(getText());
+    private class NumberFilter extends DocumentFilter {
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+
+            StringBuilder sb = getStringBuilder();
             sb.insert(offset, string);
-            if (checkValue(sb.toString()))
+            if (validate(sb.toString()))
                 super.insertString(fb, offset, string, attr);
         }
 
-        public void replace(FilterBypass fb, int offset, int length, String string,
-                            AttributeSet attrs) throws BadLocationException {
-            StringBuilder sb = new StringBuilder(getText());
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs)
+                throws BadLocationException {
+
+            StringBuilder sb = getStringBuilder();
             sb.replace(offset, offset + length, string);
-            if (checkValue(sb.toString()))
+            if (validate(sb.toString()))
                 super.replace(fb, offset, length, string, attrs);
         }
 
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-            StringBuilder sb = new StringBuilder(getText());
+
+            StringBuilder sb = getStringBuilder();
             sb.delete(offset, offset + length);
-            if (checkValue(sb.toString()))
+            if (validate(sb.toString()))
                 super.remove(fb, offset, length);
         }
-    }
 
+        private StringBuilder getStringBuilder() {
+            return new StringBuilder(getText());
+        }
+
+    } // NumberFilter class
 
 }

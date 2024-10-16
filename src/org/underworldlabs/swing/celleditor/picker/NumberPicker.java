@@ -3,6 +3,7 @@ package org.underworldlabs.swing.celleditor.picker;
 import org.executequery.databaseobjects.Types;
 import org.executequery.log.Log;
 import org.underworldlabs.Constants;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -55,6 +56,9 @@ public class NumberPicker extends JTextField
     }
 
     protected boolean validate(String value) {
+
+        if (MiscUtils.isNull(value))
+            return true;
 
         try {
             switch (numberType) {

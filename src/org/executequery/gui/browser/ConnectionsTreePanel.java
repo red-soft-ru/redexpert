@@ -959,7 +959,7 @@ public class ConnectionsTreePanel extends TreePanel
     public void reloadPath(TreePath path, boolean refreshButtons) {
         try {
 
-            if (treeExpanding || path == null)
+            if (treeExpanding || path == null || pathHidden(path))
                 return;
 
             Object object = path.getLastPathComponent();
@@ -978,6 +978,12 @@ public class ConnectionsTreePanel extends TreePanel
         } finally {
             GUIUtilities.showNormalCursor();
         }
+    }
+
+    private boolean pathHidden(TreePath path) {
+        Rectangle viewRect = treeScrollPane.getViewport().getViewRect();
+        Rectangle nodeRect = tree.getPathBounds(path);
+        return nodeRect == null || !nodeRect.intersects(viewRect);
     }
 
     protected void nodeStructureChanged(TreeNode node) {

@@ -164,6 +164,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     private boolean referencesLoaded;
     private boolean loadingRowCount;
+    private boolean tableResetEventTriggered;
 
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
@@ -1199,10 +1200,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                 if (executeQueryDialog.getCommit()) {
                     reloadNodes(metaType);
-
-                    // if table catalogs enable the panel will update via processTableReset method triggering
-                    if (!ConnectionsTreePanel.isTableCatalogsEnable())
-                        refresh();
+                    maybeRefresh();
                 }
             }
         }
@@ -1241,10 +1239,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (panelForDialog != null) {
             dialog.addDisplayComponent(panelForDialog);
             dialog.display();
-
-            // if table catalogs enable the panel will update via processTableReset method triggering
-            if (!ConnectionsTreePanel.isTableCatalogsEnable())
-                refresh();
+            maybeRefresh();
         }
     }
 
@@ -1399,12 +1394,22 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         setValues(table);
     }
 
+    private void maybeRefresh() {
+        GUIUtils.invokeLater(() -> {
+            if (!tableResetEventTriggered)
+                refresh();
+            tableResetEventTriggered = false;
+        });
+    }
+
     // --- DatabaseTableEventListener impl ---
 
     @Override
     public void processTableReset(DatabaseTableEvent e) {
-        if (!Objects.equals(e.getSource(), this))
-            GUIUtils.invokeLater(() -> setValues(table, false));
+        if (!Objects.equals(e.getSource(), this)) {
+            tableResetEventTriggered = true;
+            setValues(table, false);
+        }
     }
 
     @Override

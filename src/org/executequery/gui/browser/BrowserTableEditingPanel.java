@@ -20,6 +20,7 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -29,6 +30,9 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.DatabaseTableEvent;
+import org.executequery.event.DatabaseTableEventListener;
 import org.executequery.gui.*;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
@@ -81,6 +85,7 @@ import java.util.stream.Collectors;
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
+        DatabaseTableEventListener,
         FocusListener,
         TableConstraintFunction,
         DefinitionPanel,
@@ -164,6 +169,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         this.controller = controller;
         init();
         arrange();
+
+        EventMediator.registerListener(this);
     }
 
     private void init() {
@@ -598,8 +605,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
-            table.reset();
-            reloadView();
+            refresh();
         }
     }
 
@@ -966,6 +972,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void setValues(DatabaseTable table) {
+        setValues(table, true);
+    }
+
+    private void setValues(DatabaseTable table, boolean stateChanged) {
 
         this.table = table;
         if (!MiscUtils.isNull(table.getExternalFile())) {
@@ -995,7 +1005,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count"))
             reloadDataRowCount();
 
-        stateChanged(null);
+        if (stateChanged)
+            stateChanged(null);
     }
 
 
@@ -1188,7 +1199,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
                 if (executeQueryDialog.getCommit()) {
                     reloadNodes(metaType);
-                    refresh();
+
+                    // if table catalogs enable the panel will update via processTableReset method triggering
+                    if (!ConnectionsTreePanel.isTableCatalogsEnable())
+                        refresh();
                 }
             }
         }
@@ -1227,8 +1241,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (panelForDialog != null) {
             dialog.addDisplayComponent(panelForDialog);
             dialog.display();
-            table.reset();
-            reloadView();
+
+            // if table catalogs enable the panel will update via processTableReset method triggering
+            if (!ConnectionsTreePanel.isTableCatalogsEnable())
+                refresh();
         }
     }
 
@@ -1382,6 +1398,21 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         table.reset();
         setValues(table);
     }
+
+    // --- DatabaseTableEventListener impl ---
+
+    @Override
+    public void processTableReset(DatabaseTableEvent e) {
+        if (!Objects.equals(e.getSource(), this))
+            GUIUtils.invokeLater(() -> setValues(table, false));
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event.isDatabaseTableEvent();
+    }
+
+    // ---
 
     private class PropertiesPanel extends JPanel {
 

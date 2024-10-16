@@ -1,7 +1,8 @@
 package org.executequery.gui.browser.nodes.tableNode;
 
+import org.executequery.EventMediator;
 import org.executequery.databaseobjects.DatabaseTable;
-import org.executequery.databaseobjects.NamedObject;
+import org.executequery.event.DatabaseTableEvent;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
@@ -48,11 +49,6 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
     }
 
     @Override
-    public NamedObject getDatabaseObject() {
-        return databaseTable;
-    }
-
-    @Override
     public String getShortName() {
         return databaseTable.getShortName();
     }
@@ -66,6 +62,7 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
     public void reset() {
         super.reset();
         childrenList = null;
+        EventMediator.fireEvent(new DatabaseTableEvent(this, DatabaseTableEvent.PROCESS_TABLE_RESET));
     }
 
     @Override

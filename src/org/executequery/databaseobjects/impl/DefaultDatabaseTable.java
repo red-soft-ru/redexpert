@@ -295,7 +295,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
      * @return the indexes
      */
     @Override
-    public List<DefaultDatabaseIndex> getIndexes() throws DataSourceException {
+    public synchronized List<DefaultDatabaseIndex> getIndexes() throws DataSourceException {
 
         if (!isMarkedForReload() && indexes != null)
             return indexes;
@@ -366,7 +366,7 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
-    public List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
+    public synchronized List<DefaultDatabaseTrigger> getTriggers() throws DataSourceException {
 
         if (!isMarkedForReload() && triggers != null)
             return triggers;

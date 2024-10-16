@@ -20,8 +20,10 @@
 
 package org.executequery.gui.browser.nodes.tableNode;
 
+import org.executequery.EventMediator;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.event.DatabaseTableEvent;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.underworldlabs.jdbc.DataSourceException;
 
@@ -31,13 +33,18 @@ import java.util.List;
 
 public class DatabaseTableNode extends DatabaseObjectNode {
     private List<DatabaseObjectNode> childrenList;
+    private final boolean displayTableCatalog;
 
-    public DatabaseTableNode(NamedObject databaseObject) {
+    public DatabaseTableNode(NamedObject databaseObject, boolean displayTableCatalog) {
         super(databaseObject);
+        this.displayTableCatalog = displayTableCatalog;
     }
 
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
+
+        if (!displayTableCatalog)
+            return super.getChildObjects();
 
         if (childrenList == null) {
             childrenList = new ArrayList<>();
@@ -63,6 +70,7 @@ public class DatabaseTableNode extends DatabaseObjectNode {
     public void reset() {
         super.reset();
         childrenList = null;
+        EventMediator.fireEvent(new DatabaseTableEvent(this, DatabaseTableEvent.PROCESS_TABLE_RESET));
     }
 
 }

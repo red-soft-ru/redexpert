@@ -23,12 +23,12 @@ package org.executequery.gui.browser.nodes;
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.tableNode.DatabaseTableNode;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -137,10 +137,12 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         if (childObjects == null)
             return new ArrayList<>();
 
+        boolean tableCatalogsEnabled = tableCatalogsEnabled();
+
         childrenList = new ArrayList<>();
         for (NamedObject childObject : childObjects) {
-            childrenList.add(isTableCatalog(childObject) ?
-                    new DatabaseTableNode(childObject) :
+            childrenList.add(isTableNode(childObject) ?
+                    new DatabaseTableNode(childObject, tableCatalogsEnabled) :
                     new DatabaseObjectNode(childObject)
             );
         }
@@ -265,10 +267,12 @@ public class DatabaseObjectNode extends DefaultMutableTreeNode {
         return namedObject instanceof DatabaseTable;
     }
 
-    private boolean isTableCatalog(NamedObject databaseObject) {
-        return tableCatalogsEnabled
-                && SystemProperties.getBooleanProperty("user", "browser.show.table.catalogs")
-                && databaseObject instanceof AbstractTableObject
+    private boolean tableCatalogsEnabled() {
+        return tableCatalogsEnabled && ConnectionsTreePanel.isTableCatalogsEnable();
+    }
+
+    private boolean isTableNode(NamedObject databaseObject) {
+        return databaseObject instanceof AbstractTableObject
                 && !(databaseObject instanceof DefaultDatabaseView);
     }
 

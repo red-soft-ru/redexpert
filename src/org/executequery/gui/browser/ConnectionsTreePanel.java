@@ -975,18 +975,6 @@ public class ConnectionsTreePanel extends TreePanel
             pathExpanded(path);
             pathChanged(oldSelectionPath, path, refreshButtons);
 
-            // --- reload panel view ---
-
-            String type = Constants.EMPTY;
-            if (node.getType() < NamedObject.META_TYPES.length)
-                type = NamedObject.META_TYPES[node.getType()];
-
-            String title = MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + getDatabaseConnection(node).getName();
-            if (GUIUtilities.isPanelOpen(title)) {
-                GUIUtilities.closeTab(title);
-                valueChanged(node, null);
-            }
-
         } finally {
             GUIUtilities.showNormalCursor();
         }
@@ -1397,7 +1385,7 @@ public class ConnectionsTreePanel extends TreePanel
         return null;
     }
 
-    private static boolean isTableCatalogsEnable() {
+    public static boolean isTableCatalogsEnable() {
         return SystemProperties.getBooleanProperty("user", TABLES_CATALOGS_KEY);
     }
 

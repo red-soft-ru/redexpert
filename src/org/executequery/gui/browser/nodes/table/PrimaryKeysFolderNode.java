@@ -1,16 +1,17 @@
-package org.executequery.gui.browser.nodes.tableNode;
+package org.executequery.gui.browser.nodes.table;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class ColumnFolderNode extends TableFolderNode {
+class PrimaryKeysFolderNode extends TableFolderNode {
 
-    public ColumnFolderNode(DatabaseTable databaseTable) {
+    public PrimaryKeysFolderNode(DatabaseTable databaseTable) {
         super(databaseTable);
     }
 
@@ -21,7 +22,7 @@ class ColumnFolderNode extends TableFolderNode {
         if (databaseTable == null)
             return new ArrayList<>();
 
-        List<NamedObject> values = databaseTable.getObjects();
+        List<ColumnConstraint> values = databaseTable.getPrimaryKeys();
         if (values == null)
             return new ArrayList<>();
 
@@ -30,12 +31,12 @@ class ColumnFolderNode extends TableFolderNode {
 
     @Override
     public String getName() {
-        return bundleString("columns");
+        return bundleString("primary-keys");
     }
 
     @Override
     public int getType() {
-        return NamedObject.COLUMNS_FOLDER_NODE;
+        return NamedObject.PRIMARY_KEYS_FOLDER_NODE;
     }
 
 }

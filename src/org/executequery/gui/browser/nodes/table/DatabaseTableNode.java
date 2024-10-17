@@ -18,7 +18,7 @@
  *
  */
 
-package org.executequery.gui.browser.nodes.tableNode;
+package org.executequery.gui.browser.nodes.table;
 
 import org.executequery.EventMediator;
 import org.executequery.databaseobjects.DatabaseTable;

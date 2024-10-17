@@ -35,7 +35,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
+import org.executequery.gui.browser.nodes.table.TableFolderNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.gui.table.EditConstraintPanel;

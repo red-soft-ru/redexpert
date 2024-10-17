@@ -24,7 +24,7 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.*;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.nodes.tableNode.DatabaseTableNode;
+import org.executequery.gui.browser.nodes.table.DatabaseTableNode;
 import org.executequery.gui.browser.tree.RETreePath;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.jdbc.DataSourceException;

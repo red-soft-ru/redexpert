@@ -1,21 +1,17 @@
-package org.executequery.gui.browser.nodes.tableNode;
+package org.executequery.gui.browser.nodes.table;
 
 import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
-import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
-import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
+import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.executequery.databaseobjects.NamedObject.*;
+class ForeignKeysFolderNode extends TableFolderNode {
 
-class TriggersFolderNode extends TableFolderNode {
-
-    public TriggersFolderNode(DatabaseTable databaseTable) {
+    public ForeignKeysFolderNode(DatabaseTable databaseTable) {
         super(databaseTable);
     }
 
@@ -26,24 +22,21 @@ class TriggersFolderNode extends TableFolderNode {
         if (databaseTable == null)
             return new ArrayList<>();
 
-        List<DefaultDatabaseTrigger> values = databaseTable.getTriggers();
+        List<ColumnConstraint> values = databaseTable.getForeignKeys();
         if (values == null)
             return new ArrayList<>();
-
-        DefaultDatabaseMetaTag metaTag = new DefaultDatabaseMetaTag(databaseTable.getHost(), META_TYPES[TRIGGER]);
-        values.stream().filter(Objects::nonNull).forEach(val -> val.setParent(metaTag));
 
         return values.stream().map(DatabaseObjectNode::new).collect(Collectors.toList());
     }
 
     @Override
     public String getName() {
-        return bundleString("triggers");
+        return bundleString("foreign-keys");
     }
 
     @Override
     public int getType() {
-        return NamedObject.TRIGGERS_FOLDER_NODE;
+        return NamedObject.FOREIGN_KEYS_FOLDER_NODE;
     }
 
 }

@@ -48,7 +48,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.profiler.DefaultProfilerExecutor;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.InputParametersDialog;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
@@ -1338,8 +1338,8 @@ public class QueryDispatcher {
         if (showInputDialog) {
 
             // restore old params if needed
-            if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-                List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+            if (QueryEditorHistory.parameters().containsKey(querySender.getDatabaseConnection())) {
+                List<Parameter> oldParams = QueryEditorHistory.parameters().get(querySender.getDatabaseConnection());
 
                 for (Parameter displayParam : displayParams) {
                     for (Parameter oldParam : oldParams) {
@@ -1367,7 +1367,7 @@ public class QueryDispatcher {
             }
 
             // remember inputted params
-            QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+            QueryEditorHistory.parameters().put(querySender.getDatabaseConnection(), displayParams);
         }
 
         // add params to the statement
@@ -1400,8 +1400,8 @@ public class QueryDispatcher {
         }
 
         // restore old params if needed
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+        if (QueryEditorHistory.parameters().containsKey(querySender.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.parameters().get(querySender.getDatabaseConnection());
 
             for (Parameter displayParam : displayParams) {
                 for (Parameter oldParam : oldParams) {
@@ -1429,7 +1429,7 @@ public class QueryDispatcher {
         }
 
         // remember inputted params
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+        QueryEditorHistory.parameters().put(querySender.getDatabaseConnection(), displayParams);
 
         // add params to the statement
         for (int i = 0; i < params.size(); i++) {

@@ -32,7 +32,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseProcedure;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.editor.InputParametersDialog;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.QueryEditorResultsPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
@@ -261,8 +261,8 @@ public class ExecuteProcedurePanel extends JPanel {
             params.get(i).setTypeName(statement.getParameterMetaData().getParameterTypeName(i + 1));
         }
 
-        if (QueryEditorHistory.getHistoryParameters().containsKey(executor.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(executor.getDatabaseConnection());
+        if (QueryEditorHistory.parameters().containsKey(executor.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.parameters().get(executor.getDatabaseConnection());
 
             for (Parameter parameter : displayParams) {
                 for (int i = 0; i < oldParams.size(); i++) {
@@ -291,7 +291,7 @@ public class ExecuteProcedurePanel extends JPanel {
                 statement.setObject(i + 1, params.get(i).getPreparedValue());
         }
 
-        QueryEditorHistory.getHistoryParameters().put(executor.getDatabaseConnection(), displayParams);
+        QueryEditorHistory.parameters().put(executor.getDatabaseConnection(), displayParams);
         return statement;
     }
 

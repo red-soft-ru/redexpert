@@ -26,7 +26,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.ExecuteQueryFrame;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.gui.prefs.*;
 import org.executequery.localization.Bundles;

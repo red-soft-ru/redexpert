@@ -23,10 +23,6 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
 
     protected abstract List<DatabaseObjectNode> buildObjectNodes();
 
-    private boolean hasChildrenList() {
-        return childrenList != null;
-    }
-
     @Override
     public List<DatabaseObjectNode> getChildObjects() throws DataSourceException {
 
@@ -45,7 +41,8 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
 
     @Override
     public boolean isLeaf() {
-        return hasChildrenList() && childrenList.isEmpty();
+        getChildObjects();
+        return childrenList.isEmpty();
     }
 
     @Override
@@ -55,7 +52,8 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
 
     @Override
     public String getDisplayName() {
-        return String.format("%s (%d)", getName(), (hasChildrenList() ? childrenList.size() : 0));
+        getChildObjects();
+        return String.format("%s (%d)", getName(), childrenList.size());
     }
 
     @Override

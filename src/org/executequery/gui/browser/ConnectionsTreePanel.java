@@ -959,7 +959,7 @@ public class ConnectionsTreePanel extends TreePanel
     public void reloadPath(TreePath path, boolean refreshButtons) {
         try {
 
-            if (treeExpanding || path == null || pathHidden(path))
+            if (treeExpanding || path == null)
                 return;
 
             Object object = path.getLastPathComponent();
@@ -970,6 +970,9 @@ public class ConnectionsTreePanel extends TreePanel
 
             DatabaseObjectNode node = (DatabaseObjectNode) object;
             node.reset();
+
+            if (pathHidden(path))
+                return;
 
             nodeStructureChanged(node);
             pathExpanded(path);

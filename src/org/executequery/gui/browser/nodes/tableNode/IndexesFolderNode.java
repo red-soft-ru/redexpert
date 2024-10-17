@@ -23,6 +23,10 @@ class IndexesFolderNode extends TableFolderNode {
     @Override
     protected List<DatabaseObjectNode> buildObjectNodes() {
 
+        DatabaseTable databaseTable = getDatabaseObject();
+        if (databaseTable == null)
+            return new ArrayList<>();
+
         List<DefaultDatabaseIndex> values = databaseTable.getIndexes();
         if (values == null)
             return new ArrayList<>();

@@ -18,6 +18,10 @@ class ForeignKeysFolderNode extends TableFolderNode {
     @Override
     protected List<DatabaseObjectNode> buildObjectNodes() {
 
+        DatabaseTable databaseTable = getDatabaseObject();
+        if (databaseTable == null)
+            return new ArrayList<>();
+
         List<ColumnConstraint> values = databaseTable.getForeignKeys();
         if (values == null)
             return new ArrayList<>();

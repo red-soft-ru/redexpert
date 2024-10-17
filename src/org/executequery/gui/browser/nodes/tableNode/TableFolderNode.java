@@ -11,13 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class TableFolderNode extends DatabaseObjectNode {
-
-    protected DatabaseTable databaseTable;
     private List<DatabaseObjectNode> childrenList;
 
     protected TableFolderNode(DatabaseTable databaseTable) {
         super(databaseTable);
-        this.databaseTable = databaseTable;
         getChildObjects();
     }
 
@@ -35,6 +32,11 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
     }
 
     @Override
+    public DatabaseTable getDatabaseObject() {
+        return (DatabaseTable) super.getDatabaseObject();
+    }
+
+    @Override
     public boolean isTableFolder() {
         return true;
     }
@@ -47,7 +49,8 @@ public abstract class TableFolderNode extends DatabaseObjectNode {
 
     @Override
     public String getShortName() {
-        return databaseTable.getShortName();
+        DatabaseTable databaseTable = getDatabaseObject();
+        return databaseTable != null ? databaseTable.getShortName() : null;
     }
 
     @Override

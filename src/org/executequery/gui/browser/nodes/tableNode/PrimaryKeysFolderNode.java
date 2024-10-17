@@ -18,6 +18,10 @@ class PrimaryKeysFolderNode extends TableFolderNode {
     @Override
     protected List<DatabaseObjectNode> buildObjectNodes() {
 
+        DatabaseTable databaseTable = getDatabaseObject();
+        if (databaseTable == null)
+            return new ArrayList<>();
+
         List<ColumnConstraint> values = databaseTable.getPrimaryKeys();
         if (values == null)
             return new ArrayList<>();

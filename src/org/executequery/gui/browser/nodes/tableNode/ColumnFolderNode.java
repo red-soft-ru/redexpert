@@ -17,6 +17,10 @@ class ColumnFolderNode extends TableFolderNode {
     @Override
     protected List<DatabaseObjectNode> buildObjectNodes() {
 
+        DatabaseTable databaseTable = getDatabaseObject();
+        if (databaseTable == null)
+            return new ArrayList<>();
+
         List<NamedObject> values = databaseTable.getObjects();
         if (values == null)
             return new ArrayList<>();

@@ -22,6 +22,10 @@ class TriggersFolderNode extends TableFolderNode {
     @Override
     protected List<DatabaseObjectNode> buildObjectNodes() {
 
+        DatabaseTable databaseTable = getDatabaseObject();
+        if (databaseTable == null)
+            return new ArrayList<>();
+
         List<DefaultDatabaseTrigger> values = databaseTable.getTriggers();
         if (values == null)
             return new ArrayList<>();

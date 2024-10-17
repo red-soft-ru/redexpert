@@ -558,20 +558,25 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void editTrigger(MouseEvent e) {
 
-        if (e.getClickCount() < 2)
+        if (e.getClickCount() < 2 || triggersTable.getSelectedRow() < 0)
             return;
 
-        if (triggersTable.getSelectedRow() >= 0) {
+        TableSorter tableSorter = (TableSorter) triggersTable.getModel();
+        int triggerIndex = tableSorter.modelIndex(triggersTable.getSelectedRow());
+        TableTriggersTableModel tableModel = (TableTriggersTableModel) tableSorter.getTableModel();
 
-            int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
-            DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-            BaseDialog dialog = new BaseDialog("Edit Trigger", true);
-            CreateTriggerPanel panel = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
-            dialog.addDisplayComponent(panel);
-            dialog.display();
+        DefaultDatabaseTrigger trigger = tableModel.getTriggers().get(triggerIndex);
+        DatabaseConnection connection = table.getHost().getDatabaseConnection();
 
-            refresh();
-        }
+        String title = trigger.getShortName().trim() + ":TRIGGER:" + connection.getName();
+        if (GUIUtilities.getCentralPane(title) == null) {
+            CreateTriggerPanel panel = new CreateTriggerPanel(connection, null, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, panel, title, true);
+
+        } else
+            GUIUtilities.setSelectedCentralPane(title);
+
+        refresh();
     }
 
     private void editConstraint(MouseEvent e) {

@@ -482,7 +482,14 @@ public class ResultSetTable extends JTable implements StandardTable {
     public boolean editCellAt(int row, int column, EventObject e) {
         if ((e instanceof MouseEvent) && (((MouseEvent) e).getClickCount() < 2))
             return false;
-        return super.editCellAt(row, column, e);
+        boolean result = super.editCellAt(row, column, e);
+        if (e instanceof KeyEvent) {
+            getEditorComponent().requestFocus();
+            if (getEditorComponent() instanceof JTextField) {
+                ((JTextField) getEditorComponent()).selectAll();
+            }
+        }
+        return result;
     }
 
     private int getUserPreferredColumnWidth() {
@@ -510,7 +517,6 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
-
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_ESCAPE) {
             restoreOldCellSize();

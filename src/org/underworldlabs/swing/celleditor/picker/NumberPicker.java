@@ -6,7 +6,10 @@ import org.underworldlabs.Constants;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.math.BigInteger;
 
@@ -80,7 +83,12 @@ public class NumberPicker extends JTextField
                     if (int128.compareTo(INT128_MAX_VALUE) > 0 || int128.compareTo(INT128_MIN_VALUE) < 0)
                         throw new NumberFormatException();
                     break;
-
+                case Types.DECIMAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.FLOAT:
+                    Double.parseDouble(value);
+                    break;
                 default:
                     throw new IllegalArgumentException(
                             String.format("Type [%d] is not supported by NumberPicker", numberType)

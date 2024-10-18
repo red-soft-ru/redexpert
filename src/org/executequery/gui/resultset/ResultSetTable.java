@@ -48,6 +48,7 @@ import java.util.*;
 public class ResultSetTable extends JTable implements StandardTable {
 
     private CustomCellEditor defaultCellEditor;
+    private CustomCellEditor floatCellEditor;
     private CustomCellEditor int128CellEditor;
     private CustomCellEditor bigintCellEditor;
     private CustomCellEditor integerCellEditor;
@@ -82,6 +83,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         bigintCellEditor = new CustomCellEditor(new NumberPicker(Types.BIGINT));
         integerCellEditor = new CustomCellEditor(new NumberPicker(Types.INTEGER));
         smallintCellEditor = new CustomCellEditor(new NumberPicker(Types.SMALLINT));
+        floatCellEditor = new CustomCellEditor(new NumberPicker(Types.FLOAT));
 
         dateEditor = new DateCellEditor();
         timeCellEditor = new TimeCellEditor();
@@ -439,6 +441,12 @@ public class ResultSetTable extends JTable implements StandardTable {
 
             case Types.TIME:
                 oldCellEditor = timeCellEditor;
+                break;
+            case Types.DOUBLE:
+            case Types.FLOAT:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                oldCellEditor = floatCellEditor;
                 break;
 
             case Types.BOOLEAN:

@@ -841,6 +841,27 @@ public class ConnectionsTreePanel extends TreePanel
         return object != null ? object.getDatabaseConnection() : null;
     }
 
+    public DatabaseObjectNode findNode(DatabaseConnection dc, String name, int type) {
+
+        DatabaseHostNode hostNode = (DatabaseHostNode) getHostNode(dc);
+        if (hostNode == null || hostNode.getChildObjects().isEmpty()) {
+            Log.debug("Couldn't find node, HOST node is null or empty");
+            return null;
+        }
+
+        DatabaseObjectNode metaTagNode = hostNode.getChildObjects().stream()
+                .filter(node -> node.typeOf(type)).findFirst().orElse(null);
+
+        if (metaTagNode == null || metaTagNode.getChildObjects().isEmpty()) {
+            Log.debug("Couldn't find node, META_TAG node is null or empty");
+            return null;
+        }
+
+        return metaTagNode.getChildObjects().stream()
+                .filter(node -> Objects.equals(node.getName(), name))
+                .findFirst().orElse(null);
+    }
+
     // ---
 
     protected ConnectionsFolderNode getFolderNode(ConnectionsFolder folder) {

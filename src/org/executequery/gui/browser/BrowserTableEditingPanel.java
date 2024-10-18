@@ -568,15 +568,17 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         DefaultDatabaseTrigger trigger = tableModel.getTriggers().get(triggerIndex);
         DatabaseConnection connection = table.getHost().getDatabaseConnection();
 
-        String title = trigger.getShortName().trim() + ":TRIGGER:" + connection.getName();
+        String triggerName = trigger.getShortName().trim();
+        String title = triggerName + ":TRIGGER:" + connection.getName();
+
         if (GUIUtilities.getCentralPane(title) == null) {
             CreateTriggerPanel panel = new CreateTriggerPanel(connection, null, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
-            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, panel, title, true);
+            panel.setDatabaseObjectNode(ConnectionsTreePanel.getPanelFromBrowser().findNode(connection, triggerName, NamedObject.TRIGGER));
+            panel.setCurrentPath(panel.getDatabaseObjectNode().getTreePath());
 
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, panel, title, true);
         } else
             GUIUtilities.setSelectedCentralPane(title);
-
-        refresh();
     }
 
     private void editConstraint(MouseEvent e) {

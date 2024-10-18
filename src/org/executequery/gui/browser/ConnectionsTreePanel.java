@@ -1246,7 +1246,8 @@ public class ConnectionsTreePanel extends TreePanel
             nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TRIGGER));
         }
 
-        nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
+        if (nodeStream != null)
+            nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
     }
 
     private static boolean hasNoRelationsToReload(DatabaseObjectNode node) {
@@ -1276,6 +1277,9 @@ public class ConnectionsTreePanel extends TreePanel
                 nodeStream.filter(child -> child.typeOf(NamedObject.GLOBAL_TEMPORARY)).collect(Collectors.toList()) :
                 nodeStream.filter(child -> child.typeOf(NamedObject.TABLE)).collect(Collectors.toList());
 
+        if (childNodes.isEmpty())
+            return null;
+
         DatabaseObjectNode childNode = childNodes.get(0);
         if (childNode == null)
             return childNodes.stream();
@@ -1285,6 +1289,9 @@ public class ConnectionsTreePanel extends TreePanel
         childNodes = childNode.getChildObjects().stream()
                 .filter(table -> Objects.equals(table.getName(), tableName))
                 .collect(Collectors.toList());
+
+        if (childNodes.isEmpty())
+            return null;
 
         childNode = childNodes.get(0);
         if (childNode == null)

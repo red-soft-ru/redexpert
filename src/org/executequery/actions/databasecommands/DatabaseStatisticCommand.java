@@ -54,21 +54,18 @@ public class DatabaseStatisticCommand {
     /**
      * Returns database header statistic
      *
-     * @param dc              connection to use
-     * @param handleException is it nesessary to show warnings
+     * @param dc connection to use
      * @return the same result as <code>gstat -h</code> command
      */
-    public static String getDatabaseHeader(DatabaseConnection dc, boolean handleException) {
+    public static String getDatabaseHeader(DatabaseConnection dc) {
 
-        try (OutputStream outputStream = getDatabaseHeaderStatistics(dc, handleException)) {
+        try (OutputStream outputStream = getDatabaseHeaderStatistics(dc)) {
             return outputStream.toString();
 
         } catch (IOException e) {
-            if (handleException)
-                Log.error(e.getMessage(), e);
+            Log.error(e.getMessage(), e);
+            return null;
         }
-
-        return null;
     }
 
     public static String getHeaderValue(String key, String databaseHeader) {
@@ -86,22 +83,19 @@ public class DatabaseStatisticCommand {
         return value;
     }
 
-    private static OutputStream getDatabaseHeaderStatistics(DatabaseConnection dc, boolean handleException) {
+    private static OutputStream getDatabaseHeaderStatistics(DatabaseConnection dc) {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         IFBStatisticManager statisticManager = getStatisticManager(dc);
 
         if (statisticManager != null) {
             try {
-
                 statisticManager.setLogger(outputStream);
                 statisticManager.getHeaderPage();
 
             } catch (SQLException e) {
-                if (handleException) {
-                    Log.error(e.getMessage(), e);
-                    GUIUtilities.displayExceptionErrorDialog("Unable to get database header statistic", e, DatabaseStatisticCommand.class);
-                }
+                Log.debug("Unable to get database header statistics");
+                Log.debug(e.getMessage(), e);
             }
         }
 
@@ -138,8 +132,8 @@ public class DatabaseStatisticCommand {
             return statisticManager;
 
         } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBStatisticManager instance", e, DatabaseStatisticCommand.class);
+            Log.debug("Unable to init IFBStatisticManager instance");
+            Log.debug(e.getMessage(), e);
         }
 
         return null;

@@ -1160,7 +1160,7 @@ public class ConnectionsTreePanel extends TreePanel
 
                 @Override
                 public Object construct() {
-                    properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc, false));
+                    properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc));
                     propertiesPanel.restoreHeaders();
                     propertiesPanel.setDatabaseProperties(properties, false);
 

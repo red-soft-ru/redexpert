@@ -649,7 +649,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public Map<Object, Object> getDatabaseProperties() {
         if (databaseProperties == null || databaseProperties.isEmpty()) {
-            databaseProperties = getDatabaseProperties(getDatabaseConnection(), true);
+            databaseProperties = getDatabaseProperties(getDatabaseConnection());
             databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
 
             Map<Object, Object> metaProperties = getMetaProperties();
@@ -659,8 +659,8 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return databaseProperties;
     }
 
-    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection, boolean handleException) {
-        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
+    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection) {
+        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection);
 
         String serverVersion = getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader);
         if (connection.getMajorServerVersion() > 0)

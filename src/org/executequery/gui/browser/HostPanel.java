@@ -139,7 +139,7 @@ public class HostPanel extends AbstractFormObjectViewPanel implements Connection
                 propertiesPanel.setLoading(true);
 
                 properties = useStaticMethod ?
-                        DefaultDatabaseHost.getDatabaseProperties(connection, false) :
+                        DefaultDatabaseHost.getDatabaseProperties(connection) :
                         host.getDatabaseProperties();
 
                 return null;

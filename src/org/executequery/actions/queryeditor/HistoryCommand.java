@@ -21,7 +21,7 @@
 package org.executequery.actions.queryeditor;
 
 import org.executequery.GUIUtilities;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.SQLHistoryDialog;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;

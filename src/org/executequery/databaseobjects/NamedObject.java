@@ -317,4 +317,8 @@ public interface NamedObject extends Named, java.io.Serializable {
         return null;
     }
 
+    default boolean isMetaTag() {
+        return false;
+    }
+
 }

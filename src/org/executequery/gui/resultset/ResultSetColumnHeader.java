@@ -24,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.databaseobjects.Types;
 
 import javax.swing.*;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.UUID;
 
 public class ResultSetColumnHeader {
@@ -38,7 +40,7 @@ public class ResultSetColumnHeader {
     private boolean editable;
     private int colWidth;
     private int displaySize;
-
+    private final ResultSetMetaData rsmd;
 
     public ResultSetColumnHeader(int index, String label) {
         this(index, label, label);
@@ -49,6 +51,11 @@ public class ResultSetColumnHeader {
     }
 
     public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName, int displaySize) {
+        this(index, label, name, dataType, dataTypeName, null);
+        this.displaySize = displaySize;
+    }
+
+    public ResultSetColumnHeader(int index, String label, String name, int dataType, String dataTypeName, ResultSetMetaData rsmd) {
         this.id = UUID.randomUUID().toString();
         this.originalIndex = index;
         this.label = label;
@@ -58,7 +65,8 @@ public class ResultSetColumnHeader {
         this.visible = true;
         this.editable = true;
         this.colWidth = (int) (new JLabel(label).getPreferredSize().getWidth() + 30);
-        this.displaySize = displaySize;
+        this.displaySize = -1;
+        this.rsmd = rsmd;
     }
 
     public String getId() {
@@ -119,6 +127,13 @@ public class ResultSetColumnHeader {
     }
 
     public int getDisplaySize() {
+        if (displaySize == -1 && rsmd != null) {
+            try {
+                displaySize = rsmd.getColumnDisplaySize(getOriginalIndex() + 1);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         return displaySize;
     }
 

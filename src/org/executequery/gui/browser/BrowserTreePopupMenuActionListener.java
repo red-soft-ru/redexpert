@@ -35,7 +35,7 @@ import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
+import org.executequery.gui.browser.nodes.table.TableFolderNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.table.CreateTablePanel;
 import org.executequery.gui.table.EditConstraintPanel;
@@ -195,25 +195,22 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
             return;
 
         DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
+        String tableName = getTableName(node.getDatabaseObject());
+
         String query = getDropQuery(node, node.getType());
         if (query == null)
             return;
 
-        DatabaseObjectNode indecesNode = null;
-        if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
-            indecesNode = ((DatabaseHostNode) node.getParent().getParent()).getChildObjects().stream()
-                    .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                    .findFirst().orElse(null);
-        }
+        ExecuteQueryDialog executeDialog = new ExecuteQueryDialog(
+                bundledString("DropObject"),
+                query,
+                currentSelection,
+                true
+        );
 
-        ExecuteQueryDialog executeQueryDialog = new ExecuteQueryDialog(bundledString("DropObject"), query, currentSelection, true);
-        executeQueryDialog.display();
-
-        if (executeQueryDialog.getCommit()) {
-            treePanel.reloadPath(currentPath.getParentPath());
-            if (indecesNode != null)
-                treePanel.reloadPath(indecesNode.getTreePath());
-        }
+        executeDialog.display();
+        if (executeDialog.getCommit())
+            reloadNodes(tableName);
     }
 
     @SuppressWarnings("unused")
@@ -292,6 +289,36 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
     }
 
     // --- handlers helper methods ---
+
+    private void reloadNodes(String tableName) {
+
+        if (treePanel == null || currentPath == null)
+            return;
+
+        TreePath parentPath = currentPath.getParentPath();
+        if (parentPath != null) {
+            treePanel.reloadPath(parentPath);
+            treePanel.reloadRelatedNodes(
+                    (DatabaseObjectNode) parentPath.getLastPathComponent(),
+                    tableName,
+                    isGlobalTemporary(tableName)
+            );
+        }
+    }
+
+    private static String getTableName(NamedObject namedObject) {
+        if (namedObject instanceof DefaultDatabaseIndex)
+            return ((DefaultDatabaseIndex) namedObject).getTableName();
+        if (namedObject instanceof DefaultDatabaseTrigger)
+            return ((DefaultDatabaseTrigger) namedObject).getTriggerTableName();
+        return null;
+    }
+
+    private boolean isGlobalTemporary(String tableName) {
+        DefaultDatabaseHost host = treePanel.getDefaultDatabaseHostFromConnection(currentSelection);
+        List<NamedObject> globalTables = host.getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
+        return globalTables != null && globalTables.stream().map(NamedObject::getName).anyMatch(name -> Objects.equals(name, tableName));
+    }
 
     public void showCreateObjectDialog(DatabaseObjectNode node, DatabaseConnection connection, boolean editing) {
         try {

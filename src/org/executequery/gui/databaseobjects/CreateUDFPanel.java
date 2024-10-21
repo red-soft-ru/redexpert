@@ -176,6 +176,11 @@ public class CreateUDFPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.UDF;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         editedUDF = (DefaultDatabaseUDF) databaseObject;
     }

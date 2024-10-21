@@ -37,6 +37,8 @@ import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.databaseobjects.impl.AbstractTableObject;
+import org.executequery.databaseobjects.impl.DefaultDatabaseView;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.PooledResultSet;
@@ -46,7 +48,7 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.profiler.DefaultProfilerExecutor;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.InputParametersDialog;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
 import org.executequery.localization.Bundles;
@@ -724,6 +726,7 @@ public class QueryDispatcher {
                     if (driver.getMajorVersion() >= 5) {
                         IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
                         try {
+                            tsm.setTables(getTableMap(databaseConnection));
                             beforeQuery = tsm.getTableStatistics();
 
                         } catch (SQLException e) {
@@ -828,29 +831,7 @@ public class QueryDispatcher {
                                     || type == QueryTypes.RECREATE_OBJECT
                                     || type == QueryTypes.ALTER_OBJECT) {
 
-                                DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-                                String queryMetaName = query.getMetaName();
-
-                                for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-
-                                    String nodeMetaKey = metaTagNode.getMetaDataKey();
-                                    if (nodeMetaKey.contains(queryMetaName) || queryMetaName.contains(nodeMetaKey)) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-
-                                    } else if ((NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) || NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY].startsWith(queryMetaName)) && metaTagNode.isSystem()) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-
-                                    } else if (NamedObject.META_TYPES[NamedObject.TABLE].contentEquals(queryMetaName) && nodeMetaKey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY])) {
-                                        ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                                    }
-
-                                    if (nodeMetaKey.contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
-                                        hostNode.getChildObjects().stream()
-                                                .filter(node -> node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                                                .findFirst()
-                                                .ifPresent(node -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(node.getTreePath()));
-                                    }
-                                }
+                                reloadNodes(query.getMetaName(), false);
                             }
 
                             if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK)
@@ -1017,16 +998,16 @@ public class QueryDispatcher {
 
             executing = true;
             List<DerivedQuery> executableQueries = getExecutableQueries(script);
-
+            DatabaseConnection databaseConnection = null;
+            Connection connection = null;
+            Driver driver = null;
             try {
-                DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
+                databaseConnection = this.querySender.getDatabaseConnection();
                 Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
                 DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
 
                 if (driver.getClass().getName().contains("FBDriver")) {
-
-                    Connection connection = null;
                     try {
                         connection = querySender.getConnection().unwrap(Connection.class);
                     } catch (SQLException e) {
@@ -1043,15 +1024,6 @@ public class QueryDispatcher {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    if (driver.getMajorVersion() >= 5) {
-                        IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
-                        try {
-                            beforeQuery = tsm.getTableStatistics();
-
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
 
             } catch (Exception e) {
@@ -1063,9 +1035,21 @@ public class QueryDispatcher {
             boolean stopOnError = SystemProperties.getBooleanProperty("user", "editor.stop.on.error");
             boolean error = false;
             boolean moreThanOneQuery = executableQueries.size() > 1;
+            boolean updateSystemTree = false;
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
+
+                if (driver.getMajorVersion() >= 5) {
+                    IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+                    try {
+                        tsm.setTables(getTableMap(databaseConnection));
+                        beforeQuery = tsm.getTableStatistics();
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
                 try {
                     DerivedQuery query = executableQueries.get(i);
                     setOutputMessage(querySender.getDatabaseConnection(),
@@ -1194,6 +1178,7 @@ public class QueryDispatcher {
                                     if (type == QueryTypes.CREATE_OBJECT || type == QueryTypes.DROP_OBJECT
                                             || type == QueryTypes.CREATE_OR_ALTER || type == QueryTypes.RECREATE_OBJECT || type == QueryTypes.ALTER_OBJECT) {
                                         createsMetaNames.add(query.getMetaName());
+                                        updateSystemTree = true;
                                     }
                                     if (type == QueryTypes.COMMIT || type == QueryTypes.ROLLBACK) {
 
@@ -1294,18 +1279,7 @@ public class QueryDispatcher {
             if (moreThanOneQuery)
                 logExecutionTime("Total execution time: %s", timeTaken, anyConnections);
 
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                String nodemetakey = metaTagNode.getMetaDataKey();
-                if (metaTagNode.isSystem()) {
-                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                } else
-                    for (String metaName : createsMetaNames)
-                        if (nodemetakey.contains(metaName) || metaName.contains(nodemetakey) || (nodemetakey.contentEquals(NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]) && metaName.contains("TABLE"))) {
-                            ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                        }
-
-            }
+            reloadNodes(createsMetaNames, updateSystemTree);
             statementExecuted(script);
 
         } catch (InterruptedException e) {
@@ -1364,8 +1338,8 @@ public class QueryDispatcher {
         if (showInputDialog) {
 
             // restore old params if needed
-            if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-                List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+            if (QueryEditorHistory.parameters().containsKey(querySender.getDatabaseConnection())) {
+                List<Parameter> oldParams = QueryEditorHistory.parameters().get(querySender.getDatabaseConnection());
 
                 for (Parameter displayParam : displayParams) {
                     for (Parameter oldParam : oldParams) {
@@ -1393,7 +1367,7 @@ public class QueryDispatcher {
             }
 
             // remember inputted params
-            QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+            QueryEditorHistory.parameters().put(querySender.getDatabaseConnection(), displayParams);
         }
 
         // add params to the statement
@@ -1426,8 +1400,8 @@ public class QueryDispatcher {
         }
 
         // restore old params if needed
-        if (QueryEditorHistory.getHistoryParameters().containsKey(querySender.getDatabaseConnection())) {
-            List<Parameter> oldParams = QueryEditorHistory.getHistoryParameters().get(querySender.getDatabaseConnection());
+        if (QueryEditorHistory.parameters().containsKey(querySender.getDatabaseConnection())) {
+            List<Parameter> oldParams = QueryEditorHistory.parameters().get(querySender.getDatabaseConnection());
 
             for (Parameter displayParam : displayParams) {
                 for (Parameter oldParam : oldParams) {
@@ -1455,7 +1429,7 @@ public class QueryDispatcher {
         }
 
         // remember inputted params
-        QueryEditorHistory.getHistoryParameters().put(querySender.getDatabaseConnection(), displayParams);
+        QueryEditorHistory.parameters().put(querySender.getDatabaseConnection(), displayParams);
 
         // add params to the statement
         for (int i = 0; i < params.size(); i++) {
@@ -1498,6 +1472,8 @@ public class QueryDispatcher {
                 Map<String, IFBTableStatistics> after = null;
                 try {
                     IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+
+                    tsm.setTables(getTableMap(databaseConnection));
                     after = tsm.getTableStatistics();
 
                 } catch (SQLException | ClassNotFoundException e) {
@@ -1553,6 +1529,16 @@ public class QueryDispatcher {
 
         }
 
+    }
+
+    protected Map<Integer, String> getTableMap(DatabaseConnection databaseConnection) {
+        Map<Integer, String> map = new HashMap<>();
+        List<NamedObject> tables = ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).getTables();
+        for (NamedObject t : tables) {
+            if (!(t instanceof DefaultDatabaseView))
+                map.put(((AbstractTableObject) t).getRelationID(), t.getName());
+        }
+        return map;
     }
 
     private void printExecutionPlan(IFBPerformanceInfo before, boolean anyConnections) {
@@ -1692,19 +1678,12 @@ public class QueryDispatcher {
         SqlStatementResult result = querySender.execute(procQuery.getQueryType(), statement);
 
         if (result.getUpdateCount() == -1 || result.isException()) {
-
             setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.ERROR_MESSAGE, result.getErrorMessage(), anyConnection);
             setStatusMessage(ERROR_EXECUTING);
 
         } else {
             setResultText(querySender.getDatabaseConnection(), result.getUpdateCount(), procQuery.getQueryType(), procQuery.getMetaName(), anyConnection);
-            DatabaseObjectNode hostNode = ConnectionsTreePanel.getPanelFromBrowser().getHostNode(querySender.getDatabaseConnection());
-
-            for (DatabaseObjectNode metaTagNode : hostNode.getChildObjects()) {
-                if (metaTagNode.getMetaDataKey().contains(procQuery.getMetaName()) || metaTagNode.isSystem()) {
-                    ConnectionsTreePanel.getPanelFromBrowser().reloadPath(metaTagNode.getTreePath());
-                }
-            }
+            reloadNodes(procQuery.getMetaName(), true);
         }
 
         outputWarnings(result.getSqlWarning(), anyConnection);
@@ -1712,6 +1691,68 @@ public class QueryDispatcher {
         statementExecuted(sql);
 
         return DONE;
+    }
+
+    private void reloadNodes(String metaName, boolean isBeginEndQuery) {
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        DatabaseObjectNode hostNode = treePanel.getHostNode(querySender.getDatabaseConnection());
+        for (DatabaseObjectNode node : hostNode.getChildObjects()) {
+            if (shouldReload(node, metaName, isBeginEndQuery)) {
+                treePanel.reloadPath(node.getTreePath());
+                treePanel.reloadRelatedNodes(node);
+            }
+        }
+    }
+
+    private void reloadNodes(TreeSet<String> metaNames, boolean updateSystemTree) {
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        DatabaseObjectNode hostNode = treePanel.getHostNode(querySender.getDatabaseConnection());
+        for (DatabaseObjectNode node : hostNode.getChildObjects()) {
+            if (shouldReload(node, metaNames, updateSystemTree)) {
+                treePanel.reloadPath(node.getTreePath());
+                treePanel.reloadRelatedNodes(node);
+            }
+        }
+    }
+
+    private static boolean shouldReload(DatabaseObjectNode node, String metaName, boolean isBeginEndQuery) {
+
+        String metaKey = node.getMetaDataKey();
+        if (MiscUtils.isNull(metaKey))
+            return false;
+
+        if (isBeginEndQuery)
+            return metaKey.contains(metaName) || node.isSystem();
+
+        String table = NamedObject.META_TYPES[NamedObject.TABLE];
+        String globalTable = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+
+        return (metaKey.contains(metaName) || metaName.contains(metaKey))
+                || (node.isSystem() && (table.contentEquals(metaName) || globalTable.startsWith(metaName)))
+                || (table.contentEquals(metaName) && metaKey.contentEquals(globalTable));
+    }
+
+    private static boolean shouldReload(DatabaseObjectNode node, TreeSet<String> metaNames, boolean updateSystemTree) {
+
+        String metaKey = node.getMetaDataKey();
+        if (MiscUtils.isNull(metaKey))
+            return false;
+
+        String table = NamedObject.META_TYPES[NamedObject.TABLE];
+        String systemTable = NamedObject.META_TYPES[NamedObject.SYSTEM_TABLE];
+        String globalTable = NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
+
+        return (updateSystemTree && node.isSystem() && !metaKey.contentEquals(systemTable))
+                || metaNames.stream().anyMatch(metaName -> metaKey.contains(metaName) || metaName.contains(metaKey))
+                || metaNames.stream().anyMatch(metaName -> metaKey.contentEquals(globalTable) && metaName.contains(table));
     }
 
     /**

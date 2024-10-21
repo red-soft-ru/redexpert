@@ -68,6 +68,11 @@ public class CreateRolePanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.ROLE;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         role = (DefaultDatabaseRole) databaseObject;
     }

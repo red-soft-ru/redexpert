@@ -63,6 +63,11 @@ public class CreateGeneratorPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.SEQUENCE;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         generator = (DefaultDatabaseSequence) databaseObject;
     }

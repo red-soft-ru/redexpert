@@ -156,6 +156,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             setRemarks(getFromResultSet(rs, DESCRIPTION));
             setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
             setTypeTemporary(getFromResultSet(rs, RELATION_TYPE));
+            setRelationID(rs.getInt(RELATION_ID));
         }
         addingConstraint(rs);
         return null;
@@ -184,6 +185,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getAdapter() {
         return null;
+    }
+
+    @Override
+    public boolean isGlobalTemporary() {
+        return true;
     }
 
     @Override

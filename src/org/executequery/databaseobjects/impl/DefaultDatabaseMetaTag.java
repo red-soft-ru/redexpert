@@ -1326,6 +1326,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         return true;
     }
 
+    @Override
+    public boolean isMetaTag() {
+        return true;
+    }
+
     private List<Integer> getTypeDependFromDatabaseObject(DatabaseObject databaseObject) {
 
         ArrayList<Integer> list = new ArrayList<>();

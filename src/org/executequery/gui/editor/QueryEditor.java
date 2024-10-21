@@ -30,6 +30,8 @@ import org.executequery.gui.FocusablePanel;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
+import org.executequery.gui.editor.history.EditorData;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -58,6 +60,8 @@ import java.awt.event.ItemEvent;
 import java.awt.print.Printable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -160,8 +164,9 @@ public class QueryEditor extends DefaultTabView
         String connectionID = QueryEditorHistory.NULL_CONNECTION;
 
         if (absolutePath == null) {
-            QueryEditorHistory.checkAndCreateDir();
-            absolutePath = QueryEditorHistory.editorDirectory() + fileName;
+            QueryEditorHistory.createDirectory();
+            Path filePath = Paths.get(QueryEditorHistory.directoryPath().toString(), fileName);
+            absolutePath = filePath.toAbsolutePath().toString();
         }
 
         scriptFile.setFileName(defaultScriptName());
@@ -175,7 +180,7 @@ public class QueryEditor extends DefaultTabView
         if (splitDividerLocation > 0)
             splitPane.setDividerLocation(splitDividerLocation);
 
-        QueryEditorHistory.addEditor(connectionID, absolutePath, queryEditorNumber, splitPane.getDividerLocation(), autosaveEnabled);
+        addEditorToHistory(absolutePath, queryEditorNumber, autosaveEnabled, connectionID);
         splitPane.addPropertyChangeListener("dividerLocation", this);
         isContentChanged = false;
 
@@ -405,7 +410,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     private String defaultScriptName() {
-        queryEditorNumber = QueryEditorHistory.getMinNumber();
+        queryEditorNumber = QueryEditorHistory.getMinimumNumber();
         return DEFAULT_SCRIPT_PREFIX + queryEditorNumber + DEFAULT_SCRIPT_SUFFIX;
     }
 
@@ -845,32 +850,56 @@ public class QueryEditor extends DefaultTabView
     @Override
     public boolean tabViewClosing() {
 
-        if (isExecuting() && oldConnection.isConnected()) {
-
-            if (MiscUtils.isMinJavaVersion(1, 6))
-                GUIUtilities.displayWarningMessage("Editor is currently executing.\n" +
-                        "Please wait until finished or attempt to cancel the running query.");
-
+        if (isExecutionActive())
             return false;
+
+        if (isTransactionActive())
+            return maybeCloseTransaction();
+
+        if (saveUserFile())
+            return false;
+
+        tryCleanup();
+        removeFromHistory();
+
+        return true;
+    }
+
+    private boolean isExecutionActive() {
+
+        if (isExecuting() && oldConnection.isConnected()) {
+            if (MiscUtils.isMinJavaVersion(1, 6))
+                GUIUtilities.displayWarningMessage(bundleString("isExecutionActive"));
+            return true;
         }
 
-        if (delegate.getIDTransaction() != -1) {
+        return false;
+    }
 
-            int result = GUIUtilities.displayYesNoCancelDialog(
-                    bundleString("requestTransactionMessage"),
-                    bundleString("requestTransactionTitle")
-            );
+    private boolean isTransactionActive() {
+        return delegate.getIDTransaction() != -1;
+    }
 
-            if (result == JOptionPane.YES_OPTION)
-                delegate.commit(false);
-            else if (result == JOptionPane.NO_OPTION)
-                delegate.rollback(false);
-            else
-                return false;
+    private boolean maybeCloseTransaction() {
 
+        int result = GUIUtilities.displayYesNoCancelDialog(
+                bundleString("requestTransactionMessage"),
+                bundleString("requestTransactionTitle")
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            delegate.commit(false);
+            return tabViewClosing();
+
+        } else if (result == JOptionPane.NO_OPTION) {
+            delegate.rollback(false);
             return tabViewClosing();
         }
 
+        return false;
+    }
+
+    private boolean saveUserFile() {
         UserProperties properties = UserProperties.getInstance();
         boolean conFlag = oldConnection == null || oldConnection.isConnected();
 
@@ -883,41 +912,47 @@ public class QueryEditor extends DefaultTabView
                 String newPath = getAbsolutePath();
                 String connectionID = (oldConnection != null) ? oldConnection.getId() : QueryEditorHistory.NULL_CONNECTION;
 
-                if (!oldPath.equals(newPath))
+                if (!Objects.equals(oldPath, newPath))
                     scriptFile.setAbsolutePath(oldPath);
 
                 QueryEditorHistory.removeEditor(connectionID, getAbsolutePath());
-                if (QueryEditorHistory.isDefaultEditorDirectory(this))
+                if (QueryEditorHistory.isDefaultDirectory(this))
                     QueryEditorHistory.removeFile(oldPath);
 
                 scriptFile.setAbsolutePath(newPath);
-                QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), -1, splitPane.getDividerLocation(), autosaveEnabled);
+                addEditorToHistory(getAbsolutePath(), -1, autosaveEnabled, connectionID);
 
             } else
-                return false;
+                return true;
         }
 
+        return false;
+    }
+
+    private void tryCleanup() {
         try {
             cleanup();
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("An error occurred when closing this editor." +
-                    "\nWhile this could be nothing, sometimes it helps to check the stack trace to see if anything peculiar happened." +
-                    "\n\nThe system returned:\n" + e.getMessage(), e, this.getClass());
+            GUIUtilities.displayExceptionErrorDialog(bundleString("ExceptionOnClose", e.getMessage()), e, this.getClass());
         }
+    }
 
+    private void removeFromHistory() {
         try {
             DatabaseConnection dc = getSelectedConnection();
             if (dc == null || dc.isConnected()) {
                 String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
-                QueryEditorHistory.removeEditor(connectionID, scriptFile.getAbsolutePath());
+                String editorPath = getAbsolutePath();
+
+                QueryEditorHistory.removeEditor(connectionID, editorPath);
+                if (QueryEditorHistory.isDefaultDirectory(this))
+                    QueryEditorHistory.removeFile(editorPath);
             }
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);
         }
-
-        return true;
     }
 
     /**
@@ -1338,13 +1373,10 @@ public class QueryEditor extends DefaultTabView
 
             isContentChanged = false;
         }
-        if (!scriptFile.getAbsolutePath().contentEquals(oldAbsolutePath)) {
-            String connectionID = (getSelectedConnection() != null) ?
-                    getSelectedConnection().getId() : QueryEditorHistory.NULL_CONNECTION;
-            QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-            QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation(), autosaveEnabled);
-        }
+
+        if (!scriptFile.getAbsolutePath().contentEquals(oldAbsolutePath))
+            updateEditor(oldAbsolutePath);
+
         return SaveFunction.SAVE_COMPLETE;
     }
 
@@ -1581,14 +1613,34 @@ public class QueryEditor extends DefaultTabView
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        updateEditor(scriptFile.getAbsolutePath());
+    }
 
+    // ---
+
+    private void updateEditor(String oldAbsolutePath) {
+        String connectionID = getConnectionID();
+
+        EditorData editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
+        QueryEditorHistory.removeEditor(connectionID, editor);
+
+        if (editor == null)
+            editor = new EditorData();
+
+        editor.setSplitLocation(splitPane.getDividerLocation());
+        editor.setAutosaveEnabled(autosaveEnabled);
+        editor.setEditorPath(getAbsolutePath());
+        QueryEditorHistory.addEditor(connectionID, editor);
+    }
+
+    private void addEditorToHistory(String pathToFile, int number, boolean autosaveEnabled, String connectionID) {
+        EditorData editorData = new EditorData(pathToFile, number, splitPane.getDividerLocation(), autosaveEnabled);
+        QueryEditorHistory.addEditor(connectionID, editorData);
+    }
+
+    private String getConnectionID() {
         DatabaseConnection dc = getSelectedConnection();
-        String oldAbsolutePath = scriptFile.getAbsolutePath();
-        String connectionID = dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
-
-        QueryEditorHistory.PathNumber editor = QueryEditorHistory.getEditor(connectionID, oldAbsolutePath);
-        QueryEditorHistory.removeEditor(connectionID, oldAbsolutePath);
-        QueryEditorHistory.addEditor(connectionID, getAbsolutePath(), editor.number, splitPane.getDividerLocation(), autosaveEnabled);
+        return dc != null ? dc.getId() : QueryEditorHistory.NULL_CONNECTION;
     }
 
 }

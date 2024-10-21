@@ -20,7 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import org.executequery.UserPreferencesManager;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.gui.resultset.ResultSetTable;
@@ -102,9 +101,7 @@ public class ResultSetPanel extends JPanel {
         table = new ResultSetTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                if (super.isCellEditable(row, column))
-                    return !UserPreferencesManager.doubleClickOpenItemView();
-                else return false;
+                return super.isCellEditable(row, column);
             }
         };
 

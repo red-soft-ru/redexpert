@@ -40,7 +40,6 @@ import org.executequery.gui.browser.nodes.ConnectionsFolderNode;
 import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.nodes.RootDatabaseObjectNode;
-import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
 import org.executequery.gui.browser.tree.ConnectionTree;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
@@ -65,6 +64,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Takis Diakoumis
@@ -841,6 +841,27 @@ public class ConnectionsTreePanel extends TreePanel
         return object != null ? object.getDatabaseConnection() : null;
     }
 
+    public DatabaseObjectNode findNode(DatabaseConnection dc, String name, int type) {
+
+        DatabaseHostNode hostNode = (DatabaseHostNode) getHostNode(dc);
+        if (hostNode == null || hostNode.getChildObjects().isEmpty()) {
+            Log.debug("Couldn't find node, HOST node is null or empty");
+            return null;
+        }
+
+        DatabaseObjectNode metaTagNode = hostNode.getChildObjects().stream()
+                .filter(node -> node.typeOf(type)).findFirst().orElse(null);
+
+        if (metaTagNode == null || metaTagNode.getChildObjects().isEmpty()) {
+            Log.debug("Couldn't find node, META_TAG node is null or empty");
+            return null;
+        }
+
+        return metaTagNode.getChildObjects().stream()
+                .filter(node -> Objects.equals(node.getName(), name))
+                .findFirst().orElse(null);
+    }
+
     // ---
 
     protected ConnectionsFolderNode getFolderNode(ConnectionsFolder folder) {
@@ -969,33 +990,24 @@ public class ConnectionsTreePanel extends TreePanel
             GUIUtilities.showWaitCursor();
 
             DatabaseObjectNode node = (DatabaseObjectNode) object;
-            if (node instanceof TableFolderNode) {
-                reloadPath(path.getParentPath());
-                GUIUtils.invokeLater(() -> doNodeExpansion(node));
-                return;
-            }
-
             node.reset();
+
+            if (pathHidden(path))
+                return;
 
             nodeStructureChanged(node);
             pathExpanded(path);
             pathChanged(oldSelectionPath, path, refreshButtons);
 
-            // --- reload panel view ---
-
-            String type = Constants.EMPTY;
-            if (node.getType() < NamedObject.META_TYPES.length)
-                type = NamedObject.META_TYPES[node.getType()];
-
-            String title = MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + getDatabaseConnection(node).getName();
-            if (GUIUtilities.isPanelOpen(title)) {
-                GUIUtilities.closeTab(title);
-                valueChanged(node, null);
-            }
-
         } finally {
             GUIUtilities.showNormalCursor();
         }
+    }
+
+    private boolean pathHidden(TreePath path) {
+        Rectangle viewRect = treeScrollPane.getViewport().getViewRect();
+        Rectangle nodeRect = tree.getPathBounds(path);
+        return nodeRect == null || !nodeRect.intersects(viewRect);
     }
 
     protected void nodeStructureChanged(TreeNode node) {
@@ -1227,6 +1239,122 @@ public class ConnectionsTreePanel extends TreePanel
         }
     }
 
+    // ---
+
+    public void reloadRelatedNodes(DatabaseObjectNode node) {
+        reloadRelatedNodes(node, null, false);
+    }
+
+    public void reloadRelatedNodes(DatabaseObjectNode node, String tableName, boolean globalTemporary) {
+
+        if (hasNoRelationsToReload(node))
+            return;
+
+        DatabaseHostNode hostNode = getDatabaseHostNode(node);
+        if (hostNode == null) {
+            Log.debug("Related nodes will not be reloaded, DatabaseHostNode is null");
+            return;
+        }
+
+        Stream<DatabaseObjectNode> nodeStream = hostNode.getChildObjects().stream();
+        if (node.typeOf(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY, NamedObject.VIEW)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX, NamedObject.TRIGGER));
+
+        } else if (node.typeOf(NamedObject.INDEX, NamedObject.TRIGGER, NamedObject.TABLE_COLUMN)) {
+            nodeStream = getTablesStream(nodeStream, node, tableName, globalTemporary);
+
+        } else if (node.typeOf(NamedObject.INDEXES_FOLDER_NODE)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.INDEX));
+
+        } else if (node.typeOf(NamedObject.TRIGGERS_FOLDER_NODE)) {
+            nodeStream = nodeStream.filter(child -> child.typeOf(NamedObject.TRIGGER));
+        }
+
+        if (nodeStream != null)
+            nodeStream.map(DatabaseObjectNode::getTreePath).forEach(this::reloadPath);
+    }
+
+    private static boolean hasNoRelationsToReload(DatabaseObjectNode node) {
+        return !node.typeOf(
+                NamedObject.TABLE,
+                NamedObject.GLOBAL_TEMPORARY,
+                NamedObject.VIEW,
+                NamedObject.INDEX,
+                NamedObject.TRIGGER,
+                NamedObject.TABLE_COLUMN,
+                NamedObject.INDEXES_FOLDER_NODE,
+                NamedObject.TRIGGERS_FOLDER_NODE
+        );
+    }
+
+    private Stream<DatabaseObjectNode> getTablesStream(Stream<DatabaseObjectNode> nodeStream, DatabaseObjectNode node,
+                                                       String tableName, boolean globalTemporary) {
+
+        // --- all tables ---
+
+        if (tableName == null)
+            return nodeStream.filter(child -> child.typeOf(NamedObject.TABLE, NamedObject.GLOBAL_TEMPORARY));
+
+        // --- all tables of the specified type ---
+
+        List<DatabaseObjectNode> childNodes = globalTemporary ?
+                nodeStream.filter(child -> child.typeOf(NamedObject.GLOBAL_TEMPORARY)).collect(Collectors.toList()) :
+                nodeStream.filter(child -> child.typeOf(NamedObject.TABLE)).collect(Collectors.toList());
+
+        if (childNodes.isEmpty())
+            return null;
+
+        DatabaseObjectNode childNode = childNodes.get(0);
+        if (childNode == null)
+            return childNodes.stream();
+
+        // --- single table ---
+
+        childNodes = childNode.getChildObjects().stream()
+                .filter(table -> Objects.equals(table.getName(), tableName))
+                .collect(Collectors.toList());
+
+        if (childNodes.isEmpty())
+            return null;
+
+        childNode = childNodes.get(0);
+        if (childNode == null)
+            return childNodes.stream();
+
+        // --- table catalog ---
+
+        if (isTableCatalogsEnable()) {
+            if (node.typeOf(NamedObject.TABLE_COLUMN))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.COLUMNS_FOLDER_NODE));
+            if (node.typeOf(NamedObject.INDEX))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.INDEXES_FOLDER_NODE));
+            if (node.typeOf(NamedObject.TRIGGER))
+                return childNode.getChildObjects().stream().filter(child -> child.typeOf(NamedObject.TRIGGERS_FOLDER_NODE));
+        }
+
+        return childNodes.stream();
+    }
+
+    private static DatabaseHostNode getDatabaseHostNode(DatabaseObjectNode node) {
+        if (node != null && !node.isMetaTag())
+            return getDatabaseHostNode((DatabaseObjectNode) node.getParent());
+        return node != null ? (DatabaseHostNode) node.getParent() : null;
+    }
+
+    public TreePath getMetaTagNodePath(DatabaseConnection connection, int type) {
+
+        DatabaseHostNode hostNode = (DatabaseHostNode) getHostNode(connection);
+        if (hostNode == null)
+            return null;
+
+        return hostNode.getChildObjects().stream()
+                .filter(node -> node.typeOf(type))
+                .map(DatabaseObjectNode::getTreePath)
+                .findFirst().orElse(null);
+    }
+
+    // ---
+
     private boolean checkShowActiveMenu(TreePath treePathForLocation) {
         return selectedTriggersOrIndexesOnly() && checkPathForLocationInSelectedTree(treePathForLocation);
     }
@@ -1311,6 +1439,10 @@ public class ConnectionsTreePanel extends TreePanel
         }
 
         return null;
+    }
+
+    public static boolean isTableCatalogsEnable() {
+        return SystemProperties.getBooleanProperty("user", TABLES_CATALOGS_KEY);
     }
 
     private boolean isADatabaseHostNode(Object object) {

@@ -279,6 +279,11 @@ public class CreateFunctionPanel extends CreateProcedureFunctionPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.FUNCTION;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         procedureName = (String) databaseObject;
         returnType = new ColumnData(connection);

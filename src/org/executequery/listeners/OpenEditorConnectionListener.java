@@ -27,7 +27,8 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.ComponentPanel;
 import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.EditorData;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
     public void connected(ConnectionEvent connectionEvent) {
         DatabaseConnection connection = connectionEvent.getDatabaseConnection();
 
-        List<QueryEditorHistory.PathNumber> listEditors = QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection());
+        List<EditorData> listEditors = QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection());
         if (listEditors.isEmpty()) {
             if (openEditorOnConnect() && !connection.isAutoConnected()) {
 
@@ -81,7 +82,7 @@ public class OpenEditorConnectionListener implements ConnectionListener {
         }
         closeTabs.forEach(GUIUtilities::closeTab);
 
-        List<QueryEditorHistory.PathNumber> copy = new ArrayList<>(QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection()));
+        List<EditorData> copy = new ArrayList<>(QueryEditorHistory.getEditors(connectionEvent.getDatabaseConnection()));
         copy.forEach(number -> QueryEditorHistory.addEditor(connectionEvent.getDatabaseConnection().getId(), number));
     }
 

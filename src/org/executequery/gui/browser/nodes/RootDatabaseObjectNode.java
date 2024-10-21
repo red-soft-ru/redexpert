@@ -37,6 +37,11 @@ public class RootDatabaseObjectNode extends DatabaseObjectNode {
 
     private final List<DatabaseHostNode> hostNodes = new ArrayList<DatabaseHostNode>();
 
+    @Override
+    public boolean isRootNode() {
+        return true;
+    }
+
     /**
      * Propagates the call to the underlying database object
      * and removes all children from this node.

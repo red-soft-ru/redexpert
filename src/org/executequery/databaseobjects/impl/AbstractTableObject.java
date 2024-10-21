@@ -17,6 +17,8 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject
         implements DatabaseTableObject {
 
     protected int typeTree;
+
+    protected Integer relationID;
     protected String sqlSecurity;
     protected DatabaseObject dependObject;
     protected List<TableDataChange> tableDataChanges;
@@ -582,5 +584,14 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject
             }
         }
         return list;
+    }
+
+    public Integer getRelationID() {
+        checkOnReload(relationID);
+        return relationID;
+    }
+
+    public void setRelationID(int relationID) {
+        this.relationID = relationID;
     }
 }

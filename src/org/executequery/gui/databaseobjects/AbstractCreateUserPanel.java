@@ -79,6 +79,11 @@ public abstract class AbstractCreateUserPanel extends AbstractCreateObjectPanel 
     }
 
     @Override
+    public int getType() {
+        return NamedObject.USER;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
     }
 

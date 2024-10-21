@@ -672,7 +672,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         databaseProperties.put(bundleString("Driver"), connection.getDriverName());
 
         databaseProperties.put(bundleString("GUID"), getHeaderValue(DatabaseStatisticCommand.GUID, databaseHeader));
-        databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATACHMENT, databaseHeader));
+        databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATTACHMENT, databaseHeader));
         databaseProperties.put(bundleString("GENERATION"), getHeaderValue(DatabaseStatisticCommand.GENERATION, databaseHeader));
         databaseProperties.put(bundleString("AUTOSWEEP_GAP"), getHeaderValue(DatabaseStatisticCommand.AUTOSWEEP_GAP, databaseHeader));
         databaseProperties.put(bundleString("SEQUENCE_NUM"), getHeaderValue(DatabaseStatisticCommand.SEQUENCE_NUM, databaseHeader));

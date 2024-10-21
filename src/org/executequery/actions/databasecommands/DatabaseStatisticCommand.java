@@ -3,7 +3,6 @@ package org.executequery.actions.databasecommands;
 import biz.redsoft.IFBStatisticManager;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
-import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.log.Log;
@@ -41,7 +40,7 @@ public class DatabaseStatisticCommand {
     public static final String NEXT_TRANSACTION = "Next transaction";
     public static final String AUTOSWEEP_GAP = "Autosweep gap";
     public static final String SEQUENCE_NUM = "Sequence number";
-    public static final String NEXT_ATACHMENT = "Next attachment ID";
+    public static final String NEXT_ATTACHMENT = "Next attachment ID";
     public static final String IMPLEMENTATION = "Implementation";
     public static final String SHADOW_COUNT = "Shadow count";
     public static final String PAGE_BUFF = "Page buffers";
@@ -50,6 +49,10 @@ public class DatabaseStatisticCommand {
     public static final String CREATION_DATE = "Creation date";
     public static final String ATTRIBUTES = "Attributes";
     public static final String GUID = "Database GUID:";
+
+    /// Private constructor to prevent installation
+    private DatabaseStatisticCommand() {
+    }
 
     /**
      * Returns database header statistic
@@ -107,10 +110,10 @@ public class DatabaseStatisticCommand {
         try {
 
             Driver driver = null;
-            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
-            for (String driverName : drivers.keySet()) {
+            for (Map.Entry<String, Driver> entry : DefaultDriverLoader.getLoadedDrivers().entrySet()) {
+                String driverName = entry.getKey();
                 if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
-                    driver = drivers.get(driverName);
+                    driver = entry.getValue();
                     break;
                 }
             }

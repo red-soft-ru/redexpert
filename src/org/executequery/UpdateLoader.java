@@ -698,23 +698,22 @@ public class UpdateLoader extends JFrame {
         System.out.println("-------------------------------");
 
         for (String arg : args) {
+            String value = arg.substring(arg.indexOf('=') + 1);
 
-            if (arg.equalsIgnoreCase("usereleasehub")) {
-                updateLoader.setReleaseHub(true);
+            if (arg.contains("-release-hub")) {
+                updateLoader.setReleaseHub(Boolean.parseBoolean(value));
 
-            } else if (arg.contains("version")) {
-                String ver = arg.substring(arg.indexOf('=') + 1);
-                updateLoader.setVersion(ver);
+            } else if (arg.contains("-version")) {
+                updateLoader.setVersion(value);
 
             } else if (arg.contains("-repo")) {
                 updateLoader.setRepoArg(arg);
 
             } else if (arg.contains("-root")) {
-                String root = arg.substring(arg.indexOf('=') + 1);
-                updateLoader.setRoot(root);
+                updateLoader.setRoot(value);
 
             } else if (arg.contains("-launch")) {
-                launch = Boolean.parseBoolean(arg.substring(arg.indexOf('=') + 1));
+                launch = Boolean.parseBoolean(value);
             }
         }
 

@@ -727,16 +727,8 @@ public class QueryDispatcher {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    if (driver.getMajorVersion() >= 5) {
-                        IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
-                        try {
-                            tsm.setTables(getTableMap(databaseConnection));
-                            beforeQuery = tsm.getTableStatistics();
 
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    beforeQuery = getTableStatistics(driver, connection, databaseConnection);
                 }
 
             } catch (Exception e) {

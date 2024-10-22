@@ -67,6 +67,9 @@ public class JSONAPI {
         return new JSONArray(text);
     }
 
+    public static JSONArray getJsonArray(String Url, String key) throws IOException {
+        return getJsonObject(Url).getJSONArray(key);
+    }
 
     public static JSONObject getJsonObjectFromArray(JSONArray mas, String key, String value) {
         for (int i = 0; i < mas.length(); i++) {

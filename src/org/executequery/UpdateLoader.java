@@ -283,38 +283,15 @@ public class UpdateLoader extends JFrame {
     }
 
     public void downloadUpdate() throws IOException {
-
         Log.info("Contacting Download Server...");
 
-        if (releaseHub) {
-            new DefaultRemoteHttpClient().setHttp("http");
-            new DefaultRemoteHttpClient().setHttpPort(80);
-            String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                    JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                    "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+        if (!MiscUtils.isNull(repo))
+            this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
 
-            downloadLink = "http://builds.red-soft.biz/" + file;
-            downloadArchive();
+        if (MiscUtils.isNull(downloadLink))
+            throw new IllegalArgumentException("download link is null");
 
-        } else {
-
-            if (!MiscUtils.isNull(repo)) {
-                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-                downloadArchive();
-
-            } else {
-
-                //изменить эту строку в соответствии с форматом имени файла на сайте
-                String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
-                String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray(prop + version),
-                        "filename", filename)).getString("url");
-
-                downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
-                downloadArchive();
-            }
-        }
+        downloadArchive();
     }
 
     @SuppressWarnings("unused")
@@ -665,6 +642,10 @@ public class UpdateLoader extends JFrame {
 
     public void setProgressBar(JProgressBar progressBar) {
         this.progressBar = progressBar;
+    }
+
+    public void setDownloadLink(String downloadLink) {
+        this.downloadLink = downloadLink;
     }
 
     private class CustomWriter extends Writer {

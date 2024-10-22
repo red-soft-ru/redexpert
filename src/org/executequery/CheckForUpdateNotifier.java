@@ -47,6 +47,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Checks to see if a newer version of Execute Query is available.
@@ -171,6 +172,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (lastCheck == CHECK_FINISH) {
             updateLoader = new UpdateLoader("");
             updateLoader.setVersion(version.getVersion());
+            updateLoader.setDownloadLink(getDownloadLink());
 
             Log.info(bundledString("newVersionAvailableText", version.getVersion()));
             updateDownloadNotifier();
@@ -359,6 +361,43 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     // ---
+
+    private String getDownloadLink() {
+        try {
+
+            if (useReleaseHub) {
+                setupHttpClient("http", 80);
+
+                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version.getVersion()),
+                        "artifact_id", "red_expert:bin:" + version.getVersion() + ":zip")).getString("file");
+
+                return "http://builds.red-soft.biz/" + file;
+            }
+
+            if (useNewApi) {
+                String fileName = "RedExpert-" + version.getVersion() + ".zip";
+                String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "update.check.rc.url" : "update.check.url");
+
+                return "https://rdb.red-soft.ru/" + Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                        JSONAPI.getJsonArray(url, "files"),
+                        "FILE_NAME", fileName)).getString("FILE_PATH");
+            }
+
+            //изменить эту строку в соответствии с форматом имени файла на сайте
+            String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version.getVersion() + ".zip";
+            String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
+            String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
+                    JSONAPI.getJsonArray(prop + version.getVersion()),
+                    "filename", filename)).getString("url");
+
+            return JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
+
+        } catch (IOException e) {
+            Log.error(e.getMessage(), e);
+            return null;
+        }
+    }
 
     private void displayDownloadDialog(MouseListener listener) {
 

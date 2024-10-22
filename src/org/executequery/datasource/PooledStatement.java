@@ -45,6 +45,7 @@ public class PooledStatement implements CallableStatement {
     }
 
     protected void handleException(SQLException e) throws SQLException {
+        Log.debug("(handling) " + e.getMessage(), e);
         connection.checkConnectionToServer();
         throw e;
     }

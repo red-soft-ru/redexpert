@@ -18,7 +18,7 @@
  *
  */
 
-package org.executequery;
+package org.executequery.update;
 
 import java.util.HashMap;
 import java.util.Map;

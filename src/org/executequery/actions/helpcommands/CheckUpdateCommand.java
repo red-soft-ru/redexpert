@@ -20,7 +20,7 @@
 
 package org.executequery.actions.helpcommands;
 
-import org.executequery.CheckForUpdateNotifier;
+import org.executequery.update.CheckForUpdateNotifier;
 import org.underworldlabs.swing.actions.BaseCommand;
 
 import java.awt.event.ActionEvent;

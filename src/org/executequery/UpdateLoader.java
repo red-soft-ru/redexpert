@@ -5,6 +5,7 @@ import org.executequery.http.JSONAPI;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.update.ApplicationVersion;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.util.FileUtils;

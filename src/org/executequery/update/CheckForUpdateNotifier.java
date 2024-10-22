@@ -18,8 +18,9 @@
  *
  */
 
-package org.executequery;
+package org.executequery.update;
 
+import org.executequery.*;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;

@@ -172,10 +172,10 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         if (lastCheck == CHECK_FINISH) {
             updateLoader = new UpdateLoader("");
-            updateLoader.setVersion(version.getVersion());
+            updateLoader.setVersion(version.toString());
             updateLoader.setDownloadLink(getDownloadLink());
 
-            Log.info(bundledString("newVersionAvailableText", version.getVersion()));
+            Log.info(bundledString("newVersionAvailableText", version));
             updateDownloadNotifier();
 
         } else if (lastCheck == CHECK_CONTINUE)
@@ -370,14 +370,14 @@ public class CheckForUpdateNotifier implements Interruptible {
                 setupHttpClient("http", 80);
 
                 String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version.getVersion()),
-                        "artifact_id", "red_expert:bin:" + version.getVersion() + ":zip")).getString("file");
+                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
+                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
 
                 return "http://builds.red-soft.biz/" + file;
             }
 
             if (useNewApi) {
-                String fileName = "RedExpert-" + version.getVersion() + ".zip";
+                String fileName = "RedExpert-" + version + ".zip";
                 String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "update.check.rc.url" : "update.check.url");
 
                 return "https://rdb.red-soft.ru/" + Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
@@ -386,10 +386,10 @@ public class CheckForUpdateNotifier implements Interruptible {
             }
 
             //изменить эту строку в соответствии с форматом имени файла на сайте
-            String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version.getVersion() + ".zip";
+            String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
             String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
             String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                    JSONAPI.getJsonArray(prop + version.getVersion()),
+                    JSONAPI.getJsonArray(prop + version),
                     "filename", filename)).getString("url");
 
             return JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
@@ -403,7 +403,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private void displayDownloadDialog(MouseListener listener) {
 
         boolean denyUpdateDownload = GUIUtilities.displayYesNoDialog(
-                bundledString("downloadVersionMessage", version.getVersion()),
+                bundledString("downloadVersionMessage", version),
                 bundledString("title")
         ) != JOptionPane.YES_OPTION;
 
@@ -438,7 +438,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
         label.setIcon(IconManager.getIcon("icon_notification"));
-        label.setToolTipText(bundledString("newVersionAvailableText", version.getVersion()));
+        label.setToolTipText(bundledString("newVersionAvailableText", version));
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));
         Log.info(bundledString("ApplicationNeedsUpdate"));
@@ -520,7 +520,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         private void displayReleaseNotes() {
 
             boolean denyShowChangelog = GUIUtilities.displayYesNoDialog(
-                    bundledString("newVersionMessage", version.getVersion()),
+                    bundledString("newVersionMessage", version),
                     bundledString("title")
             ) != JOptionPane.YES_OPTION;
 

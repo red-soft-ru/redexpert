@@ -107,16 +107,17 @@ public final class ApplicationVersion {
         return TAGS_VALUES.getOrDefault(tag.toUpperCase(), -1);
     }
 
-    public String getVersion() {
-        return version;
-    }
-
     public boolean isSnapshot() {
         return getTagValue() == SNAPSHOT;
     }
 
     public boolean hasUpdate() {
         return isNewerThan(System.getProperty("executequery.minor.version"));
+    }
+
+    @Override
+    public String toString() {
+        return version;
     }
 
 }

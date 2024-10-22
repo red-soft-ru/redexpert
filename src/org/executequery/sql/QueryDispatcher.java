@@ -78,6 +78,17 @@ import java.util.regex.Pattern;
  */
 public class QueryDispatcher {
 
+    private static final String[] TABLE_STATS_HEADERS = {
+            "Natural",
+            "Index",
+            "Insert",
+            "Update",
+            "Delete",
+            "Backout",
+            "Purge",
+            "Expunge"
+    };
+
     /**
      * the parent controller
      */
@@ -701,18 +712,11 @@ public class QueryDispatcher {
 
             try {
                 DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-                Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-                DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-                Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+                Driver driver = getDriver(databaseConnection);
 
                 if (driver.getClass().getName().contains("FBDriver")) {
 
-                    Connection connection = null;
-                    try {
-                        connection = querySender.getConnection().unwrap(Connection.class);
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
+                    Connection connection = getConnection();
 
                     IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
                     try {
@@ -1039,17 +1043,8 @@ public class QueryDispatcher {
             String blobFilePath = "import";
             TreeSet<String> createsMetaNames = new TreeSet<>();
             for (int i = 0; i < executableQueries.size(); i++) {
+                beforeQuery = getTableStatistics(driver, connection, databaseConnection);
 
-                if (driver.getMajorVersion() >= 5) {
-                    IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
-                    try {
-                        tsm.setTables(getTableMap(databaseConnection));
-                        beforeQuery = tsm.getTableStatistics();
-
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
                 try {
                     DerivedQuery query = executableQueries.get(i);
                     setOutputMessage(querySender.getDatabaseConnection(),
@@ -1316,6 +1311,43 @@ public class QueryDispatcher {
         return DONE;
     }
 
+    private Map<String, IFBTableStatistics> getTableStatistics(Driver driver, Connection connection, DatabaseConnection dc) {
+
+        if (driver == null || !driver.getClass().getName().contains("FBDriver")) {
+            Log.debug("Couldn't get table statistics, driver is null or not supported");
+            return Collections.emptyMap();
+        }
+
+        int driverVersion = driver.getMajorVersion();
+        if (driverVersion < 5) {
+            Log.debug(String.format("Couldn't get table statistics, driver version not supported (expected 5+ but actual %d)", driverVersion));
+            return Collections.emptyMap();
+        }
+
+        int serverVersion = dc.getMajorServerVersion();
+        if (serverVersion < 5) {
+            Log.debug(String.format("Couldn't get table statistics, server version not supported (expected 5+ but actual %d)", serverVersion));
+            return Collections.emptyMap();
+        }
+
+        try {
+            Object library = DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
+                    driverVersion,
+                    connection,
+                    "FBTableStatManager",
+                    new DynamicLibraryLoader.Parameter(Connection.class, connection)
+            );
+
+            IFBTableStatisticManager tableStatisticManager = (IFBTableStatisticManager) library;
+            tableStatisticManager.setTables(getTableMap(dc));
+            return tableStatisticManager.getTableStatistics();
+
+        } catch (SQLException | ClassNotFoundException e) {
+            Log.error(e.getMessage(), e);
+            return Collections.emptyMap();
+        }
+    }
+
     private PreparedStatement prepareStatementWithParameters(String sql, String variables) throws SQLException {
         return prepareStatementWithParameters(sql, variables, true);
     }
@@ -1453,82 +1485,83 @@ public class QueryDispatcher {
         }
     }
 
-    private void printTableStat(Map<String, IFBTableStatistics> before, boolean anyConnections) {
+    private void printTableStat(Map<String, IFBTableStatistics> beforeMap, boolean anyConnections) {
+        DatabaseConnection dc = querySender.getDatabaseConnection();
+
         // Trying to get execution plan of firebird statement
-        if (before != null) {
-            DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+        if (beforeMap == null || beforeMap.isEmpty())
+            return;
 
-            if (driver.getClass().getName().contains("FBDriver")) {
+        Map<String, IFBTableStatistics> afterMap = getTableStatistics(getDriver(dc), getConnection(), dc);
+        if (afterMap == null || afterMap.isEmpty())
+            return;
 
-                Connection connection = null;
-                try {
-                    connection = querySender.getConnection().unwrap(Connection.class);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                Map<String, IFBTableStatistics> after = null;
-                try {
-                    IFBTableStatisticManager tsm = (IFBTableStatisticManager) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(driver.getMajorVersion(), connection, "FBTableStatManager", new DynamicLibraryLoader.Parameter(Connection.class, connection));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Per table statistics:\n");
 
-                    tsm.setTables(getTableMap(databaseConnection));
-                    after = tsm.getTableStatistics();
+        Map<String, List<KeyValuePair>> statisticsMap = buildTableStatisticsMap(beforeMap, afterMap);
+        for (Map.Entry<String, List<KeyValuePair>> entry : statisticsMap.entrySet()) {
 
-                } catch (SQLException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-                String[] headers = {"Natural", "Index", "Insert", "Update", "Delete", "Backout", "Purge", "Expunge"};
-                if (after != null) {
-                    StringBuilder sb = new StringBuilder();
-                    Map<String, List<KeyValuePair>> map = new HashMap<>();
-                    for (int i = 0; i < headers.length; i++) {
-                        map.put(headers[i], new ArrayList<>());
-                    }
-                    for (String table : after.keySet()) {
-                        IFBTableStatistics f = after.get(table);
-                        long[] fArray = f.getArrayValues();
-                        if (before.containsKey(table)) {
-                            IFBTableStatistics b = before.get(table);
-                            long[] bArray = b.getArrayValues();
-                            for (int i = 0; i < bArray.length; i++) {
-                                long value = fArray[i] - bArray[i];
-                                if (value > 0)
-                                    map.get(headers[i]).add(new KeyValuePair(table, value));
-                            }
+            List<KeyValuePair> list = entry.getValue();
+            if (list.isEmpty())
+                continue;
 
-                        } else {
-                            for (int i = 0; i < fArray.length; i++) {
-                                long value = fArray[i];
-                                if (value > 0)
-                                    map.get(headers[i]).add(new KeyValuePair(table, value));
-                            }
-                        }
-                    }
-                    sb.append("Per table statistics:\n");
-                    for (String key : headers) {
-                        List<KeyValuePair> list = map.get(key);
-                        if (list.size() > 0) {
-                            list.sort(new Comparator<KeyValuePair>() {
-                                @Override
-                                public int compare(KeyValuePair o1, KeyValuePair o2) {
-                                    return -Long.compare((long) o1.getValue(), (long) o2.getValue());
-                                }
-                            });
-                            sb.append("\t").append(key).append(":\n");
-                            for (KeyValuePair elem : list) {
-                                sb.append("\t\t").append(elem.getKey()).append(" = ").append(elem.getValue()).append("\n");
-                            }
-                        }
+            list.sort((o1, o2) -> -Long.compare((long) o1.getValue(), (long) o2.getValue()));
 
-                    }
-                    setOutputMessage(querySender.getDatabaseConnection(), SqlMessages.PLAIN_MESSAGE, sb.toString(), anyConnections);
-                }
-            }
-
+            sb.append("\t").append(entry.getKey()).append(":\n");
+            for (KeyValuePair elem : list)
+                sb.append("\t\t").append(elem.getKey()).append(" = ").append(elem.getValue()).append("\n");
         }
 
+        setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, sb.toString(), anyConnections);
+    }
+
+    private static Map<String, List<KeyValuePair>> buildTableStatisticsMap(Map<String, IFBTableStatistics> beforeMap, Map<String, IFBTableStatistics> afterMap) {
+
+        Map<String, List<KeyValuePair>> statisticsMap = new HashMap<>();
+        for (String header : TABLE_STATS_HEADERS)
+            statisticsMap.put(header, new ArrayList<>());
+
+        for (Map.Entry<String, IFBTableStatistics> entry : afterMap.entrySet()) {
+            IFBTableStatistics f = entry.getValue();
+            String table = entry.getKey();
+
+            long[] fArray = f.getArrayValues();
+            if (beforeMap.containsKey(table)) {
+                IFBTableStatistics b = beforeMap.get(table);
+                long[] bArray = b.getArrayValues();
+                for (int i = 0; i < bArray.length; i++) {
+                    long value = fArray[i] - bArray[i];
+                    if (value > 0)
+                        statisticsMap.get(TABLE_STATS_HEADERS[i]).add(new KeyValuePair(table, value));
+                }
+
+            } else {
+                for (int i = 0; i < fArray.length; i++) {
+                    long value = fArray[i];
+                    if (value > 0)
+                        statisticsMap.get(TABLE_STATS_HEADERS[i]).add(new KeyValuePair(table, value));
+                }
+            }
+        }
+
+        return statisticsMap;
+    }
+
+    private Connection getConnection() {
+        try {
+            return querySender.getConnection().unwrap(Connection.class);
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private static Driver getDriver(DatabaseConnection databaseConnection) {
+        Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
+        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
+        return loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
     }
 
     protected Map<Integer, String> getTableMap(DatabaseConnection databaseConnection) {
@@ -1544,18 +1577,11 @@ public class QueryDispatcher {
     private void printExecutionPlan(IFBPerformanceInfo before, boolean anyConnections) {
         // Trying to get execution plan of firebird statement
         DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-        Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-        DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-        Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+        Driver driver = getDriver(databaseConnection);
 
         if (driver.getClass().getName().contains("FBDriver")) {
 
-            Connection connection = null;
-            try {
-                connection = querySender.getConnection().unwrap(Connection.class);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            Connection connection = getConnection();
             IFBPerformanceInfo after = null;
             try {
                 IFBDatabasePerformance db = (IFBDatabasePerformance) DynamicLibraryLoader.loadingObjectFromClassLoader(databaseConnection.getDriverMajorVersion(), connection, "FBDatabasePerformanceImpl");
@@ -1578,9 +1604,7 @@ public class QueryDispatcher {
     private void printPlan(ResultSet rs, boolean anyConnections) {
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+            Driver driver = getDriver(databaseConnection);
 
             if (driver.getClass().getName().contains("FBDriver")) {
                 ResultSet realRS = ((PooledResultSet) rs).getResultSet();
@@ -1611,9 +1635,7 @@ public class QueryDispatcher {
 
         try {
             DatabaseConnection databaseConnection = this.querySender.getDatabaseConnection();
-            Map<String, Driver> loadedDrivers = DefaultDriverLoader.getLoadedDrivers();
-            DatabaseDriver jdbcDriver = databaseConnection.getJDBCDriver();
-            Driver driver = loadedDrivers.get(jdbcDriver.getId() + "-" + jdbcDriver.getClassName());
+            Driver driver = getDriver(databaseConnection);
 
             if (!driver.getClass().getName().contains("FBDriver"))
                 return null;

@@ -579,7 +579,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
             try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+                DatabaseMetaData metaData = getHost().getDatabaseMetaData();
+                releaseResources(rs, metaData != null ? metaData.getConnection() : null);
+
             } catch (SQLException e) {
                 releaseResources(rs, null);
             }

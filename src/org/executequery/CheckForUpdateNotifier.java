@@ -20,7 +20,6 @@
 
 package org.executequery;
 
-import org.executequery.components.SimpleHtmlContentPane;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.InformationDialog;
 import org.executequery.http.JSONAPI;
@@ -28,8 +27,6 @@ import org.executequery.http.RemoteHttpClientException;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.LatestVersionRepository;
-import org.executequery.repository.RepositoryCache;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.InterruptibleProgressDialog;
@@ -58,22 +55,31 @@ import java.util.List;
  */
 @SuppressWarnings("WriteOnlyObject")
 public class CheckForUpdateNotifier implements Interruptible {
+    private static final int LABEL_INDEX = 2;
+
+    private static final int CHECK_FINISH = 0;
+    private static final int CHECK_CONTINUE = CHECK_FINISH + 1;
+    private static final int CHECK_FAIL = CHECK_CONTINUE + 1;
 
     private static final String UP_TO_DATE = bundledString("RedExpertUpToDate");
+    private static final String ERROR_CHECKING_KEY = "ErrorCheckingForUpdate";
     private static final String CHECK_VERSION_KEY = "CheckingForNewVersion";
-    private static final int LABEL_INDEX = 2;
+    private static final String NO_INTERNET_KEY = "noInternetMessage";
 
     private SwingWorker worker;
     private ApplicationVersion version;
     private UpdateLoader updateLoader = null;
     private InterruptibleProgressDialog progressDialog;
 
+    private boolean useNewApi = true;
     private boolean checkUnstable = false;
     private boolean useReleaseHub = false;
     private boolean useHttpsProtocol = true;
     private boolean monitorProgress = false;
     private static boolean waitingForUpdate = false;
     private static boolean waitingForRestart = false;
+
+    // --- update check running ---
 
     public void startupCheckForUpdate() {
 
@@ -113,7 +119,7 @@ public class CheckForUpdateNotifier implements Interruptible {
                 if (version == null)
                     return Constants.WORKER_CANCEL;
 
-                if (isNewVersion(version)) {
+                if (version.hasUpdate()) {
                     displayDownloadDialog(null);
 
                 } else if (monitorProgress)
@@ -128,6 +134,8 @@ public class CheckForUpdateNotifier implements Interruptible {
             progressDialog.run();
     }
 
+    // --- update checking ---
+
     private void checkForUpdate() {
 
         String repo = ApplicationContext.getInstance().getRepo();
@@ -140,10 +148,35 @@ public class CheckForUpdateNotifier implements Interruptible {
         useReleaseHub = UserProperties.getInstance().getBooleanProperty("update.use.releasehub");
         checkUnstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
 
+        // --- check from the builds.red-soft.biz ---
+
+        int lastCheck = CHECK_CONTINUE;
         if (useReleaseHub)
-            checkFromReleaseHub();
-        else
-            checkFromReddatabase();
+            lastCheck = checkFromReleaseHub();
+
+        // --- check from the rdb.red-soft.ru ---
+
+        if (lastCheck == CHECK_CONTINUE) {
+            useNewApi = true;
+            lastCheck = checkFromWebsite();
+        }
+
+        // --- check from the reddatabase.ru ---
+
+        if (lastCheck == CHECK_CONTINUE)
+            lastCheck = checkFromReddatabase();
+
+        // --- return result of the check ---
+
+        if (lastCheck == CHECK_FINISH) {
+            updateLoader = new UpdateLoader("");
+            updateLoader.setVersion(version.getVersion());
+
+            Log.info(bundledString("newVersionAvailableText", version.getVersion()));
+            updateDownloadNotifier();
+
+        } else if (lastCheck == CHECK_CONTINUE)
+            Log.info(UP_TO_DATE);
     }
 
     private void checkFromRepo(String repo) {
@@ -160,123 +193,101 @@ public class CheckForUpdateNotifier implements Interruptible {
         }
     }
 
-    private void checkFromReddatabase() {
-        Log.info(bundledString(CHECK_VERSION_KEY, "https://reddatabase.ru"));
-
-        new DefaultRemoteHttpClient().setHttp(useHttpsProtocol ? "https" : "http");
-        new DefaultRemoteHttpClient().setHttpPort(443);
-
-        try {
-            updateLoader = new UpdateLoader("");
-
-            String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "reddatabase.check.rc.url" : "reddatabase.check.url");
-            version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
-
-            if (isNewVersion(version)) {
-                updateLoader.setVersion(version.getVersion());
-                Log.info(newVersionAvailableText());
-                updateDownloadNotifier();
-
-            } else
-                Log.info(UP_TO_DATE);
-
-        } catch (RemoteHttpClientException | UnknownHostException e) {
-            String message = bundledString("noInternetMessage");
-
-            Log.error(message);
-            if (monitorProgress)
-                GUIUtilities.displayWarningMessage(message);
-
-        } catch (IOException e) {
-            String message = bundledString("ErrorCheckingForUpdate", "https://reddatabase.ru");
-
-            Log.error(message);
-            Log.debug(e.getMessage(), e);
-            if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
-        }
-    }
-
-    private void checkFromReleaseHub() {
-        Log.info(bundledString(CHECK_VERSION_KEY, "http://builds.red-soft.biz"));
-        new DefaultRemoteHttpClient().setHttp("http");
-        new DefaultRemoteHttpClient().setHttpPort(80);
+    private int checkFromReleaseHub() {
+        String url = "http://builds.red-soft.biz/api/v1/builds/latest/?project=red_expert" +
+                "&branch=" + SystemProperties.getProperty("system", "branch")
+                + "&stage=0";
 
         try {
-            updateLoader = new UpdateLoader("");
-
-            String url = "http://builds.red-soft.biz/api/v1/builds/latest/?project=red_expert" +
-                    "&branch=" + SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "branch")
-                    + "&stage=0";
-
-            version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
-            if (isNewVersion(version)) {
-                updateLoader.setVersion(version.getVersion());
-                updateDownloadNotifier();
-
-            } else
-                Log.info(UP_TO_DATE);
+            setupHttpClient("http", 80);
+            Log.info(bundledString(CHECK_VERSION_KEY, "builds.red-soft.biz"));
+            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
 
         } catch (RemoteHttpClientException | UnknownHostException e) {
-            String message = bundledString("noInternetMessage");
-
-            Log.error(message);
-            if (monitorProgress)
-                GUIUtilities.displayWarningMessage(message);
+            handleException(e, bundledString(NO_INTERNET_KEY), false);
 
         } catch (Exception e) {
-            String message = bundledString("ErrorCheckingForUpdate", "https://builds.red-soft.biz");
-
-            Log.error(message);
-            Log.debug(e.getMessage(), e);
-            if (monitorProgress)
-                GUIUtilities.displayExceptionErrorDialog(message, e, this.getClass());
-
-            useReleaseHub = false;
-            checkFromReddatabase();
-
-        } finally {
-            new DefaultRemoteHttpClient().setHttp("https");
-            new DefaultRemoteHttpClient().setHttpPort(443);
-        }
-    }
-
-    private void displayDownloadDialog(MouseListener listener) {
-
-        if (displayNewVersionMessage("downloadVersionMessage") != JOptionPane.YES_OPTION)
-            return;
-
-        if (!updateLoader.canDownload(true))
-            return;
-
-        if (ApplicationInstanceCounter.getCount() > 1) {
-            GUIUtilities.displayWarningMessage(bundledString("CloseAllInstances"));
-            return;
+            handleException(e, bundledString(ERROR_CHECKING_KEY, "builds.red-soft.biz"), true);
         }
 
-        resetDownloadNotifier(listener);
-        worker = new SwingWorker("downloadUpdate") {
-            @Override
-            public Object construct() {
-                startUpdate();
-                return Constants.WORKER_SUCCESS;
-            }
-        };
-
-        worker.start();
+        useReleaseHub = false;
+        return CHECK_FAIL;
     }
 
-    private int displayNewVersionMessage(String key) {
-
-        String repo = updateLoader.getRepo();
-        if (MiscUtils.isNull(repo))
-            repo = useReleaseHub ? "http://builds.red-soft.biz" : "http://reddatabase.ru";
-
-        return GUIUtilities.displayYesNoDialog(
-                new SimpleHtmlContentPane(bundledString(key, version.getVersion(), repo)),
-                bundledString("title")
+    private int checkFromWebsite() {
+        String url = UserProperties.getInstance().getStringProperty(
+                checkUnstable ? "update.check.rc.url" : "update.check.url"
         );
+
+        try {
+            setupHttpClient();
+            Log.info(bundledString(CHECK_VERSION_KEY, "rdb.red-soft.ru"));
+            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
+
+        } catch (RemoteHttpClientException | UnknownHostException e) {
+            handleException(e, bundledString(NO_INTERNET_KEY), false);
+
+        } catch (IOException e) {
+            handleException(e, bundledString(ERROR_CHECKING_KEY, "rdb.red-soft.ru"), true);
+        }
+
+        useNewApi = false;
+        return CHECK_FAIL;
     }
+
+    /**
+     * @deprecated will be removed when new website comes up
+     */
+    @Deprecated
+    private int checkFromReddatabase() {
+        String url = UserProperties.getInstance().getStringProperty(
+                checkUnstable ? "reddatabase.check.rc.url" : "reddatabase.check.url"
+        );
+
+        try {
+            setupHttpClient();
+            Log.info(bundledString(CHECK_VERSION_KEY, "reddatabase.ru"));
+            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
+
+        } catch (RemoteHttpClientException | UnknownHostException e) {
+            handleException(e, bundledString(NO_INTERNET_KEY), false);
+
+        } catch (IOException e) {
+            handleException(e, bundledString(ERROR_CHECKING_KEY, "https://reddatabase.ru"), true);
+        }
+
+        return CHECK_FAIL;
+    }
+
+    // ---
+
+    private boolean canUpdate(String url) throws IOException {
+        version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
+        return version.hasUpdate();
+    }
+
+    private void handleException(Exception e, String message, boolean error) {
+        Log.error(message);
+        Log.debug(e.getMessage(), e);
+
+        if (monitorProgress) {
+            if (error)
+                GUIUtilities.displayExceptionErrorDialog(message, e, CheckForUpdateNotifier.class);
+            else
+                GUIUtilities.displayWarningMessage(message);
+        }
+    }
+
+    private void setupHttpClient() {
+        setupHttpClient(useHttpsProtocol ? "https" : "http", 443);
+    }
+
+    private void setupHttpClient(String protocol, int port) {
+        new DefaultRemoteHttpClient().setHttp(protocol);
+        new DefaultRemoteHttpClient().setHttpPort(port);
+    }
+
+    // ---
 
     private void startUpdate() {
         try {
@@ -347,6 +358,38 @@ public class CheckForUpdateNotifier implements Interruptible {
         return argsList.toArray(new String[0]);
     }
 
+    // ---
+
+    private void displayDownloadDialog(MouseListener listener) {
+
+        boolean denyUpdateDownload = GUIUtilities.displayYesNoDialog(
+                bundledString("downloadVersionMessage", version.getVersion()),
+                bundledString("title")
+        ) != JOptionPane.YES_OPTION;
+
+        if (denyUpdateDownload)
+            return;
+
+        if (!updateLoader.canDownload(true))
+            return;
+
+        if (ApplicationInstanceCounter.getCount() > 1) {
+            GUIUtilities.displayWarningMessage(bundledString("CloseAllInstances"));
+            return;
+        }
+
+        resetDownloadNotifier(listener);
+        worker = new SwingWorker("downloadUpdate") {
+            @Override
+            public Object construct() {
+                startUpdate();
+                return Constants.WORKER_SUCCESS;
+            }
+        };
+
+        worker.start();
+    }
+
     private void updateDownloadNotifier() {
 
         if (isWaitingForUpdate())
@@ -355,7 +398,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         JLabel label = GUIUtilities.getStatusBar().getLabel(LABEL_INDEX);
         label.addMouseListener(new DownloadNotifierMouseAdapter());
         label.setIcon(IconManager.getIcon("icon_notification"));
-        label.setToolTipText(newVersionAvailableText());
+        label.setToolTipText(bundledString("newVersionAvailableText", version.getVersion()));
 
         GUIUtilities.getStatusBar().setThirdLabelText(bundledString("updateAvailable"));
         Log.info(bundledString("ApplicationNeedsUpdate"));
@@ -379,14 +422,6 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     private static File getUpdateLogFile() {
         return Paths.get(ApplicationContext.getInstance().getUserSettingsHome(), "updater.log").toFile();
-    }
-
-    private String newVersionAvailableText() {
-        return bundledString("newVersionAvailableText", version.getVersion());
-    }
-
-    private boolean isNewVersion(ApplicationVersion version) {
-        return version != null && version.isNewerThan(System.getProperty("executequery.minor.version"));
     }
 
     private void restoreProgressDialog() {
@@ -444,7 +479,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         private void displayReleaseNotes() {
 
-            if (displayNewVersionMessage("newVersionMessage") != JOptionPane.YES_OPTION)
+            boolean denyShowChangelog = GUIUtilities.displayYesNoDialog(
+                    bundledString("newVersionMessage", version.getVersion()),
+                    bundledString("title")
+            ) != JOptionPane.YES_OPTION;
+
+            if (denyShowChangelog)
                 return;
 
             progressDialog = new InterruptibleProgressDialog(
@@ -458,18 +498,11 @@ public class CheckForUpdateNotifier implements Interruptible {
                 @Override
                 public Object construct() {
                     try {
-
-                        LatestVersionRepository repository = (LatestVersionRepository) RepositoryCache.load(LatestVersionRepository.REPOSITORY_ID);
-                        if (repository == null)
-                            return Constants.WORKER_CANCEL;
-
-                        String releaseNotes = JSONAPI.getJsonPropertyFromUrl(repository.getReleaseNotesUrl(), "body");
                         restoreProgressDialog();
-
                         GUIUtils.invokeAndWait(() ->
                                 new InformationDialog(
                                         bundledString("latestVersionInfoTitle"),
-                                        releaseNotes,
+                                        getChangelog(),
                                         InformationDialog.TEXT_CONTENT_VALUE,
                                         null
                                 ).display()
@@ -487,6 +520,23 @@ public class CheckForUpdateNotifier implements Interruptible {
 
             worker.start();
             progressDialog.run();
+        }
+
+        private String getChangelog() {
+            try {
+                if (!useNewApi) {
+                    String url = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "check.version.notes.url");
+                    return JSONAPI.getJsonPropertyFromUrl(url, "body");
+                }
+
+                String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "update.check.rc.url" : "update.check.url");
+                String language = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
+                return JSONAPI.getJsonPropertyFromUrl(url, "changelog", language);
+
+            } catch (IOException e) {
+                Log.error(e.getMessage(), e);
+                return null;
+            }
         }
 
     } // DownloadNotifierMouseAdapter class

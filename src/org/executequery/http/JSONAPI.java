@@ -83,6 +83,15 @@ public class JSONAPI {
         return getJsonObject(Url).getString(key);
     }
 
+    public static String getJsonPropertyFromUrl(String Url, String... keys) throws IOException {
+
+        JSONObject jsonObject = getJsonObject(Url);
+        for (int i = 0; i < keys.length - 1; i++)
+            jsonObject = jsonObject.getJSONObject(keys[i]);
+
+        return jsonObject.getString(keys[keys.length - 1]);
+    }
+
     public static String getJsonPropertyFromUrl(String Url, String key, Map<String, String> headers) throws IOException {
 
         return getJsonObject(Url, headers).getString(key);

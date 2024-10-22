@@ -115,4 +115,8 @@ public final class ApplicationVersion {
         return getTagValue() == SNAPSHOT;
     }
 
+    public boolean hasUpdate() {
+        return isNewerThan(System.getProperty("executequery.minor.version"));
+    }
+
 }

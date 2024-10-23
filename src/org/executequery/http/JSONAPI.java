@@ -67,6 +67,9 @@ public class JSONAPI {
         return new JSONArray(text);
     }
 
+    public static JSONArray getJsonArray(String Url, String key) throws IOException {
+        return getJsonObject(Url).getJSONArray(key);
+    }
 
     public static JSONObject getJsonObjectFromArray(JSONArray mas, String key, String value) {
         for (int i = 0; i < mas.length(); i++) {
@@ -81,6 +84,15 @@ public class JSONAPI {
     public static String getJsonPropertyFromUrl(String Url, String key) throws IOException {
 
         return getJsonObject(Url).getString(key);
+    }
+
+    public static String getJsonPropertyFromUrl(String Url, String... keys) throws IOException {
+
+        JSONObject jsonObject = getJsonObject(Url);
+        for (int i = 0; i < keys.length - 1; i++)
+            jsonObject = jsonObject.getJSONObject(keys[i]);
+
+        return jsonObject.getString(keys[keys.length - 1]);
     }
 
     public static String getJsonPropertyFromUrl(String Url, String key, Map<String, String> headers) throws IOException {

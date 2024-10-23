@@ -3,6 +3,7 @@ package org.executequery.update;
 import org.executequery.http.JSONAPI;
 import org.executequery.log.Log;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.underworldlabs.util.SystemProperties;
 
@@ -47,7 +48,7 @@ final class UpdateSourceReleaseHub extends UpdateSource {
 
             return new UpdateSourceReleaseHub(version, downloadUrl);
 
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             Log.error(e.getMessage(), e);
             return new UpdateSourceReleaseHub(null, null);
         }

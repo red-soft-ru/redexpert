@@ -83,7 +83,7 @@ final class UpdateSourceWebsite extends UpdateSource {
             JSONObject jsonObject = JSONAPI.getJsonObject(unstable ? VERSION_CHECK_RC_URL : VERSION_CHECK_URL);
             return new UpdateSourceWebsite(jsonObject);
 
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             Log.error(e.getMessage(), e);
             return new UpdateSourceWebsite(null);
         }

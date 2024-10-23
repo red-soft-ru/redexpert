@@ -69,6 +69,7 @@ public class CheckForUpdateNotifier implements Interruptible {
     private static final String NO_INTERNET_KEY = "noInternetMessage";
 
     private SwingWorker worker;
+    private UpdateSource updateSource;
     private ApplicationVersion version;
     private UpdateLoader updateLoader = null;
     private InterruptibleProgressDialog progressDialog;
@@ -146,6 +147,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             return;
         }
 
+        useNewApi = true;
         useHttpsProtocol = UserProperties.getInstance().getBooleanProperty("update.use.https");
         useReleaseHub = UserProperties.getInstance().getBooleanProperty("update.use.releasehub");
         checkUnstable = UserProperties.getInstance().getBooleanProperty("startup.unstableversions.load");
@@ -158,10 +160,8 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         // --- check from the rdb.red-soft.ru ---
 
-        if (lastCheck == CHECK_CONTINUE) {
-            useNewApi = true;
+        if (lastCheck == CHECK_CONTINUE)
             lastCheck = checkFromWebsite();
-        }
 
         // --- check from the reddatabase.ru ---
 
@@ -173,7 +173,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         if (lastCheck == CHECK_FINISH) {
             updateLoader = new UpdateLoader("");
             updateLoader.setVersion(version.toString());
-            updateLoader.setDownloadLink(getDownloadLink());
+            updateLoader.setDownloadLink(useReleaseHub || useNewApi ? updateSource.getDownloadUrl() : getDownloadLink());
 
             Log.info(bundledString("newVersionAvailableText", version));
             updateDownloadNotifier();
@@ -197,45 +197,41 @@ public class CheckForUpdateNotifier implements Interruptible {
     }
 
     private int checkFromReleaseHub() {
-        String url = "http://builds.red-soft.biz/api/v1/builds/latest/?project=red_expert" +
-                "&branch=" + SystemProperties.getProperty("system", "branch")
-                + "&stage=0";
+        Log.info(bundledString(CHECK_VERSION_KEY, "builds.red-soft.biz"));
 
         try {
-            setupHttpClient("http", 80);
-            Log.info(bundledString(CHECK_VERSION_KEY, "builds.red-soft.biz"));
-            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
+            updateSource = UpdateSource.load(true, false);
+            if (updateSource.canUpdate()) {
+                version = updateSource.getVersion();
+                return CHECK_FINISH;
+            }
 
-        } catch (RemoteHttpClientException | UnknownHostException e) {
+        } catch (RemoteHttpClientException e) {
             handleException(e, bundledString(NO_INTERNET_KEY), false);
-
-        } catch (Exception e) {
-            handleException(e, bundledString(ERROR_CHECKING_KEY, "builds.red-soft.biz"), true);
+            useReleaseHub = false;
+            return CHECK_FAIL;
         }
 
-        useReleaseHub = false;
-        return CHECK_FAIL;
+        return CHECK_CONTINUE;
     }
 
     private int checkFromWebsite() {
-        String url = UserProperties.getInstance().getStringProperty(
-                checkUnstable ? "update.check.rc.url" : "update.check.url"
-        );
+        Log.info(bundledString(CHECK_VERSION_KEY, "rdb.red-soft.ru"));
 
         try {
-            setupHttpClient();
-            Log.info(bundledString(CHECK_VERSION_KEY, "rdb.red-soft.ru"));
-            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
+            updateSource = UpdateSource.load(false, checkUnstable);
+            if (updateSource.canUpdate()) {
+                version = updateSource.getVersion();
+                return CHECK_FINISH;
+            }
 
-        } catch (RemoteHttpClientException | UnknownHostException e) {
+        } catch (RemoteHttpClientException e) {
             handleException(e, bundledString(NO_INTERNET_KEY), false);
-
-        } catch (IOException e) {
-            handleException(e, bundledString(ERROR_CHECKING_KEY, "rdb.red-soft.ru"), true);
+            useNewApi = false;
+            return CHECK_FAIL;
         }
 
-        useNewApi = false;
-        return CHECK_FAIL;
+        return CHECK_CONTINUE;
     }
 
     /**
@@ -248,9 +244,13 @@ public class CheckForUpdateNotifier implements Interruptible {
         );
 
         try {
-            setupHttpClient();
             Log.info(bundledString(CHECK_VERSION_KEY, "reddatabase.ru"));
-            return canUpdate(url) ? CHECK_FINISH : CHECK_CONTINUE;
+
+            new DefaultRemoteHttpClient().setHttp(useHttpsProtocol ? "https" : "http");
+            new DefaultRemoteHttpClient().setHttpPort(443);
+
+            version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
+            return version.hasUpdate() ? CHECK_FINISH : CHECK_CONTINUE;
 
         } catch (RemoteHttpClientException | UnknownHostException e) {
             handleException(e, bundledString(NO_INTERNET_KEY), false);
@@ -264,11 +264,6 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     // ---
 
-    private boolean canUpdate(String url) throws IOException {
-        version = new ApplicationVersion(JSONAPI.getJsonPropertyFromUrl(url, "version"));
-        return version.hasUpdate();
-    }
-
     private void handleException(Exception e, String message, boolean error) {
         Log.error(message);
         Log.debug(e.getMessage(), e);
@@ -279,15 +274,6 @@ public class CheckForUpdateNotifier implements Interruptible {
             else
                 GUIUtilities.displayWarningMessage(message);
         }
-    }
-
-    private void setupHttpClient() {
-        setupHttpClient(useHttpsProtocol ? "https" : "http", 443);
-    }
-
-    private void setupHttpClient(String protocol, int port) {
-        new DefaultRemoteHttpClient().setHttp(protocol);
-        new DefaultRemoteHttpClient().setHttpPort(port);
     }
 
     // ---
@@ -363,28 +349,12 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     // ---
 
+    /**
+     * @deprecated will be removed when new website comes up
+     */
+    @Deprecated
     private String getDownloadLink() {
         try {
-
-            if (useReleaseHub) {
-                setupHttpClient("http", 80);
-
-                String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                        "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
-
-                return "http://builds.red-soft.biz/" + file;
-            }
-
-            if (useNewApi) {
-                String fileName = "RedExpert-" + version + ".zip";
-                String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "update.check.rc.url" : "update.check.url");
-
-                return "https://rdb.red-soft.ru/" + Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray(url, "files"),
-                        "FILE_NAME", fileName)).getString("FILE_PATH");
-            }
-
             //изменить эту строку в соответствии с форматом имени файла на сайте
             String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
             String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
@@ -564,14 +534,13 @@ public class CheckForUpdateNotifier implements Interruptible {
 
         private String getChangelog() {
             try {
-                if (!useNewApi) {
-                    String url = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "check.version.notes.url");
-                    return JSONAPI.getJsonPropertyFromUrl(url, "body");
+                if (useNewApi) {
+                    String language = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
+                    return updateSource.getChangelog(language);
                 }
 
-                String url = UserProperties.getInstance().getStringProperty(checkUnstable ? "update.check.rc.url" : "update.check.url");
-                String language = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
-                return JSONAPI.getJsonPropertyFromUrl(url, "changelog", language);
+                String url = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "check.version.notes.url");
+                return JSONAPI.getJsonPropertyFromUrl(url, "body");
 
             } catch (IOException e) {
                 Log.error(e.getMessage(), e);

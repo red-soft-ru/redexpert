@@ -96,7 +96,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         this(object.getHost(), metaDataKey);
         setName(object.getName());
-        setRelationID(object.getRelationId());
+        if (object.getRelationId() != null)
+            setRelationID(object.getRelationId());
 
 
         setTypeTree(object.getTypeTree());
@@ -111,7 +112,8 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
         this(object.getHost());
         setName(object.getName());
-        setRelationID(object.getRelationId());
+        if (object.getRelationId() != null)
+            setRelationID(object.getRelationId());
 
 
         if (object instanceof DefaultDatabaseObject) {

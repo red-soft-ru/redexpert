@@ -46,7 +46,8 @@ public class DefaultDatabaseView extends AbstractTableObject
         this(object.getHost());
         metaTagParent = object.getMetaTagParent();
         setName(object.getName());
-        setRelationID(object.getRelationId());
+        if (object.getRelationId() != null)
+            setRelationID(object.getRelationId());
     }
 
     private List<String> fields;

@@ -48,9 +48,9 @@ import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.browser.profiler.DefaultProfilerExecutor;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.InputParametersDialog;
-import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.TransactionParametersPanel;
 import org.executequery.gui.editor.autocomplete.Parameter;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
@@ -312,7 +312,8 @@ public class QueryDispatcher {
     }
 
     public void executeScript(DatabaseConnection dc, final String script, boolean anyConnections) {
-
+        if (!checkBeforeExecuteQuery(script, dc, anyConnections))
+            return;
         if (!ConnectionManager.hasConnections()) {
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
             setStatusMessage(ERROR_EXECUTING);

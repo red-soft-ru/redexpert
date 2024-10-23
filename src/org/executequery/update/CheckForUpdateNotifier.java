@@ -123,6 +123,8 @@ public class CheckForUpdateNotifier implements Interruptible {
                     return Constants.WORKER_CANCEL;
 
                 if (version.hasUpdate()) {
+                    if (!version.isSnapshot())
+                        displayReleaseNotes();
                     displayDownloadDialog(null);
 
                 } else if (monitorProgress)
@@ -432,6 +434,69 @@ public class CheckForUpdateNotifier implements Interruptible {
 
     // ---
 
+    private void displayReleaseNotes() {
+
+        boolean denyShowChangelog = GUIUtilities.displayYesNoDialog(
+                bundledString("newVersionMessage", version),
+                bundledString("title")
+        ) != JOptionPane.YES_OPTION;
+
+        if (denyShowChangelog)
+            return;
+
+        progressDialog = new InterruptibleProgressDialog(
+                GUIUtilities.getParentFrame(),
+                bundledString("checkingUpdatesTitle"),
+                bundledString("progressDialogForReleaseNotesLabel"),
+                CheckForUpdateNotifier.this
+        );
+
+        worker = new SwingWorker("displayReleaseNotes") {
+            @Override
+            public Object construct() {
+                try {
+                    restoreProgressDialog();
+                    GUIUtils.invokeAndWait(() ->
+                            new InformationDialog(
+                                    bundledString("latestVersionInfoTitle"),
+                                    getChangelog(),
+                                    InformationDialog.TEXT_CONTENT_VALUE,
+                                    null
+                            ).display()
+                    );
+
+                } catch (Exception e) {
+                    restoreProgressDialog();
+                    GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
+                    return Constants.WORKER_FAIL;
+                }
+
+                return Constants.WORKER_SUCCESS;
+            }
+        };
+
+        worker.start();
+        progressDialog.run();
+    }
+
+    private String getChangelog() {
+        try {
+            if (useNewApi) {
+                String language = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
+                return updateSource.getChangelog(language);
+            }
+
+            String url = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "check.version.notes.url");
+            return JSONAPI.getJsonPropertyFromUrl(url, "body");
+
+        } catch (IOException e) {
+            Log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // ---
+
     private static File getUpdateLogFile() {
         return Paths.get(ApplicationContext.getInstance().getUserSettingsHome(), "updater.log").toFile();
     }
@@ -487,67 +552,6 @@ public class CheckForUpdateNotifier implements Interruptible {
             if (!version.isSnapshot())
                 displayReleaseNotes();
             displayDownloadDialog(this);
-        }
-
-        private void displayReleaseNotes() {
-
-            boolean denyShowChangelog = GUIUtilities.displayYesNoDialog(
-                    bundledString("newVersionMessage", version),
-                    bundledString("title")
-            ) != JOptionPane.YES_OPTION;
-
-            if (denyShowChangelog)
-                return;
-
-            progressDialog = new InterruptibleProgressDialog(
-                    GUIUtilities.getParentFrame(),
-                    bundledString("checkingUpdatesTitle"),
-                    bundledString("progressDialogForReleaseNotesLabel"),
-                    CheckForUpdateNotifier.this
-            );
-
-            worker = new SwingWorker("displayReleaseNotes") {
-                @Override
-                public Object construct() {
-                    try {
-                        restoreProgressDialog();
-                        GUIUtils.invokeAndWait(() ->
-                                new InformationDialog(
-                                        bundledString("latestVersionInfoTitle"),
-                                        getChangelog(),
-                                        InformationDialog.TEXT_CONTENT_VALUE,
-                                        null
-                                ).display()
-                        );
-
-                    } catch (Exception e) {
-                        restoreProgressDialog();
-                        GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, this.getClass());
-                        return Constants.WORKER_FAIL;
-                    }
-
-                    return Constants.WORKER_SUCCESS;
-                }
-            };
-
-            worker.start();
-            progressDialog.run();
-        }
-
-        private String getChangelog() {
-            try {
-                if (useNewApi) {
-                    String language = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "startup.display.language");
-                    return updateSource.getChangelog(language);
-                }
-
-                String url = SystemProperties.getProperty(Constants.SYSTEM_PROPERTIES_KEY, "check.version.notes.url");
-                return JSONAPI.getJsonPropertyFromUrl(url, "body");
-
-            } catch (IOException e) {
-                Log.error(e.getMessage(), e);
-                return null;
-            }
         }
 
     } // DownloadNotifierMouseAdapter class

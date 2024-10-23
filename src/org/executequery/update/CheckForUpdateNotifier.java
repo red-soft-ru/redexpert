@@ -212,6 +212,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             return CHECK_FAIL;
         }
 
+        useReleaseHub = false;
         return CHECK_CONTINUE;
     }
 
@@ -231,6 +232,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             return CHECK_FAIL;
         }
 
+        useNewApi = false;
         return CHECK_CONTINUE;
     }
 

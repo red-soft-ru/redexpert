@@ -17,11 +17,11 @@ final class UpdateSourceWebsite extends UpdateSource {
 
     private static final String VERSION_CHECK_RC_URL = SystemProperties.getProperty("user", "update.check.rc.url");
     private static final String VERSION_CHECK_URL = SystemProperties.getProperty("user", "update.check.url");
-    private static final String ROOT_URL = "https://rdb.red-soft.ru/";
 
     private static final String FILE_NAME = "FILE_NAME";
     private static final String FILE_PATH = "FILE_PATH";
     private static final String CHANGELOG = "changelog";
+    private static final String BASE_URL = "base_url";
     private static final String VERSION = "version";
     private static final String FILES = "files";
 
@@ -60,7 +60,7 @@ final class UpdateSourceWebsite extends UpdateSource {
 
             String fileName = filesArray.getJSONObject(i).getString(FILE_NAME);
             if (Objects.equals(fileName, zipFileName)) {
-                downloadUrl = ROOT_URL + filesArray.getJSONObject(i).getString(FILE_PATH);
+                downloadUrl = source.getString(BASE_URL) + filesArray.getJSONObject(i).getString(FILE_PATH);
                 return;
             }
         }

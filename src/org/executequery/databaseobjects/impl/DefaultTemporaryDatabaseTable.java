@@ -1,7 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
@@ -24,7 +23,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     private String typeTemporary;
 
-    public DefaultTemporaryDatabaseTable(DatabaseObject object) {
+    public DefaultTemporaryDatabaseTable(DefaultDatabaseObject object) {
         super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 

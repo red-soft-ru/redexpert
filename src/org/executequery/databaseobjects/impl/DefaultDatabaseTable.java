@@ -92,35 +92,30 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     /**
      * Creates a new instance of DatabaseTable
      */
-    public DefaultDatabaseTable(DatabaseObject object, String metaDataKey) {
+    public DefaultDatabaseTable(DefaultDatabaseObject object, String metaDataKey) {
 
         this(object.getHost(), metaDataKey);
         setName(object.getName());
+        setRelationID(object.getRelationId());
 
 
-        if (object instanceof DefaultDatabaseObject) {
-            DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
-            setTypeTree(ddo.getTypeTree());
-            setDependObject(ddo.getDependObject());
-            metaTagParent = ddo.getMetaTagParent();
-
-        } else {
-            typeTree = TreePanel.DEFAULT;
-            setDependObject(null);
-        }
+        setTypeTree(object.getTypeTree());
+        setDependObject(object.getDependObject());
+        metaTagParent = object.getMetaTagParent();
     }
 
     /**
      * Creates a new instance of DatabaseTable
      */
-    public DefaultDatabaseTable(DatabaseObject object) {
+    public DefaultDatabaseTable(DefaultDatabaseObject object) {
 
         this(object.getHost());
         setName(object.getName());
+        setRelationID(object.getRelationId());
 
 
         if (object instanceof DefaultDatabaseObject) {
-            DefaultDatabaseObject ddo = ((DefaultDatabaseObject) object);
+            DefaultDatabaseObject ddo = object;
             setTypeTree(ddo.getTypeTree());
             setDependObject(ddo.getDependObject());
             metaTagParent = ddo.getMetaTagParent();

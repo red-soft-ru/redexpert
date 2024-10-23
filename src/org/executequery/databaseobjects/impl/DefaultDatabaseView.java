@@ -21,7 +21,10 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
@@ -38,11 +41,12 @@ import java.util.List;
 public class DefaultDatabaseView extends AbstractTableObject
         implements DatabaseView {
 
-    public DefaultDatabaseView(DatabaseObject object) {
+    public DefaultDatabaseView(DefaultDatabaseObject object) {
 
         this(object.getHost());
-        metaTagParent = ((DefaultDatabaseObject) object).getMetaTagParent();
+        metaTagParent = object.getMetaTagParent();
         setName(object.getName());
+        setRelationID(object.getRelationId());
     }
 
     private List<String> fields;

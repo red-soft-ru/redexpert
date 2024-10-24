@@ -45,7 +45,7 @@ public class ExportConnectionsPanelTwo extends ActionPanel {
 
         fileNameField = WidgetFactory.createTextField("fileNameField");
 
-        JButton button = WidgetFactory.createInlineFieldButton("browseButton", Bundles.get("common.browse.button"));
+        JButton button = WidgetFactory.createButton("browseButton", Bundles.get("common.browse.button"));
         button.setActionCommand("browse");
         button.addActionListener(this);
         button.setMnemonic('r');

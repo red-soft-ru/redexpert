@@ -269,12 +269,15 @@ public final class SQLUtils {
                                 sb.append(" ON DELETE ").append(cc.getDeleteRule());
                         }
                     }
-
+                    if (Objects.equals(cc.getSorting(), "DESCENDING") || (cc.getIndexName() != null && !cc.getIndexName().contentEquals(cc.getName()))) {
+                        sb.append(" USING ").append(cc.getSorting()).append(" INDEX ").append(cc.getIndexName());
+                    }
                     if (!MiscUtils.isNull(cc.getTablespace()))
                         sb.append(" TABLESPACE ").append(format(cc.getTablespace(), dc));
                 }
             }
         }
+
 
         return sb.toString();
     }
@@ -1179,10 +1182,8 @@ public final class SQLUtils {
         StringBuilder columnComments = new StringBuilder();
         boolean alterConstraints = false;
 
-        if (temporary)
-            sb.append("ALTER GLOBAL TEMPORARY TABLE ");
-        else
-            sb.append("ALTER TABLE ");
+
+        sb.append("ALTER TABLE ");
         sb.append(format(thisTable.getName(), thisTable.getHost().getDatabaseConnection()));
         String noChangesCheckString = sb.toString();
 

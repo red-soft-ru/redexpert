@@ -240,6 +240,11 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
     }
 
     @Override
+    public int getType() {
+        return NamedObject.TABLE;
+    }
+
+    @Override
     public String getCreateTitle() {
         return TITLE;
     }

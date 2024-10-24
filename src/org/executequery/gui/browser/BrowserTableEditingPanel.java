@@ -20,6 +20,7 @@
 
 package org.executequery.gui.browser;
 
+import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.components.table.DoubleCellRenderer;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -29,7 +30,11 @@ import org.executequery.databaseobjects.DatabaseTable;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.ColumnConstraint;
 import org.executequery.databaseobjects.impl.*;
+import org.executequery.event.ApplicationEvent;
+import org.executequery.event.DatabaseTableEvent;
+import org.executequery.event.DatabaseTableEventListener;
 import org.executequery.gui.*;
+import org.executequery.gui.browser.nodes.DatabaseObjectNode;
 import org.executequery.gui.databaseobjects.*;
 import org.executequery.gui.erd.ErdTableInfo;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
@@ -59,6 +64,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumnModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.Printable;
@@ -79,6 +85,7 @@ import java.util.stream.Collectors;
  */
 public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         implements ActionListener,
+        DatabaseTableEventListener,
         FocusListener,
         TableConstraintFunction,
         DefinitionPanel,
@@ -157,11 +164,14 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
      */
     private boolean referencesLoaded;
     private boolean loadingRowCount;
+    private boolean tableResetEventTriggered;
 
     public BrowserTableEditingPanel(BrowserController controller) {
         this.controller = controller;
         init();
         arrange();
+
+        EventMediator.registerListener(this);
     }
 
     private void init() {
@@ -548,20 +558,27 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
     private void editTrigger(MouseEvent e) {
 
-        if (e.getClickCount() < 2)
+        if (e.getClickCount() < 2 || triggersTable.getSelectedRow() < 0)
             return;
 
-        if (triggersTable.getSelectedRow() >= 0) {
+        TableSorter tableSorter = (TableSorter) triggersTable.getModel();
+        int triggerIndex = tableSorter.modelIndex(triggersTable.getSelectedRow());
+        TableTriggersTableModel tableModel = (TableTriggersTableModel) tableSorter.getTableModel();
 
-            int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
-            DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
-            BaseDialog dialog = new BaseDialog("Edit Trigger", true);
-            CreateTriggerPanel panel = new CreateTriggerPanel(table.getHost().getDatabaseConnection(), dialog, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
-            dialog.addDisplayComponent(panel);
-            dialog.display();
+        DefaultDatabaseTrigger trigger = tableModel.getTriggers().get(triggerIndex);
+        DatabaseConnection connection = table.getHost().getDatabaseConnection();
 
-            refresh();
-        }
+        String triggerName = trigger.getShortName().trim();
+        String title = triggerName + ":TRIGGER:" + connection.getName();
+
+        if (GUIUtilities.getCentralPane(title) == null) {
+            CreateTriggerPanel panel = new CreateTriggerPanel(connection, null, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
+            panel.setDatabaseObjectNode(ConnectionsTreePanel.getPanelFromBrowser().findNode(connection, triggerName, NamedObject.TRIGGER));
+            panel.setCurrentPath(panel.getDatabaseObjectNode().getTreePath());
+
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, panel, title, true);
+        } else
+            GUIUtilities.setSelectedCentralPane(title);
     }
 
     private void editConstraint(MouseEvent e) {
@@ -596,8 +613,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             dialog.addDisplayComponentWithEmptyBorder(panel);
             dialog.display();
-            table.reset();
-            reloadView();
+            refresh();
         }
     }
 
@@ -964,6 +980,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     }
 
     public void setValues(DatabaseTable table) {
+        setValues(table, true);
+    }
+
+    private void setValues(DatabaseTable table, boolean stateChanged) {
 
         this.table = table;
         if (!MiscUtils.isNull(table.getExternalFile())) {
@@ -993,7 +1013,8 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (SystemProperties.getBooleanProperty("user", "browser.query.row.count"))
             reloadDataRowCount();
 
-        stateChanged(null);
+        if (stateChanged)
+            stateChanged(null);
     }
 
 
@@ -1144,6 +1165,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
     @Override
     public void deleteRow() {
 
+        int metaType = -1;
         int tabIndex = tabPane.getSelectedIndex();
         if (tabIndex == TABLE_COLUMNS_INDEX) {
             descriptionTable.deleteSelectedColumn();
@@ -1155,6 +1177,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             String query = null;
             if (tabIndex == TABLE_INDEXES_INDEX) {
+                metaType = NamedObject.INDEX;
 
                 if (columnIndexTable.getSelectedRow() >= 0) {
                     int row = ((TableSorter) columnIndexTable.getModel()).modelIndex(columnIndexTable.getSelectedRow());
@@ -1163,6 +1186,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 }
 
             } else if (tabIndex == TABLE_TRIGGERS_INDEX) {
+                metaType = NamedObject.TRIGGER;
 
                 if (triggersTable.getSelectedRow() >= 0) {
                     int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
@@ -1181,8 +1205,10 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
                 );
                 executeQueryDialog.display();
 
-                if (executeQueryDialog.getCommit())
-                    refresh();
+                if (executeQueryDialog.getCommit()) {
+                    reloadNodes(metaType);
+                    maybeRefresh();
+                }
             }
         }
 
@@ -1220,8 +1246,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (panelForDialog != null) {
             dialog.addDisplayComponent(panelForDialog);
             dialog.display();
-            table.reset();
-            reloadView();
+            maybeRefresh();
         }
     }
 
@@ -1350,11 +1375,56 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
     }
 
+    private void reloadNodes(int type) {
+
+        if (type < NamedObject.DOMAIN)
+            return;
+
+        ConnectionsTreePanel treePanel = ConnectionsTreePanel.getPanelFromBrowser();
+        if (treePanel == null)
+            return;
+
+        TreePath pathToReload = treePanel.getMetaTagNodePath(getSelectedConnection(), type);
+        if (pathToReload != null) {
+            treePanel.reloadPath(pathToReload);
+            treePanel.reloadRelatedNodes(
+                    (DatabaseObjectNode) pathToReload.getLastPathComponent(),
+                    getTableName(),
+                    table.isGlobalTemporary()
+            );
+        }
+    }
+
     @Override
     public void refresh() {
         table.reset();
         setValues(table);
     }
+
+    private void maybeRefresh() {
+        GUIUtils.invokeLater(() -> {
+            if (!tableResetEventTriggered)
+                refresh();
+            tableResetEventTriggered = false;
+        });
+    }
+
+    // --- DatabaseTableEventListener impl ---
+
+    @Override
+    public void processTableReset(DatabaseTableEvent e) {
+        if (!Objects.equals(e.getSource(), this)) {
+            tableResetEventTriggered = true;
+            setValues(table, false);
+        }
+    }
+
+    @Override
+    public boolean canHandleEvent(ApplicationEvent event) {
+        return event.isDatabaseTableEvent();
+    }
+
+    // ---
 
     private class PropertiesPanel extends JPanel {
 

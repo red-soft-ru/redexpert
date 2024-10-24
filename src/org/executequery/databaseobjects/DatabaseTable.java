@@ -215,6 +215,8 @@ public interface DatabaseTable extends DatabaseTableObject {
     String getExternalFile();
 
     String getAdapter();
+
+    boolean isGlobalTemporary();
 }
 
 

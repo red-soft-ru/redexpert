@@ -91,7 +91,7 @@ public class PropertiesPanel extends JPanel
 
     private static boolean hasChanges;
     private static boolean updateEnvNeed;
-    private static Integer lastSelectedRow;
+    private static Integer lastSelectedNode = -1;
     private static List<Class<?>> classesNeedRestart;
 
     /**
@@ -101,7 +101,7 @@ public class PropertiesPanel extends JPanel
         this(parent, -1);
     }
 
-    public PropertiesPanel(ActionContainer parent, int openRow) {
+    public PropertiesPanel(ActionContainer parent, int nodeToSelect) {
         super(new BorderLayout());
 
         this.parent = parent;
@@ -110,8 +110,10 @@ public class PropertiesPanel extends JPanel
         restoreUpdateEnvNeed();
 
         init();
-        if (openRow != -1)
-            selectOpenRow(openRow);
+
+        if (nodeToSelect == -1)
+            nodeToSelect = lastSelectedNode != -1 ? lastSelectedNode : PropertyTypes.GENERAL;
+        selectOpenRow(nodeToSelect);
     }
 
     private void init() {
@@ -216,7 +218,6 @@ public class PropertiesPanel extends JPanel
         panelMap = new HashMap<>();
         tree.addTreeSelectionListener(this);
         cardLayout.show(rightPanel, String.valueOf(PropertyTypes.SYSTEM));
-        tree.setSelectionRow(lastSelectedRow != null ? lastSelectedRow : 0);
     }
 
     @SuppressWarnings("rawtypes")
@@ -247,9 +248,9 @@ public class PropertiesPanel extends JPanel
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selection[selection.length - 1];
         PropertyNode propertyNode = (PropertyNode) treeNode.getUserObject();
 
-        int nodeId = propertyNode.getNodeId();
-        lastSelectedRow = nodeId - 1;
+        lastSelectedNode = propertyNode.getNodeId();
 
+        int nodeId = lastSelectedNode;
         if (panelMap.containsKey(nodeId)) {
             currentlySelectedPanel = panelMap.get(nodeId);
             cardLayout.show(rightPanel, String.valueOf(nodeId));

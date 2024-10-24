@@ -21,7 +21,6 @@ import org.executequery.gui.text.DifferenceSqlTextPanel;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.BackgroundProgressDialog;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -168,7 +167,7 @@ public class ComparerDBPanel extends JPanel implements TabView {
         // --- buttons defining ---
 
         compareButton = WidgetFactory.createButton(
-                "compareButton",
+                isExtractMetadata ? "extractButton" : "compareButton",
                 bundleString(isExtractMetadata ? "CompareExportButton" : "CompareButton"),
                 e -> compareDatabase()
         );
@@ -186,13 +185,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
         );
 
         selectAllAttributesButton = WidgetFactory.createButton(
-                "selectAllAttributesButton",
+                isExtractMetadata ? "selectAllExtractAttributesButton" : "selectAllAttributesButton",
                 bundleString("SelectAllButton"),
                 e -> selectAll("attributes")
         );
 
         selectAllPropertiesButton = WidgetFactory.createButton(
-                "selectAllPropertiesButton",
+                isExtractMetadata ? "selectAllExtractPropertiesButton" : "selectAllPropertiesButton",
                 bundleString("SelectAllButton"),
                 e -> selectAll("properties")
         );
@@ -445,9 +444,13 @@ public class ComparerDBPanel extends JPanel implements TabView {
             if (!targetConnection.isConnected())
                 ConnectionMediator.getInstance().connect(targetConnection, true);
 
-        } catch (DataSourceException e) {
+        } catch (Throwable e) {
             Log.error(e.getMessage(), e);
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
+                    "UnableCompareNoConnections.extract" :
+                    "UnableCompareNoConnections"
+            ));
+
             return false;
         }
 
@@ -516,7 +519,10 @@ public class ComparerDBPanel extends JPanel implements TabView {
 
         } catch (SQLException | NullPointerException e) {
             Log.error(e.getMessage(), e);
-            GUIUtilities.displayWarningMessage(bundleString("UnableCompareNoConnections"));
+            GUIUtilities.displayWarningMessage(bundleString(isExtractMetadata ?
+                    "UnableCompareNoConnections.extract" :
+                    "UnableCompareNoConnections"
+            ));
             return false;
         }
 

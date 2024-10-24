@@ -22,13 +22,13 @@ package org.executequery.gui.editor;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.log.Log;
 import org.executequery.repository.RepositoryCache;
 import org.executequery.repository.SqlCommandHistoryRepository;
 import org.executequery.sql.QueryDelegate;
 import org.executequery.sql.QueryDispatcher;
 import org.executequery.util.ThreadUtils;
-import org.underworldlabs.sqlParser.SqlParser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

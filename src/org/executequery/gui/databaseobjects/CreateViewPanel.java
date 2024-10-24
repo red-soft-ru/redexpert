@@ -90,6 +90,11 @@ public class CreateViewPanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.VIEW;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         view = (DefaultDatabaseView) databaseObject;
     }

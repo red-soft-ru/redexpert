@@ -23,13 +23,18 @@ package org.executequery.gui.prefs;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.InterfaceLanguage;
+import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -138,6 +143,9 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
         addContent(preferencesPanel);
         lookAndFeelCombBox().addItemListener(this::lookAndFeelChanged);
+
+        // TODO: remove when refactor portuguese resources
+        interfaceLanguageCombBox().addItemListener(this::interfaceLanguageChanged);
     }
 
     @SuppressWarnings("rawtypes")
@@ -158,6 +166,30 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         restoreAndSaveDefaults(PropertyTypes.RESULT_SET_COLOURS);
     }
 
+    /// TODO: remove when refactor portuguese resources
+    private JComboBox<?> interfaceLanguageCombBox() {
+        return (JComboBox<?>) preferencesPanel.getComponentEditorForKey("startup.display.language");
+    }
+
+    /// TODO: remove when refactor portuguese resources
+    private synchronized void interfaceLanguageChanged(ItemEvent e) {
+
+        if (e.getStateChange() != ItemEvent.SELECTED)
+            return;
+
+        LabelValuePair valuePair = (LabelValuePair) interfaceLanguageCombBox().getSelectedItem();
+        if (valuePair == null)
+            return;
+
+        if (InterfaceLanguage.pt_br.equals(valuePair.getValue())) {
+            String message = "<html>Portuguese has been added for experimental purposes and may contain inaccuracies.<br>" +
+                    "If you find a translation error, please contact us or create a PR on <a href=none>GitHub</a>.</html>";
+
+            MessageWithLink messageWithLink = new MessageWithLink(message, "https://github.com/red-soft-ru/redexpert/blob/master/src/org/executequery/localization/resources_pt_br.properties");
+            JOptionPane.showMessageDialog(null, messageWithLink);
+        }
+    }
+
     private Object[] lookAndFeelValuePairs() {
 
         List<LabelValuePair> values = new ArrayList<>();
@@ -171,8 +203,8 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     private Object[] languageValuePairs() {
 
         List<LabelValuePair> values = new ArrayList<>();
-        for (InterfaceLanguage lafType : InterfaceLanguage.values())
-            values.add(new LabelValuePair(lafType, lafType.getLabel()));
+        for (InterfaceLanguage language : InterfaceLanguage.values())
+            values.add(new LabelValuePair(language, language.getLabel()));
 
         return values.toArray();
     }
@@ -199,7 +231,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     @Override
     public void restoreDefaults() {
         lafSelectionPanel.restore();
-        preferencesPanel.savePreferences();
+        preferencesPanel.restoreDefaults();
         apply();
     }
 
@@ -212,6 +244,29 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private void apply() {
         GUIUtilities.displayStatusBar(SystemProperties.getBooleanProperty("user", "system.display.statusbar"));
+    }
+
+    /// TODO: remove when refactor portuguese resources
+    public static class MessageWithLink extends JEditorPane {
+
+        public MessageWithLink(String htmlMessage, String link) {
+            super("text/html", htmlMessage);
+            addHyperlinkListener(e -> navigateLink(link, e));
+            setEditable(false);
+            setBorder(null);
+        }
+
+        private static void navigateLink(String link, HyperlinkEvent e) {
+            try {
+                if (!Objects.equals(e.getEventType(), HyperlinkEvent.EventType.ACTIVATED))
+                    return;
+
+                Desktop.getDesktop().browse(new URI(link));
+
+            } catch (URISyntaxException | IOException ex) {
+                Log.error("Error constructing link URI", ex);
+            }
+        }
     }
 
 }

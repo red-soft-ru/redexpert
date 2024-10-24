@@ -35,12 +35,11 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Takis Diakoumis
@@ -49,6 +48,7 @@ import java.util.Vector;
 public class ResultSetTable extends JTable implements StandardTable {
 
     private CustomCellEditor defaultCellEditor;
+    private CustomCellEditor floatCellEditor;
     private CustomCellEditor int128CellEditor;
     private CustomCellEditor bigintCellEditor;
     private CustomCellEditor integerCellEditor;
@@ -83,6 +83,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         bigintCellEditor = new CustomCellEditor(new NumberPicker(Types.BIGINT));
         integerCellEditor = new CustomCellEditor(new NumberPicker(Types.INTEGER));
         smallintCellEditor = new CustomCellEditor(new NumberPicker(Types.SMALLINT));
+        floatCellEditor = new CustomCellEditor(new NumberPicker(Types.FLOAT));
 
         dateEditor = new DateCellEditor();
         timeCellEditor = new TimeCellEditor();
@@ -111,6 +112,13 @@ public class ResultSetTable extends JTable implements StandardTable {
         cellRenderer.setFont(getFont());
 
         applyUserPreferences();
+
+        setTransferHandler(new TransferHandler() {
+            @Override
+            public void exportToClipboard(JComponent comp, Clipboard clip, int action) throws IllegalStateException {
+                copySelectedCells();
+            }
+        });
     }
 
     private void setDefaultColumnOptions() {
@@ -251,7 +259,7 @@ public class ResultSetTable extends JTable implements StandardTable {
 
             for (int j = 0; j < cols; j++) {
                 sb.append(quote);
-                sb.append(getValueAt(selectedRows[i], selectedCols[j]));
+                sb.append(ValueFormatter.formatted(getValueAt(selectedRows[i], selectedCols[j])));
                 sb.append(quote);
                 sb.append(delimiter);
             }
@@ -434,6 +442,12 @@ public class ResultSetTable extends JTable implements StandardTable {
             case Types.TIME:
                 oldCellEditor = timeCellEditor;
                 break;
+            case Types.DOUBLE:
+            case Types.FLOAT:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                oldCellEditor = floatCellEditor;
+                break;
 
             case Types.BOOLEAN:
                 JComboBox comboBox = new JComboBox(new String[]{"true", "false", "null"});
@@ -461,9 +475,21 @@ public class ResultSetTable extends JTable implements StandardTable {
     @Override
     protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
-
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
+    }
+
+    public boolean editCellAt(int row, int column, EventObject e) {
+        if ((e instanceof MouseEvent) && (((MouseEvent) e).getClickCount() < 2))
+            return false;
+        boolean result = super.editCellAt(row, column, e);
+        if (e instanceof KeyEvent) {
+            getEditorComponent().requestFocus();
+            if (getEditorComponent() instanceof JTextField) {
+                ((JTextField) getEditorComponent()).selectAll();
+            }
+        }
+        return result;
     }
 
     private int getUserPreferredColumnWidth() {
@@ -491,7 +517,6 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         if (oldCellEditor instanceof BlockableCellEditor)
             ((BlockableCellEditor) oldCellEditor).setBlock(false);
-
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_ESCAPE) {
             restoreOldCellSize();

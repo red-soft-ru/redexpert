@@ -24,10 +24,7 @@ import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
 import org.executequery.event.DefaultQueryBookmarkEvent;
-import org.executequery.gui.ActionContainer;
-import org.executequery.gui.DefaultActionButtonsPanel;
-import org.executequery.gui.DefaultPanelButton;
-import org.executequery.gui.IconManager;
+import org.executequery.gui.*;
 import org.executequery.gui.text.SQLTextArea;
 import org.executequery.repository.QueryBookmark;
 import org.executequery.repository.QueryBookmarks;
@@ -36,7 +33,6 @@ import org.underworldlabs.swing.DefaultMutableListModel;
 import org.underworldlabs.swing.FlatSplitPane;
 import org.underworldlabs.swing.MoveJListItemsStrategy;
 import org.underworldlabs.swing.MutableValueJList;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
@@ -460,29 +456,21 @@ public class ManageBookmarksPanel extends DefaultActionButtonsPanel
 
         JPanel panel = new JPanel(new GridBagLayout());
 
-        JButton upButton = ActionUtilities.createToolbarButton(
-                this,
-                "moveUp",
-                IconManager.getIcon("icon_move_up"),
-                "Move selection up");
+        JButton upButton = WidgetFactory.createRolloverButton("upButton", "Move selection up", "icon_move_up");
+        upButton.setActionCommand("moveUp");
+        upButton.addActionListener(this);
 
-        JButton downButton = ActionUtilities.createToolbarButton(
-                this,
-                "moveDown",
-                IconManager.getIcon("icon_move_down"),
-                "Move selection down");
+        JButton downButton = WidgetFactory.createRolloverButton("downButton", "Move selection down", "icon_move_down");
+        downButton.setActionCommand("moveDown");
+        downButton.addActionListener(this);
 
-        JButton addButton = ActionUtilities.createToolbarButton(
-                this,
-                "addBookmark",
-                IconManager.getIcon("icon_add"),
-                "Add bookmark");
+        JButton addButton = WidgetFactory.createRolloverButton("addButton", "Add bookmark", "icon_add");
+        addButton.setActionCommand("addBookmark");
+        addButton.addActionListener(this);
 
-        JButton deleteButton = ActionUtilities.createToolbarButton(
-                this,
-                "deleteBookmark",
-                IconManager.getIcon("icon_delete"),
-                "Delete bookmark");
+        JButton deleteButton = WidgetFactory.createRolloverButton("deleteButton", "Delete bookmark", "icon_delete");
+        deleteButton.setActionCommand("deleteBookmark");
+        deleteButton.addActionListener(this);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;

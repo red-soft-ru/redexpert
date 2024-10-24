@@ -25,8 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.UserPreferencesManager;
-import org.executequery.components.CancelButton;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databasemediators.spi.StatementExecutor;
@@ -37,6 +35,7 @@ import org.executequery.event.*;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.ExecuteQueryDialog;
 import org.executequery.gui.IconManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.ResultSetTableContainer;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -59,8 +58,6 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -512,7 +509,7 @@ public class TableDataTab extends JPanel
             table.setModel(sorter);
             tableModel.setTable(table);
             sorter.setTableHeader(table.getTableHeader());
-            ((ResultSetTableModel) sorter.getReferencedTableModel()).setCellsEditable(!UserPreferencesManager.doubleClickOpenItemView());
+            ((ResultSetTableModel) sorter.getReferencedTableModel()).setCellsEditable(true);
 
             boolean showLineLumbers = SystemProperties.getBooleanProperty("user", "results.table.row.numbers");
             if (showLineLumbers) {
@@ -642,18 +639,8 @@ public class TableDataTab extends JPanel
                 add(rowCountPanel, rowCountPanelConstraints);
                 rowCountField.setText(String.valueOf(sorter.getRowCount()));
             }
-            table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    if (table.getSelectedRow() >= table.getRowCount() - 1) {
-                        int row = table.getSelectedRow();
-                        int col = table.getSelectedColumn();
-                        fetchMoreData();
-                        table.setRowSelectionInterval(row, row);
-                        table.setColumnSelectionInterval(col, col);
-                    }
-                }
-            });
+
+            table.getSelectionModel().addListSelectionListener(e -> tableCellSelected());
 
         } catch (DataSourceException e) {
 
@@ -676,6 +663,19 @@ public class TableDataTab extends JPanel
         repaint();
 
         return "done";
+    }
+
+    private void tableCellSelected() {
+
+        if (table.getSelectedRow() <= table.getRowCount())
+            return;
+
+        int row = table.getSelectedRow();
+        int col = table.getSelectedColumn();
+
+        fetchMoreData();
+        table.setRowSelectionInterval(row, row);
+        table.setColumnSelectionInterval(col, col);
     }
 
     private void fetchMoreData() {
@@ -944,20 +944,8 @@ public class TableDataTab extends JPanel
         gbc.gridy++;
         gbcLabel.weightx = 0;
         gbcLabel.fill = GridBagConstraints.HORIZONTAL;
-        JButton b_cancel = new DefaultButton("Cancel");
-        b_cancel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                dialog.finished();
-            }
-        });
-        JButton b_ok = new DefaultButton("Ok");
-        b_ok.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                insert_record(components, types, rschs, dialog);
-            }
-        });
+        JButton b_cancel = WidgetFactory.createButton("b_cancel", "Cancel", e -> dialog.finished());
+        JButton b_ok = WidgetFactory.createButton("b_ok", "Ok", e -> insert_record(components, types, rschs, dialog));
         panel.add(b_cancel, gbcLabel);
         panel.add(b_ok, gbc);
         dialog.display();
@@ -965,64 +953,40 @@ public class TableDataTab extends JPanel
         //tableModel.AddRow(row);
     }
 
-    void delete_record() {
-        int row = table.getSelectedRow();
-        if (row >= 0) {
-            String query = "DELETE FROM " + databaseObject.getNameForQuery() + " WHERE ";
-            String order = "";
-            boolean first = true;
-            for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
-                if (!databaseObject.getColumns().get(i).isGenerated()) {
-                    String value = "";
-                    ResultSetColumnHeader rsch = tableModel.getColumnHeaders().get(i);
-                    int sqlType = rsch.getDataType();
-                    boolean str = false;
-                    switch (sqlType) {
+    private String getDeleteRecordQuery(int row) {
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM ").append(databaseObject.getNameForQuery()).append("\nWHERE");
 
-                        case Types.LONGVARCHAR:
-                        case Types.LONGNVARCHAR:
-                        case Types.CHAR:
-                        case Types.NCHAR:
-                        case Types.VARCHAR:
-                        case Types.NVARCHAR:
-                        case Types.CLOB:
-                        case Types.DATE:
-                        case Types.TIME:
-                        case Types.TIMESTAMP:
-                            value = "'";
-                            str = true;
-                            break;
-                        default:
-                            break;
-                    }
-                    String temp = String.valueOf(table.getValueAt(row, i));
-                    if (temp == null) {
-                        value = "NULL";
-                    } else
-                        value += temp;
-                    if (str && value != "NULL")
-                        value += "'";
-                    if (first) {
-                        first = false;
-                        order = rsch.getName();
-                    } else query += " AND";
-                    //if(value=="'null'")
-                    if (value == "NULL")
-                        query = query + " (" + rsch.getName() + " IS " + value + " )";
-                    else
-                        query = query + " (" + rsch.getName() + " = " + value + " )";
+        String order = "";
+        boolean first = true;
+        for (int i = 0; i < tableModel.getColumnHeaders().size(); i++) {
+            if (!databaseObject.getColumns().get(i).isGenerated()) {
+                ResultSetColumnHeader columnHeader = tableModel.getColumnHeaders().get(i);
+                String temp = String.valueOf(table.getValueAt(row, i));
 
+                String value = temp != null ?
+                        isStringValue(columnHeader.getDataType()) ?
+                                ("'" + temp + "'") :
+                                temp :
+                        "NULL";
 
-                }
-            }
-            query += "\nORDER BY " + order + "\n";
-            query += "ROWS 1";
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog("Delete record", query, databaseObject.getHost().getDatabaseConnection(), true);
-            eqd.display();
-            if (eqd.getCommit()) {
-                loadDataForTable(databaseObject);
+                if (first) {
+                    order = columnHeader.getName();
+                    first = false;
+                } else
+                    query.append("\nAND");
+
+                if (value.equals("NULL"))
+                    query.append(" (").append(columnHeader.getName()).append(" IS ").append(value).append(" )");
+                else
+                    query.append(" (").append(columnHeader.getName()).append(" = ").append(value).append(" )");
             }
         }
+        query.append("\nORDER BY ").append(order).append("\n");
+        query.append("ROWS 1");
+        query.append(";\n");
+
+        return query.toString();
     }
 
     public ResultSetTableModel tableForeign(org.executequery.databaseobjects.impl.ColumnConstraint key) {
@@ -1092,29 +1056,8 @@ public class TableDataTab extends JPanel
         RolloverButton deleteRolloverButton = new RolloverButton();
         deleteRolloverButton.setIcon(IconManager.getIcon("icon_delete"));
         deleteRolloverButton.setToolTipText(bundleString("DeleteRecord"));
-        deleteRolloverButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
+        deleteRolloverButton.addActionListener(e -> deleteRecords());
 
-                boolean useForm = SystemProperties.getBooleanProperty(
-                        Constants.USER_PROPERTIES_KEY, "results.table.use.form.adding.deleting");
-                if (useForm) {
-                    delete_record();
-
-                } else {
-
-                    Arrays.stream(table.getSelectedRows())
-                            .filter(row -> row >= 0)
-                            .forEach(row ->  {
-                                tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
-                            });
-
-                    table.clearSelection();
-                }
-
-                markedForReload = true;
-            }
-        });
         bar.add(deleteRolloverButton);
         tableButtons.add(deleteRolloverButton);
         RolloverButton commitRolloverButton = new RolloverButton();
@@ -1234,6 +1177,42 @@ public class TableDataTab extends JPanel
         GridBagConstraints gbc3 = new GridBagConstraints(4, 0, 1, 1, 1.0, 1.0,
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0);
         buttonsEditingPanel.add(bar, gbc3);
+    }
+
+    private void deleteRecords() {
+        boolean useForm = SystemProperties.getBooleanProperty(
+                Constants.USER_PROPERTIES_KEY,
+                "results.table.use.form.adding.deleting"
+        );
+
+        if (useForm) {
+
+            StringBuilder query = new StringBuilder();
+            for (int row : table.getSelectedRows())
+                if (row >= 0)
+                    query.append(getDeleteRecordQuery(row));
+
+            ExecuteQueryDialog eqd = new ExecuteQueryDialog(
+                    bundleString("DeleteRecord"),
+                    query.toString(),
+                    databaseObject.getHost().getDatabaseConnection(),
+                    true
+            );
+
+            eqd.display();
+            if (eqd.getCommit())
+                loadDataForTable(databaseObject);
+
+        } else {
+
+            for (int row : table.getSelectedRows())
+                if (row >= 0)
+                    tableModel.deleteRow(((TableSorter) table.getModel()).modelIndex(row));
+
+            table.clearSelection();
+        }
+
+        markedForReload = true;
     }
 
     public void stopEditing() {
@@ -1426,6 +1405,21 @@ public class TableDataTab extends JPanel
         }
     }
 
+    private static boolean isStringValue(int sqlType) {
+        return sqlType == Types.LONGVARCHAR
+                || sqlType == Types.LONGNVARCHAR
+                || sqlType == Types.CHAR
+                || sqlType == Types.NCHAR
+                || sqlType == Types.VARCHAR
+                || sqlType == Types.NVARCHAR
+                || sqlType == Types.CLOB
+                || sqlType == Types.DATE
+                || sqlType == Types.TIME
+                || sqlType == Types.TIMESTAMP
+                || sqlType == Types.TIME_WITH_TIMEZONE
+                || sqlType == Types.TIMESTAMP_WITH_TIMEZONE;
+    }
+
     public void cleanup() {
         EventMediator.deregisterListener(this);
     }
@@ -1446,7 +1440,7 @@ public class TableDataTab extends JPanel
             progressBar = ProgressBarFactory.create();
             ((JComponent) progressBar).setPreferredSize(new Dimension(260, 18));
 
-            JButton cancelButton = new CancelButton();
+            JButton cancelButton = WidgetFactory.createButton("cancelButton", Bundles.get("common.cancel.button"));
             cancelButton.addActionListener(this);
 
             GridBagConstraints gbc = new GridBagConstraints();

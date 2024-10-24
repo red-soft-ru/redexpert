@@ -21,16 +21,18 @@
 package org.executequery.gui;
 
 import org.executequery.Constants;
-import org.executequery.gui.browser.DefaultInlineFieldButton;
+import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.underworldlabs.swing.*;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -165,9 +167,9 @@ public final class WidgetFactory {
      *
      * @param name the component's name
      */
-    public static JComboBox createComboBox(String name) {
+    public static <E> JComboBox<E> createComboBox(String name) {
 
-        JComboBox comboBox = new JComboBox();
+        JComboBox<E> comboBox = new JComboBox<>();
         comboBox.setPreferredSize(getPreferredSize(comboBox));
         comboBox.setName(name);
 
@@ -180,7 +182,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param model the ComboBoxModel that provides the displayed list of items
      */
-    public static JComboBox createComboBox(String name, ComboBoxModel model) {
+    public static <E> JComboBox<E> createComboBox(String name, ComboBoxModel<E> model) {
 
         JComboBox comboBox = createComboBox(name);
         comboBox.setModel(model);
@@ -195,7 +197,7 @@ public final class WidgetFactory {
      * @param model    the ComboBoxModel that provides the displayed list of items
      * @param listener the ItemListener that is to be notified
      */
-    public static JComboBox createComboBox(String name, ComboBoxModel model, ItemListener listener) {
+    public static <E> JComboBox<E> createComboBox(String name, ComboBoxModel<E> model, ItemListener listener) {
 
         JComboBox comboBox = createComboBox(name, model);
         comboBox.addItemListener(listener);
@@ -209,8 +211,18 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param items the data vector to insert into the combo box
      */
-    public static JComboBox createComboBox(String name, Vector<?> items) {
+    public static <E> JComboBox<E> createComboBox(String name, Vector<E> items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
+    }
+
+    /**
+     * Create named JComboBox class instance
+     *
+     * @param name  the component's name
+     * @param items the data list to insert into the combo box
+     */
+    public static <E> JComboBox<E> createComboBox(String name, List<E> items) {
+        return createComboBox(name, new Vector<>(items));
     }
 
     /**
@@ -220,7 +232,7 @@ public final class WidgetFactory {
      * @param items    the data vector to insert into the combo box
      * @param listener the ItemListener that is to be notified
      */
-    public static JComboBox createComboBox(String name, Vector<?> items, ItemListener listener) {
+    public static <E> JComboBox<E> createComboBox(String name, Vector<E> items, ItemListener listener) {
         return createComboBox(name, new DefaultComboBoxModel<>(items), listener);
     }
 
@@ -230,7 +242,7 @@ public final class WidgetFactory {
      * @param name  the component's name
      * @param items an array of objects to insert into the combo box
      */
-    public static JComboBox createComboBox(String name, Object[] items) {
+    public static <E> JComboBox<E> createComboBox(String name, E[] items) {
         return createComboBox(name, new DefaultComboBoxModel<>(items));
     }
 
@@ -485,6 +497,21 @@ public final class WidgetFactory {
     }
 
     /**
+     * Create named JProgressBar class instance
+     *
+     * @param name  the component's name
+     * @param model the <code>ListModel</code> that provides the list of items for display
+     */
+    public static <E> JList<E> createList(String name, ListModel<E> model) {
+
+        JList list = new JList();
+        list.setModel(model);
+        list.setName(name);
+
+        return list;
+    }
+
+    /**
      * Create JLabel class instance
      *
      * @param text     text to be displayed by the label
@@ -494,6 +521,34 @@ public final class WidgetFactory {
 
         JLabel label = new JLabel(text);
         label.setFont(new Font(label.getFont().getFontName(), Font.PLAIN, fontSize));
+
+        return label;
+    }
+
+    /**
+     * Create JLabel class instance
+     *
+     * @param text text to be displayed by the label
+     */
+    public static JLabel createLabel(String text) {
+
+        JLabel label = new JLabel(text);
+        label.setPreferredSize(getPreferredSize(label));
+
+        return label;
+    }
+
+    /**
+     * Create JLabel class instance
+     *
+     * @param text text to be displayed by the label
+     * @param icon the default icon this component will display
+     */
+    public static JLabel createLabel(String text, Icon icon) {
+
+        JLabel label = new JLabel(text);
+        label.setIcon(icon);
+        label.setPreferredSize(getPreferredSize(label));
 
         return label;
     }
@@ -514,86 +569,107 @@ public final class WidgetFactory {
     public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
 
         ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+        connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 
         return connectionsCombo;
     }
 
     /**
-     * Create named DefaultInlineFieldButton class instance
+     * Create named <code>TransactionIsolationComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>String</code> items
      *
      * @param name the component's name
-     * @param text the displayed button text
      */
-    public static JButton createInlineFieldButton(String name, String text) {
+    public static TransactionIsolationComboBox createTransactionIsolationComboBox(String name) {
 
-        JButton button = new DefaultInlineFieldButton(text);
-        button.setName(name);
+        TransactionIsolationComboBox isolationsCombo = new TransactionIsolationComboBox();
+        isolationsCombo.setPreferredSize(getPreferredSize(isolationsCombo));
+        isolationsCombo.setName(name);
 
-        return button;
+        return isolationsCombo;
     }
 
     /**
-     * Create named DefaultInlineFieldButton class instance
+     * Create named <code>ViewablePasswordField</code> class instance,
+     * that enable password visibility changing.
      *
-     * @param name          the component's name
-     * @param text          the displayed button text
-     * @param actionCommand the action command for this button
+     * @param name the component's name
      */
-    public static JButton createInlineFieldButton(String name, String text, String actionCommand) {
+    public static ViewablePasswordField createViewablePasswordField(String name) {
 
-        JButton button = createInlineFieldButton(name, text);
-        button.setActionCommand(actionCommand);
+        ViewablePasswordField passwordField = new ViewablePasswordField();
+        passwordField.setPreferredSize(getPreferredSize(passwordField));
+        passwordField.setName(name);
 
-        return button;
+        return passwordField;
     }
 
     /**
-     * Create named DefaultPanelButton class instance
+     * Create named <code>ComponentTitledPanel</code> class instance,
+     * that has border with the <code>JComponents</code> instead of title.
      *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param toolTip        the tool tip text for this component
-     * @param actionListener the ActionListener to be added
+     * @param name the component's name
      */
-    public static JButton createPanelButton(String name, String text, String toolTip, ActionListener actionListener) {
+    public static ComponentTitledPanel createComponentTitledPanel(String name, JComponent component) {
 
-        JButton button = new DefaultPanelButton(text);
-        button.addActionListener(actionListener);
-        button.setToolTipText(toolTip);
-        button.setName(name);
+        ComponentTitledPanel panel = new ComponentTitledPanel(component);
+        panel.setName(name);
 
-        return button;
+        return panel;
     }
 
     /**
-     * Create named DefaultPanelButton class instance
+     * Create named <code>SimpleSqlTextPanel</code> class instance.
      *
-     * @param name           the component's name
-     * @param text           the displayed button text
-     * @param toolTip        the tool tip text for this component
-     * @param actionListener the ActionListener to be added
-     * @param actionCommand  the action command for this button
+     * @param name the component's name
      */
-    public static JButton createPanelButton(String name, String text, String toolTip, ActionListener actionListener, String actionCommand) {
+    public static SimpleSqlTextPanel createSimpleSqlTextPanel(String name) {
 
-        JButton button = createPanelButton(name, text, toolTip, actionListener);
-        button.setActionCommand(actionCommand);
+        SimpleSqlTextPanel sqlTextPanel = new SimpleSqlTextPanel();
+        sqlTextPanel.setName(name);
 
-        return button;
+        return sqlTextPanel;
     }
 
     /**
-     * Create named DefaultButton class instance
+     * Create named <code>ListSelectionPanel</code> class instance.
      *
-     * @param name     the component's name
-     * @param text     the displayed button text
-     * @param listener the ActionListener to be added
+     * @param name   the component's name
+     * @param values the available values list
      */
-    public static JButton createDefaultButton(String name, String text, ActionListener listener) {
+    public static ListSelectionPanel createListSelectionPanel(String name, List<?> values) {
 
-        DefaultButton button = new DefaultButton(listener, text, null);
-        button.setFocusPainted(false);
+        ListSelectionPanel listSelectionPanel = new ListSelectionPanel();
+        listSelectionPanel.createAvailableList(values);
+        listSelectionPanel.setName(name);
+
+        return listSelectionPanel;
+    }
+
+    /**
+     * Create named <code>ListSelectionPanel</code> class instance.
+     *
+     * @param name   the component's name
+     * @param values the available values list
+     * @param border the border to be rendered for this component
+     */
+    public static ListSelectionPanel createListSelectionPanel(String name, List<?> values, Border border) {
+
+        ListSelectionPanel listSelectionPanel = createListSelectionPanel(name, values);
+        listSelectionPanel.setBorder(border);
+
+        return listSelectionPanel;
+    }
+
+    /**
+     * Create named RolloverButton class instance
+     *
+     * @param name the component's name
+     */
+    public static RolloverButton createRolloverButton(String name) {
+
+        RolloverButton button = new RolloverButton();
         button.setName(name);
 
         return button;
@@ -608,7 +684,7 @@ public final class WidgetFactory {
      */
     public static RolloverButton createRolloverButton(String name, String toolTip, String icon) {
 
-        RolloverButton button = new RolloverButton();
+        RolloverButton button = createRolloverButton(name);
         button.setIcon(IconManager.getIcon(icon));
         button.setToolTipText(toolTip);
         button.setName(name);
@@ -721,30 +797,31 @@ public final class WidgetFactory {
     }
 
     /**
-     * Create named EQCheckCombox class instance
+     * Create named DefaultCheckComboBox class instance
      *
      * @param name the component's name
      */
-    public static EQCheckCombox createCheckComboBox(String name) {
+    public static DefaultCheckComboBox createCheckComboBox(String name) {
 
-        EQCheckCombox checkCombox = new EQCheckCombox();
-        checkCombox.setPreferredSize(getPreferredSize(checkCombox));
-        checkCombox.setName(name);
+        DefaultCheckComboBox checkComboBox = new DefaultCheckComboBox();
+        checkComboBox.setPreferredSize(getPreferredSize(checkComboBox));
+        checkComboBox.setName(name);
 
-        return checkCombox;
+        return checkComboBox;
     }
 
     /**
-     * Create named EQCheckCombox class instance
+     * Create named DefaultCheckComboBox class instance
      *
      * @param name  the component's name
      * @param items the data array to insert into the combo box
      */
-    public static EQCheckCombox createCheckComboBox(String name, Object[] items) {
-        EQCheckCombox checkCombox = createCheckComboBox(name);
-        Arrays.stream(items).forEach(e -> checkCombox.getModel().addElement(e));
+    public static DefaultCheckComboBox createCheckComboBox(String name, Object[] items) {
 
-        return checkCombox;
+        DefaultCheckComboBox checkComboBox = createCheckComboBox(name);
+        Arrays.stream(items).forEach(e -> checkComboBox.getModel().addElement(e));
+
+        return checkComboBox;
     }
 
     /**

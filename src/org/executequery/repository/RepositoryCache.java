@@ -36,7 +36,6 @@ public final class RepositoryCache {
         repositories.put(QueryBookmarkRepository.REPOSITORY_ID, new QueryBookmarkXMLRepository());
         repositories.put(EditorSQLShortcutRepository.REPOSITORY_ID, new EditorSQLShortcutXMLRepository());
         repositories.put(RecentlyOpenFileRepository.REPOSITORY_ID, new RecentlyOpenFileRepositoryImpl());
-        repositories.put(LatestVersionRepository.REPOSITORY_ID, new LatestVersionRepositoryImpl());
         repositories.put(LogRepository.REPOSITORY_ID, new LogFileRepository());
         repositories.put(DatabaseConnectionRepository.REPOSITORY_ID, new DatabaseConnectionXMLRepository());
         repositories.put(ConnectionFoldersRepository.REPOSITORY_ID, new ConnectionFoldersXMLRepository());

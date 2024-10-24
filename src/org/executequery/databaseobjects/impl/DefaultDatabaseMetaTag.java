@@ -594,6 +594,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String tableName = rs.getString(1);
         DefaultDatabaseObject object = new DefaultDatabaseObject(this, metaDataKey);
         object.setName(tableName);
+        if (typeTree == DEFAULT)
+            object.setRelationId(rs.getInt("RELATION_ID"));
 
         if (typeTree != DEFAULT) {
             object.setTypeTree(typeTree);
@@ -1132,7 +1134,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         String query = null;
         if (metaDataKey.equals(NamedObject.META_TYPES[TABLE])) {
 
-            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024)),\n" +
+                    "RDB$RELATION_ID as RELATION_ID\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +
@@ -1149,7 +1152,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_TABLE])) {
 
-            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024)),\n" +
+                    "RDB$RELATION_ID as RELATION_ID\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NOT NULL AND RDB$SYSTEM_FLAG = 1)\n" +
@@ -1157,7 +1161,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[VIEW])) {
 
-            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024)),\n" +
+                    "RDB$RELATION_ID as RELATION_ID\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NOT NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NULL OR RDB$SYSTEM_FLAG = 0)\n" +
@@ -1170,7 +1175,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[SYSTEM_VIEW])) {
 
-            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024))\n" +
+            query = "SELECT CAST (RDB$RELATION_NAME as VARCHAR(1024)),\n" +
+                    "RDB$RELATION_ID as RELATION_ID\n" +
                     "FROM RDB$RELATIONS\n" +
                     "WHERE RDB$VIEW_BLR IS NOT NULL\n" +
                     "AND (RDB$SYSTEM_FLAG IS NOT NULL AND RDB$SYSTEM_FLAG = 1)\n" +
@@ -1178,7 +1184,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } else if (metaDataKey.equals(NamedObject.META_TYPES[GLOBAL_TEMPORARY])) {
 
-            query = "SELECT CAST (R.RDB$RELATION_NAME as VARCHAR(1024))\n" +
+            query = "SELECT CAST (R.RDB$RELATION_NAME as VARCHAR(1024)),\n" +
+                    "RDB$RELATION_ID as RELATION_ID\n" +
                     "FROM RDB$RELATIONS R\n" +
                     "JOIN RDB$TYPES T ON R.RDB$RELATION_TYPE = T.RDB$TYPE\n" +
                     "WHERE (T.RDB$FIELD_NAME = 'RDB$RELATION_TYPE')\n" +
@@ -1323,6 +1330,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     @Override
     public boolean allowsChildren() {
+        return true;
+    }
+
+    @Override
+    public boolean isMetaTag() {
         return true;
     }
 

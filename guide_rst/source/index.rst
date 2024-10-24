@@ -23,8 +23,9 @@ Welcome to Red_Expert's documentation!
    sec-import
    sec-test_generator
    sec-system
-   .. app-toolbar
-   .. app-options
+   app-toolbar
+   app-options
+   app-settings
 
 
 

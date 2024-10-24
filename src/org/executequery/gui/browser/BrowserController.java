@@ -198,19 +198,8 @@ public class BrowserController {
             if (connection == null)
                 connection = getDatabaseConnection();
 
-            if (node.isHostNode()) {
-                panel.setObjectName(null);
-
-            } else if (node.getType() == NamedObject.TABLE_COLUMN) {
-                String name = MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName()) + ":" + type + ":" + connection.getName();
-                panel.setObjectName(name);
-
-            } else if (node.getType() == NamedObject.USER) {
-                String name = MiscUtils.trimEnd(node.getShortName()) + ":" + ((DefaultDatabaseUser) node.getDatabaseObject()).getPlugin() + ":" + type + ":" + connection.getName();
-                panel.setObjectName(name);
-
-            } else
-                panel.setObjectName(MiscUtils.trimEnd(node.getShortName()) + ":" + type + ":" + connection.getName());
+            String panelName = !node.isHostNode() && connection != null ? buildNodeName(node, type, connection) : null;
+            panel.setObjectName(panelName);
 
             panel.setDatabaseConnection(connection);
             viewPanel.setView(panel);
@@ -222,6 +211,23 @@ public class BrowserController {
         } finally {
             treePanel.setInProcess(false);
         }
+    }
+
+    private static String buildNodeName(DatabaseObjectNode node, String type, DatabaseConnection connection) {
+        String name;
+
+        if (node.getType() == NamedObject.TABLE_COLUMN) {
+            name = MiscUtils.trimEnd(((DatabaseObjectNode) node.getParent()).getShortName() + "." + node.getShortName());
+        } else if (node.getType() == NamedObject.USER) {
+            name = MiscUtils.trimEnd(node.getShortName()) + ":" + ((DefaultDatabaseUser) node.getDatabaseObject()).getPlugin();
+        } else
+            name = MiscUtils.trimEnd(node.getShortName());
+
+        name += ":" + type;
+        if (connection != null)
+            name += ":" + connection.getName();
+
+        return name;
     }
 
     /**

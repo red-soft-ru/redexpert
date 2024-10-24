@@ -71,6 +71,11 @@ public class CreatePackagePanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.PACKAGE;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         databasePackage = (DefaultDatabasePackage) databaseObject;
     }

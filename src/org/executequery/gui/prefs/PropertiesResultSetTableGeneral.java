@@ -28,7 +28,6 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The properties for the editor's results panel
@@ -158,14 +157,6 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 SystemProperties.getStringProperty("user", key)
         ));
 
-        key = "results.table.double-click.record.dialog";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("CellDouble-clickOpensDataItemViewer"),
-                Boolean.valueOf(stringUserProperty(key))
-        ));
-
         key = "results.table.single.row.transpose";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
@@ -255,15 +246,13 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
         addContent(preferencesPanel);
     }
 
-    private LabelValuePair[] alignsValuePairs() {
+    private Object[] alignsValuePairs() {
 
-        ResultSetCellAlign[] languages = ResultSetCellAlign.values();
+        List<LabelValuePair> values = new ArrayList<>();
+        for (ResultSetCellAlign align : ResultSetCellAlign.values())
+            values.add(new LabelValuePair(align, align.getLabel()));
 
-        LabelValuePair[] values = new LabelValuePair[languages.length];
-        for (int i = 0; i < languages.length; i++)
-            values[i] = new LabelValuePair(languages[i], languages[i].getLabel());
-
-        return values;
+        return values.toArray();
     }
 
     private ResultSetCellAlign getAlignValueOrDefault(String key) {

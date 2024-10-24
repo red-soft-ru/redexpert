@@ -21,6 +21,7 @@
 package org.underworldlabs.swing;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -30,102 +31,61 @@ import java.util.Vector;
  *
  * @author Takis Diakoumis
  */
-public class DynamicComboBoxModel extends DefaultComboBoxModel {
+public class DynamicComboBoxModel<E> extends DefaultComboBoxModel<E> {
+    private boolean blocked;
 
     public DynamicComboBoxModel() {
-
         super();
     }
 
-    public DynamicComboBoxModel(Object[] items) {
-
+    public DynamicComboBoxModel(E[] items) {
         super(items);
     }
 
-    public DynamicComboBoxModel(Vector<?> items) {
-
+    public DynamicComboBoxModel(Vector<E> items) {
         super(items);
     }
 
-    public void contentsChanged() {
-
-        fireContentsChanged(this, -1, -1);
+    public boolean contains(E item) {
+        return getIndexOf(item) != -1;
     }
 
-    public boolean contains(Object item) {
-
-        return (getIndexOf(item) != -1);
+    public void setElements(E[] items) {
+        setElements(Arrays.asList(items));
     }
 
-    private boolean rebuilding;
+    public void setElements(List<E> items) {
 
-    public void setElements(Object[] items) {
-
-        if (getSize() > 0) {
-
+        if (getSize() > 0)
             removeAllElements();
+
+        if (items == null)
+            return;
+
+        try {
+            blocked = true;
+            items.forEach(this::addElement);
+
+        } finally {
+            blocked = false;
         }
 
-        if (items != null && items.length > 0) {
-
-            try {
-
-                rebuilding = true;
-
-                for (Object item : items) {
-
-                    addElement(item);
-                }
-
-            } finally {
-
-                rebuilding = false;
-            }
-
-            fireIntervalAdded(this, 0, items.length - 1);
-            setSelectedItem(getElementAt(0));
-
-        }
-
+        fireIntervalAdded(this, 0, items.size() - 1);
+        setSelectedItem(getElementAt(0));
     }
+
+    // --- DefaultComboBoxModel impl ---
 
     @Override
     public void setSelectedItem(Object anObject) {
-
-        if (!rebuilding) {
-
+        if (!blocked)
             super.setSelectedItem(anObject);
-        }
-
     }
 
     @Override
     protected void fireIntervalAdded(Object source, int index0, int index1) {
-
-        if (!rebuilding) {
-
+        if (!blocked && index0 >= 0 && index1 >= 0)
             super.fireIntervalAdded(source, index0, index1);
-        }
-
-    }
-
-    public void setElements(List<?> elements) {
-
-        if (elements != null) {
-
-            setElements(elements.toArray(new Object[elements.size()]));
-
-        } else {
-
-            removeAllElements();
-        }
     }
 
 }
-
-
-
-
-
-
-

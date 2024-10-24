@@ -13,7 +13,6 @@ import org.executequery.databasemediators.spi.DatabaseConnectionFactoryImpl;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.*;
-import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
@@ -26,7 +25,6 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.FileUtils;
@@ -197,33 +195,39 @@ public class CreateDatabasePanel extends ActionPanel
         // create the basic props panel
 
         // initialise the fields
-        nameField = new DefaultTextField();
+        nameField = new JTextField();
         nameField.setName("nameField");
         passwordField = new DefaultPasswordField();
         passwordField.setName("passwordField");
-        hostField = new DefaultTextField();
+        hostField = new JTextField();
         hostField.setName("hostField");
-        portField = new DefaultNumberTextField();
+        portField = new NumberTextField();
         portField.setName("portField");
         sourceField = createMatchedWidthTextField();
         sourceField.setName("sourceField");
-        userField = new DefaultTextField();
+        userField = new JTextField();
         userField.setName("userField");
 
         hostField.setText("localhost");
         portField.setText("3050");
 
-        savePwdCheck = ActionUtilities.createCheckBox(bundledString("StorePassword"), "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox(bundledString("EncryptPassword"), "setEncryptPassword");
-
+        savePwdCheck = WidgetFactory.createCheckBox("savePwdCheck", bundledString("StorePassword"));
+        savePwdCheck.setActionCommand("setStorePassword");
         savePwdCheck.addActionListener(this);
+
+        encryptPwdCheck = WidgetFactory.createCheckBox("encryptPwdCheck", bundledString("EncryptPassword"));
+        encryptPwdCheck.setActionCommand("setEncryptPassword");
         encryptPwdCheck.addActionListener(this);
 
         certificateFileField = createMatchedWidthTextField();
         containerPasswordField = createPasswordField("containerPasswordField");
-        saveContPwdCheck = ActionUtilities.createCheckBox(bundledString("Store-container-password"), "setStoreContainerPassword");
+
+        saveContPwdCheck = WidgetFactory.createCheckBox("saveContPwdCheck", bundledString("Store-container-password"));
+        saveContPwdCheck.setActionCommand("setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
-        verifyServerCertCheck = ActionUtilities.createCheckBox(bundledString("Verify-server-certificate"), "setVerifyServerCertCheck");
+
+        verifyServerCertCheck = WidgetFactory.createCheckBox("verifyServerCertCheck", bundledString("Verify-server-certificate"));
+        verifyServerCertCheck.setActionCommand("setVerifyServerCertCheck");
         verifyServerCertCheck.addActionListener(this);
 
         // retrieve the drivers
@@ -280,7 +284,7 @@ public class CreateDatabasePanel extends ActionPanel
             }
         });
 
-        JLabel dataSourceLabel = new DefaultFieldLabel(bundledString("sourceField"));
+        JLabel dataSourceLabel = new JLabel(bundledString("sourceField"));
         mainPanel.add(dataSourceLabel, gbh.nextRowFirstCol().setLabelDefault().get());
         mainPanel.add(sourceField, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         mainPanel.add(saveFile, gbh.nextCol().setLabelDefault().get());
@@ -295,7 +299,7 @@ public class CreateDatabasePanel extends ActionPanel
         gbh.setY(2).nextCol().makeCurrentXTheDefaultForNewline().setWidth(1).previousCol();
 
         gbh.nextCol().setLabelDefault();
-        mainPanel.add(new DefaultFieldLabel(bundledString("driverField")), gbh.get());
+        mainPanel.add(new JLabel(bundledString("driverField")), gbh.get());
         mainPanel.add(driverCombo, gbh.nextCol().fillHorizontally().setMaxWeightX().get());
         driverCombo.setToolTipText(bundledString("driverField.tool-tip"));
         JButton addNewDriver = new JButton(bundledString("addNewDriver"));
@@ -426,15 +430,16 @@ public class CreateDatabasePanel extends ActionPanel
         advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
         gbh.setXY(0, 0).setWidth(1).setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundledString("advPropsPanel.text1")), gbh.get());
+                new JLabel(bundledString("advPropsPanel.text1")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundledString("advPropsPanel.text2")), gbh.get());
+                new JLabel(bundledString("advPropsPanel.text2")), gbh.get());
         gbh.nextRowFirstCol().spanX().spanY().fillBoth();
         advPropsPanel.add(scroller, gbh.get());
 
         // transaction isolation
-        txApplyButton = WidgetFactory.createInlineFieldButton("txApplyButton", Bundles.get("common.apply.button"), "transactionLevelChanged");
+        txApplyButton = WidgetFactory.createButton("txApplyButton", Bundles.get("common.apply.button"));
+        txApplyButton.setActionCommand("transactionLevelChanged");
         txApplyButton.setToolTipText(bundledString("txApplyButton.tool-tip"));
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
@@ -449,12 +454,12 @@ public class CreateDatabasePanel extends ActionPanel
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundledString("TransactionIsolation")));
         gbh.setXY(0, 0).setLabelDefault().setWidth(2);
         advTxPanel.add(
-                new DefaultFieldLabel(bundledString("advTxPanel.Text1")), gbh.get());
+                new JLabel(bundledString("advTxPanel.Text1")), gbh.get());
         gbh.nextRow();
         advTxPanel.add(
-                new DefaultFieldLabel(bundledString("advTxPanel.Text2")), gbh.get());
+                new JLabel(bundledString("advTxPanel.Text2")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
-        advTxPanel.add(new DefaultFieldLabel(bundledString("IsolationLevel")), gbh.get());
+        advTxPanel.add(new JLabel(bundledString("IsolationLevel")), gbh.get());
         gbh.nextCol().setWeightX(1).fillHorizontally();
         advTxPanel.add(txCombo, gbh.get());
         gbh.setLabelDefault().nextCol();
@@ -540,7 +545,7 @@ public class CreateDatabasePanel extends ActionPanel
 
     private JTextField createMatchedWidthTextField() {
 
-        JTextField textField = new DefaultTextField() {
+        JTextField textField = new JTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
             }
@@ -1587,13 +1592,9 @@ public class CreateDatabasePanel extends ActionPanel
 
             super(checkBox);
             this.table = table;
-            button = new DefaultButton();
+            button = WidgetFactory.createButton("button", null);
+            button.addActionListener(e -> fireEditingStopped());
             button.setOpaque(true);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                }
-            });
         }
 
         public Component getTableCellEditorComponent(JTable table,

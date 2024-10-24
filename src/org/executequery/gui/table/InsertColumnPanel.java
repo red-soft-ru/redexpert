@@ -188,6 +188,11 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     }
 
     @Override
+    public int getType() {
+        return NamedObject.TABLE_COLUMN;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         columnEdited = (DatabaseColumn) databaseObject;
     }
@@ -293,6 +298,10 @@ public class InsertColumnPanel extends AbstractCreateObjectPanel implements KeyL
     @Override
     protected void reset() {}
 
+    @Override
+    protected void reloadNodes() {
+        reloadNodes(table.getName(), table.isGlobalTemporary());
+    }
 
     @Override
     protected String generateQuery() {

@@ -20,15 +20,9 @@
 
 package org.executequery.gui.editor;
 
-import org.executequery.Constants;
-import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
-import org.executequery.UserPreferencesManager;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
-import org.executequery.event.ApplicationEvent;
-import org.executequery.event.UserPreferenceEvent;
-import org.executequery.event.UserPreferenceListener;
 import org.executequery.gui.BaseDialog;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.*;
@@ -39,7 +33,6 @@ import org.underworldlabs.swing.actions.ActionBuilder;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.menu.MenuItemFactory;
 import org.underworldlabs.swing.table.TableSorter;
-import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -52,18 +45,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ResultSetTablePopupMenu extends JPopupMenu
-        implements MouseListener,
-        UserPreferenceListener {
+        implements MouseListener {
 
     private final ResultSetTable table;
     private final DatabaseTableObject tableObject;
     private final ReflectiveAction reflectiveAction;
     private final ResultSetTableContainer resultSetTableContainer;
     private final JMenuItem autoWidthForColsItem;
-    private final JCheckBoxMenuItem cellOpensDialog;
 
     private Point lastPopupPoint;
-    private boolean doubleClickCellOpensDialog;
 
     public ResultSetTablePopupMenu(ResultSetTable table, ResultSetTableContainer resultSetTableContainer) {
         this(table, resultSetTableContainer, null);
@@ -76,7 +66,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         this.table = table;
         this.resultSetTableContainer = resultSetTableContainer;
 
-        doubleClickCellOpensDialog = doubleClickCellOpensDialog();
         reflectiveAction = new ReflectiveAction(this);
 
         // --- init menu items ---
@@ -99,11 +88,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuoted"), "copySelectedCellsAsCSVQuoted"));
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuotedWithNames"), "copySelectedCellsAsCSVQuotedWithNames"));
 
-        // the cell opens checkBox menu-item
-        cellOpensDialog = MenuItemFactory.createCheckBoxMenuItem(reflectiveAction);
-        cellOpensDialog.setText(bundleString("Double-ClickOpensItemView"));
-        cellOpensDialog.setSelected(doubleClickCellOpensDialog);
-        cellOpensDialog.setActionCommand("cellOpensDialog");
+
 
         // the auto column width menu-item
         autoWidthForColsItem = create(bundleString("AutoWidthForCols"), "autoWidthForCols");
@@ -134,9 +119,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         add(exportMenu);
         add(printMenu);
         addSeparator();
-
-        add(cellOpensDialog);
-        EventMediator.registerListener(this);
     }
 
     private JMenuItem create(String text, String actionCommand) {
@@ -228,21 +210,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu
     }
 
     @SuppressWarnings("unused")
-    public void cellOpensDialog(ActionEvent e) {
-
-        doubleClickCellOpensDialog = ((JCheckBoxMenuItem) e.getSource()).isSelected();
-        resultSetTableModel().setCellsEditable(!doubleClickCellOpensDialog);
-
-        SystemProperties.setBooleanProperty(
-                Constants.USER_PROPERTIES_KEY,
-                "results.table.double-click.record.dialog",
-                doubleClickCellOpensDialog
-        );
-
-        UserPreferencesManager.fireUserPreferencesChanged(UserPreferenceEvent.RESULT_SET_POPUP);
-    }
-
-    @SuppressWarnings("unused")
     public void autoWidthForCols(ActionEvent e) {
 
         boolean isAutoResizeable = !table.isAutoResizeable();
@@ -301,7 +268,7 @@ public class ResultSetTablePopupMenu extends JPopupMenu
             table.setValueAt(null, table.getSelectedRow(), table.getSelectedColumn());
     }
 
-    public void openDataItemViewer() {
+    public void openDataItemViewer(ActionEvent e) {
 
         try {
             GUIUtilities.showWaitCursor();
@@ -313,10 +280,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu
     }
 
     // --- other methods ---
-
-    private boolean doubleClickCellOpensDialog() {
-        return UserPreferencesManager.doubleClickOpenItemView();
-    }
 
     private RecordDataItem tableCellDataAtPoint(Point point) {
 
@@ -397,21 +360,6 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         }
     }
 
-    // --- UserPreferenceListener impl ---
-
-    @Override
-    public boolean canHandleEvent(ApplicationEvent event) {
-        return event instanceof UserPreferenceEvent &&
-                ((UserPreferenceEvent) event).getEventType() == UserPreferenceEvent.RESULT_SET_POPUP;
-    }
-
-    @Override
-    public void preferencesChanged(UserPreferenceEvent event) {
-        doubleClickCellOpensDialog = doubleClickCellOpensDialog();
-        cellOpensDialog.setSelected(doubleClickCellOpensDialog);
-        resultSetTableModel().setCellsEditable(!doubleClickCellOpensDialog);
-    }
-
     // --- mouse listener ---
 
     @Override
@@ -421,11 +369,14 @@ public class ResultSetTablePopupMenu extends JPopupMenu
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        //todo rework
 
         boolean isLob = table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()) instanceof LobRecordDataItem;
-        if (e.getClickCount() >= 2 && (doubleClickCellOpensDialog || isLob)) {
-            lastPopupPoint = e.getPoint();
-            openDataItemViewer();
+        if (e.getClickCount() >= 2) {
+            if (isLob) {
+                lastPopupPoint = e.getPoint();
+                openDataItemViewer(null);
+            }
         }
     }
 

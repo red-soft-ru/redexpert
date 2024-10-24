@@ -31,12 +31,10 @@ import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.event.*;
-import org.executequery.gui.DefaultNumberTextField;
 import org.executequery.gui.DefaultTable;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.drivers.CreateDriverDialog;
-import org.executequery.gui.editor.TransactionIsolationComboBox;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
@@ -45,7 +43,6 @@ import org.executequery.repository.RepositoryCache;
 import org.executequery.util.Base64;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.*;
-import org.underworldlabs.swing.actions.ActionUtilities;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -228,7 +225,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
 
         // initialise the fields
-        nameField = new DefaultTextField();
+        nameField = new JTextField();
         addCheckEmptyField(nameField);
         nameField.addFocusListener(new FocusListener() {
             @Override
@@ -243,16 +240,16 @@ public class ConnectionPanel extends AbstractConnectionPanel
         });
         passwordField = new DefaultPasswordField();
         passwordDocumentListener = addCheckEmptyField(passwordField);
-        hostField = new DefaultTextField();
+        hostField = new JTextField();
         addCheckEmptyField(hostField);
         hostField.setText("localhost");
-        portField = new DefaultNumberTextField();
+        portField = new NumberTextField();
         addCheckEmptyField(portField);
         portField.setText("3050");
         sourceField = createMatchedWidthTextField();
         addCheckEmptyField(sourceField);
-        roleField = new DefaultTextField();
-        userField = new DefaultTextField();
+        roleField = new JTextField();
+        userField = new JTextField();
         userNameDocumentListener = addCheckEmptyField(userField);
         urlField = createMatchedWidthTextField();
         nameField.setPreferredSize(hostField.getPreferredSize());
@@ -263,19 +260,30 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         certificateFileField = createMatchedWidthTextField();
         containerPasswordField = createPasswordField("containerPasswordField");
-        saveContPwdCheck = ActionUtilities.createCheckBox(bundleString("Store-container-password"), "setStoreContainerPassword");
+
+        saveContPwdCheck = WidgetFactory.createCheckBox("saveContPwdCheck", bundleString("Store-container-password"));
+        saveContPwdCheck.setActionCommand("setStoreContainerPassword");
         saveContPwdCheck.addActionListener(this);
-        verifyServerCertCheck = ActionUtilities.createCheckBox(bundleString("Verify-server-certificate"), "setVerifyServerCertCheck");
+
+        verifyServerCertCheck = WidgetFactory.createCheckBox("verifyServerCertCheck", bundleString("Verify-server-certificate"));
+        verifyServerCertCheck.setActionCommand("setVerifyServerCertCheck");
         verifyServerCertCheck.addActionListener(this);
 
         nameField.addFocusListener(new ConnectionNameFieldListener(this));
 
-        savePwdCheck = ActionUtilities.createCheckBox(bundleString("StorePassword"), "setStorePassword");
-        encryptPwdCheck = ActionUtilities.createCheckBox(bundleString("EncryptPassword"), "setEncryptPassword");
-        namesToUpperBox = ActionUtilities.createCheckBox(bundleString("namesToUpperCase"), "namesToUpperCase");
+        savePwdCheck = WidgetFactory.createCheckBox("savePwdCheck", bundleString("StorePassword"));
+        verifyServerCertCheck.setActionCommand("setStorePassword");
+
+        encryptPwdCheck = WidgetFactory.createCheckBox("encryptPwdCheck", bundleString("EncryptPassword"));
+        verifyServerCertCheck.setActionCommand("setEncryptPassword");
+
+        namesToUpperBox = WidgetFactory.createCheckBox("namesToUpperBox", bundleString("namesToUpperCase"));
+        namesToUpperBox.setActionCommand("namesToUpperCase");
         namesToUpperBox.setSelected(true);
-        useNewAPI = ActionUtilities.createCheckBox(bundleString("UseNewAPI"), "setNewAPI");
+
+        useNewAPI = WidgetFactory.createCheckBox("useNewAPI", bundleString("UseNewAPI"));
         useNewAPI.setToolTipText(bundleString("UseNewAPI.tool-tip"));
+        useNewAPI.setActionCommand("setNewAPI");
 
         savePwdCheck.addActionListener(this);
         encryptPwdCheck.addActionListener(this);
@@ -304,7 +312,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
         gbh.insertEmptyRow(mainPanel, 0);
 
-        statusLabel = new DefaultFieldLabel();
+        statusLabel = new JLabel();
         gbh.addLabelFieldPair(mainPanel, bundleString("statusLabel"),
                 statusLabel, bundleString("statusLabel.tool-tip"), true, false, fieldWidth);
 
@@ -484,10 +492,10 @@ public class ConnectionPanel extends AbstractConnectionPanel
         advPropsPanel.setBorder(BorderFactory.createTitledBorder(bundleString("JDBCProperties")));
         gbh.setXY(0, 0).setWidth(1).setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundleString("advPropsPanel.text1")), gbh.get());
+                new JLabel(bundleString("advPropsPanel.text1")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
         advPropsPanel.add(
-                new DefaultFieldLabel(bundleString("advPropsPanel.text2")), gbh.get());
+                new JLabel(bundleString("advPropsPanel.text2")), gbh.get());
         gbh.nextRowFirstCol().spanX().spanY().fillBoth();
         advPropsPanel.add(scroller, gbh.get());
 
@@ -498,18 +506,18 @@ public class ConnectionPanel extends AbstractConnectionPanel
         txApplyButton.setEnabled(false);
         txApplyButton.addActionListener(this);
 
-        txCombo = new TransactionIsolationComboBox();
+        txCombo = WidgetFactory.createTransactionIsolationComboBox("txCombo");
 
         JPanel advTxPanel = new JPanel(new GridBagLayout());
         advTxPanel.setBorder(BorderFactory.createTitledBorder(bundleString("TransactionIsolation")));
         gbh.setXY(0, 0).setLabelDefault().setWidth(2);
         advTxPanel.add(
-                new DefaultFieldLabel(bundleString("advTxPanel.Text1")), gbh.get());
+                new JLabel(bundleString("advTxPanel.Text1")), gbh.get());
         gbh.nextRow();
         advTxPanel.add(
-                new DefaultFieldLabel(bundleString("advTxPanel.Text2")), gbh.get());
+                new JLabel(bundleString("advTxPanel.Text2")), gbh.get());
         gbh.nextRowFirstCol().setLabelDefault();
-        advTxPanel.add(new DefaultFieldLabel(bundleString("IsolationLevel")), gbh.get());
+        advTxPanel.add(new JLabel(bundleString("IsolationLevel")), gbh.get());
         gbh.nextCol().setWeightX(1).fillHorizontally();
         advTxPanel.add(txCombo, gbh.get());
         gbh.setLabelDefault().nextCol();
@@ -693,7 +701,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
     private JTextField createMatchedWidthTextField() {
 
-        JTextField textField = new DefaultTextField() {
+        JTextField textField = new JTextField() {
             public Dimension getPreferredSize() {
                 return nameField.getPreferredSize();
             }
@@ -1735,7 +1743,7 @@ public class ConnectionPanel extends AbstractConnectionPanel
 
             this.table = table;
 
-            button = new DefaultButton();
+            button = WidgetFactory.createButton("button", null);
             button.setOpaque(true);
             button.addActionListener(e -> fireEditingStopped());
         }

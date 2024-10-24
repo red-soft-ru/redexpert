@@ -29,15 +29,8 @@ public interface ApplicationEvent {
 
     Object getSource();
 
+    default boolean isDatabaseTableEvent() {
+        return false;
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-

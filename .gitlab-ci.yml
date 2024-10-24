@@ -123,7 +123,7 @@ build:linux:
     - builder
     - x86_64
   variables:
-    MAVEN_VERSION: 3.9.3
+    MAVEN_VERSION: 3.9.9
     M2_HOME: /opt/apache-maven-${MAVEN_VERSION}/
     QMAKE: qmake-qt4
     ARCH: x86_64
@@ -134,7 +134,7 @@ build:linux:
     - yum group install -y "Development Tools"
     - yum install -y ca-certificates
     - cd /opt
-    - wget https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+    - wget https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - tar xzf apache-maven-${MAVEN_VERSION}-bin.tar.gz
     - export PATH=${M2_HOME}/bin:${PATH}
     - export JAVA_HOME=`java -XshowSettings:properties -version 2>&1|grep "java.home"|cut -d "=" -f 2|tr -d " "|rev | cut -c 4- | rev`
@@ -385,6 +385,7 @@ report:coverage:
   image: registry.red-soft.biz:5000/docker-images/rdbbuildenv:rdb5-8
   before_script:
     - test -e ${CI_PROJECT_DIR}/coverage-results || (echo No coverage data found; exit 0)
+    - pip3 install anybadge
   script:
     - echo "Uploading report"
     - mc alias set minio ${MINIO_SERVER} ${MINIO_USER} ${MINIO_PASSWORD}

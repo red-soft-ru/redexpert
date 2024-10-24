@@ -2,8 +2,8 @@ package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.TraceManagerPanel;
-import org.underworldlabs.swing.DefaultButton;
 import org.underworldlabs.swing.NumberTextField;
 
 import javax.swing.*;
@@ -79,6 +79,29 @@ public class BuildConfigurationPanel extends JPanel {
             "print_dyn",
             "log_privilege_changes",
             "log_changes_only"};
+    String[] checkDatabaseFbStrs = {
+            "log_initfini",
+            "log_connections",
+            "log_transactions",
+            "log_statement_prepare",
+            "log_statement_free",
+            "log_statement_start",
+            "log_statement_finish",
+            "log_procedure_start",
+            "log_procedure_finish",
+            "log_function_start",
+            "log_function_finish",
+            "log_trigger_start",
+            "log_trigger_finish",
+            "log_context",
+            "log_errors",
+            "log_warnings",
+            "print_plan",
+            "print_perf",
+            "log_blr_requests",
+            "print_blr",
+            "log_dyn_requests",
+            "print_dyn"};               
     String[] checkServicesStrs = {"log_services", "log_service_query"};
     String[] filters = {
             "include_user_filter",
@@ -113,7 +136,7 @@ public class BuildConfigurationPanel extends JPanel {
 
     public BuildConfigurationPanel() {
         componentMap = new HashMap<>();
-        appropriationBox = new JComboBox<>(new String[]{"RedDatabase 2.6", "RedDatabase 3.0"});
+        appropriationBox = new JComboBox<>(new String[]{"RedDatabase 2.6", "RedDatabase 3.0", "Firebird 3.0 or higher"});
         appropriationBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -129,7 +152,7 @@ public class BuildConfigurationPanel extends JPanel {
         filtersPanel = new JPanel();
         filtersPanel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Filters",
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
-        saveFileButton = new DefaultButton("...");
+        saveFileButton = WidgetFactory.createButton("saveFileButton", "...");
         saveFileButton.addActionListener(new ActionListener() {
             FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -156,13 +179,7 @@ public class BuildConfigurationPanel extends JPanel {
             }
         });
         saveFileField = new JTextField();
-        saveButton = new DefaultButton(TraceManagerPanel.bundleString("Save"));
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                save();
-            }
-        });
+        saveButton = WidgetFactory.createButton("saveButton", TraceManagerPanel.bundleString("Save"), e -> save());
         setLayout(new GridBagLayout());
 
         rebuildDatabasePanel();
@@ -285,10 +302,7 @@ public class BuildConfigurationPanel extends JPanel {
                 TitledBorder.LEADING, TitledBorder.TOP, null, null));
         databasePanel.setLayout(new GridBagLayout());
         int k = 0;
-        String[] checks;
-        if (appropriationBox.getSelectedIndex() == 0)
-            checks = checkDatabaseStrs;
-        else checks = checkDatabase3Strs;
+        String[] checks = getCheckDatabaseStrs();
         for (int i = 0; k < checks.length; i++)
             for (int g = 0; g < x && k < checks.length; g++, k++) {
                 JCheckBox checkBox = new JCheckBox(checks[k]);
@@ -330,11 +344,9 @@ public class BuildConfigurationPanel extends JPanel {
         else sb.append("database\n{");
         sb.append("\n\n");
         sb.append("\tenabled").append(apSymbol()).append("true\n\n");
-        sb.append("\tformat").append(apSymbol()).append("0\n\n");
-        String[] checks;
-        if (appropriationBox.getSelectedIndex() == 0)
-            checks = checkDatabaseStrs;
-        else checks = checkDatabase3Strs;
+        if (appropriationBox.getSelectedIndex() <= 1)
+          sb.append("\tformat").append(apSymbol()).append("0\n\n");
+        String[] checks = getCheckDatabaseStrs();
         for (int i = 0; i < checks.length; i++) {
             appendProp(sb, checks[i]);
         }
@@ -354,7 +366,8 @@ public class BuildConfigurationPanel extends JPanel {
         else sb.append("services\n{");
         sb.append("\n\n");
         sb.append("\tenabled").append(apSymbol()).append("true\n\n");
-        sb.append("\tformat").append(apSymbol()).append("0\n\n");
+        if (appropriationBox.getSelectedIndex() <= 1)
+          sb.append("\tformat").append(apSymbol()).append("0\n\n");
         for (int i = 0; i < checkServicesStrs.length; i++) {
             appendProp(sb, checkServicesStrs[i]);
         }
@@ -390,6 +403,19 @@ public class BuildConfigurationPanel extends JPanel {
     private void appendProp(StringBuilder sb, String key) {
         sb.append("\t").append(key).append(apSymbol()).append(strFromComponent(componentMap.get(key))).append("\n\n");
     }
+
+    private String[] getCheckDatabaseStrs() {
+      switch (appropriationBox.getSelectedIndex()) {
+        case 0:
+            return checkDatabaseStrs;
+        case 1:
+            return checkDatabase3Strs;
+        case 2:
+            return checkDatabaseFbStrs;
+        default:
+            return checkDatabase3Strs;
+      }
+    }  
 
     public JComboBox<String> getAppropriationBox() {
         return appropriationBox;

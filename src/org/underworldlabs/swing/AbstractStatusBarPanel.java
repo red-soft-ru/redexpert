@@ -76,7 +76,7 @@ public abstract class AbstractStatusBarPanel extends JPanel {
         }
 
         if (COMPONENT_BORDER == null) {
-            COMPONENT_BORDER = new StatusBarComponentBorder();
+            COMPONENT_BORDER = new StatusBarBorder();
         }
 
         c.setBorder(COMPONENT_BORDER);
@@ -186,9 +186,28 @@ public abstract class AbstractStatusBarPanel extends JPanel {
 
     }
 
+    public static class StatusBarBorder implements Border {
+        private final Insets insets = new Insets(1, 1, 1, 0);
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            g.setColor(GUIUtils.getDefaultBorderColour());
+
+            g.drawLine(x, y, width, y);                             // top edge
+            g.drawLine(x, height - 1, width, height - 1);   // bottom edge
+            g.drawLine(x, 0, x, height - 1);                // left edge
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return false;
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return insets;
+        }
+
+    } // StatusBarBorder class
+
 }
-
-
-
-
-

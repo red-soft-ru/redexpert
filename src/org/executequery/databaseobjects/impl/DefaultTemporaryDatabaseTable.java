@@ -1,7 +1,6 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databaseobjects.DatabaseHost;
-import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.browser.comparer.Comparer;
@@ -24,7 +23,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
 
     private String typeTemporary;
 
-    public DefaultTemporaryDatabaseTable(DatabaseObject object) {
+    public DefaultTemporaryDatabaseTable(DefaultDatabaseObject object) {
         super(object, NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY]);
     }
 
@@ -156,6 +155,7 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
             setRemarks(getFromResultSet(rs, DESCRIPTION));
             setSqlSecurity(getFromResultSet(rs, SQL_SECURITY));
             setTypeTemporary(getFromResultSet(rs, RELATION_TYPE));
+            setRelationID(rs.getInt(RELATION_ID));
         }
         addingConstraint(rs);
         return null;
@@ -184,6 +184,11 @@ public class DefaultTemporaryDatabaseTable extends DefaultDatabaseTable {
     @Override
     public String getAdapter() {
         return null;
+    }
+
+    @Override
+    public boolean isGlobalTemporary() {
+        return true;
     }
 
     @Override

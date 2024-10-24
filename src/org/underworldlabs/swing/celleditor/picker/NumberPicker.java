@@ -1,12 +1,16 @@
 package org.underworldlabs.swing.celleditor.picker;
 
 import org.executequery.databaseobjects.Types;
+import org.executequery.log.Log;
 import org.underworldlabs.Constants;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.math.BigInteger;
 
 /**
@@ -29,15 +33,9 @@ public class NumberPicker extends JTextField
         super();
         this.numberType = numberType;
 
-        setHorizontalAlignment(JTextField.LEFT);
+        setHorizontalAlignment(SwingConstants.LEFT);
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                processKeyTyping(e);
-            }
-        });
+        getDocument().setDocumentFilter(new NumberFilter());
     }
 
     @Override
@@ -55,17 +53,17 @@ public class NumberPicker extends JTextField
         return this;
     }
 
-    private void processKeyTyping(KeyEvent evt) {
+    @Override
+    public PlainDocument getDocument() {
+        return (PlainDocument) super.getDocument();
+    }
 
-        if (evt.getKeyChar() == KeyEvent.VK_BACK_SPACE || evt.getKeyChar() == KeyEvent.VK_DELETE)
-            return;
-        if (String.valueOf(evt.getKeyChar()).equals("-") && getCaretPosition() == 0)
-            return;
+    protected boolean validate(String value) {
+
+        if (MiscUtils.isNull(value))
+            return true;
 
         try {
-            String value = String.valueOf(new StringBuilder(getText().trim())
-                    .insert(getCaretPosition(), evt.getKeyChar()));
-
             switch (numberType) {
 
                 case Types.BIGINT:
@@ -85,11 +83,65 @@ public class NumberPicker extends JTextField
                     if (int128.compareTo(INT128_MAX_VALUE) > 0 || int128.compareTo(INT128_MIN_VALUE) < 0)
                         throw new NumberFormatException();
                     break;
+                case Types.DECIMAL:
+                case Types.DOUBLE:
+                case Types.NUMERIC:
+                case Types.FLOAT:
+                    Double.parseDouble(value);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            String.format("Type [%d] is not supported by NumberPicker", numberType)
+                    );
             }
 
         } catch (NumberFormatException ex) {
-            evt.consume();
+            Log.debug(ex.getMessage(), ex);
+            return false;
+
+        } catch (IllegalArgumentException ex) {
+            Log.error(ex.getMessage(), ex);
+            return false;
         }
+
+        return true;
     }
+
+    private class NumberFilter extends DocumentFilter {
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+
+            StringBuilder sb = getStringBuilder();
+            sb.insert(offset, string);
+            if (validate(sb.toString()))
+                super.insertString(fb, offset, string, attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String string, AttributeSet attrs)
+                throws BadLocationException {
+
+            StringBuilder sb = getStringBuilder();
+            sb.replace(offset, offset + length, string);
+            if (validate(sb.toString()))
+                super.replace(fb, offset, length, string, attrs);
+        }
+
+        @Override
+        public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+
+            StringBuilder sb = getStringBuilder();
+            sb.delete(offset, offset + length);
+            if (validate(sb.toString()))
+                super.remove(fb, offset, length);
+        }
+
+        private StringBuilder getStringBuilder() {
+            return new StringBuilder(getText());
+        }
+
+    } // NumberFilter class
 
 }

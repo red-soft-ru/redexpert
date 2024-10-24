@@ -441,7 +441,7 @@ public abstract class AbstractConnectionPanel extends JPanel
 
     private void hostChanged() {
         String value = hostField.getText().trim();
-        browseFileButton.setEnabled(DatabaseConnection.isLocalhost(value));
+        browseFileButton.setEnabled(value.isEmpty() || DatabaseConnection.isLocalhost(value));
 
         if (hasConnection()) {
             connection.setHost(value);

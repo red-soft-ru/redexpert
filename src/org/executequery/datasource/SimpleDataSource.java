@@ -66,6 +66,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private Properties properties = new Properties();
 
     private final Driver driver;
+    private Connection connection;
     private IFBDataSource dataSource;
     private final String url;
     private final DatabaseConnection databaseConnection;
@@ -77,19 +78,15 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     public SimpleDataSource(DatabaseConnection databaseConnection) {
 
         this.databaseConnection = databaseConnection;
-        if (databaseConnection.hasAdvancedProperties()) {
-
+        if (databaseConnection.hasAdvancedProperties())
             populateAdvancedProperties();
-        }
 
         driver = loadDriver(databaseConnection.getJDBCDriver());
-        if (driver == null) {
-
+        if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
-        }
 
-        url = Objects.equals(databaseConnection.getConnType(), ConnectionType.EMBEDDED.name()) ?
-                databaseConnection.getSourceName() :
+        url = ConnectionType.isEmbedded(databaseConnection.getConnType()) ?
+                generateEmbeddedUrl(databaseConnection) :
                 generateUrl(databaseConnection, properties);
 
         Log.info("JDBC Driver class: " + databaseConnection.getJDBCDriver().getClassName());
@@ -148,6 +145,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
+
+        // If embedded connection selected
+        if (Objects.equals(databaseConnection.getConnType(), ConnectionType.EMBEDDED.name())) {
+            if (connection == null)
+                connection = driver.connect(url, advancedProperties);
+            return connection;
+        }
 
         if (dataSource != null)
             return dataSource.getConnection(tpb);
@@ -306,6 +310,12 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return DRIVER_LOADER.load(databaseDriver);
     }
 
+    private static String generateEmbeddedUrl(DatabaseConnection databaseConnection) {
+        String url = "jdbc:firebirdsql:embedded:" + databaseConnection.getSourceName();
+        Log.info("JDBC URL pattern: " + url);
+        return url;
+    }
+
     public static String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
 
         String url = databaseConnection.getJDBCDriver().getURL();
@@ -448,19 +458,19 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public void close() throws ResourceException {
+        try {
 
-        if (dataSource != null) {
-            try {
+            if (dataSource != null)
                 dataSource.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
 
+            if (connection != null) {
+                connection.close();
+                connection = null;
+            }
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
     }
 
 }
-
-
-
-

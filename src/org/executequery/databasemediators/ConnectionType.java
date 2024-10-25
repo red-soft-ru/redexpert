@@ -32,6 +32,10 @@ public enum ConnectionType {
         return Bundles.get(ConnectionType.class, name());
     }
 
+    public static boolean isEmbedded(String connType) {
+        return Objects.equals(connType, EMBEDDED.name());
+    }
+
     @Override
     public String toString() {
         return label();

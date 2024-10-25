@@ -271,23 +271,24 @@ public final class ConnectionManager {
      */
     public static synchronized void closeConnection(DatabaseConnection databaseConnection) {
 
-        if (connectionPools.containsKey(databaseConnection)) {
+        if (!connectionPools.containsKey(databaseConnection))
+            return;
 
-            Log.info("Disconnecting from data source " + databaseConnection.getName());
+        Log.info("Disconnecting from data source " + databaseConnection.getName());
 
-            ConnectionPool pool = connectionPools.get(databaseConnection);
+        ConnectionPool pool = connectionPools.get(databaseConnection);
+        try {
             SimpleDataSource dataSource = (SimpleDataSource) pool.getDataSource();
-            try {
-                dataSource.close();
-            } catch (ResourceException e) {
-                e.printStackTrace();
-            }
-            pool.close();
+            dataSource.close();
 
-            connectionPools.remove(databaseConnection);
-            databaseConnection.setConnected(false);
-            ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
+        } catch (ResourceException e) {
+            Log.error(e.getMessage(), e);
         }
+        pool.close();
+
+        connectionPools.remove(databaseConnection);
+        databaseConnection.setConnected(false);
+        ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
     }
 
     /**

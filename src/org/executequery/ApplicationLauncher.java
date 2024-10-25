@@ -35,6 +35,7 @@ import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.RepositoryCache;
+import org.executequery.update.CheckForUpdateNotifier;
 import org.executequery.util.*;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.CustomKeyboardFocusManager;

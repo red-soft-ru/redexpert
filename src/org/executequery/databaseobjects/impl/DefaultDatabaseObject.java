@@ -42,8 +42,11 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
 
     private DatabaseObject dependObject;
 
-    /** the metadata key name for this object */
+    /**
+     * the metadata key name for this object
+     */
     private String metaDataKey;
+    private Integer relationId;
 
     /**
      * Creates a new instance of DefaultDatabaseObject
@@ -225,6 +228,13 @@ public class DefaultDatabaseObject extends AbstractDatabaseObject {
         return getHost().getDatabaseProductName();
     }
 
+    public Integer getRelationId() {
+        return relationId;
+    }
+
+    public void setRelationId(Integer relationId) {
+        this.relationId = relationId;
+    }
 }
 
 

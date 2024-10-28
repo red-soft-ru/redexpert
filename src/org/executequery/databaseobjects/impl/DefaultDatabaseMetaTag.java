@@ -982,6 +982,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
 
+        if (ConnectionType.isEmbedded(getConnection()))
+            return null;
+
         String query = "SELECT\n" +
                 "CAST (SEC$USER_NAME as VARCHAR(1024)),\n" +
                 "SEC$PLUGIN\n" +
@@ -1019,6 +1022,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getJobsResultSet() throws SQLException {
+
+        if (ConnectionType.isEmbedded(getConnection()))
+            return null;
 
         String query = "SELECT\n" +
                 "CAST (RDB$JOB_NAME as VARCHAR(1024))\n" +

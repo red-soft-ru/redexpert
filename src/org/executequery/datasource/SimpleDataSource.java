@@ -85,7 +85,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
 
-        url = ConnectionType.isEmbedded(databaseConnection.getConnType()) ?
+        url = ConnectionType.isEmbedded(databaseConnection) ?
                 generateEmbeddedUrl(databaseConnection) :
                 generateUrl(databaseConnection, properties);
 

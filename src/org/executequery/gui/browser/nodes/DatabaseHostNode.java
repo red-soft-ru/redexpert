@@ -20,13 +20,16 @@
 
 package org.executequery.gui.browser.nodes;
 
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.*;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.util.SystemProperties;
 
 import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -144,16 +147,28 @@ public class DatabaseHostNode extends DatabaseObjectNode {
                 DatabaseMetaTag metaTag = (DatabaseMetaTag) metaObjects.get(i);
                 DatabaseObjectNode metaTagNode = new DatabaseObjectNode(metaTag, tableCatalogsEnabled);
                 allChildren.add(metaTagNode);
-                if ((!metaTag.getMetaDataKey().contains("SYSTEM")
-                        || SystemProperties.getBooleanProperty("user", "browser.show.system.objects"))
-                        && metaTag.getSubType() != NamedObject.COLLATION)
+                if (isVisibleNode(metaTag))
                     visibleChildren.add(metaTagNode);
             }
 
             return visibleChildren;
         }
 
-        return null;
+        return Collections.emptyList();
+    }
+
+    private boolean isVisibleNode(DatabaseMetaTag metaTag) {
+
+        int subType = metaTag.getSubType();
+        if (subType == NamedObject.COLLATION)
+            return false;
+
+        boolean isServerObject = subType == NamedObject.USER || subType == NamedObject.JOB;
+        if (isServerObject && ConnectionType.isEmbedded(getDatabaseConnection()))
+            return false;
+
+        boolean isSystemObject = metaTag.getMetaDataKey().contains("SYSTEM");
+        return !isSystemObject || UserProperties.getInstance().getBooleanProperty("browser.show.system.objects");
     }
 
     public List<DatabaseObjectNode> getAllChildren() {

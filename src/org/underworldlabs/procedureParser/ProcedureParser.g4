@@ -57,8 +57,8 @@ declare_function_block
   ;
 
  declare_function_block
- : ('(' input_parameter (',' input_parameter)*')')?
-       K_RETURNS   output_parameter
+ : ('('spases_or_comment? input_parameter (','spases_or_comment? input_parameter)*')')?
+       K_RETURNS spases_or_comment  output_parameter
        spases_or_comment? K_AS spases_or_comment
        declare_stmt*
        K_BEGIN
@@ -67,8 +67,8 @@ declare_function_block
 ;
 
  declare_block
- : ('(' input_parameter (',' input_parameter)*')')?
-       (spases_or_comment? K_RETURNS '('  output_parameter (',' output_parameter)*')')?
+ : ('('spases_or_comment? input_parameter (','spases_or_comment? input_parameter)*')')?
+       (spases_or_comment? K_RETURNS spases_or_comment '('spases_or_comment?  output_parameter (',' spases_or_comment? output_parameter)*')')?
        spases_or_comment? K_AS spases_or_comment
        declare_stmt*
        K_BEGIN

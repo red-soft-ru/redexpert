@@ -35,7 +35,7 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
 
     protected final boolean isConnected() {
 
-        if (!ConnectionManager.hasConnections()) {
+        if (ConnectionManager.noActiveConnections()) {
             GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.notConnected"));
             return false;
         }

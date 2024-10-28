@@ -299,7 +299,7 @@ public class ErdToolBarPalette extends JPanel {
 
     private void updateFromDatabase() {
 
-        if (!ConnectionManager.hasConnections()) {
+        if (ConnectionManager.noActiveConnections()) {
             GUIUtilities.displayWarningMessage(bundleString("noActiveConnections"));
             return;
         }

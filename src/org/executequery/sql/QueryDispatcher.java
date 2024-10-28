@@ -314,7 +314,7 @@ public class QueryDispatcher {
     public void executeScript(DatabaseConnection dc, final String script, boolean anyConnections) {
         if (!checkBeforeExecuteQuery(script, dc, anyConnections))
             return;
-        if (!ConnectionManager.hasConnections()) {
+        if (ConnectionManager.noActiveConnections()) {
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", false);
             setStatusMessage(ERROR_EXECUTING);
             return;
@@ -438,7 +438,7 @@ public class QueryDispatcher {
 
     public void printExecutedPlan(DatabaseConnection dc, final String script, boolean anyConnections) {
 
-        if (!ConnectionManager.hasConnections()) {
+        if (ConnectionManager.noActiveConnections()) {
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
             setStatusMessage(ERROR_EXECUTING);
             return;
@@ -2051,7 +2051,7 @@ public class QueryDispatcher {
             return false;
         }
 
-        if (!ConnectionManager.hasConnections()) {
+        if (ConnectionManager.noActiveConnections()) {
 
             setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, "Not Connected", anyConnections);
             setStatusMessage(ERROR_EXECUTING);

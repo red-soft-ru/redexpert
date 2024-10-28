@@ -10,6 +10,7 @@ import org.executequery.gui.IconManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 
 import static org.executequery.gui.browser.BrowserConstants.*;
@@ -19,11 +20,7 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
     public ConnectionsComboBox(boolean showOnlyActiveConnections) {
         super();
-
-        setModel(new DefaultComboBoxModel<>(showOnlyActiveConnections ?
-                ConnectionManager.getActiveConnections() :
-                ConnectionManager.getAllConnections()
-        ));
+        setModel(getModel(showOnlyActiveConnections));
 
         if (showOnlyActiveConnections) {
             EventMediator.registerListener(this);
@@ -45,6 +42,14 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
                 return true;
 
         return false;
+    }
+
+    private static DefaultComboBoxModel<DatabaseConnection> getModel(boolean showOnlyActiveConnections) {
+        List<DatabaseConnection> connections = showOnlyActiveConnections ?
+                ConnectionManager.getActiveConnections() :
+                ConnectionManager.getAllConnections();
+
+        return new DefaultComboBoxModel<>(connections.toArray(new DatabaseConnection[0]));
     }
 
     private void selectFirstActiveConnection() {

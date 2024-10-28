@@ -1,6 +1,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.EventMediator;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
@@ -12,17 +13,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.executequery.gui.browser.BrowserConstants.*;
 
 public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         implements ConnectionListener {
 
-    public ConnectionsComboBox(boolean showOnlyActiveConnections) {
-        super();
-        setModel(getModel(showOnlyActiveConnections));
+    private final boolean showEmbedded;
 
-        if (showOnlyActiveConnections) {
+    public ConnectionsComboBox(boolean showOnlyActive) {
+        this(showOnlyActive, true);
+    }
+
+    public ConnectionsComboBox(boolean showOnlyActive, boolean showEmbedded) {
+        super();
+        this.showEmbedded = showEmbedded;
+        setModel(getModel(showOnlyActive, showEmbedded));
+
+        if (showOnlyActive) {
             EventMediator.registerListener(this);
 
         } else {
@@ -44,10 +53,13 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         return false;
     }
 
-    private static DefaultComboBoxModel<DatabaseConnection> getModel(boolean showOnlyActiveConnections) {
-        List<DatabaseConnection> connections = showOnlyActiveConnections ?
+    private static DefaultComboBoxModel<DatabaseConnection> getModel(boolean showOnlyActive, boolean showEmbedded) {
+        List<DatabaseConnection> connections = showOnlyActive ?
                 ConnectionManager.getActiveConnections() :
                 ConnectionManager.getAllConnections();
+
+        if (!showEmbedded)
+            connections = connections.stream().filter(dc -> !ConnectionType.isEmbedded(dc)).collect(Collectors.toList());
 
         return new DefaultComboBoxModel<>(connections.toArray(new DatabaseConnection[0]));
     }
@@ -95,14 +107,18 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
     @Override
     public void addItem(DatabaseConnection item) {
-        super.addItem(item);
-        updateEnable();
+        if (showEmbedded || !ConnectionType.isEmbedded(item)) {
+            super.addItem(item);
+            updateEnable();
+        }
     }
 
     @Override
     public void insertItemAt(DatabaseConnection item, int index) {
-        super.insertItemAt(item, index);
-        updateEnable();
+        if (showEmbedded || !ConnectionType.isEmbedded(item)) {
+            super.insertItemAt(item, index);
+            updateEnable();
+        }
     }
 
     @Override

@@ -13,7 +13,7 @@ public class GrantManagerCommands extends OpenFrameCommand implements BaseComman
     public void execute(ActionEvent e) {
 
         String title = GrantManagerPanel.TITLE;
-        if (!isConnected() || isCentralPaneOpen(title))
+        if (!isConnected() || onlyEmbeddedConnections() || isCentralPaneOpen(title))
             return;
 
         GUIUtilities.addCentralPane(

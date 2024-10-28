@@ -29,9 +29,7 @@ import org.executequery.gui.databaseobjects.CreateFbUserPanel;
 import org.executequery.gui.databaseobjects.CreateRolePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.Repository;
-import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.SQLUtils;
@@ -87,7 +85,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private JProgressBar progressBar;
     private JCheckBox roleToRoleCheck;
-    private JComboBox<DatabaseConnection> databasesCombo;
+    private ConnectionsComboBox databasesCombo;
 
     private JPanel usersPanel;
     private JPanel rolesPanel;
@@ -97,13 +95,11 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     // ---
 
-    private boolean execute;
     private boolean enableElements;
 
     private Action currentAction;
     private Connection connection;
-    private ItemListener databaseComboListener;
-    private List<DatabaseConnection> databaseConnectionList;
+    private DatabaseConnection lastSelectedConnection;
 
     private int version;
     private IFBUser fbUser;
@@ -114,23 +110,22 @@ public class UserManagerPanel extends JPanel implements Runnable {
     private final Vector<UserRole> userNamesVector;
 
     public UserManagerPanel() {
-
-        execute = false;
         userNamesVector = new Vector<>();
         roleNamesVector = new Vector<>();
 
         init();
         arrange();
-        loadConnections();
+
+        if (connection == null)
+            databaseChanged(new ItemEvent(databasesCombo, -1, null, ItemEvent.SELECTED));
     }
 
     private void init() {
 
         // --- comboBoxes ---
 
-        //noinspection unchecked
-        databasesCombo = WidgetFactory.createComboBox("databasesCombo");
-        databaseComboListener = e -> databaseChanged();
+        databasesCombo = WidgetFactory.createConnectionComboBox("databasesCombo", false, false);
+        databasesCombo.addItemListener(this::databaseChanged);
 
         // --- tables ---
 
@@ -312,22 +307,35 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     // --- handlers ---
 
-    private void databaseChanged() {
+    private void databaseChanged(ItemEvent event) {
 
-        if (databaseConnectionList.isEmpty()) {
+        if (event.getStateChange() == ItemEvent.DESELECTED) {
+            lastSelectedConnection = (DatabaseConnection) event.getItem();
+            return;
+        }
+
+        if (databasesCombo.getItemCount() < 1) {
             refreshNoConnection();
             return;
         }
 
-        int selectedIndex = databasesCombo.getSelectedIndex();
-        if (selectedIndex < 0)
-            return;
+        DatabaseConnection dc = getSelectedConnection();
+        if (!dc.isConnected()) {
+            try {
+                ConnectionMediator.getInstance().connect(dc, true);
+            } catch (Exception e) {
+                Log.debug(e.getMessage(), e);
+            }
+        }
 
-        if (!getSelectedConnection().isConnected())
-            ConnectionMediator.getInstance().connect(getSelectedConnection(), true);
+        if (!dc.isConnected()) {
+            GUIUtilities.displayWarningMessage(bundleString("connectionError"));
+            databasesCombo.setSelectedItem(lastSelectedConnection);
+            return;
+        }
 
         try {
-            DatabaseMetaData metadata = new DefaultDatabaseHost(getSelectedConnection()).getDatabaseMetaData();
+            DatabaseMetaData metadata = new DefaultDatabaseHost(dc).getDatabaseMetaData();
             if (metadata != null)
                 version = metadata.getDatabaseMajorVersion();
 
@@ -335,6 +343,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             Log.error(e.getMessage(), e);
         }
 
+        lastSelectedConnection = getSelectedConnection();
         refreshUserManager(version >= 3);
         setRefreshAction();
     }
@@ -548,43 +557,6 @@ public class UserManagerPanel extends JPanel implements Runnable {
         setGetMembershipAction();
     }
 
-    private void loadConnections() {
-
-        execute = false;
-        connection = null;
-        enableElements = true;
-        databasesCombo.removeAllItems();
-        databasesCombo.removeItemListener(databaseComboListener);
-
-        Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repo == null)
-            return;
-
-        databaseConnectionList = ((DatabaseConnectionRepository) repo).findAll();
-
-        boolean selected = false;
-        for (DatabaseConnection dc : databaseConnectionList) {
-            databasesCombo.addItem(dc);
-            if (dc.isConnected() && !selected) {
-                execute = true;
-                databasesCombo.setSelectedItem(dc);
-                selected = true;
-            }
-        }
-
-        if (!execute) {
-            if (databasesCombo.getItemCount() == 0)
-                databasesCombo.addItem(null);
-
-            databasesCombo.setSelectedIndex(0);
-            execute = true;
-        }
-
-        databasesCombo.addItemListener(databaseComboListener);
-        if (connection == null)
-            databaseChanged();
-    }
-
     private void showDialog(BaseDialog dialog, JPanel panel) {
 
         try {
@@ -775,7 +747,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     public void refresh() {
 
-        if (!databaseConnectionList.isEmpty()) {
+        if (databasesCombo.getItemCount() > 0) {
 
             if (!getSelectedConnection().isConnected())
                 new DefaultConnectionBuilder(getSelectedConnection()).connect();
@@ -917,7 +889,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
     }
 
     public DatabaseConnection getSelectedConnection() {
-        return (DatabaseConnection) databasesCombo.getSelectedItem();
+        return databasesCombo.getSelectedConnection();
     }
 
     // --- runnable ---
@@ -929,7 +901,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
             return;
 
         if (connection == null)
-            databaseChanged();
+            databaseChanged(new ItemEvent(databasesCombo, -1, null, ItemEvent.SELECTED));
 
         switch (currentAction) {
             case REFRESH:

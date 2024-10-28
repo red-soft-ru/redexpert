@@ -17,7 +17,7 @@ public class UserManagerCommands extends OpenFrameCommand
     public void execute(ActionEvent e) {
 
         String title = UserManagerPanel.TITLE;
-        if (!isConnected() || isCentralPaneOpen(title))
+        if (!isConnected() || onlyEmbeddedConnections() || isCentralPaneOpen(title))
             return;
 
         GUIUtilities.addCentralPane(

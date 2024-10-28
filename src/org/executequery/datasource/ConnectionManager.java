@@ -23,6 +23,7 @@ package org.executequery.datasource;
 import biz.redsoft.ITPB;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -435,6 +436,12 @@ public final class ConnectionManager {
 
     public static boolean noActiveConnections() {
         return getActiveConnectionPoolCount() < 1;
+    }
+
+    public static boolean allConnectionsAreEmbedded() {
+        return connections.values().stream()
+                .map(ConnectionData::getDatabaseConnection)
+                .allMatch(ConnectionType::isEmbedded);
     }
 
     /**

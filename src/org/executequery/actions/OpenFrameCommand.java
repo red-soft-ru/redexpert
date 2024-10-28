@@ -43,6 +43,16 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
         return true;
     }
 
+    protected final boolean onlyEmbeddedConnections() {
+
+        if (ConnectionManager.allConnectionsAreEmbedded()) {
+            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.onlyEmbedded"));
+            return true;
+        }
+
+        return false;
+    }
+
     protected final boolean isActionableDialogOpen() {
 
         return GUIUtilities.isActionableDialogOpen();

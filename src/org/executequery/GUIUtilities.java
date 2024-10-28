@@ -33,7 +33,6 @@ import org.executequery.gui.*;
 import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
@@ -186,7 +185,6 @@ public final class GUIUtilities {
         EventMediator.registerListener(new HttpProxyUserPreferenceListener());
         EventMediator.registerListener(new LogUserPreferenceListener(errLogger, outLogger));
         EventMediator.registerListener(new KeyboardShortcutsUserPreferenceListener());
-        EventMediator.registerListener(new GrantManagerConnectionListener());
         EventMediator.registerListener(ConnectionHistory.getInstance());
     }
 

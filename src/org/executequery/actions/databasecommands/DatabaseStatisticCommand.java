@@ -3,6 +3,7 @@ package org.executequery.actions.databasecommands;
 import biz.redsoft.IFBStatisticManager;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Constants;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.log.Log;
@@ -61,6 +62,9 @@ public class DatabaseStatisticCommand {
      * @return the same result as <code>gstat -h</code> command
      */
     public static String getDatabaseHeader(DatabaseConnection dc) {
+
+        if (ConnectionType.isEmbedded(dc))
+            return null;
 
         try (OutputStream outputStream = getDatabaseHeaderStatistics(dc)) {
             return outputStream.toString();

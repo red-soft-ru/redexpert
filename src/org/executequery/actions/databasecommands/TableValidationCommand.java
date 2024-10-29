@@ -24,7 +24,7 @@ public class TableValidationCommand extends OpenFrameCommand
 
     @Override
     public void execute(ActionEvent e) {
-        if (isConnected())
+        if (isConnected() && !onlyEmbeddedConnections())
             showPanel(new TableValidationPanel());
     }
 

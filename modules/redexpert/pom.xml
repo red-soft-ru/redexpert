@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.executequery</groupId>
             <artifactId>fbclient-3</artifactId>
-            <version>3.0.15</version>
+            <version>3.0.17</version>
         </dependency>
 
         <dependency>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.executequery</groupId>
             <artifactId>fbclient-5</artifactId>
-            <version>5.0.0</version>
+            <version>5.0.0-rc.5</version>
         </dependency>
 
         <dependency>

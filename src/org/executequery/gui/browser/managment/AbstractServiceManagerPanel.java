@@ -5,10 +5,8 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.swing.AbstractPanel;
-import org.underworldlabs.swing.DynamicComboBoxModel;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.util.FileUtils;
 
@@ -24,7 +22,7 @@ import java.util.Map;
 
 public abstract class AbstractServiceManagerPanel extends AbstractPanel {
     protected JTabbedPane tabPane;
-    protected JComboBox<DatabaseConnection> databaseBox;
+    protected ConnectionsComboBox databaseBox;
     protected FileOutputStream fileLog;
 
     protected PipedOutputStream outputStream;
@@ -123,18 +121,10 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
         portField = WidgetFactory.createNumberTextField("portField");
         portField.setText("3050");
         charsetCombo = WidgetFactory.createComboBox("charsetCombo", charsets.toArray());
-        DynamicComboBoxModel model = new DynamicComboBoxModel();
-        List<DatabaseConnection> databaseConnectionList = new ArrayList<>();
-        databaseConnectionList.add(null);
-        databaseConnectionList.addAll(((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll());
-        model.setElements(databaseConnectionList);
-        databaseBox = WidgetFactory.createComboBox("databaseBox", model);
-        databaseBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                changeDatabaseConnection();
-            }
-        });
+
+        databaseBox = WidgetFactory.createConnectionComboBox("databaseBox", false, false, true);
+        databaseBox.addItemListener(e -> changeDatabaseConnection());
+
         parseBox = WidgetFactory.createCheckBox("parseCheckBox", bundleString("parseTraceToGrid"));
         parseBox.setSelected(true);
         tabPane = new JTabbedPane();
@@ -183,6 +173,10 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    protected DatabaseConnection getSelectedConnection() {
+        return databaseBox.getSelectedConnection();
     }
 
     public class ServiceOutputStream extends PipedOutputStream {

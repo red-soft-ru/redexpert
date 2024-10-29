@@ -36,7 +36,7 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
     protected final boolean isConnected() {
 
         if (ConnectionManager.noActiveConnections()) {
-            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.notConnected"));
+            GUIUtilities.displayWarningMessage(Bundles.get(OpenFrameCommand.class, "error.notConnected"));
             return false;
         }
 
@@ -46,7 +46,7 @@ public abstract class OpenFrameCommand extends AbstractBaseCommand {
     protected final boolean onlyEmbeddedConnections() {
 
         if (ConnectionManager.allConnectionsAreEmbedded()) {
-            GUIUtilities.displayErrorMessage(Bundles.get(OpenFrameCommand.class, "error.onlyEmbedded"));
+            GUIUtilities.displayWarningMessage(Bundles.get(OpenFrameCommand.class, "error.onlyEmbedded"));
             return true;
         }
 

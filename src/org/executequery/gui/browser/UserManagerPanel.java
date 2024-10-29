@@ -124,7 +124,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
         // --- comboBoxes ---
 
-        databasesCombo = WidgetFactory.createConnectionComboBox("databasesCombo", false, false);
+        databasesCombo = WidgetFactory.createConnectionComboBox("databasesCombo", false, true);
         databasesCombo.addItemListener(this::databaseChanged);
 
         // --- tables ---

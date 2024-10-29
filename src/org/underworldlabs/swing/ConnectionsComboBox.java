@@ -1,6 +1,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.EventMediator;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
@@ -8,36 +9,37 @@ import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.IconManager;
+import org.executequery.localization.Bundles;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static org.executequery.gui.browser.BrowserConstants.*;
 
 public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
-        implements ConnectionListener {
+        implements ConnectionListener,
+        ItemListener {
 
-    private final boolean showEmbedded;
+    private final boolean showOnlyActive;
+    private boolean preventEmbeddedSelection;
+    private DatabaseConnection lastSelection;
 
-    public ConnectionsComboBox(boolean showOnlyActive) {
-        this(showOnlyActive, true);
-    }
-
-    public ConnectionsComboBox(boolean showOnlyActive, boolean showEmbedded) {
+    public ConnectionsComboBox(boolean showOnlyActive, boolean embeddedFilter) {
         super();
-        this.showEmbedded = showEmbedded;
-        setModel(getModel(showOnlyActive, showEmbedded));
+        this.showOnlyActive = showOnlyActive;
 
-        if (showOnlyActive) {
+        setEmbeddedFilter(embeddedFilter);
+        setModel(getModel(showOnlyActive));
+        setRenderer(new ConnectionsComboRenderer());
+        selectFirstActiveConnection();
+        addItemListener(this);
+
+        if (showOnlyActive)
             EventMediator.registerListener(this);
-
-        } else {
-            setRenderer(new ConnectionsComboRenderer());
-            selectFirstActiveConnection();
-        }
     }
 
     public DatabaseConnection getSelectedConnection() {
@@ -53,29 +55,70 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         return false;
     }
 
-    private static DefaultComboBoxModel<DatabaseConnection> getModel(boolean showOnlyActive, boolean showEmbedded) {
+    private static DefaultComboBoxModel<DatabaseConnection> getModel(boolean showOnlyActive) {
         List<DatabaseConnection> connections = showOnlyActive ?
                 ConnectionManager.getActiveConnections() :
                 ConnectionManager.getAllConnections();
 
-        if (!showEmbedded)
-            connections = connections.stream().filter(dc -> !ConnectionType.isEmbedded(dc)).collect(Collectors.toList());
-
         return new DefaultComboBoxModel<>(connections.toArray(new DatabaseConnection[0]));
     }
+
+    public void setEmbeddedFilter(boolean embeddedFilter) {
+        this.preventEmbeddedSelection = !showOnlyActive && embeddedFilter;
+    }
+
+    // --- helper methods ---
 
     private void selectFirstActiveConnection() {
         for (int i = 0; i < getItemCount(); i++) {
             DatabaseConnection dc = getItemAt(i);
-            if (dc.isConnected()) {
+            if (!ignoreConnection(dc) && dc.isConnected()) {
                 setSelectedItem(dc);
                 return;
             }
         }
     }
 
+    private void rollbackSelection() {
+        removeItemListener(this);
+        setSelectedItem(lastSelection);
+        addItemListener(this);
+    }
+
+    private boolean ignoreConnection(DatabaseConnection dc) {
+        return preventEmbeddedSelection && ConnectionType.isEmbedded(dc);
+    }
+
     private void updateEnable() {
         setEnabled(getItemCount() > 0);
+    }
+
+    private static String bundledString(String key, Object... args) {
+        return Bundles.get(ConnectionsComboBox.class, key, args);
+    }
+
+    // --- ItemListener impl ---
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+
+        if (e.getStateChange() == ItemEvent.DESELECTED) {
+            lastSelection = (DatabaseConnection) e.getItem();
+            return;
+        }
+
+        filterSelection();
+    }
+
+    private void filterSelection() {
+
+        if (!preventEmbeddedSelection)
+            return;
+
+        if (ignoreConnection(getSelectedConnection())) {
+            GUIUtilities.displayWarningMessage(bundledString("embeddedNotAllowed"));
+            rollbackSelection();
+        }
     }
 
     // --- ConnectionListener impl ---
@@ -107,18 +150,14 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
     @Override
     public void addItem(DatabaseConnection item) {
-        if (showEmbedded || !ConnectionType.isEmbedded(item)) {
-            super.addItem(item);
-            updateEnable();
-        }
+        super.addItem(item);
+        updateEnable();
     }
 
     @Override
     public void insertItemAt(DatabaseConnection item, int index) {
-        if (showEmbedded || !ConnectionType.isEmbedded(item)) {
-            super.insertItemAt(item, index);
-            updateEnable();
-        }
+        super.insertItemAt(item, index);
+        updateEnable();
     }
 
     @Override
@@ -141,10 +180,11 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
 
     // ---
 
-    private static class ConnectionsComboRenderer extends DefaultListCellRenderer {
+    private class ConnectionsComboRenderer extends DefaultListCellRenderer {
 
-        private static final Icon CONNECTED_ICON = IconManager.getIcon(GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
-        private static final Icon NOT_CONNECTED_ICON = IconManager.getIcon(FIELD_GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
+        private final Icon blockedIcon = IconManager.getIcon(REVOKE_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
+        private final Icon connectedIcon = IconManager.getIcon(GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
+        private final Icon disconnectedIcon = IconManager.getIcon(FIELD_GRANT_IMAGE, "svg", 10, IconManager.IconFolder.BASE);
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -153,9 +193,15 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
                 return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
 
             JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            component.setIcon(((DatabaseConnection) value).isConnected() ? CONNECTED_ICON : NOT_CONNECTED_ICON);
+            component.setIcon(getIcon((DatabaseConnection) value));
 
             return component;
+        }
+
+        private Icon getIcon(DatabaseConnection dc) {
+            if (dc.isConnected())
+                return ignoreConnection(dc) ? blockedIcon : connectedIcon;
+            return disconnectedIcon;
         }
 
     } // ConnectionsComboRenderer class

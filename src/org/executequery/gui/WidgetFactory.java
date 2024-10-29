@@ -567,7 +567,7 @@ public final class WidgetFactory {
      * @param showOnlyActive whether comboBox will contain only active connections
      */
     public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive) {
-        return createConnectionComboBox(name, showOnlyActive, true);
+        return createConnectionComboBox(name, showOnlyActive, false);
     }
 
     /**
@@ -577,11 +577,11 @@ public final class WidgetFactory {
      *
      * @param name           the component's name
      * @param showOnlyActive whether comboBox will contain only active connections
-     * @param showEmbedded   whether comboBox will contain embedded connections
+     * @param embeddedFilter whether comboBox will prevent to select embedded connections
      */
-    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean showEmbedded) {
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean embeddedFilter) {
 
-        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, showEmbedded);
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, embeddedFilter);
         connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 

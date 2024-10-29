@@ -77,7 +77,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         // --- init ---
 
-        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false, false);
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false, true);
         connectionsCombo.addItemListener(this::connectionChanged);
 
         userTypeBox = new JComboBox<>();

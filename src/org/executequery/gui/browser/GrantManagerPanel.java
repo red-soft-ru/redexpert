@@ -9,7 +9,6 @@ import biz.redsoft.IFBUser;
 import biz.redsoft.IFBUserManager;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
-import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
@@ -62,7 +61,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     // ---
 
     private JList<NamedObject> userList;
-    private DatabaseConnection lastSelectedConnection;
     private DefaultListModel<NamedObject> userListModel;
 
     // ---
@@ -77,7 +75,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         // --- init ---
 
-        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false, true);
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false, true, true);
         connectionsCombo.addItemListener(this::connectionChanged);
 
         userTypeBox = new JComboBox<>();
@@ -314,29 +312,10 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
     private void connectionChanged(ItemEvent event) {
-
-        if (event.getStateChange() == ItemEvent.DESELECTED) {
-            lastSelectedConnection = (DatabaseConnection) event.getItem();
-            return;
+        if (event.getStateChange() == ItemEvent.SELECTED) {
+            fillUserBox();
+            loadUserList();
         }
-
-        DatabaseConnection dc = getSelectedConnection();
-        if (!dc.isConnected()) {
-            try {
-                ConnectionMediator.getInstance().connect(dc, true);
-            } catch (Exception e) {
-                Log.debug(e.getMessage(), e);
-            }
-        }
-
-        if (!dc.isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("connectionError"));
-            connectionsCombo.setSelectedItem(lastSelectedConnection);
-            return;
-        }
-
-        fillUserBox();
-        loadUserList();
     }
 
     private DatabaseConnection getSelectedConnection() {

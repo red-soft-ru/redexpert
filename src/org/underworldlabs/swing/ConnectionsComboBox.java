@@ -2,6 +2,7 @@ package org.underworldlabs.swing;
 
 import org.executequery.EventMediator;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
@@ -10,6 +11,7 @@ import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,15 +26,16 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         implements ConnectionListener,
         ItemListener {
 
-    private final boolean showOnlyActive;
-    private boolean preventEmbeddedSelection;
     private DatabaseConnection lastSelection;
+    private final boolean allowAutoConnect;
+    private final boolean preventEmbeddedSelection;
 
-    public ConnectionsComboBox(boolean showOnlyActive, boolean embeddedFilter) {
+    public ConnectionsComboBox(boolean showOnlyActive, boolean allowAutoConnect, boolean embeddedFilter) {
         super();
-        this.showOnlyActive = showOnlyActive;
 
-        setEmbeddedFilter(embeddedFilter);
+        this.allowAutoConnect = !showOnlyActive && allowAutoConnect;
+        this.preventEmbeddedSelection = !showOnlyActive && embeddedFilter;
+
         setModel(getModel(showOnlyActive));
         setRenderer(new ConnectionsComboRenderer());
         selectFirstActiveConnection();
@@ -61,10 +64,6 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
                 ConnectionManager.getAllConnections();
 
         return new DefaultComboBoxModel<>(connections.toArray(new DatabaseConnection[0]));
-    }
-
-    public void setEmbeddedFilter(boolean embeddedFilter) {
-        this.preventEmbeddedSelection = !showOnlyActive && embeddedFilter;
     }
 
     // --- helper methods ---
@@ -108,15 +107,37 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         }
 
         filterSelection();
+        connectSelection();
     }
 
     private void filterSelection() {
 
-        if (!preventEmbeddedSelection)
+        DatabaseConnection dc = getSelectedConnection();
+        if (!preventEmbeddedSelection || Objects.equals(lastSelection, dc))
             return;
 
-        if (ignoreConnection(getSelectedConnection())) {
+        if (ignoreConnection(dc)) {
             GUIUtilities.displayWarningMessage(bundledString("embeddedNotAllowed"));
+            rollbackSelection();
+        }
+    }
+
+    private void connectSelection() {
+
+        DatabaseConnection dc = getSelectedConnection();
+        if (!allowAutoConnect || Objects.equals(lastSelection, dc))
+            return;
+
+        if (!dc.isConnected()) {
+            try {
+                ConnectionMediator.getInstance().connect(dc, true);
+            } catch (Exception e) {
+                Log.debug(e.getMessage(), e);
+            }
+        }
+
+        if (!dc.isConnected()) {
+            GUIUtilities.displayWarningMessage(bundledString("connectionError"));
             rollbackSelection();
         }
     }

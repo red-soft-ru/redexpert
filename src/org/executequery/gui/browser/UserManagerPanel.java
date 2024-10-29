@@ -11,7 +11,6 @@ import org.executequery.GUIUtilities;
 import org.executequery.components.table.MembershipTableCellRenderer;
 import org.executequery.components.table.RoleTableModel;
 import org.executequery.components.table.RowHeaderRenderer;
-import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultConnectionBuilder;
 import org.executequery.databaseobjects.NamedObject;
@@ -99,7 +98,6 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private Action currentAction;
     private Connection connection;
-    private DatabaseConnection lastSelectedConnection;
 
     private int version;
     private IFBUser fbUser;
@@ -124,7 +122,7 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
         // --- comboBoxes ---
 
-        databasesCombo = WidgetFactory.createConnectionComboBox("databasesCombo", false, true);
+        databasesCombo = WidgetFactory.createConnectionComboBox("databasesCombo", false, true, true);
         databasesCombo.addItemListener(this::databaseChanged);
 
         // --- tables ---
@@ -309,32 +307,16 @@ public class UserManagerPanel extends JPanel implements Runnable {
 
     private void databaseChanged(ItemEvent event) {
 
-        if (event.getStateChange() == ItemEvent.DESELECTED) {
-            lastSelectedConnection = (DatabaseConnection) event.getItem();
+        if (event.getStateChange() == ItemEvent.DESELECTED)
             return;
-        }
 
         if (databasesCombo.getItemCount() < 1) {
             refreshNoConnection();
             return;
         }
 
-        DatabaseConnection dc = getSelectedConnection();
-        if (!dc.isConnected()) {
-            try {
-                ConnectionMediator.getInstance().connect(dc, true);
-            } catch (Exception e) {
-                Log.debug(e.getMessage(), e);
-            }
-        }
-
-        if (!dc.isConnected()) {
-            GUIUtilities.displayWarningMessage(bundleString("connectionError"));
-            databasesCombo.setSelectedItem(lastSelectedConnection);
-            return;
-        }
-
         try {
+            DatabaseConnection dc = getSelectedConnection();
             DatabaseMetaData metadata = new DefaultDatabaseHost(dc).getDatabaseMetaData();
             if (metadata != null)
                 version = metadata.getDatabaseMajorVersion();
@@ -343,7 +325,6 @@ public class UserManagerPanel extends JPanel implements Runnable {
             Log.error(e.getMessage(), e);
         }
 
-        lastSelectedConnection = getSelectedConnection();
         refreshUserManager(version >= 3);
         setRefreshAction();
     }

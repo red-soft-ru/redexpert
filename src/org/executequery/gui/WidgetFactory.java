@@ -567,7 +567,7 @@ public final class WidgetFactory {
      * @param showOnlyActive whether comboBox will contain only active connections
      */
     public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive) {
-        return createConnectionComboBox(name, showOnlyActive, false);
+        return createConnectionComboBox(name, showOnlyActive, false, false);
     }
 
     /**
@@ -575,13 +575,14 @@ public final class WidgetFactory {
      * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
      * with the automatically updated active connections list
      *
-     * @param name           the component's name
-     * @param showOnlyActive whether comboBox will contain only active connections
-     * @param embeddedFilter whether comboBox will prevent to select embedded connections
+     * @param name             the component's name
+     * @param showOnlyActive   whether comboBox will contain only active connections
+     * @param allowAutoConnect whether comboBox will automatically connect to the selected database
+     * @param embeddedFilter   whether comboBox will prevent to select embedded connections
      */
-    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean embeddedFilter) {
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean allowAutoConnect, boolean embeddedFilter) {
 
-        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, embeddedFilter);
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, allowAutoConnect, embeddedFilter);
         connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 

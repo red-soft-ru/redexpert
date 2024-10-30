@@ -21,7 +21,9 @@
 package org.executequery.gui.logging.output;
 
 import org.executequery.Constants;
+import org.executequery.log.Log;
 import org.executequery.sql.SqlMessages;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.util.SystemProperties;
 
@@ -29,15 +31,13 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 
-/**
- * @author Takis Diakoumis
- */
+/// @author Takis Diakoumis
 public class LoggingOutputPane extends JTextPane {
-
-    private OutputPaneDocument document;
+    private final OutputPaneDocument document;
 
     public LoggingOutputPane() {
-        document = new OutputPaneDocument();
+        this.document = new OutputPaneDocument();
+
         setDocument(document);
         setBackground(SystemProperties.getColourProperty("user", "editor.output.background"));
     }
@@ -47,32 +47,37 @@ public class LoggingOutputPane extends JTextPane {
     }
 
     public void append(int type, String text) {
-
         switch (type) {
+
             case SqlMessages.ACTION_MESSAGE:
                 appendAction(text);
                 break;
+
             case SqlMessages.ERROR_MESSAGE:
                 appendError(text);
                 break;
+
             case SqlMessages.WARNING_MESSAGE:
                 appendWarning(text);
                 break;
-            case SqlMessages.PLAIN_MESSAGE:
-                appendPlain(text);
-                break;
+
             case SqlMessages.ACTION_MESSAGE_PREFORMAT:
                 appendActionFixedWidth(text);
                 break;
+
             case SqlMessages.ERROR_MESSAGE_PREFORMAT:
                 appendErrorFixedWidth(text);
                 break;
+
             case SqlMessages.WARNING_MESSAGE_PREFORMAT:
                 appendWarningFixedWidth(text);
                 break;
+
             case SqlMessages.PLAIN_MESSAGE_PREFORMAT:
                 appendPlainFixedWidth(text);
                 break;
+
+            case SqlMessages.PLAIN_MESSAGE:
             default:
                 appendPlain(text);
                 break;
@@ -111,64 +116,60 @@ public class LoggingOutputPane extends JTextPane {
         document.appendActionFixedWidth(text);
     }
 
+    // --- JTextComponent impl ---
+
+    @Override
     public boolean isEditable() {
         return false;
     }
 
-    class OutputPaneDocument extends DefaultStyledDocument {
+    // ---
 
-        private StringBuffer textBuffer;
+    private static class OutputPaneDocument extends DefaultStyledDocument {
+        private final StringBuilder textBuffer;
 
-        // normal font
-        protected MutableAttributeSet plain;
-        protected MutableAttributeSet error;
-        protected MutableAttributeSet warning;
-        protected MutableAttributeSet action;
+        // --- colors ---
+        private final Color plainColor = UserProperties.getInstance().getColourProperty("editor.output.plain.color");
+        private final Color errorColor = UserProperties.getInstance().getColourProperty("editor.output.error.color");
+        private final Color actionColor = UserProperties.getInstance().getColourProperty("editor.output.action.color");
+        private final Color warningColor = UserProperties.getInstance().getColourProperty("editor.output.warning.color");
 
-        // fixed width font
-        protected MutableAttributeSet plainFixedWidth;
-        protected MutableAttributeSet errorFixedWidth;
-        protected MutableAttributeSet warningFixedWidth;
-        protected MutableAttributeSet actionFixedWidth;
+        // --- normal font ---
+        private final MutableAttributeSet plain = new SimpleAttributeSet();
+        private final MutableAttributeSet error = new SimpleAttributeSet();
+        private final MutableAttributeSet action = new SimpleAttributeSet();
+        private final MutableAttributeSet warning = new SimpleAttributeSet();
+
+        // --- fixed width font ---
+        private final MutableAttributeSet plainFixedWidth = new SimpleAttributeSet();
+        private final MutableAttributeSet errorFixedWidth = new SimpleAttributeSet();
+        private final MutableAttributeSet actionFixedWidth = new SimpleAttributeSet();
+        private final MutableAttributeSet warningFixedWidth = new SimpleAttributeSet();
 
         public OutputPaneDocument() {
-            initStyles();
-            textBuffer = new StringBuffer();
+            this.textBuffer = new StringBuilder();
+            initPlainStyles();
+            initFixedStyles();
         }
 
-        protected void initStyles() {
-            Color color;
+        private void initPlainStyles() {
+            StyleConstants.setForeground(plain, plainColor);
+            StyleConstants.setForeground(error, errorColor);
+            StyleConstants.setForeground(action, actionColor);
+            StyleConstants.setForeground(warning, warningColor);
+        }
 
-            plain = new SimpleAttributeSet();
-            color = SystemProperties.getColourProperty("user", "editor.output.plain.color");
-            StyleConstants.setForeground(plain, color);
+        protected void initFixedStyles() {
+            String fontName = "monospaced";
+            StyleConstants.setFontFamily(plainFixedWidth, fontName);
+            StyleConstants.setFontFamily(errorFixedWidth, fontName);
+            StyleConstants.setFontFamily(warningFixedWidth, fontName);
+            StyleConstants.setFontFamily(actionFixedWidth, fontName);
 
-            error = new SimpleAttributeSet();
-            color = SystemProperties.getColourProperty("user", "editor.output.error.color");
-            StyleConstants.setForeground(error, color);
-
-            warning = new SimpleAttributeSet();
-            color = SystemProperties.getColourProperty("user", "editor.output.warning.color");
-            StyleConstants.setForeground(warning, color);
-
-            action = new SimpleAttributeSet();
-            color = SystemProperties.getColourProperty("user", "editor.output.action.color");
-            StyleConstants.setForeground(action, color);
-
-            // fixed width font styles
-            String fixedWidthFontName = "monospaced";
-            plainFixedWidth = new SimpleAttributeSet(plain);
-            StyleConstants.setFontFamily(plainFixedWidth, fixedWidthFontName);
-
-            errorFixedWidth = new SimpleAttributeSet(error);
-            StyleConstants.setFontFamily(errorFixedWidth, fixedWidthFontName);
-
-            warningFixedWidth = new SimpleAttributeSet(warning);
-            StyleConstants.setFontFamily(warningFixedWidth, fixedWidthFontName);
-
-            actionFixedWidth = new SimpleAttributeSet(action);
-            StyleConstants.setFontFamily(actionFixedWidth, fixedWidthFontName);
-
+            StyleConstants.setForeground(plainFixedWidth, plainColor);
+            StyleConstants.setForeground(errorFixedWidth, errorColor);
+            StyleConstants.setForeground(actionFixedWidth, actionColor);
+            StyleConstants.setForeground(warningFixedWidth, warningColor);
         }
 
         protected void appendErrorFixedWidth(String text) {
@@ -204,36 +205,27 @@ public class LoggingOutputPane extends JTextPane {
         }
 
         protected void append(final String text, final AttributeSet attrs) {
+            GUIUtils.invokeLater(() -> print(text, attrs));
+        }
 
-            GUIUtils.invokeLater(new Runnable() {
+        private void print(String text, AttributeSet attrs) {
+            try {
 
-                public void run() {
+                int length = getLength();
+                if (length > 0)
+                    textBuffer.append(Constants.NEW_LINE_CHAR);
 
-                    int length = getLength();
-                    if (length > 0) {
+                textBuffer.append(text).append(Constants.NEW_LINE_CHAR);
+                insertString(length, textBuffer.toString(), attrs);
 
-                        textBuffer.append(Constants.NEW_LINE_CHAR);
-                    }
+            } catch (BadLocationException e) {
+                Log.debug(e.getMessage(), e);
 
-                    textBuffer.append(text).append(Constants.NEW_LINE_CHAR);
-
-                    try {
-
-                        insertString(length, textBuffer.toString(), attrs);
-
-                    } catch (BadLocationException e) {
-                    }
-
-                    textBuffer.setLength(0);
-
-                }
-
-            });
-
+            } finally {
+                textBuffer.setLength(0);
+            }
         }
 
     } // class OutputPaneDocument
 
 }
-
-

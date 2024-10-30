@@ -13,6 +13,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
+import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -43,6 +44,8 @@ import static org.underworldlabs.swing.ConnectionsComboBox.USER_DEFINED_CONNECTI
  * @author Maxim Kozhinov
  */
 public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
+    private static final String SHUTDOWN_HOOK_ID = "backup-restore-panel-saving";
+
     public static final String TITLE = bundleString("title");
     public static final String BACKUP_ICON = "icon_backup_restore";
     public static final String BACKUP_FILE = "lastBackupFilePath";
@@ -82,6 +85,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         parameterSaver.restore();
         changeDatabaseConnection(null);
         logToFileBoxTriggered(null);
+        ExecuteQuery.addShutdownHook(SHUTDOWN_HOOK_ID, parameterSaver::save);
     }
 
     /**
@@ -415,6 +419,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
     @Override
     public boolean tabViewClosing() {
+        ExecuteQuery.removeShutdownHook(SHUTDOWN_HOOK_ID);
         parameterSaver.save();
         return true;
     }

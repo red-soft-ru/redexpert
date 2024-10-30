@@ -320,6 +320,8 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the backup operation, using the backupHelper to manage the backup process.
      */
     private void performBackup() {
+        backupHelper.getBackupButton().setEnabled(false);
+
         try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
@@ -331,6 +333,9 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("backupFailed", e.getMessage()), e, getClass());
+
+        } finally {
+            backupHelper.getBackupButton().setEnabled(true);
         }
     }
 
@@ -338,6 +343,8 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the restore operation, using the restoreHelper to manage the restore process.
      */
     private void performRestore() {
+        restoreHelper.getRestoreButton().setEnabled(false);
+
         try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
@@ -349,6 +356,8 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
+        } finally {
+            restoreHelper.getRestoreButton().setEnabled(true);
         }
     }
 

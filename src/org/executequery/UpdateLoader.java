@@ -5,6 +5,7 @@ import org.executequery.http.JSONAPI;
 import org.executequery.http.spi.DefaultRemoteHttpClient;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.update.ApplicationVersion;
 import org.executequery.util.ApplicationProperties;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.util.FileUtils;
@@ -283,38 +284,15 @@ public class UpdateLoader extends JFrame {
     }
 
     public void downloadUpdate() throws IOException {
-
         Log.info("Contacting Download Server...");
 
-        if (releaseHub) {
-            new DefaultRemoteHttpClient().setHttp("http");
-            new DefaultRemoteHttpClient().setHttpPort(80);
-            String file = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                    JSONAPI.getJsonArray("http://builds.red-soft.biz/api/v1/artifacts/by_build/?project=red_expert&version=" + version),
-                    "artifact_id", "red_expert:bin:" + version + ":zip")).getString("file");
+        if (!MiscUtils.isNull(repo))
+            this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
 
-            downloadLink = "http://builds.red-soft.biz/" + file;
-            downloadArchive();
+        if (MiscUtils.isNull(downloadLink))
+            throw new IllegalArgumentException("download link is null");
 
-        } else {
-
-            if (!MiscUtils.isNull(repo)) {
-                this.downloadLink = repo + "/" + version + "/red_expert-" + version + "-bin.zip";
-                downloadArchive();
-
-            } else {
-
-                //изменить эту строку в соответствии с форматом имени файла на сайте
-                String filename = UserProperties.getInstance().getStringProperty("reddatabase.filename") + version + ".zip";
-                String prop = UserProperties.getInstance().getStringProperty("reddatabase.get-files.url");
-                String url = Objects.requireNonNull(JSONAPI.getJsonObjectFromArray(
-                        JSONAPI.getJsonArray(prop + version),
-                        "filename", filename)).getString("url");
-
-                downloadLink = JSONAPI.getJsonPropertyFromUrl(url + "genlink/", "link");
-                downloadArchive();
-            }
-        }
+        downloadArchive();
     }
 
     @SuppressWarnings("unused")
@@ -667,6 +645,10 @@ public class UpdateLoader extends JFrame {
         this.progressBar = progressBar;
     }
 
+    public void setDownloadLink(String downloadLink) {
+        this.downloadLink = downloadLink;
+    }
+
     private class CustomWriter extends Writer {
 
         @Override
@@ -698,23 +680,22 @@ public class UpdateLoader extends JFrame {
         System.out.println("-------------------------------");
 
         for (String arg : args) {
+            String value = arg.substring(arg.indexOf('=') + 1);
 
-            if (arg.equalsIgnoreCase("usereleasehub")) {
-                updateLoader.setReleaseHub(true);
+            if (arg.contains("-release-hub")) {
+                updateLoader.setReleaseHub(Boolean.parseBoolean(value));
 
-            } else if (arg.contains("version")) {
-                String ver = arg.substring(arg.indexOf('=') + 1);
-                updateLoader.setVersion(ver);
+            } else if (arg.contains("-version")) {
+                updateLoader.setVersion(value);
 
             } else if (arg.contains("-repo")) {
                 updateLoader.setRepoArg(arg);
 
             } else if (arg.contains("-root")) {
-                String root = arg.substring(arg.indexOf('=') + 1);
-                updateLoader.setRoot(root);
+                updateLoader.setRoot(value);
 
             } else if (arg.contains("-launch")) {
-                launch = Boolean.parseBoolean(arg.substring(arg.indexOf('=') + 1));
+                launch = Boolean.parseBoolean(value);
             }
         }
 

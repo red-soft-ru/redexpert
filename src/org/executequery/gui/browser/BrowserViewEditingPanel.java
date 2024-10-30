@@ -1,5 +1,7 @@
 package org.executequery.gui.browser;
 
+import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTrigger;
@@ -66,8 +68,7 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
         triggersTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() > 1)
-                    triggerTableClicked();
+                triggerTableClicked(e);
             }
         });
 
@@ -87,28 +88,32 @@ public class BrowserViewEditingPanel extends ObjectDefinitionPanel {
         return triggersPanel;
     }
 
-    private void triggerTableClicked() {
+    private void triggerTableClicked(MouseEvent e) {
 
-        if (triggersTable.getSelectedRow() >= 0) {
+        if (e.getClickCount() < 2 || triggersTable.getSelectedRow() < 0)
+            return;
 
-            BaseDialog dialog = new BaseDialog(CreateTriggerPanel.EDIT_TITLE, true);
-            int row = ((TableSorter) triggersTable.getModel()).modelIndex(triggersTable.getSelectedRow());
-            DefaultDatabaseTrigger trigger = ((TableTriggersTableModel) ((TableSorter) triggersTable.getModel()).getTableModel()).getTriggers().get(row);
+        TableSorter tableSorter = (TableSorter) triggersTable.getModel();
+        int triggerIndex = tableSorter.modelIndex(triggersTable.getSelectedRow());
+        TableTriggersTableModel tableModel = (TableTriggersTableModel) tableSorter.getTableModel();
 
-            CreateTriggerPanel panel = new CreateTriggerPanel(
-                    currentObjectView.getHost().getDatabaseConnection(),
-                    dialog,
-                    trigger,
-                    DefaultDatabaseTrigger.TABLE_TRIGGER
-            );
+        DefaultDatabaseTrigger trigger = tableModel.getTriggers().get(triggerIndex);
+        DatabaseConnection connection = currentObjectView.getHost().getDatabaseConnection();
 
-            dialog.addDisplayComponent(panel);
-            dialog.display();
+        String triggerName = trigger.getShortName().trim();
+        String title = triggerName + ":TRIGGER:" + connection.getName();
 
-            currentObjectView.reset();
-            setValues(currentObjectView);
-            loadTriggers();
-        }
+        if (GUIUtilities.getCentralPane(title) == null) {
+            CreateTriggerPanel panel = new CreateTriggerPanel(connection, null, trigger, DefaultDatabaseTrigger.TABLE_TRIGGER);
+            panel.setDatabaseObjectNode(ConnectionsTreePanel.getPanelFromBrowser().findNode(connection, triggerName, NamedObject.TRIGGER));
+            panel.setCurrentPath(panel.getDatabaseObjectNode().getTreePath());
+
+            GUIUtilities.addCentralPane(title, BrowserViewPanel.FRAME_ICON, panel, title, true);
+
+        } else
+            GUIUtilities.setSelectedCentralPane(title);
+
+        currentObjectView.reset();
     }
 
     public void insertTrigger() {

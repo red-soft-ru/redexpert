@@ -15,9 +15,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.BrowserTreePopupMenu;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.DependenciesPanel;
-import org.executequery.gui.browser.nodes.DatabaseHostNode;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
-import org.executequery.gui.browser.nodes.tableNode.TableFolderNode;
 import org.executequery.gui.forms.AbstractFormObjectViewPanel;
 import org.executequery.gui.table.InsertColumnPanel;
 import org.executequery.gui.text.SimpleCommentPanel;
@@ -81,6 +79,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
     public abstract String getEditTitle();
 
     public abstract String getTypeObject();
+
+    public abstract int getType();
 
     public abstract void setParameters(Object[] params);
 
@@ -335,43 +335,61 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     protected void displayExecuteQueryDialog(String query, String delimiter) {
 
-        if (query != null && !query.isEmpty() && (!editing || !query.contentEquals(firstQuery))) {
+        if (!MiscUtils.isNull(query) && (!editing || !query.contentEquals(firstQuery))) {
 
-            String titleDialog = editing ? getEditTitle() : getCreateTitle();
-            ExecuteQueryDialog eqd = new ExecuteQueryDialog(titleDialog, query, connection, true, delimiter);
-            eqd.display();
+            ExecuteQueryDialog executeDialog = new ExecuteQueryDialog(
+                    editing ? getEditTitle() : getCreateTitle(),
+                    query,
+                    connection,
+                    true,
+                    delimiter
+            );
 
-            if (eqd.getCommit()) {
+            executeDialog.display();
+            if (executeDialog.getCommit()) {
                 commit = true;
-
-                if (treePanel != null && currentPath != null) {
-
-                    DatabaseObjectNode node = (DatabaseObjectNode) currentPath.getLastPathComponent();
-                    if (editing || node.getDatabaseObject() instanceof DefaultDatabaseMetaTag)
-                        treePanel.reloadPath(currentPath);
-                    else
-                        treePanel.reloadPath(currentPath.getParentPath());
-
-                    if (!(node instanceof TableFolderNode)) {
-                        if (node.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.TABLE])) {
-
-                            ((DatabaseHostNode) node.getParent()).getChildObjects().stream()
-                                    .filter(child -> child.getMetaDataKey().contains(NamedObject.META_TYPES[NamedObject.INDEX]))
-                                    .findFirst()
-                                    .ifPresent(child -> ConnectionsTreePanel.getPanelFromBrowser().reloadPath(child.getTreePath()));
-                        }
-                    }
-                }
-
-                if (parent != null)
-                    parent.finished();
-                else
-                    firstQuery = generateQuery();
+                reloadNodes();
+                finish();
                 reset();
             }
 
         } else if (parent != null)
             parent.finished();
+    }
+
+    protected void reloadNodes() {
+        reloadNodes(null, false);
+    }
+
+    protected void reloadNodes(String tableName, boolean globalTemporary) {
+
+        if (treePanel == null)
+            return;
+
+        TreePath pathToReload = getCurrentPath();
+        if (pathToReload == null)
+            return;
+
+        DatabaseObjectNode node = (DatabaseObjectNode) pathToReload.getLastPathComponent();
+        if (editing || node.isMetaTag() || node.isTableFolder()) {
+            treePanel.reloadPath(pathToReload);
+
+        } else {
+            TreePath parentPath = pathToReload.getParentPath();
+            if (parentPath != null) {
+                node = (DatabaseObjectNode) parentPath.getLastPathComponent();
+                treePanel.reloadPath(pathToReload.getParentPath());
+            }
+        }
+
+        treePanel.reloadRelatedNodes(node, tableName, globalTemporary);
+    }
+
+    private void finish() {
+        if (parent != null)
+            parent.finished();
+        else
+            firstQuery = generateQuery();
     }
 
     protected int getDatabaseVersion() {
@@ -425,6 +443,12 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     protected DatabaseConnection getSelectedConnection() {
         return connectionsCombo.getSelectedConnection();
+    }
+
+    private TreePath getCurrentPath() {
+        if (currentPath != null)
+            return currentPath;
+        return treePanel.getMetaTagNodePath(connection, getType());
     }
 
     @Override

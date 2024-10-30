@@ -62,11 +62,4 @@ public final class UserPreferencesManager {
         );
     }
 
-    public static boolean doubleClickOpenItemView() {
-        return SystemProperties.getBooleanProperty(
-                Constants.USER_PROPERTIES_KEY,
-                "results.table.double-click.record.dialog"
-        );
-    }
-
 }

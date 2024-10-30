@@ -21,7 +21,10 @@
 package org.executequery.databaseobjects.impl;
 
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
-import org.executequery.databaseobjects.*;
+import org.executequery.databaseobjects.DatabaseColumn;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.DatabaseView;
+import org.executequery.databaseobjects.NamedObject;
 import org.executequery.log.Log;
 import org.executequery.sql.TokenizingFormatter;
 import org.executequery.sql.sqlbuilder.*;
@@ -38,11 +41,13 @@ import java.util.List;
 public class DefaultDatabaseView extends AbstractTableObject
         implements DatabaseView {
 
-    public DefaultDatabaseView(DatabaseObject object) {
+    public DefaultDatabaseView(DefaultDatabaseObject object) {
 
         this(object.getHost());
-        metaTagParent = ((DefaultDatabaseObject) object).getMetaTagParent();
+        metaTagParent = object.getMetaTagParent();
         setName(object.getName());
+        if (object.getRelationId() != null)
+            setRelationID(object.getRelationId());
     }
 
     private List<String> fields;
@@ -50,6 +55,7 @@ public class DefaultDatabaseView extends AbstractTableObject
 
     private static final String DESCRIPTION = "DESCRIPTION";
     private static final String SOURCE = "VIEW_SOURCE";
+    protected static final String RELATION_ID = "RELATION_ID";
 
     @Override
     protected String getFieldName() {
@@ -67,7 +73,7 @@ public class DefaultDatabaseView extends AbstractTableObject
         Table rels = getMainTable();
         Table rf = Table.createTable("RDB$RELATION_FIELDS", "RF");
         sb.appendField(Field.createField(rels, getFieldName()).setCast("VARCHAR(1024)"));
-        sb.appendFields(rels, SOURCE, DESCRIPTION);
+        sb.appendFields(rels, SOURCE, DESCRIPTION, RELATION_ID);
         sb.appendFields(rf, FIELD_NAME);
         sb.appendJoin(Join.createLeftJoin().appendFields(getObjectField(), Field.createField(rf, getFieldName())));
         sb.setOrdering(getObjectField().getFieldTable() + ", " + Field.createField(rf, FIELD_POSITION).getFieldTable());
@@ -84,6 +90,7 @@ public class DefaultDatabaseView extends AbstractTableObject
         if (first) {
             setRemarks(getFromResultSet(rs, DESCRIPTION));
             setSource(getFromResultSet(rs, SOURCE));
+            setRelationID(rs.getInt(RELATION_ID));
         }
         fields.add(rs.getString(FIELD_NAME).trim());
         return null;

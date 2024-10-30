@@ -143,6 +143,11 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
     }
 
     @Override
+    public int getType() {
+        return NamedObject.DOMAIN;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         this.domain = (String) databaseObject;
         columnData = new ColumnData(connection);

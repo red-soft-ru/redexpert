@@ -140,6 +140,11 @@ public class CreateTablespacePanel extends AbstractCreateObjectPanel {
     }
 
     @Override
+    public int getType() {
+        return NamedObject.TABLESPACE;
+    }
+
+    @Override
     public void setDatabaseObject(Object databaseObject) {
         tablespace = (DefaultDatabaseTablespace) databaseObject;
     }

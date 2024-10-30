@@ -35,7 +35,7 @@ import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.editor.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
 import org.executequery.gui.text.TextEditor;
 import org.executequery.gui.text.TextEditorContainer;
@@ -1310,7 +1310,7 @@ public final class GUIUtilities {
 
             boolean saveAs = false;
             if (saveFunction instanceof QueryEditor)
-                saveAs = QueryEditorHistory.isDefaultEditorDirectory((QueryEditor) saveFunction);
+                saveAs = QueryEditorHistory.isDefaultDirectory((QueryEditor) saveFunction);
 
             return saveFunction.save(saveAs) == SaveFunction.SAVE_COMPLETE;
 

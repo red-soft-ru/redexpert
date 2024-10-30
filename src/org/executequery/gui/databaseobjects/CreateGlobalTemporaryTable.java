@@ -20,4 +20,9 @@ public class CreateGlobalTemporaryTable extends CreateTablePanel {
     public String getTypeObject() {
         return NamedObject.META_TYPES[NamedObject.GLOBAL_TEMPORARY];
     }
+
+    @Override
+    public int getType() {
+        return NamedObject.GLOBAL_TEMPORARY;
+    }
 }

@@ -1,5 +1,45 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <h1>RedExpert Changelog</h1>
+<h2><a name='v2024.10'>Major changes - v2024.10</a></h2>
+<p>Added:</p>
+<ol>
+    <li>Support of Portuguese interface language</li>
+    <li>Query execution statistics by each table</li>
+    <li>Firebird options for trace manager configuration files<br>(thanks to André Vivian Farias)</li>
+    <li>Copy formatted date and time values</li>
+    <li>Fix table name in the "Create Index" and "Create Trigger" dialogs</li>
+</ol>
+<p>Improved:</p>
+<ol>
+    <li>Edit table data</li>
+    <li>Panel for creating a table constraint</li>
+    <li>Check if the installed version of the application is up to date</li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Executing SQL queries that contain the CASE - END clause</li>
+    <li>Executing SQL queries that contain RECREATE PACKAGE clause</li>
+    <li>Executing SQL queries that contain the CALL procedure_name clause</li>
+    <li>Executing SQL queries that contain the DECLARE CURSOR clause</li>
+    <li>Generation of "CREATE TABLE", "CREATE GLOBAL TEMPORARY TABLE", "ADD CONSTRAINT ... USING INDEX" queries</li>
+    <li>Prolonged loading of compound properties</li>
+    <li>Open a previously closed preference tab</li>
+    <li>Open a connection with invalid JDBC parameters</li>
+    <li>Open edit panels for objects with the same name from different connections</li>
+    <li>Open the "Export Metadata" and "Compare Database" panels when there is no registered connection</li>
+    <li>Ignore the "Ask to save open documents" setting</li>
+    <li>Ignore the result of SQL query execution that terminated with an error</li>
+    <li>Displaying the query execution time</li>
+    <li>NPE when creating a procedure or function</li>
+    <li>Handling of JVM options at application startup</li>
+    <li>Logging database connection and disconnection errors</li>
+    <li>Delete table data when "Use form to add/delete rows" option is enabled</li>
+    <li>Display a blank shortcut</li>
+    <li>Display the list of tables when importing data</li>
+    <li>Resets the "Appearance" properties to the defaults</li>
+    <li>Save history of query editor tabs</li>
+    <li>Update connection tree nodes when creating and deleting database objects</li>
+</ol>
 <h2><a name='v2024.09'>Major changes - v2024.09</a></h2>
 <p>Added:</p>
 <ol>

@@ -38,7 +38,6 @@ public interface UserPreferenceEvent extends ApplicationEvent {
     int KEYBOARD_SHORTCUTS = PROXY + 1;
     int DOCKED_COMPONENT_CLOSED = KEYBOARD_SHORTCUTS + 1;
     int DOCKED_COMPONENT_OPENED = DOCKED_COMPONENT_CLOSED + 1;
-    int RESULT_SET_POPUP = DOCKED_COMPONENT_OPENED + 1;
 
     int getEventType();
 

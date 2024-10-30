@@ -20,14 +20,11 @@
 
 package org.executequery.gui;
 
-import org.executequery.GUIUtilities;
 import org.executequery.UserPreferencesManager;
 import org.executequery.components.BasicPopupMenuListener;
-import org.executequery.components.LoggingOutputPane;
-import org.executequery.log.Log;
-import org.underworldlabs.swing.GUIUtils;
+import org.executequery.gui.logging.output.LoggingOutputPane;
+import org.executequery.gui.logging.output.LoggingStream;
 import org.underworldlabs.swing.plaf.UIUtils;
-import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -35,19 +32,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 /// @author Takis Diakoumis
 public class LoggingOutputPanel extends JPanel
         implements DocumentListener,
         ReadOnlyTextPane {
 
-    private transient LoggingStream loggingStream;
     private final LoggingOutputPane outputPane;
 
     public LoggingOutputPanel() {
@@ -109,10 +99,8 @@ public class LoggingOutputPanel extends JPanel
         outputPane.getDocument().addDocumentListener(listener);
     }
 
-    public LoggingStream getLoggingStream() {
-        if (loggingStream == null)
-            loggingStream = new LoggingStream();
-        return loggingStream;
+    public LoggingStream getLoggingStream(int bufferSize, boolean trimByLine) {
+        return new LoggingStream(outputPane, bufferSize, trimByLine);
     }
 
     // --- JComponent impl ---
@@ -172,64 +160,5 @@ public class LoggingOutputPanel extends JPanel
     public void copy() {
         outputPane.copy();
     }
-
-    // ---
-
-    /// Class that allows to work with the <code>LoggingOutputStream</code> as a <code>OutputStream</code>
-    public class LoggingStream extends ByteArrayOutputStream {
-        private Path logFilePath;
-
-        public void setLogFilePath(String filePath) {
-            if (MiscUtils.isNull(filePath)) {
-                logFilePath = null;
-                return;
-            }
-
-            try {
-                logFilePath = Paths.get(filePath);
-                if (Files.notExists(logFilePath.getParent()))
-                    Files.createDirectories(logFilePath.getParent());
-
-            } catch (IOException e) {
-                Log.error(e.getMessage(), e);
-                GUIUtilities.displayExceptionErrorDialog(e.getMessage(), e, getClass());
-                this.logFilePath = null;
-            }
-        }
-
-        private void printToPanel(String val) {
-            GUIUtils.invokeLater(() -> append(val));
-        }
-
-        private void printToFile(String val) {
-            GUIUtils.invokeLater(() -> {
-                try {
-                    if (logFilePath != null) {
-                        Files.write(
-                                logFilePath,
-                                val.getBytes(),
-                                StandardOpenOption.CREATE,
-                                StandardOpenOption.APPEND
-                        );
-                    }
-                } catch (IOException e) {
-                    Log.error(e.getMessage(), e);
-                }
-            });
-        }
-
-        @Override
-        public synchronized void write(int b) {
-            printToPanel(String.valueOf((char) b));
-            printToFile(String.valueOf((char) b));
-        }
-
-        @Override
-        public synchronized void write(byte[] b, int off, int len) {
-            printToPanel(new String(b, off, len));
-            printToFile(new String(b, off, len));
-        }
-
-    } // LoggingStream class
 
 }

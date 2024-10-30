@@ -24,6 +24,7 @@ import org.executequery.gui.browser.backup.DatabaseBackupPanel;
 import org.executequery.gui.browser.backup.DatabaseRestorePanel;
 import org.executequery.gui.browser.backup.FileBrowser;
 import org.executequery.gui.browser.backup.InvalidBackupFileException;
+import org.executequery.gui.logging.output.LoggingStream;
 import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
@@ -319,7 +320,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the backup operation, using the backupHelper to manage the backup process.
      */
     private void performBackup() {
-        try (LoggingOutputPanel.LoggingStream loggingStream = loggingOutputPanel.getLoggingStream()) {
+        try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
             if (backupHelper.performBackup(getDatabaseConnection(), loggingStream))
@@ -337,7 +338,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the restore operation, using the restoreHelper to manage the restore process.
      */
     private void performRestore() {
-        try (LoggingOutputPanel.LoggingStream loggingStream = loggingOutputPanel.getLoggingStream()) {
+        try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
             if (restoreHelper.performRestore(getDatabaseConnection(), loggingStream))

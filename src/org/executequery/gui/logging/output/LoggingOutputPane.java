@@ -18,7 +18,7 @@
  *
  */
 
-package org.executequery.components;
+package org.executequery.gui.logging.output;
 
 import org.executequery.Constants;
 import org.executequery.sql.SqlMessages;

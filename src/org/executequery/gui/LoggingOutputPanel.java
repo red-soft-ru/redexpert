@@ -42,159 +42,71 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-/**
- * @author Takis Diakoumis
- */
+/// @author Takis Diakoumis
 public class LoggingOutputPanel extends JPanel
-        implements DocumentListener, ReadOnlyTextPane {
+        implements DocumentListener,
+        ReadOnlyTextPane {
 
-    private LoggingStream loggingStream;
-    private LoggingOutputPane outputPane;
+    private transient LoggingStream loggingStream;
+    private final LoggingOutputPane outputPane;
 
     public LoggingOutputPanel() {
-
         super(new BorderLayout());
+
+        Color bg = UserPreferencesManager.getOutputPaneBackground();
 
         outputPane = new LoggingOutputPane();
         outputPane.setMargin(new Insets(5, 5, 5, 5));
         outputPane.setDisabledTextColor(Color.black);
-
-        Color bg = UserPreferencesManager.getOutputPaneBackground();
         outputPane.setBackground(bg);
 
-        JScrollPane textOutputScroller = new JScrollPane(outputPane);
-        textOutputScroller.setBackground(bg);
-        textOutputScroller.setBorder(null);
-        textOutputScroller.getViewport().setBackground(bg);
+        JScrollPane scrollPane = new JScrollPane(outputPane);
+        scrollPane.getViewport().setBackground(bg);
+        scrollPane.setBackground(bg);
+        scrollPane.setBorder(null);
 
         setBorder(BorderFactory.createLineBorder(UIUtils.getDefaultBorderColour()));
-
-        add(textOutputScroller, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         addDocumentListener(this);
 
-        ReadOnlyTextPanePopUpMenu readOnlyTextPanePopUpMenu = new ReadOnlyTextPanePopUpMenu(this);
-        outputPane.addMouseListener(new BasicPopupMenuListener(readOnlyTextPanePopUpMenu));
-    }
-
-    @Override
-    public void setBackground(Color bg) {
-
-        super.setBackground(bg);
-        if (outputPane != null) {
-
-            outputPane.setBackground(bg);
-        }
+        ReadOnlyTextPanePopUpMenu popUpMenu = new ReadOnlyTextPanePopUpMenu(this);
+        outputPane.addMouseListener(new BasicPopupMenuListener(popUpMenu));
     }
 
     public void append(String text) {
-
         outputPane.append(text);
     }
 
     public void append(int type, String text) {
-
         outputPane.append(type, text);
     }
 
     public void appendError(String text) {
-
         outputPane.appendError(text);
     }
 
     public void appendWarning(String text) {
-
         outputPane.appendWarning(text);
     }
 
     public void appendPlain(String text) {
-
         outputPane.appendPlain(text);
     }
 
     public void appendAction(String text) {
-
         outputPane.appendAction(text);
     }
 
-    public void appendErrorFixedWidth(String text) {
-
-        outputPane.appendErrorFixedWidth(text);
-    }
-
-    public void appendWarningFixedWidth(String text) {
-
-        outputPane.appendWarningFixedWidth(text);
-    }
-
-    public void appendPlainFixedWidth(String text) {
-
-        outputPane.appendPlainFixedWidth(text);
-    }
-
     public void appendActionFixedWidth(String text) {
-
         outputPane.appendActionFixedWidth(text);
     }
 
     public Document getDocument() {
-
         return outputPane.getDocument();
     }
 
     public void addDocumentListener(DocumentListener listener) {
-
         outputPane.getDocument().addDocumentListener(listener);
-    }
-
-    public JTextPane getTextPane() {
-
-        return outputPane;
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-
-        documentChanged();
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-
-        documentChanged();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-
-        documentChanged();
-    }
-
-    private void documentChanged() {
-
-        outputPane.setCaretPosition(getDocument().getLength());
-    }
-
-    public JTextComponent getTextComponent() {
-
-        return outputPane;
-    }
-
-    public void clear() {
-
-        outputPane.setText("");
-        outputPane.setCaretPosition(0);
-    }
-
-    public void selectAll() {
-
-        outputPane.selectAll();
-    }
-
-    public String getText() {
-
-        return outputPane.getText();
-    }
-
-    public void copy() {
-
-        outputPane.copy();
     }
 
     public LoggingStream getLoggingStream() {
@@ -202,6 +114,66 @@ public class LoggingOutputPanel extends JPanel
             loggingStream = new LoggingStream();
         return loggingStream;
     }
+
+    // --- JComponent impl ---
+
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        if (outputPane != null)
+            outputPane.setBackground(bg);
+    }
+
+    // --- DocumentListener impl ---
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        documentChanged();
+    }
+
+    private void documentChanged() {
+        outputPane.setCaretPosition(getDocument().getLength());
+    }
+
+    // --- ReadOnlyTextPane impl ---
+
+    @Override
+    public JTextComponent getTextComponent() {
+        return outputPane;
+    }
+
+    @Override
+    public void clear() {
+        outputPane.setText("");
+        outputPane.setCaretPosition(0);
+    }
+
+    @Override
+    public void selectAll() {
+        outputPane.selectAll();
+    }
+
+    @Override
+    public String getText() {
+        return outputPane.getText();
+    }
+
+    @Override
+    public void copy() {
+        outputPane.copy();
+    }
+
+    // ---
 
     /// Class that allows to work with the <code>LoggingOutputStream</code> as a <code>OutputStream</code>
     public class LoggingStream extends ByteArrayOutputStream {
@@ -247,13 +219,13 @@ public class LoggingOutputPanel extends JPanel
         }
 
         @Override
-        public void write(int b) {
+        public synchronized void write(int b) {
             printToPanel(String.valueOf((char) b));
             printToFile(String.valueOf((char) b));
         }
 
         @Override
-        public void write(byte[] b, int off, int len) {
+        public synchronized void write(byte[] b, int off, int len) {
             printToPanel(new String(b, off, len));
             printToFile(new String(b, off, len));
         }

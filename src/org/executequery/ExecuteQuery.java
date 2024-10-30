@@ -25,6 +25,8 @@ import org.executequery.log.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The entry point for RedExpert application.
@@ -32,8 +34,7 @@ import java.io.IOException;
  * @author Takis Diakoumis
  */
 public final class ExecuteQuery {
-
-    private static ProcessBuilder shutdownHook = null;
+    private static Map<String, Thread> shutdownHooks;
 
     public static void main(String[] args) {
 
@@ -42,7 +43,6 @@ public final class ExecuteQuery {
             return;
         }
 
-        Runtime.getRuntime().addShutdownHook(new Thread(ExecuteQuery::shutdownHook));
         ApplicationContext.getInstance().startup(args);
         new ApplicationLauncher().startup();
     }
@@ -78,19 +78,27 @@ public final class ExecuteQuery {
         System.exit(0);
     }
 
-    public static void setShutdownHook(ProcessBuilder shutdownHook) {
-        ExecuteQuery.shutdownHook = shutdownHook;
+    public static void addShutdownHook(String id, Runnable runnable) {
+        Thread thread = new Thread(runnable, id);
+
+        shutdownHooks().put(id, thread);
+        Runtime.getRuntime().addShutdownHook(thread);
+        Log.debug("Added shutdown hook with the id [" + id + "]");
     }
 
-    private static void shutdownHook() {
+    public static void removeShutdownHook(String id) {
+        if (shutdownHooks().containsKey(id)) {
+            Runtime.getRuntime().removeShutdownHook(shutdownHooks().get(id));
+            shutdownHooks().remove(id);
 
-        try {
-            if (ExecuteQuery.shutdownHook != null)
-                ExecuteQuery.shutdownHook.start();
-
-        } catch (IOException e) {
-            Log.error("Error starting shutdown hook", e);
+            Log.debug("Removed shutdown hook with the id [" + id + "]");
         }
+    }
+
+    private static Map<String, Thread> shutdownHooks() {
+        if (shutdownHooks == null)
+            shutdownHooks = new HashMap<>();
+        return shutdownHooks;
     }
 
     private static boolean isHelpStartupOnly(String[] args) {

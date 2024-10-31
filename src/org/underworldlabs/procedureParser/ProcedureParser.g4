@@ -52,7 +52,7 @@ declare_function_block
   ;
 
  execute_block_stmt
-  :K_EXECUTE K_BLOCK
+  :spases_or_comment? K_EXECUTE spases_or_comment K_BLOCK
      declare_block
   ;
 

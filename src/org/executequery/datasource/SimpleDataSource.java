@@ -30,6 +30,7 @@ import org.executequery.ExecuteQuery;
 import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.datasource.util.LibraryManager;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.LoginPasswordDialog;
@@ -44,11 +45,9 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.sql.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -147,9 +146,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             throw new DataSourceException("Error loading specified JDBC driver");
 
         // If embedded connection selected
-        if (Objects.equals(databaseConnection.getConnType(), ConnectionType.EMBEDDED.name())) {
-            if (connection == null)
+        if (ConnectionType.isEmbedded(databaseConnection)) {
+
+            if (connection == null) {
+                LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
                 connection = driver.connect(url, advancedProperties);
+            }
+
             return connection;
         }
 
@@ -164,9 +167,9 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         if (!loadJaybirdClass())
             return driver.connect(url, advancedProperties);
 
-        String jarPath = getJarPath();
-        initCryptoPlugin(jarPath, advancedProperties);
-        initDataSource(jarPath, advancedProperties);
+        List<Path> jarPathsList = LibraryManager.getJarPathsList(databaseConnection, driver.getMajorVersion());
+        initCryptoPlugin(jarPathsList, advancedProperties);
+        initDataSource(jarPathsList, advancedProperties);
 
         return dataSource.getConnection(tpb);
     }
@@ -192,7 +195,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return false;
     }
 
-    private void initCryptoPlugin(String jarPath, Properties advancedProperties) {
+    private void initCryptoPlugin(List<Path> pathList, Properties advancedProperties) {
 
         if (cryptoPlugin != null)
             return;
@@ -201,7 +204,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
             Object library = DynamicLibraryLoader.loadingObjectFromClassLoader(
                     driver,
                     "biz.redsoft.FBCryptoPluginInitImpl",
-                    jarPath
+                    LibraryManager.convertToStringParameter(pathList)
             );
 
             cryptoPlugin = (IFBCryptoPluginInit) library;
@@ -216,13 +219,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         }
     }
 
-    private void initDataSource(String jarPath, Properties advancedProperties) throws DataSourceException {
+    private void initDataSource(List<Path> pathList, Properties advancedProperties) throws DataSourceException {
         try {
             String connType = getConnectionType();
             dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
                     driver,
                     "biz.redsoft.FBDataSourceImpl",
-                    jarPath,
+                    LibraryManager.convertToStringParameter(pathList),
                     new DynamicLibraryLoader.Parameter(String.class, connType)
             );
 
@@ -235,15 +238,6 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         dataSource.setURL(url);
         classLoaderFromPlugin = dataSource.getClass().getClassLoader();
-    }
-
-    private String getJarPath() {
-        String jarPath = databaseConnection.getJDBCDriver().getPath();
-        jarPath = jarPath.replace("../", "./") + ";" + jarPath.replace("./", "../");
-        jarPath = jarPath.replace(".../", "../");
-        jarPath += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
-
-        return jarPath;
     }
 
     private String getConnectionType() {

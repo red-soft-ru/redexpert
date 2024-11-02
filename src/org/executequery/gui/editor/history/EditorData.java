@@ -1,13 +1,9 @@
 package org.executequery.gui.editor.history;
 
-import org.executequery.log.Log;
-
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-///@author Aleksey Kozlov
+/// @author Aleksey Kozlov
 public class EditorData {
     private boolean autosaveEnabled;
     private int splitLocation;
@@ -34,13 +30,7 @@ public class EditorData {
     }
 
     public boolean useSameFile(Path pathToFile) {
-        try {
-            return Files.isSameFile(pathToFile, editorPath);
-
-        } catch (IOException e) {
-            Log.debug(e.getMessage(), e);
-            return false;
-        }
+        return editorPath != null && editorPath.equals(pathToFile);
     }
 
     // ---

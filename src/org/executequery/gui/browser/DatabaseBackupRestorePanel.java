@@ -371,15 +371,45 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
             if (restoreHelper.performRestore(getDatabaseConnection(), loggingStream))
-                GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
+                showRestoreSucceedMessage();
 
         } catch (InvalidBackupFileException e) {
             GUIUtilities.displayWarningMessage(e.getMessage());
 
         } catch (Exception e) {
             GUIUtilities.displayExceptionErrorDialog(bundleString("restoreFailed", e.getMessage()), e, getClass());
+
         } finally {
             restoreHelper.getRestoreButton().setEnabled(true);
+        }
+    }
+
+    /// Shows <i>"Restore Succeed!"</i> message or ask for register database if the user-defined connection selected.
+    private void showRestoreSucceedMessage() {
+
+        DatabaseConnection connection = connectionCombo.getSelectedConnection();
+        if (!Objects.equals(connection.getId(), USER_DEFINED_CONNECTION_ID)) {
+            GUIUtilities.displayInformationMessage(bundleString("restoreSucceed"));
+            return;
+        }
+
+        int dialogResult = GUIUtilities.displayYesNoDialog(
+                bundleString("restoreSucceed.register"),
+                Bundles.get("common.confirmation")
+        );
+
+        if (dialogResult == JOptionPane.YES_OPTION) {
+
+            JPanel dockedTabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+            if (dockedTabComponent instanceof ConnectionsTreePanel) {
+
+                Path backupFilePath = Paths.get(parameterSaver.getProperties().get(BACKUP_FILE));
+                String connectionName = FilenameUtils.removeExtension(backupFilePath.getFileName().toString());
+                connection.setName(connectionName);
+
+                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) dockedTabComponent;
+                connectionsTreePanel.newConnection(connection);
+            }
         }
     }
 

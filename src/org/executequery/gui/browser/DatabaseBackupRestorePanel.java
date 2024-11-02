@@ -82,6 +82,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         arrange();
         initListeners();
         initParameterSaver();
+        checkHasConnections();
 
         parameterSaver.restore();
         changeDatabaseConnection(null);
@@ -144,6 +145,11 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         components.put(fileLogField.getName(), fileLogField);
 
         parameterSaver.add(components);
+    }
+
+    private void checkHasConnections() {
+        if (connectionCombo.getSelectedConnection() == null)
+            connectionCombo.selectCustomConnection();
     }
 
     /// Triggered when the <code>hostField</code> value changed.<br>Enables or disables browse file buttons.

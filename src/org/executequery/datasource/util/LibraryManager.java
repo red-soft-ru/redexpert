@@ -298,7 +298,7 @@ public final class LibraryManager {
             return DynamicLibraryLoader.loadingObjectFromClassLoader(
                     driver.getMajorVersion(),
                     driver,
-                    "IFBClientLoader"
+                    "FBClientLoaderImpl"
             );
 
         } catch (ClassNotFoundException e) {

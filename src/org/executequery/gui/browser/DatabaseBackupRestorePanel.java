@@ -31,6 +31,7 @@ import org.executequery.log.Log;
 import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.ViewablePasswordField;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.listener.RequiredFieldPainter;
 import org.underworldlabs.swing.util.SwingWorker;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
@@ -75,6 +76,8 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     private JButton fileLogButton;
     private JButton browseDatabaseButton;
 
+    private List<RequiredFieldPainter> requiredFieldPainters;
+
     // ---
 
     public DatabaseBackupRestorePanel() {
@@ -95,6 +98,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      */
     private void init() {
         parameterSaver = new ParameterSaver(DatabaseBackupRestorePanel.class.getName());
+        requiredFieldPainters = new ArrayList<>();
 
         backupHelper = new DatabaseBackupPanel(parameterSaver);
         backupHelper.getBackupButton().addActionListener(e -> runDaemon("backup", this::performBackup));
@@ -137,6 +141,12 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         portField.getDocument().addDocumentListener(connectionChangeListener);
         userField.getDocument().addDocumentListener(connectionChangeListener);
         charsetsCombo.addItemListener(e -> connectionChangeListener.invoke());
+
+        requiredFieldPainters.add(RequiredFieldPainter.initialize(databaseFileField));
+        requiredFieldPainters.add(RequiredFieldPainter.initialize(passwordField));
+        requiredFieldPainters.add(RequiredFieldPainter.initialize(hostField));
+        requiredFieldPainters.add(RequiredFieldPainter.initialize(portField));
+        requiredFieldPainters.add(RequiredFieldPainter.initialize(userField));
     }
 
     private void initParameterSaver() {
@@ -326,8 +336,11 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the backup operation, using the backupHelper to manage the backup process.
      */
     private void performBackup() {
-        backupHelper.getBackupButton().setEnabled(false);
 
+        if (requiredFieldsCheckFailed())
+            return;
+
+        backupHelper.getBackupButton().setEnabled(false);
         try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
@@ -349,8 +362,11 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
      * Performs the restore operation, using the restoreHelper to manage the restore process.
      */
     private void performRestore() {
-        restoreHelper.getRestoreButton().setEnabled(false);
 
+        if (requiredFieldsCheckFailed())
+            return;
+
+        restoreHelper.getRestoreButton().setEnabled(false);
         try (LoggingStream loggingStream = loggingOutputPanel.getLoggingStream(10000, true)) {
             loggingStream.setLogFilePath(logToFileBox.isSelected() ? fileLogField.getText() : null);
 
@@ -419,6 +435,17 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
     private void runDaemon(String action, Runnable r) {
         DatabaseConnection dc = getDatabaseConnection();
         SwingWorker.run(String.format("Performing '%s' %s", dc.getSourceName(), action), r);
+    }
+
+    /// Check whether at least one of the required field has no value
+    private boolean requiredFieldsCheckFailed() {
+
+        if (!requiredFieldPainters.stream().allMatch(RequiredFieldPainter::check)) {
+            GUIUtilities.displayWarningMessage(bundleString("requiredFieldsCheckFailed"));
+            return true;
+        }
+
+        return false;
     }
 
     /**

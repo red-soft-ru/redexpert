@@ -1,5 +1,6 @@
 package org.executequery.datasource.util;
 
+import biz.redsoft.IFBClientLoader;
 import com.sun.jna.Platform;
 import org.apache.commons.io.FilenameUtils;
 import org.executequery.ExecuteQuery;
@@ -12,6 +13,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Driver;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -72,6 +74,36 @@ public final class LibraryManager {
         jarsString += separator + DynamicLibraryLoader.getFbPluginImplPath(driverVersion);
 
         return Arrays.stream(jarsString.split(separator)).distinct().map(Paths::get).collect(Collectors.toList());
+    }
+
+    /**
+     * Creates and initialize a new instance of the client library
+     * (<code>FBClientLibrary</code>) using JNA.
+     *
+     * @param driver driver for which the library will be loaded
+     * @return new client library instance or <code>null</code>
+     */
+    public static Object loadFbClientLibrary(Driver driver) {
+
+        Object loader = getFbClientLoader(driver);
+        if (loader != null)
+            return ((IFBClientLoader) loader).load(driver.getMajorVersion());
+
+        return null;
+    }
+
+    /**
+     * Disposes native resources (currently: native libraries).<p>
+     * Calling this method with active native/embedded connections
+     * may break those connections and lead to errors.
+     *
+     * @param driver   driver for which the native resource will dispose
+     * @param fbclient library which will dispose or <code>null</code>
+     */
+    public static void shutdownNativeResources(Driver driver, Object fbclient) {
+        Object loader = getFbClientLoader(driver);
+        if (loader != null)
+            ((IFBClientLoader) loader).dispose(fbclient);
     }
 
     /**
@@ -258,6 +290,20 @@ public final class LibraryManager {
             byte[] data = new byte[BUFFER_SIZE];
             while ((count = inputStream.read(data, 0, BUFFER_SIZE)) != -1)
                 outputStream.write(data, 0, count);
+        }
+    }
+
+    private static Object getFbClientLoader(Driver driver) {
+        try {
+            return DynamicLibraryLoader.loadingObjectFromClassLoader(
+                    driver.getMajorVersion(),
+                    driver,
+                    "IFBClientLoader"
+            );
+
+        } catch (ClassNotFoundException e) {
+            Log.debug(e.getMessage(), e);
+            return null;
         }
     }
 

@@ -20,9 +20,7 @@
 
 package org.executequery.datasource;
 
-import biz.redsoft.IFBCryptoPluginInit;
-import biz.redsoft.IFBDataSource;
-import biz.redsoft.ITPB;
+import biz.redsoft.*;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
@@ -64,6 +62,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     private Properties properties = new Properties();
 
+    private Object fbclient;
     private final Driver driver;
     private Connection connection;
     private IFBDataSource dataSource;
@@ -121,6 +120,8 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
                 dataSource = null;
                 return getConnection(tpb);
             }
+
+            maybeShutdownNativeResources();
             throw e;
         }
     }
@@ -150,6 +151,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
             if (connection == null) {
                 LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
+                fbclient = LibraryManager.loadFbClientLibrary(driver);
                 connection = driver.connect(url, advancedProperties);
             }
 
@@ -464,6 +466,15 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
         } catch (SQLException e) {
             Log.error(e.getMessage(), e);
+        }
+
+        maybeShutdownNativeResources();
+    }
+
+    private void maybeShutdownNativeResources() {
+        if (ConnectionType.isEmbedded(databaseConnection)) {
+            LibraryManager.shutdownNativeResources(driver, fbclient);
+            fbclient = null;
         }
     }
 

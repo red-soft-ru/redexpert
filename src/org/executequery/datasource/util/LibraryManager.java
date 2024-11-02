@@ -77,10 +77,10 @@ public final class LibraryManager {
     /**
      * Builds parameter string from the specified libraries paths list.
      *
-     * @return list of libraries paths joined into the string with the default system separator
+     * @return list of libraries paths joined into the string with the <code>;</code> separator
      */
     public static String convertToStringParameter(List<Path> pathList) {
-        return pathList.stream().map(Path::toString).collect(Collectors.joining(PARAMETER_SEPARATOR));
+        return pathList.stream().map(Path::toString).collect(Collectors.joining(";"));
     }
 
     // ---

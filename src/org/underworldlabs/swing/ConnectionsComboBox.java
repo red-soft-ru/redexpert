@@ -2,12 +2,14 @@ package org.underworldlabs.swing;
 
 import org.executequery.EventMediator;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databasemediators.spi.DefaultDatabaseConnection;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ConnectionEvent;
 import org.executequery.event.ConnectionListener;
 import org.executequery.gui.IconManager;
 import org.executequery.localization.Bundles;
+import org.executequery.util.UserProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,6 +60,19 @@ public class ConnectionsComboBox extends JComboBox<DatabaseConnection>
         super.addItem(connection);
         setSelectedItem(connection);
         updateEnable();
+    }
+
+    public void selectCustomConnection() {
+        UserProperties properties = UserProperties.getInstance();
+
+        DatabaseConnection dc = new DefaultDatabaseConnection();
+        dc.setUserName(properties.getProperty("startup.default.connection.username"));
+        dc.setPassword(properties.getProperty("startup.default.connection.password"));
+        dc.setCharset(properties.getProperty("startup.default.connection.charset"));
+        dc.setHost("localhost");
+        dc.setPort("3050");
+
+        selectCustomConnection(dc);
     }
 
     public boolean hasConnection(DatabaseConnection connection) {

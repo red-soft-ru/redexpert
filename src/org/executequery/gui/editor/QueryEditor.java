@@ -504,7 +504,6 @@ public class QueryEditor extends DefaultTabView
 
         statusBar.setVisible(isStatusBarVisible());
         toolBar.setVisible(isToolsPanelVisible());
-        editorPanel.showLineNumbers(isLineNumbersVisible(), editorPanel.getQueryArea().getEditorTextComponent().getFont());
         editorPanel.setTextPaneBackground(userProperties().getColourProperty("editor.text.background.colour"));
         editorPanel.preferencesChanged();
         delegate.preferencesChanged();
@@ -522,6 +521,8 @@ public class QueryEditor extends DefaultTabView
 
         connectionsCombo.setVisible(isToolsPanelVisible() && !useMultipleConnections);
         connectionsCheckCombo.setVisible(isToolsPanelVisible() && useMultipleConnections);
+
+        editorPanel.showLineNumbers(isLineNumbersVisible(), editorPanel.getQueryArea().getEditorTextComponent().getFont());
 
         updateStopOnError(false);
         updateAutoCommitMode(false);

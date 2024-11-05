@@ -32,6 +32,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.history.EditorData;
 import org.executequery.gui.editor.history.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorsManager;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -189,6 +190,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     private void init() {
+        QueryEditorsManager.register(this);
 
         queryEditorNumber = -1;
         executeToFile = false;
@@ -419,6 +421,11 @@ public class QueryEditor extends DefaultTabView
                 JSplitPane.HORIZONTAL_SPLIT :
                 JSplitPane.VERTICAL_SPLIT
         );
+    }
+
+    public void rebuildToolBar() {
+        toolBar.rebuild();
+        repaint();
     }
 
     public void removePopupComponent(JComponent component) {
@@ -1443,9 +1450,10 @@ public class QueryEditor extends DefaultTabView
         delegate.disconnected(getSelectedConnection());
 
         removeAll();
+
+        QueryEditorsManager.deregister(this);
         EventMediator.deregisterListener(this);
         GUIUtilities.registerUndoRedoComponent(null);
-
     }
 
     /**

@@ -154,6 +154,11 @@ class QueryEditorToolBar extends PanelToolBar {
         createQueryBookmarkMenuItems((PopupMenuButton) buttons.get(QUERY_BOOKMARKS));
     }
 
+    protected void rebuild() {
+        removeAll();
+        init();
+    }
+
     private JMenuItem createMenuItemFromCommand(String actionId) {
         JMenuItem menuItem = MenuItemFactory.createMenuItem(ActionBuilder.get(actionId));
         menuItem.setIcon(null);

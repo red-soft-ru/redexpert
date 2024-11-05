@@ -145,11 +145,44 @@ public interface Constants {
      */
     String WORKER_CANCEL = "cancel";
 
+    // --- output panel colors ---
+
+    String[] OUTPUT_PANEL_COLOR_KEYS = new String[]{
+            "editor.output.background",
+            "editor.output.plain.color",
+            "editor.output.error.color",
+            "editor.output.warning.color",
+            "editor.output.action.color",
+    };
+
+    // --- editor panel colors ---
+
+    String[] QUERY_EDITOR_COLOR_KEYS = new String[]{
+            "editor.caret.colour",
+            "editor.linenumber.background",
+            "editor.linenumber.foreground",
+            "editor.text.background.colour",
+            "editor.text.background.alternate.color",
+            "editor.text.foreground.colour",
+            "editor.output.background",
+            "editor.text.selection.foreground",
+            "editor.text.selection.background",
+            "editor.text.selection.background.alternative",
+            "editor.display.linehighlight.colour",
+    };
+
+    // --- SQL syntax colors ---
+
+    String[] SQL_SYNTAX_COLOR_KEYS = new String[]{
+            "sqlsyntax.style.keyword",
+            "sqlsyntax.style.quote",
+            "sqlsyntax.style.singlecomment",
+            "sqlsyntax.style.multicomment",
+            "sqlsyntax.style.number",
+            "sqlsyntax.style.operator",
+            "sqlsyntax.style.literal",
+            "sqlsyntax.style.dbobjects",
+            "sqlsyntax.style.datatype",
+    };
+
 }
-
-
-
-
-
-
-

@@ -93,14 +93,6 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
     // ---
 
-    protected void restoreAndSaveDefaults(int panelId) {
-        UserPreferenceFunction preferenceFunction = parent.getPropertyPanelFromMap(panelId);
-        if (preferenceFunction != null) {
-            preferenceFunction.restoreDefaults();
-            preferenceFunction.save();
-        }
-    }
-
     protected final void hideBottomButtons() {
         applyButton.getParent().setVisible(false);
         restoreButton.getParent().setVisible(false);

@@ -403,7 +403,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
             JPanel dockedTabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
             if (dockedTabComponent instanceof ConnectionsTreePanel) {
 
-                Path backupFilePath = Paths.get(parameterSaver.getProperties().get(BACKUP_FILE));
+                Path backupFilePath = Paths.get(databaseFileField.getText());
                 String connectionName = FilenameUtils.removeExtension(backupFilePath.getFileName().toString());
                 connection.setName(connectionName);
 

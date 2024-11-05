@@ -20,7 +20,6 @@
 
 package org.executequery.gui.editor;
 
-import org.executequery.GUIUtilities;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -58,8 +57,11 @@ class QueryEditorToolBar extends PanelToolBar {
     private static final String ROLLBACK_COMMAND = "rollback-command";
     private static final String EDITOR_NEXT_COMMAND = "editor-next-command";
     private static final String QUERY_BOOKMARKS = "manage-bookmarks-command";
+    private static final String ADD_BOOKMARK_COMMAND = "add-bookmark-command";
     private static final String EDITOR_EXPORT_COMMAND = "editor-export-command";
     private static final String EDITOR_PREVIOUS_COMMAND = "editor-previous-command";
+    private static final String SELECT_BOOKMARK_COMMAND = "select-bookmark-command";
+    private static final String CONNECTION_COMBO_TEMPLATE = "connection-combo-template";
     private static final String EDITOR_RS_METADATA_COMMAND = "editor-rs-metadata-command";
     private static final String EDITOR_SHOW_HIDE_RS_COLUMNS_COMMAND = "editor-result-set-filter-command";
 
@@ -93,7 +95,7 @@ class QueryEditorToolBar extends PanelToolBar {
         if (button.isSeparator()) {
             addSeparator();
 
-        } else if (Objects.equals(button.getActionId(), "connection-combo-template")) {
+        } else if (Objects.equals(button.getActionId(), CONNECTION_COMBO_TEMPLATE)) {
             Arrays.stream(connectionCombos).forEach(this::add);
 
         } else if (Objects.equals(button.getActionId(), QUERY_BOOKMARKS)) {
@@ -116,7 +118,7 @@ class QueryEditorToolBar extends PanelToolBar {
         queryEditorActionMap.put(actionMapKey, button.getAction());
         queryEditorInputMap.put(keyStroke, actionMapKey);
 
-        actionMapKey = "add-bookmark-command";
+        actionMapKey = ADD_BOOKMARK_COMMAND;
         keyStroke = KeyStroke.getKeyStroke("control shift B");
         queryEditorActionMap.put(actionMapKey, ActionBuilder.get(actionMapKey));
         queryEditorInputMap.put(keyStroke, actionMapKey);
@@ -130,8 +132,8 @@ class QueryEditorToolBar extends PanelToolBar {
     private void createQueryBookmarkMenuItems(PopupMenuButton button) {
 
         button.removeMenuItems();
-        button.addMenuItem(createMenuItemFromCommand("add-bookmark-command"));
-        button.addMenuItem(createMenuItemFromCommand("manage-bookmarks-command"));
+        button.addMenuItem(createMenuItemFromCommand(ADD_BOOKMARK_COMMAND));
+        button.addMenuItem(createMenuItemFromCommand(QUERY_BOOKMARKS));
 
         if (!QueryBookmarks.getInstance().hasQueryBookmarks())
             return;
@@ -140,7 +142,7 @@ class QueryEditorToolBar extends PanelToolBar {
 
         for (QueryBookmark bookmark : QueryBookmarks.getInstance().getQueryBookmarks()) {
 
-            JMenuItem menuItem = createMenuItemFromCommand("select-bookmark-command");
+            JMenuItem menuItem = createMenuItemFromCommand(SELECT_BOOKMARK_COMMAND);
             menuItem.setActionCommand(bookmark.getName());
             menuItem.setText(bookmark.getName());
 

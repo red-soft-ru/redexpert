@@ -547,9 +547,10 @@ public class GUIUtils {
     private static int formatDialogReturnValue(Object returnValue) {
 
         if (returnValue instanceof Integer) {
-
-            return ((Integer) returnValue).intValue();
+            int intVal = (Integer) returnValue;
+            return intVal != -1 ? intVal : JOptionPane.CANCEL_OPTION;
         }
+
         if (returnValue instanceof String) {
             String stringValue = (String) returnValue;
             if (stringValue.contentEquals(Bundles.getCommon("yes.button")))
@@ -562,7 +563,7 @@ public class GUIUtils {
                 return JOptionPane.CANCEL_OPTION;
         }
 
-        return -1;
+        return JOptionPane.CANCEL_OPTION;
     }
 
     /**

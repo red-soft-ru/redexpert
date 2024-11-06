@@ -174,15 +174,15 @@ public interface Constants {
     // --- SQL syntax colors ---
 
     String[] SQL_SYNTAX_COLOR_KEYS = new String[]{
-            "sqlsyntax.style.keyword",
-            "sqlsyntax.style.quote",
-            "sqlsyntax.style.singlecomment",
-            "sqlsyntax.style.multicomment",
-            "sqlsyntax.style.number",
-            "sqlsyntax.style.operator",
-            "sqlsyntax.style.literal",
-            "sqlsyntax.style.dbobjects",
-            "sqlsyntax.style.datatype",
+            "sqlsyntax.colour.keyword",
+            "sqlsyntax.colour.quote",
+            "sqlsyntax.colour.singlecomment",
+            "sqlsyntax.colour.multicomment",
+            "sqlsyntax.colour.number",
+            "sqlsyntax.colour.operator",
+            "sqlsyntax.colour.literal",
+            "sqlsyntax.colour.dbobjects",
+            "sqlsyntax.colour.datatype",
     };
 
 }

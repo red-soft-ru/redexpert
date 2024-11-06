@@ -301,7 +301,7 @@ public class CheckForUpdateNotifier implements Interruptible {
             scheduleUpdate(buildArgumentsArray(restartNow), getUpdateLogFile());
 
             if (restartNow)
-                ExecuteQuery.stop();
+                Application.exitProgram();
             else
                 GUIUtilities.displayInformationMessage(bundledString("restart.message.postpone"));
 

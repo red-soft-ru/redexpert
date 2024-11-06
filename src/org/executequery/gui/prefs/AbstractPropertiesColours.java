@@ -114,6 +114,7 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
         colorPropertiesKeys.addAll(Arrays.asList(OUTPUT_PANEL_COLOR_KEYS));
         colorPropertiesKeys.addAll(Arrays.asList(QUERY_EDITOR_COLOR_KEYS));
         colorPropertiesKeys.addAll(Arrays.asList(SQL_SYNTAX_COLOR_KEYS));
+        colorPropertiesKeys.addAll(Arrays.asList(RESULT_SET_COLOR_KEYS));
 
         for (String key : colorPropertiesKeys) {
             Color color = asColour(themeDefaultsProperty.getProperty(key));

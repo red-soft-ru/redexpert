@@ -185,4 +185,24 @@ public interface Constants {
             "sqlsyntax.colour.datatype",
     };
 
+    // --- Result Set colors ---
+
+    String[] RESULT_SET_COLOR_KEYS = new String[]{
+            "results.table.cell.background.colour",
+            "results.alternating.row.background",
+            "results.table.cell.null.background.colour",
+            "results.table.cell.null.adding.background.colour",
+            "results.table.cell.null.deleting.background.colour",
+            "results.table.cell.changed.background.colour",
+            "results.table.cell.char.background.colour",
+            "results.table.cell.numeric.background.colour",
+            "results.table.cell.date.background.colour",
+            "results.table.cell.boolean.background.colour",
+            "results.table.cell.blob.background.colour",
+            "results.table.cell.other.background.colour",
+            "results.table.focus.row.background.colour",
+            "results.table.cell.new.background.colour",
+            "results.table.cell.deleted.background.colour",
+    };
+
 }

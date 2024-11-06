@@ -33,9 +33,13 @@ import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Properties;
 
 public final class Application {
+
+    private static Map<String, Runnable> beforeShutdownActions;
 
     /// Private constructor to prevent installation
     private Application() {
@@ -63,6 +67,7 @@ public final class Application {
         if (!trySaveOpenedFiles())
             return;
 
+        runBeforeShutdownActions();
         releaseConnections();
         storeProperties();
         shutdown();
@@ -82,6 +87,24 @@ public final class Application {
         }
 
         return true;
+    }
+
+    private static void runBeforeShutdownActions() {
+        for (Map.Entry<String, Runnable> entry : getBeforeShutdownActions().entrySet()) {
+            String threadName = entry.getKey();
+            Runnable threadTask = entry.getValue();
+
+            try {
+                Log.info("Executing [" + threadName + "] action...");
+                Thread thread = new Thread(threadTask, threadName);
+                thread.start();
+                thread.join();
+
+            } catch (InterruptedException e) {
+                Log.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private static void releaseConnections() {
@@ -152,6 +175,18 @@ public final class Application {
         ApplicationInstanceCounter.remove();
 
         System.exit(0);
+    }
+
+    // --- before shutdown actions manager methods ---
+
+    private static Map<String, Runnable> getBeforeShutdownActions() {
+        if (beforeShutdownActions == null)
+            beforeShutdownActions = new HashMap<>();
+        return beforeShutdownActions;
+    }
+
+    public static void addShutdownAction(String name, Runnable runnable) {
+        getBeforeShutdownActions().put(name, runnable);
     }
 
 }

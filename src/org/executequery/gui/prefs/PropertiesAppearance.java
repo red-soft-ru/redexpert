@@ -20,6 +20,7 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.Application;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.InterfaceLanguage;
@@ -158,7 +159,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
         LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
         AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
-        AbstractPropertiesColours.resetLookAndFeelColors(selectedLaf);
+        scheduleThemeColorsUpdating();
 
         lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
     }
@@ -229,6 +230,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     public void restoreDefaults() {
         lafSelectionPanel.restore();
         preferencesPanel.restoreDefaults();
+        scheduleThemeColorsUpdating();
         apply();
     }
 
@@ -241,6 +243,13 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private void apply() {
         GUIUtilities.displayStatusBar(SystemProperties.getBooleanProperty("user", "system.display.statusbar"));
+    }
+
+    private void scheduleThemeColorsUpdating() {
+        LookAndFeelType laf = getCurrentlySelectedLookAndFeel();
+        Application.addShutdownAction("updating-theme-colors",
+                () -> AbstractPropertiesColours.resetLookAndFeelColors(laf)
+        );
     }
 
     /// TODO: remove when refactor portuguese resources

@@ -13,7 +13,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
-import org.executequery.ExecuteQuery;
+import org.executequery.Application;
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databasemediators.DatabaseConnection;
@@ -90,7 +90,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         parameterSaver.restore();
         changeDatabaseConnection(null);
         logToFileBoxTriggered(null);
-        ExecuteQuery.addShutdownHook(SHUTDOWN_HOOK_ID, parameterSaver::save);
+        Application.addShutdownAction(SHUTDOWN_HOOK_ID, parameterSaver::save);
     }
 
     /**
@@ -492,7 +492,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
 
     @Override
     public boolean tabViewClosing() {
-        ExecuteQuery.removeShutdownHook(SHUTDOWN_HOOK_ID);
+        Application.removeShutdownAction(SHUTDOWN_HOOK_ID);
         parameterSaver.save();
         return true;
     }

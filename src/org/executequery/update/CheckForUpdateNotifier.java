@@ -318,14 +318,7 @@ public class CheckForUpdateNotifier implements Interruptible {
         updateProcessBuilder.redirectOutput(ProcessBuilder.Redirect.appendTo(outputLog));
         updateProcessBuilder.redirectError(ProcessBuilder.Redirect.appendTo(outputLog));
 
-        ExecuteQuery.addShutdownHook("schedule-update", () -> {
-            try {
-                updateProcessBuilder.start();
-
-            } catch (IOException e) {
-                Log.error("Error occurred updating application", e);
-            }
-        });
+        ExecuteQuery.setShutdownHook(updateProcessBuilder);
     }
 
     private String[] buildArgumentsArray(boolean restartNow) throws URISyntaxException, FileNotFoundException {

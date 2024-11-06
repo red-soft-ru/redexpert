@@ -189,4 +189,8 @@ public final class Application {
         getBeforeShutdownActions().put(name, runnable);
     }
 
+    public static void removeShutdownAction(String name) {
+        getBeforeShutdownActions().remove(name);
+    }
+
 }

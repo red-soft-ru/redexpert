@@ -398,18 +398,23 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
                 Bundles.get("common.confirmation")
         );
 
-        if (dialogResult == JOptionPane.YES_OPTION) {
+        if (dialogResult == JOptionPane.YES_OPTION)
+            registerConnection(connection);
+    }
 
-            JPanel dockedTabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-            if (dockedTabComponent instanceof ConnectionsTreePanel) {
+    /// Register specified <code>DatabaseConnection</code> in the connections tree with the randomly-generated ID.
+    private void registerConnection(DatabaseConnection connection) {
+        JPanel dockedTabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (dockedTabComponent instanceof ConnectionsTreePanel) {
 
-                Path backupFilePath = Paths.get(databaseFileField.getText());
-                String connectionName = FilenameUtils.removeExtension(backupFilePath.getFileName().toString());
-                connection.setName(connectionName);
+            Path databaseFileName = Paths.get(databaseFileField.getText());
+            String connectionName = FilenameUtils.removeExtension(databaseFileName.getFileName().toString());
 
-                ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) dockedTabComponent;
-                connectionsTreePanel.newConnection(connection);
-            }
+            connection.setId(UUID.randomUUID().toString());
+            connection.setName(connectionName);
+
+            ConnectionsTreePanel connectionsTreePanel = (ConnectionsTreePanel) dockedTabComponent;
+            connectionsTreePanel.newConnection(connection);
         }
     }
 

@@ -23,8 +23,10 @@ package org.executequery.gui.prefs;
 
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.plaf.UIUtils;
 import org.underworldlabs.swing.table.ColourTableCellRenderer;
 import org.underworldlabs.swing.table.ComboBoxCellEditor;
@@ -49,7 +51,7 @@ import java.util.*;
 public class PropertiesEditorColours extends AbstractPropertiesColours
         implements Constants {
 
-    public static final String[] EDITOR_OUTPUT_COLORS_KEYS = new String[]{
+    private static final String[] EDITOR_OUTPUT_COLORS_KEYS = new String[]{
             "editor.output.background",
             "editor.output.plain.color",
             "editor.output.error.color",
@@ -57,63 +59,69 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             "editor.output.action.color",
     };
 
-    private SamplePanel samplePanel;
-    private SyntaxColorTableModel syntaxColoursTableModel;
-    private EditorColourPreferencesTableModel editorColoursPreferencesTableModel;
+    private static final String[] SAMPLE_TEXT_LABELS = new String[]{
+            "SampleNormalText",
+            "SampleSelectedText",
+            "SampleCurrentLineHighlight",
+            "SampleKeywordText",
+            "SampleQuoteText",
+            "SampleSingleLineCommentText",
+            "SampleMulti-lineCommentText",
+            "SampleNumberText",
+            "SampleOperatorText",
+            "SampleLiteralText",
+            "SampleObjectsDb",
+            "SampleDatatype",
+            "SampleText"
+    };
+
+    // --- GUI components ---
+
+    private SampleTextPanel sampleTextPanel;
+    private JTable syntaxColoursTable;
+    private JTable editorColoursTable;
+
+    private SyntaxColorTableModel syntaxColoursModel;
+    private EditorColorTableModel editorColoursModel;
+
+    // ---
 
     public PropertiesEditorColours(PropertiesPanel parent) {
         super(parent);
+
         init();
+        arrange();
     }
 
     private void init() {
 
-        // editor background etc colours
-
-        Map<String, String> editorColourKeys = new HashMap<>();
-        editorColourKeys.put("editor.caret.colour", bundledStaticString("CaretColour"));
-        editorColourKeys.put("editor.linenumber.background", bundledStaticString("GutterBackground"));
-        editorColourKeys.put("editor.linenumber.foreground", bundledStaticString("GutterForeground"));
-        editorColourKeys.put("editor.text.background.colour", bundledStaticString("EditorBackground"));
-        editorColourKeys.put("editor.text.background.alternate.color", bundledStaticString("EditorAlternativeBackground"));
-        editorColourKeys.put("editor.text.foreground.colour", bundledStaticString("EditorForeground"));
-        editorColourKeys.put("editor.output.background", bundledStaticString("ResultsPanelBackground"));
-        editorColourKeys.put("editor.text.selection.foreground", bundledStaticString("TextSelectionForeground"));
-        editorColourKeys.put("editor.text.selection.background", bundledStaticString("TextSelectionBackground"));
-        editorColourKeys.put("editor.text.selection.background.alternative", bundledStaticString("TextSelectionAlternativeBackground"));
-        editorColourKeys.put("editor.display.linehighlight.colour", bundledStaticString("CurrentLineHighlight"));
-
-        List<UserPreference> editorColoursPreferences = new ArrayList<>();
-        for (Map.Entry<String, String> entry : editorColourKeys.entrySet()) {
-
-            editorColoursPreferences.add(new UserPreference(UserPreference.COLOUR_TYPE, entry.getKey(), entry.getValue(), SystemProperties.getColourProperty("user", entry.getKey())));
-        }
-
-        editorColoursPreferencesTableModel = new EditorColourPreferencesTableModel(editorColoursPreferences);
-        JTable editorColoursPreferencesTable = createTableWithModel(editorColoursPreferencesTableModel);
-        editorColoursPreferencesTable.setTableHeader(null);
-        editorColoursPreferencesTable.addMouseListener(new MouseHandler(editorColoursPreferencesTable));
-
         ColourTableCellRenderer colourRenderer = new ColourTableCellRenderer();
         colourRenderer.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
-        TableColumnModel tcm = editorColoursPreferencesTable.getColumnModel();
+        ComboBoxCellEditor comboEditor = new ComboBoxCellEditor(new String[]{PLAIN, ITALIC, BOLD});
+        comboEditor.setFont(AbstractPropertiesBasePanel.getDefaultFont());
 
-        int valueColumnWidth = 200;
+        // --- init editorColoursTable ---
+
+        editorColoursModel = new EditorColorTableModel(getColorPreferences());
+        editorColoursTable = createTableWithModel("editorColoursModel", editorColoursModel);
+        editorColoursTable.setTableHeader(null);
+        editorColoursTable.addMouseListener(new MouseHandler(editorColoursTable));
+
+        TableColumnModel tcm = editorColoursTable.getColumnModel();
         TableColumn column = tcm.getColumn(1);
         column.setCellRenderer(colourRenderer);
-        column.setPreferredWidth(valueColumnWidth);
-        column.setMaxWidth(valueColumnWidth);
-        column.setMinWidth(valueColumnWidth);
+        column.setPreferredWidth(200);
+        column.setMaxWidth(200);
+        column.setMinWidth(200);
 
-        // syntax colours
+        // --- configure syntaxColoursTable ---
 
-        syntaxColoursTableModel = new SyntaxColorTableModel();
-        JTable syntaxColoursTable = createTableWithModel(syntaxColoursTableModel);
+        syntaxColoursModel = new SyntaxColorTableModel();
+        syntaxColoursTable = createTableWithModel("syntaxColoursModel", syntaxColoursModel);
         syntaxColoursTable.addMouseListener(new MouseHandler(syntaxColoursTable));
 
         tcm = syntaxColoursTable.getColumnModel();
-
         column = tcm.getColumn(0);
         column.setPreferredWidth(150);
 
@@ -123,59 +131,75 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
 
         column = tcm.getColumn(2);
         column.setCellRenderer(new ComboBoxCellRenderer());
+        column.setCellEditor(comboEditor);
         column.setPreferredWidth(70);
 
-        ComboBoxCellEditor comboEditor = new ComboBoxCellEditor(new String[]{PLAIN, ITALIC, BOLD});
-        comboEditor.setFont(AbstractPropertiesBasePanel.getDefaultFont());
-        tcm.getColumn(2).setCellEditor(comboEditor);
+        // ---
 
-        samplePanel = new SamplePanel();
-        JScrollPane sampleScroller = new JScrollPane(samplePanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.insets.bottom = 5;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledStaticString("QueryEditorColours")), gbc);
-        gbc.weighty = 0.4;
-        gbc.gridy++;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(editorColoursPreferencesTable), gbc);
-        gbc.gridy++;
-        gbc.weighty = 0;
-        gbc.insets.top = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledStaticString("SyntaxStyles")), gbc);
-        gbc.weighty = 0.5;
-        gbc.gridy++;
-        gbc.insets.top = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(syntaxColoursTable), gbc);
-        gbc.gridy++;
-        gbc.weighty = 0;
-        gbc.insets.top = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(bundledStaticString("EditorSample")), gbc);
-        gbc.gridy++;
-        gbc.weighty = 0.4;
-        gbc.insets.top = 0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panel.add(sampleScroller, gbc);
-
-        addContent(panel);
+        sampleTextPanel = new SampleTextPanel();
     }
 
-    private JTable createTableWithModel(TableModel tableModel) {
+    private void arrange() {
 
-        JTable table = new JTable(tableModel);
-        table.setRowHeight(TABLE_ROW_HEIGHT);
+        JScrollPane scrollPane = new JScrollPane(sampleTextPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        );
+
+        // --- main panel ---
+
+        JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
+
+        GridBagHelper gbh = new GridBagHelper().bottomGap(5).anchorNorthWest().fillBoth().spanX();
+        mainPanel.add(WidgetFactory.createLabel(bundledStaticString("QueryEditorColours")), gbh.setMinWeightY().get());
+        mainPanel.add(new JScrollPane(editorColoursTable), gbh.nextRow().setWeightY(0.4).get());
+        mainPanel.add(WidgetFactory.createLabel(bundledStaticString("SyntaxStyles")), gbh.nextRow().topGap(5).setMinWeightY().get());
+        mainPanel.add(new JScrollPane(syntaxColoursTable), gbh.nextRow().topGap(0).setWeightY(0.5).get());
+        mainPanel.add(WidgetFactory.createLabel(bundledStaticString("EditorSample")), gbh.nextRow().topGap(5).setMinWeightY().get());
+        mainPanel.add(scrollPane, gbh.nextRow().topGap(0).setWeightY(0.4).get());
+
+        // --- base ---
+
+        addContent(mainPanel);
+    }
+
+    // ---
+
+    private static List<UserPreference> getColorPreferences() {
+
+        Map<String, String> colorKeys = new HashMap<>();
+        colorKeys.put("editor.caret.colour", bundledStaticString("CaretColour"));
+        colorKeys.put("editor.linenumber.background", bundledStaticString("GutterBackground"));
+        colorKeys.put("editor.linenumber.foreground", bundledStaticString("GutterForeground"));
+        colorKeys.put("editor.text.background.colour", bundledStaticString("EditorBackground"));
+        colorKeys.put("editor.text.background.alternate.color", bundledStaticString("EditorAlternativeBackground"));
+        colorKeys.put("editor.text.foreground.colour", bundledStaticString("EditorForeground"));
+        colorKeys.put("editor.output.background", bundledStaticString("ResultsPanelBackground"));
+        colorKeys.put("editor.text.selection.foreground", bundledStaticString("TextSelectionForeground"));
+        colorKeys.put("editor.text.selection.background", bundledStaticString("TextSelectionBackground"));
+        colorKeys.put("editor.text.selection.background.alternative", bundledStaticString("TextSelectionAlternativeBackground"));
+        colorKeys.put("editor.display.linehighlight.colour", bundledStaticString("CurrentLineHighlight"));
+
+        List<UserPreference> coloursPreferences = new ArrayList<>();
+        for (Map.Entry<String, String> entry : colorKeys.entrySet()) {
+            coloursPreferences.add(new UserPreference(
+                    UserPreference.COLOUR_TYPE,
+                    entry.getKey(),
+                    entry.getValue(),
+                    SystemProperties.getColourProperty("user", entry.getKey())
+            ));
+        }
+
+        return coloursPreferences;
+    }
+
+    private JTable createTableWithModel(String name, TableModel tableModel) {
+
+        JTable table = WidgetFactory.createTable(name, tableModel);
         table.setCellSelectionEnabled(true);
-        table.setColumnSelectionAllowed(false);
         table.setRowSelectionAllowed(false);
+        table.setRowHeight(TABLE_ROW_HEIGHT);
+        table.setColumnSelectionAllowed(false);
         table.getTableHeader().setResizingAllowed(false);
         table.getTableHeader().setReorderingAllowed(false);
         table.setFont(AbstractPropertiesBasePanel.getDefaultFont());
@@ -183,45 +207,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
         return table;
     }
 
-    private String getLabelText(int index) {
-
-        String[] sampleLabels = {
-                "SampleNormalText",
-                "SampleSelectedText",
-                "SampleCurrentLineHighlight",
-                "SampleKeywordText",
-                "SampleQuoteText",
-                "SampleSingleLineCommentText",
-                "SampleMulti-lineCommentText",
-                "SampleNumberText",
-                "SampleOperatorText",
-                "SampleLiteralText",
-                "SampleObjectsDb",
-                "SampleDatatype",
-                "SampleText"
-        };
-
-        return sampleLabels[index];
-    }
-
-    @Override
-    public void restoreDefaults() {
-        editorColoursPreferencesTableModel.restoreAllDefaults();
-        syntaxColoursTableModel.restoreAllDefaults();
-
-        Properties themeDefaultsProperty = defaultsForTheme();
-        for (String key : EDITOR_OUTPUT_COLORS_KEYS)
-            SystemProperties.setColourProperty("user", key, asColour(themeDefaultsProperty.getProperty(key)));
-    }
-
-    @Override
-    public void save() {
-        syntaxColoursTableModel.save();
-        editorColoursPreferencesTableModel.save();
-    }
-
     private String styleNameForValue(Integer value) {
-
         switch (value) {
             case 1:
                 return BOLD;
@@ -232,18 +218,40 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
         }
     }
 
-    class SamplePanel extends JPanel implements Scrollable {
+    // --- UserPreferenceFunction impl ---
 
-        private final int size;
-        private final String fontName;
+    @Override
+    public void restoreDefaults() {
+        editorColoursModel.restoreAllDefaults();
+        syntaxColoursModel.restoreAllDefaults();
+
+        Properties themeDefaultsProperty = defaultsForTheme();
+        for (String key : EDITOR_OUTPUT_COLORS_KEYS)
+            SystemProperties.setColourProperty("user", key, asColour(themeDefaultsProperty.getProperty(key)));
+    }
+
+    @Override
+    public void save() {
+        syntaxColoursModel.save();
+        editorColoursModel.save();
+    }
+
+    // --- inner classes ---
+
+    private class SampleTextPanel extends JPanel implements Scrollable {
+
+        private static final int FONT_SIZE = 14;
+        private static final String FONT_NAME = "monospaced";
+
         private boolean showCaret;
 
-        public SamplePanel() {
+        public SampleTextPanel() {
+            runRepaintTimer();
+        }
 
-            size = 14;
-            fontName = "monospaced";
+        private void runRepaintTimer() {
 
-            final Runnable caret = () -> {
+            Runnable caret = () -> {
                 showCaret = !showCaret;
                 repaint();
             };
@@ -255,78 +263,84 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
                 }
             };
 
-            Timer timer = new Timer();
-            timer.schedule(caretTimer, 0, 500);
-
+            new Timer().schedule(caretTimer, 0, 500);
         }
+
+        // --- JComponent impl ---
 
         @Override
         public void paintComponent(Graphics g) {
-
             UIUtils.antialias(g);
 
-            List<SyntaxColour> labels = new ArrayList<>(syntaxColoursTableModel.getSyntaxColours());
+            List<SyntaxColour> labels = new ArrayList<>(syntaxColoursModel.getSyntaxColours());
             labels.add(1, new SyntaxColour("Sample selected text",
-                    editorColoursPreferencesTableModel.getColorForKey("editor.text.selection.foreground"),
-                    editorColoursPreferencesTableModel.getColorForKey("editor.text.selection.background"), 0, ""));
+                    editorColoursModel.getColorForKey("editor.text.selection.foreground"),
+                    editorColoursModel.getColorForKey("editor.text.selection.background"), 0, ""));
 
             labels.add(2, new SyntaxColour("Sample current line highlight",
-                    syntaxColoursTableModel.getColorForKey("normal"),
-                    editorColoursPreferencesTableModel.getColorForKey("editor.display.linehighlight.colour"), 0, ""));
+                    syntaxColoursModel.getColorForKey("normal"),
+                    editorColoursModel.getColorForKey("editor.display.linehighlight.colour"), 0, ""));
 
-            int row = size + 5;
+            int row = FONT_SIZE + 5;
             int width = getWidth();
-
-            g.setColor(editorColoursPreferencesTableModel.getColorForKey("editor.text.background.colour"));
-            g.fillRect(0, 0, width, (size + 5) * labels.size());
-
             int gutterWidth = 40;
 
-            g.setColor(editorColoursPreferencesTableModel.getColorForKey("editor.linenumber.background"));
-            g.fillRect(0, 0, gutterWidth, (size + 5) * (labels.size() + 2));
+            // ---
+
+            g.setColor(editorColoursModel.getColorForKey("editor.text.background.colour"));
+            g.fillRect(0, 0, width, (FONT_SIZE + 5) * labels.size());
+
+            g.setColor(editorColoursModel.getColorForKey("editor.linenumber.background"));
+            g.fillRect(0, 0, gutterWidth, (FONT_SIZE + 5) * (labels.size() + 2));
 
             g.setColor(GUIUtilities.getDefaultBorderColour().darker());
             g.drawLine(gutterWidth, 0, gutterWidth, getHeight() - 1);
 
-            Color gutterForeground = editorColoursPreferencesTableModel.getColorForKey("editor.linenumber.foreground");
+            Color gutterForeground = editorColoursModel.getColorForKey("editor.linenumber.foreground");
             for (int i = 0, k = labels.size(); i < k; i++) {
 
+                int y1 = row * (i + 1);
                 SyntaxColour syntaxColour = labels.get(i);
+                String text = bundledStaticString(SAMPLE_TEXT_LABELS[i]);
+                Font font = new Font(FONT_NAME, syntaxColour.fontStyle, FONT_SIZE);
+
+                // ---
 
                 g.setColor(gutterForeground);
-                int y1 = row * (i + 1);
                 g.drawString(String.valueOf(i + 1), i < 9 ? 31 : 24, y1);
 
-                Font font = new Font(fontName, syntaxColour.fontStyle, size);
                 g.setFont(font);
                 g.setColor(syntaxColour.color);
 
                 if (syntaxColour.isBraceMatch()) {
-
                     g.fillRect(gutterWidth + 4, (row * i) + 3, width, row);
                     g.setColor(Color.BLACK);
 
                 } else if (syntaxColour.hasBackgroundColour()) {
-
                     g.setColor(syntaxColour.background);
                     g.fillRect(gutterWidth + 4, (row * i) + 3, width, row);
                     g.setColor(syntaxColour.color);
                 }
 
-                String text = bundledStaticString(getLabelText(i));
                 g.drawString(text, gutterWidth + 5, y1);
 
                 if (showCaret) {
+                    FontMetrics fontMetrics = g.getFontMetrics(font);
+                    int lineHeight = fontMetrics.getHeight() + 5;
 
-                    FontMetrics fm = g.getFontMetrics(font);
-                    int lineHeight = fm.getHeight() + 5;
-
-                    g.setColor(editorColoursPreferencesTableModel.getColorForKey("editor.caret.colour"));
-                    int carotX = fm.stringWidth(text) + gutterWidth + 6;
-                    g.drawLine(carotX, y1 - lineHeight + 6, carotX, y1 + 2);
+                    g.setColor(editorColoursModel.getColorForKey("editor.caret.colour"));
+                    int caretX = fontMetrics.stringWidth(text) + gutterWidth + 6;
+                    g.drawLine(caretX, y1 - lineHeight + 6, caretX, y1 + 2);
                 }
             }
         }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(getWidth(), 3 + ((FONT_SIZE + 5) * (syntaxColoursModel.getRowCount() + 2)));
+        }
+
+        // --- Scrollable impl ---
 
         @Override
         public Dimension getPreferredScrollableViewportSize() {
@@ -334,18 +348,13 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
         }
 
         @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(getWidth(), 3 + ((size + 5) * (syntaxColoursTableModel.getRowCount() + 2)));
-        }
-
-        @Override
         public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return size + 5;
+            return FONT_SIZE + 5;
         }
 
         @Override
         public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return size + 5;
+            return FONT_SIZE + 5;
         }
 
         @Override
@@ -358,63 +367,60 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             return false;
         }
 
-    }
+    } // SampleTextPanel class
 
+    private class SyntaxColorTableModel extends AbstractTableModel {
 
-    class SyntaxColorTableModel extends AbstractTableModel {
-
-        private final Vector<SyntaxColour> syntaxColours;
+        private final transient List<SyntaxColour> syntaxColours;
         private final String[] columnHeaders = {
                 bundledStaticString("SyntaxStyle"),
                 bundledStaticString("Colour"),
                 bundledStaticString("FontStyle")
         };
 
-        SyntaxColorTableModel() {
-
-            syntaxColours = new Vector<>(SYNTAX_TYPES.length);
+        public SyntaxColorTableModel() {
+            syntaxColours = new ArrayList<>();
 
             for (int i = 0; i < SYNTAX_TYPES.length; i++) {
-                addSyntaxColour(
+                syntaxColours.add(new SyntaxColour(
                         bundledStaticString(getTableValueText(i)),
                         SystemProperties.getColourProperty("user", STYLE_COLOUR_PREFIX + SYNTAX_TYPES[i]),
                         SystemProperties.getIntProperty("user", STYLE_NAME_PREFIX + SYNTAX_TYPES[i]),
                         SYNTAX_TYPES[i]
-                );
+                ));
             }
         }
 
         public void restoreAllDefaults() {
-
             Properties defaults = defaultsForTheme();
+
             for (int i = 0; i < SYNTAX_TYPES.length; i++) {
+                Color color = asColour(defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[i]));
+                String style = styleNameForValue(Integer.parseInt(defaults.getProperty(STYLE_NAME_PREFIX + SYNTAX_TYPES[i])));
 
-                syntaxColoursTableModel.setValueAt(asColour(
-                        defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[i])), i, 1);
-                syntaxColoursTableModel.setValueAt(styleNameForValue(
-                        Integer.parseInt(defaults.getProperty(STYLE_NAME_PREFIX + SYNTAX_TYPES[i]))), i, 2);
+                syntaxColoursModel.setValueAt(color, i, 1);
+                syntaxColoursModel.setValueAt(style, i, 2);
             }
-
         }
 
         public void restoreSingleDefault(int row) {
-
-            Properties defaults = defaultsForTheme();
-            String property = defaults.getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[row]);
+            String property = defaultsForTheme().getProperty(STYLE_COLOUR_PREFIX + SYNTAX_TYPES[row]);
 
             try {
-                syntaxColoursTableModel.setValueAt(asColour(property), row, 1);
+                syntaxColoursModel.setValueAt(asColour(property), row, 1);
 
             } catch (NumberFormatException e) {
                 Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
             }
+
             fireTableDataChanged();
         }
 
         public Color getColorForKey(String key) {
 
             for (SyntaxColour syntaxColour : syntaxColours)
-                if (key.equals(syntaxColour.property)) return syntaxColour.color;
+                if (key.equals(syntaxColour.property))
+                    return syntaxColour.color;
 
             return null;
         }
@@ -447,6 +453,19 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             }
         }
 
+        public void save() {
+            for (SyntaxColour syntaxColour : syntaxColours) {
+                SystemProperties.setIntProperty("user", STYLE_NAME_PREFIX + syntaxColour.property, syntaxColour.fontStyle);
+                SystemProperties.setColourProperty("user", STYLE_COLOUR_PREFIX + syntaxColour.property, syntaxColour.color);
+            }
+        }
+
+        public List<SyntaxColour> getSyntaxColours() {
+            return syntaxColours;
+        }
+
+        // --- TableModel impl ---
+
         @Override
         public int getColumnCount() {
             return 3;
@@ -459,45 +478,46 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
 
         @Override
         public Object getValueAt(int row, int col) {
-
-            SyntaxColour ch = syntaxColours.elementAt(row);
             switch (col) {
                 case 0:
-                    return ch.label;
+                    return syntaxColours.get(row).label;
                 case 1:
-                    return ch.color;
+                    return syntaxColours.get(row).color;
                 case 2:
-                    return ch.style;
+                    return syntaxColours.get(row).style;
                 default:
                     return null;
             }
         }
 
+        // --- AbstractTableModel impl ---
+
         @Override
         public void setValueAt(Object value, int row, int col) {
-
-            SyntaxColour ch = syntaxColours.elementAt(row);
+            SyntaxColour syntaxColour = syntaxColours.get(row);
 
             if (col == 1) {
-                ch.color = (Color) value;
+                syntaxColour.color = (Color) value;
 
             } else if (col == 2) {
+                syntaxColour.style = (String) value;
 
-                ch.style = (String) value;
-                switch (ch.style) {
-                    case PLAIN:
-                        ch.fontStyle = 0;
-                        break;
+                switch (syntaxColour.style) {
                     case BOLD:
-                        ch.fontStyle = 1;
+                        syntaxColour.fontStyle = 1;
                         break;
                     case ITALIC:
-                        ch.fontStyle = 2;
+                        syntaxColour.fontStyle = 2;
+                        break;
+                    case PLAIN:
+                    default:
+                        syntaxColour.fontStyle = 0;
                         break;
                 }
             }
 
-            if (col == 1 || col == 2) samplePanel.repaint();
+            if (col == 1 || col == 2)
+                sampleTextPanel.repaint();
 
             fireTableRowsUpdated(row, row);
         }
@@ -512,49 +532,119 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             return columnHeaders[col];
         }
 
-        public Vector<SyntaxColour> getSyntaxColours() {
-            return syntaxColours;
+    } // ColorTableModel class
+
+    private class EditorColorTableModel extends AbstractTableModel {
+        private final transient List<UserPreference> coloursPreferences;
+
+        public EditorColorTableModel(List<UserPreference> coloursPreferences) {
+            this.coloursPreferences = coloursPreferences;
+        }
+
+        public void restoreAllDefaults() {
+
+            Properties defaults = defaultsForTheme();
+            for (UserPreference userPreference : coloursPreferences)
+                userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
+            fireTableDataChanged();
+        }
+
+        public void restoreSingleDefault(int row) {
+
+            Properties defaults = defaultsForTheme();
+            UserPreference userPreference = coloursPreferences.get(row);
+            String property = defaults.getProperty(userPreference.getKey());
+
+            try {
+                userPreference.setValue(asColour(property));
+
+            } catch (NumberFormatException e) {
+                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
+            }
+            fireTableDataChanged();
+        }
+
+        public Color getColorForKey(String key) {
+
+            for (UserPreference userPreference : coloursPreferences)
+                if (key.equals(userPreference.getKey()))
+                    return (Color) userPreference.getValue();
+
+            return null;
         }
 
         public void save() {
+            for (UserPreference userPreference : coloursPreferences)
+                SystemProperties.setProperty("user", userPreference.getKey(), userPreference.getSaveValue());
+        }
 
-            for (int i = 0; i < syntaxColours.size(); i++) {
-                SyntaxColour ch = syntaxColours.elementAt(i);
-                SystemProperties.setColourProperty("user", STYLE_COLOUR_PREFIX + ch.property, ch.color);
-                SystemProperties.setIntProperty("user", STYLE_NAME_PREFIX + ch.property, ch.fontStyle);
+        // --- TableModel impl ---
+
+        @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
+        public int getRowCount() {
+            return coloursPreferences.size();
+        }
+
+        @Override
+        public Object getValueAt(int row, int column) {
+
+            UserPreference preference = coloursPreferences.get(row);
+            switch (column) {
+                case 0:
+                    return preference.getDisplayedKey();
+                case 1:
+                    return preference.getValue();
+                default:
+                    return Constants.EMPTY;
             }
         }
 
-        private void addSyntaxColour(String label, Color color, int style, String property) {
-            syntaxColours.addElement(new SyntaxColour(label, color, style, property));
+        // --- AbstractTableModel impl ---
+
+        @Override
+        public void setValueAt(Object value, int row, int column) {
+            UserPreference preference = coloursPreferences.get(row);
+            preference.setValue(value);
+            sampleTextPanel.repaint();
+            fireTableRowsUpdated(row, row);
         }
 
-    } // ColorTableModel
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return column == 1;
+        }
 
-    class SyntaxColour {
+    } // class EditorColourPreferencesTableModel
 
-        String label;
-        int fontStyle;
-        String style;
-        String property;
+    private class SyntaxColour {
+
         Color color;
+        String label;
+        String style;
+        int fontStyle;
+        String property;
         Color background;
 
-        SyntaxColour(String label, Color color, int fontStyle, String property) {
+        public SyntaxColour(String label, Color color, int fontStyle, String property) {
             this(label, color, null, fontStyle, property);
         }
 
-        SyntaxColour(String label, Color color, Color background, int fontStyle, String property) {
+        public SyntaxColour(String label, Color color, Color background, int fontStyle, String property) {
             this.label = label;
-            this.background = background;
-            this.fontStyle = fontStyle;
             this.color = color;
             this.property = property;
+            this.fontStyle = fontStyle;
+            this.background = background;
             this.style = styleNameForValue(fontStyle);
         }
 
         public boolean hasBackgroundColour() {
-            return (background != null);
+            return background != null;
         }
 
         public boolean isBraceMatch() {
@@ -566,10 +656,9 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             return label;
         }
 
-    } // SyntaxColour
+    } // SyntaxColour class
 
-    static class MouseHandler extends MouseAdapter {
-
+    private static class MouseHandler extends MouseAdapter {
         private final JTable table;
 
         public MouseHandler(JTable table) {
@@ -580,16 +669,15 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
         public void mouseClicked(MouseEvent evt) {
 
             int row = table.rowAtPoint(evt.getPoint());
-            int col = table.columnAtPoint(evt.getPoint());
-
             if (row == -1)
                 return;
 
-            if (evt.getButton() == MouseEvent.BUTTON1)  // left mouse button
+            int col = table.columnAtPoint(evt.getPoint());
+            if (evt.getButton() == MouseEvent.BUTTON1) {  // left mouse button
                 leftButtonAction(col, row);
-            else if (evt.getButton() == MouseEvent.BUTTON3 && col == 1) // right mouse button
-                rightButtonAction(col, row, evt);
 
+            } else if (evt.getButton() == MouseEvent.BUTTON3 && col == 1) // right mouse button
+                rightButtonAction(col, row, evt);
         }
 
         private void leftButtonAction(int col, int row) {
@@ -612,111 +700,27 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
 
         private void rightButtonAction(int col, int row, MouseEvent evt) {
 
-            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem resetButton = new JMenuItem(Bundles.get("common.default"));
+            resetButton.addActionListener(e -> resetColour(table.getModel(), row));
 
             JMenuItem editButton = new JMenuItem(Bundles.get("common.edit"));
             editButton.addActionListener(e -> leftButtonAction(col, row));
-            popupMenu.add(editButton);
 
-            JMenuItem resetButton = new JMenuItem(Bundles.get("common.default"));
-            resetButton.addActionListener(e -> resetColour(table.getModel(), row));
+            JPopupMenu popupMenu = new JPopupMenu();
+            popupMenu.add(editButton);
             popupMenu.add(resetButton);
 
             popupMenu.show(table, evt.getX(), evt.getY());
         }
 
         private void resetColour(TableModel model, int row) {
+            if (model instanceof EditorColorTableModel) {
+                ((EditorColorTableModel) model).restoreSingleDefault(row);
 
-            if (model instanceof EditorColourPreferencesTableModel)
-                ((EditorColourPreferencesTableModel) model).restoreSingleDefault(row);
-            else if (model instanceof SyntaxColorTableModel)
+            } else if (model instanceof SyntaxColorTableModel)
                 ((SyntaxColorTableModel) model).restoreSingleDefault(row);
-
         }
 
-    } // MouseHandler
-
-
-    class EditorColourPreferencesTableModel extends AbstractTableModel {
-
-        private final List<UserPreference> editorColoursPreferences;
-
-        public EditorColourPreferencesTableModel(List<UserPreference> editorColoursPreferences) {
-            this.editorColoursPreferences = editorColoursPreferences;
-        }
-
-        public Color getColorForKey(String key) {
-
-            for (UserPreference userPreference : editorColoursPreferences)
-                if (key.equals(userPreference.getKey())) return (Color) userPreference.getValue();
-
-            return null;
-        }
-
-        public void setValueAt(Object value, int row, int column) {
-            UserPreference preference = editorColoursPreferences.get(row);
-            preference.setValue(value);
-            samplePanel.repaint();
-            fireTableRowsUpdated(row, row);
-        }
-
-        @Override
-        public int getRowCount() {
-            return editorColoursPreferences.size();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 2;
-        }
-
-        @Override
-        public Object getValueAt(int row, int column) {
-
-            UserPreference preference = editorColoursPreferences.get(row);
-            switch (column) {
-                case 0:
-                    return preference.getDisplayedKey();
-                case 1:
-                    return preference.getValue();
-                default:
-                    return Constants.EMPTY;
-            }
-        }
-
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column == 1;
-        }
-
-        public void restoreAllDefaults() {
-
-            Properties defaults = defaultsForTheme();
-            for (UserPreference userPreference : editorColoursPreferences)
-                userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
-            fireTableDataChanged();
-        }
-
-        public void restoreSingleDefault(int row) {
-
-            Properties defaults = defaultsForTheme();
-            UserPreference userPreference = editorColoursPreferences.get(row);
-            String property = defaults.getProperty(userPreference.getKey());
-
-            try {
-                userPreference.setValue(asColour(property));
-
-            } catch (NumberFormatException e) {
-                Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
-            }
-            fireTableDataChanged();
-        }
-
-        public void save() {
-            for (UserPreference userPreference : editorColoursPreferences)
-                SystemProperties.setProperty("user", userPreference.getKey(), userPreference.getSaveValue());
-        }
-
-    } // class EditorColourPreferencesTableModel
+    } // MouseHandler class
 
 }

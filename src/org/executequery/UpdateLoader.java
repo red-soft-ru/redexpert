@@ -707,7 +707,7 @@ public class UpdateLoader extends JFrame {
         if (launch)
             updateLoader.launch();
         else
-            ExecuteQuery.stop();
+            Application.exitProgram(true);
     }
 
 }

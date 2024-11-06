@@ -24,6 +24,7 @@ import org.executequery.EventMediator;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.UserPreferenceEvent;
 import org.executequery.event.UserPreferenceListener;
+import org.executequery.gui.editor.history.QueryEditorsManager;
 import org.executequery.log.Log;
 import org.executequery.util.ThreadUtils;
 import org.underworldlabs.swing.toolbar.DefaultToolBarManager;
@@ -88,8 +89,11 @@ public class ToolBarManager extends DefaultToolBarManager
 
     @Override
     public void preferencesChanged(UserPreferenceEvent event) {
-        if (event.getEventType() == UserPreferenceEvent.ALL || event.getEventType() == UserPreferenceEvent.TOOL_BAR)
+        int eventType = event.getEventType();
+        if (eventType == UserPreferenceEvent.ALL || eventType == UserPreferenceEvent.TOOL_BAR) {
             ThreadUtils.invokeLater(() -> buildToolbars(true));
+            QueryEditorsManager.rebuildToolbars();
+        }
     }
 
     @Override

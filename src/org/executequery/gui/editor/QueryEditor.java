@@ -32,6 +32,7 @@ import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.history.EditorData;
 import org.executequery.gui.editor.history.QueryEditorHistory;
+import org.executequery.gui.editor.history.QueryEditorsManager;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
@@ -189,6 +190,7 @@ public class QueryEditor extends DefaultTabView
     }
 
     private void init() {
+        QueryEditorsManager.register(this);
 
         queryEditorNumber = -1;
         executeToFile = false;
@@ -421,6 +423,11 @@ public class QueryEditor extends DefaultTabView
         );
     }
 
+    public void rebuildToolBar() {
+        toolBar.rebuild();
+        repaint();
+    }
+
     public void removePopupComponent(JComponent component) {
         GUIUtilities.getFrameLayeredPane().remove(component);
         GUIUtilities.getFrameLayeredPane().repaint();
@@ -497,7 +504,6 @@ public class QueryEditor extends DefaultTabView
 
         statusBar.setVisible(isStatusBarVisible());
         toolBar.setVisible(isToolsPanelVisible());
-        editorPanel.showLineNumbers(isLineNumbersVisible(), editorPanel.getQueryArea().getEditorTextComponent().getFont());
         editorPanel.setTextPaneBackground(userProperties().getColourProperty("editor.text.background.colour"));
         editorPanel.preferencesChanged();
         delegate.preferencesChanged();
@@ -515,6 +521,8 @@ public class QueryEditor extends DefaultTabView
 
         connectionsCombo.setVisible(isToolsPanelVisible() && !useMultipleConnections);
         connectionsCheckCombo.setVisible(isToolsPanelVisible() && useMultipleConnections);
+
+        editorPanel.showLineNumbers(isLineNumbersVisible(), editorPanel.getQueryArea().getEditorTextComponent().getFont());
 
         updateStopOnError(false);
         updateAutoCommitMode(false);
@@ -1443,9 +1451,10 @@ public class QueryEditor extends DefaultTabView
         delegate.disconnected(getSelectedConnection());
 
         removeAll();
+
+        QueryEditorsManager.deregister(this);
         EventMediator.deregisterListener(this);
         GUIUtilities.registerUndoRedoComponent(null);
-
     }
 
     /**

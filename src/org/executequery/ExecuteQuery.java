@@ -71,11 +71,7 @@ public final class ExecuteQuery {
             Log.error(e.getMessage(), e);
         }
 
-        stop();
-    }
-
-    public static void stop() {
-        System.exit(0);
+        Application.exitProgram();
     }
 
     public static void addShutdownHook(String id, Runnable runnable) {

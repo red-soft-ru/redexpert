@@ -1117,32 +1117,6 @@ public final class GUIUtilities {
         }
     }
 
-    public static void shuttingDown() {
-
-        Properties properties = UserProperties.getInstance().getProperties();
-        SystemResources.setUserPreferences(properties);
-
-        try {
-            ((DatabaseConnectionRepository) Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).save();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        try {
-            ((ConnectionFoldersRepository) Objects.requireNonNull(RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID))).save();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        try {
-            ToolBarProperties.saveTools();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        Log.info("System exiting...");
-    }
-
     /**
      * Sets the title for the specified component to the newTitle
      * within central tab pane.

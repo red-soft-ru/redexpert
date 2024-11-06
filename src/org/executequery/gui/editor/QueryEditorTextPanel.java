@@ -146,8 +146,8 @@ public class QueryEditorTextPanel extends JPanel {
         queryScroll.setLineNumbersEnabled(show);
         if (show) {
             queryScroll.getGutter().setLineNumberFont(font);
-            queryScroll.getGutter().setBackground(SystemProperties.getColourProperty("user", "editor.text.background.colour"));
-            queryScroll.getGutter().setLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.foreground.colour"));
+            queryScroll.getGutter().setBackground(SystemProperties.getColourProperty("user", "editor.linenumber.background"));
+            queryScroll.getGutter().setLineNumberColor(SystemProperties.getColourProperty("user", "editor.linenumber.foreground"));
             queryScroll.getGutter().setCurrentLineNumberColor(SystemProperties.getColourProperty("user", "editor.text.selection.background"));
         }
     }

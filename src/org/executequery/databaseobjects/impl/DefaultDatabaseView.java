@@ -36,6 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DefaultDatabaseView extends AbstractTableObject
@@ -157,80 +158,39 @@ public class DefaultDatabaseView extends AbstractTableObject
     @Override
     public String getSelectSQLText() {
 
-        String fields = "";
+        List<DatabaseColumn> columnList = getColumns();
+        if (columnList == null || columnList.isEmpty())
+            return "SELECT * FROM " + MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection()) + ";\n";
 
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                fields += columns.get(i).getName();
-                if (i < n - 1)
-                    fields += ", ";
-
-            }
-
-        } catch (DataSourceException e) {
-            fields = "*";
-            e.printStackTrace();
-        }
-
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
+        return SQLUtils.generateDefaultSelectStatement(getName(), getColumns(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getInsertSQLText() {
 
-        String fields = "";
-        String values = "";
+        List<DatabaseColumn> columnList = getColumns();
+        if (columnList == null || columnList.isEmpty()) {
+            DatabaseColumn column = new DefaultDatabaseColumn();
+            column.setName("field_name");
 
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                fields += columns.get(i).getName();
-                values += ":" + toCamelCase(columns.get(i).getName());
-
-                if (i < n - 1) {
-                    fields += ", ";
-                    values += ", ";
-                }
-
-            }
-
-        } catch (DataSourceException e) {
-            fields = "_fields_";
-            values = "_values_";
-            e.printStackTrace();
+            columnList = Collections.singletonList(column);
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
+        return SQLUtils.generateDefaultInsertStatement(getName(), columnList, getHost().getDatabaseConnection());
     }
 
     @Override
     public String getUpdateSQLText() {
 
-        String settings = "";
+        List<DatabaseColumn> columnList = getColumns();
+        if (columnList == null || columnList.isEmpty()) {
+            DatabaseColumn column = new DefaultDatabaseColumn();
+            column.setName("field_name");
 
-        try {
-
-            List<String> columns = getFields();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                settings += columns.get(i) + " = :" +
-                        toCamelCase(columns.get(i));
-                if (i < n - 1)
-                    settings += ", ";
-
-            }
-
-        } catch (DataSourceException e) {
-            settings = "_oldValue_ = _newValue_";
-            e.printStackTrace();
+            columnList = Collections.singletonList(column);
         }
 
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
+        return SQLUtils.generateDefaultUpdateStatement(getName(), columnList, getHost().getDatabaseConnection());
     }
 
     TokenizingFormatter formatter;

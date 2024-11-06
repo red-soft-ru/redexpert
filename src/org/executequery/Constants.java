@@ -174,6 +174,7 @@ public interface Constants {
     // --- SQL syntax colors ---
 
     String[] SQL_SYNTAX_COLOR_KEYS = new String[]{
+            "sqlsyntax.colour.normal",
             "sqlsyntax.colour.keyword",
             "sqlsyntax.colour.quote",
             "sqlsyntax.colour.singlecomment",

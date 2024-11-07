@@ -4,8 +4,11 @@ import java.awt.event.ActionEvent;
 
 import org.executequery.GUIUtilities;
 import org.executequery.actions.OpenFrameCommand;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.underworldlabs.swing.actions.BaseCommand;
+
+import javax.swing.*;
 
 /**
  * @author Maxim Kozhinov
@@ -26,6 +29,14 @@ public class DatabaseBackupRestoreCommands extends OpenFrameCommand implements B
                 null,
                 true
         );
+    }
+
+    public void execute(DatabaseConnection dc) {
+        execute((ActionEvent) null);
+
+        JPanel panel = GUIUtilities.getCentralPane(DatabaseBackupRestorePanel.TITLE);
+        if (panel instanceof DatabaseBackupRestorePanel)
+            ((DatabaseBackupRestorePanel) panel).setSelectedConnection(dc);
     }
 
 }

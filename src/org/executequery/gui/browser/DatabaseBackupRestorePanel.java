@@ -519,4 +519,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         return TITLE;
     }
 
+    public void setSelectedConnection(DatabaseConnection dc) {
+        connectionCombo.setSelectedItem(dc);
+    }
 }

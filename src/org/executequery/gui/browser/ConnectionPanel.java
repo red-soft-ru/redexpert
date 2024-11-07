@@ -155,7 +155,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper().anchorNorthWest().fillNone();
         checkPanel.add(namesToUpperCheck, gbh.spanX().get());
         checkPanel.add(useNativeCheck, gbh.nextRow().topGap(5).get());
-        checkPanel.add(useEmbeddedCheck, gbh.nextRow().get());
+//        checkPanel.add(useEmbeddedCheck, gbh.nextRow().get()); TODO test before release feature
         checkPanel.add(useNewApiCheck, gbh.nextRow().setMinWeightX().setWidth(1).get());
         checkPanel.add(useSshCheck, gbh.nextCol().leftGap(5).get());
 

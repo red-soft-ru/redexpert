@@ -51,8 +51,8 @@ public class ViewablePasswordField extends JPanel {
         setPreferredSize(new Dimension(getPreferredSize().width, WidgetFactory.defaultHeight()));
 
         GridBagHelper gbh = new GridBagHelper().setMaxWeightX().fillBoth();
-        add(passwordField, gbh.get());
-        add(toggleButton, gbh.nextCol().setMinWeightX().get());
+        add(passwordField, gbh.leftGap(5).get());
+        add(toggleButton, gbh.nextCol().leftGap(0).setMinWeightX().get());
     }
 
     private void update() {
@@ -82,6 +82,7 @@ public class ViewablePasswordField extends JPanel {
         super.setEnabled(enabled);
         toggleButton.setEnabled(enabled);
         passwordField.setEnabled(enabled);
+        setBackground(passwordField.getBackground());
     }
 
     // ---

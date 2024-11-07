@@ -21,8 +21,10 @@
 package org.executequery.databasemediators;
 
 import org.executequery.gui.browser.ConnectionsFolder;
+import org.underworldlabs.util.MiscUtils;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -100,10 +102,6 @@ public interface DatabaseConnection extends Serializable {
     String getAuthMethod();
 
     void setAuthMethod(String method);
-
-    String getConnectionMethod();
-
-    void setConnectionMethod(String method);
 
     String getURL();
 
@@ -239,6 +237,14 @@ public interface DatabaseConnection extends Serializable {
 
     boolean isAutoConnected();
 
+    void setAuthMethodMode(String val);
+
+    String getAuthMethodMode();
+
+    void setConnType(String val);
+
+    String getConnType();
+
     default void validateJdbcProperties() {
         Properties properties = getJdbcProperties();
 
@@ -252,5 +258,18 @@ public interface DatabaseConnection extends Serializable {
             setJdbcProperties(properties);
     }
 
+    static boolean isLocalhost(String host) {
+        if (MiscUtils.isNull(host))
+            return false;
+
+        host = host.trim().toLowerCase();
+        return Objects.equals(host, "localhost") || Objects.equals(host, "127.0.0.1");
+    }
+
+    int getTunnelPort();
+
+    void setTunnelPort(int val);
+
     void setValues(DatabaseConnection source);
+
 }

@@ -42,7 +42,7 @@ public class RequiredFieldPainter implements Serializable {
     }
 
     private void init(ViewablePasswordField passwordField) {
-        painter = new DocumentPainter(passwordField.getPasswordField(), passwordField);
+        painter = new DocumentPainter(passwordField.getField(), passwordField);
     }
 
     // ---
@@ -59,6 +59,13 @@ public class RequiredFieldPainter implements Serializable {
     public void disable() {
         this.enable = false;
         this.painter.paintComponent();
+    }
+
+    public void setEnable(boolean enable) {
+        if (enable)
+            enable();
+        else
+            disable();
     }
 
     public boolean check() {

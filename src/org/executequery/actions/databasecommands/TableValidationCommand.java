@@ -6,6 +6,8 @@ import org.executequery.actions.OpenFrameCommand;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.gui.TableValidationPanel;
+import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.swing.actions.BaseCommand;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
@@ -16,15 +18,21 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Map;
 
-/**
- * @author Alexey Kozlov
- */
+/// @author Alexey Kozlov
 public class TableValidationCommand extends OpenFrameCommand
         implements BaseCommand {
+
+    @Override
+    public void execute(ActionEvent e) {
+        if (isConnected() && !onlyEmbeddedConnections())
+            showPanel(new TableValidationPanel());
+    }
 
     public void validateTableAndShowResult(DatabaseConnection dc, String preparedParameter) {
         showPanel(new TableValidationPanel(dc, preparedParameter));
     }
+
+    // --- validating ---
 
     public OutputStream onlineTableValidation(
             DatabaseConnection dc, String tableIncl, String indexIncl, String tableExcl, String indexExcl) {
@@ -39,8 +47,8 @@ public class TableValidationCommand extends OpenFrameCommand
                 maintenanceManager.validateTable(tableIncl, indexIncl, tableExcl, indexExcl);
 
             } catch (SQLException e) {
-                e.printStackTrace(System.out);
-                GUIUtilities.displayExceptionErrorDialog("Unable run database validation", e, this.getClass());
+                Log.error(e.getMessage(), e);
+                GUIUtilities.displayExceptionErrorDialog(bundleString("validationError"), e, this.getClass());
             }
         }
 
@@ -50,21 +58,14 @@ public class TableValidationCommand extends OpenFrameCommand
     private IFBMaintenanceManager getMaintenanceManager(DatabaseConnection dc) {
 
         try {
+            Driver driver = getDriver(dc);
+            Object library = DynamicLibraryLoader.loadingObjectFromClassLoader(
+                    driver.getMajorVersion(),
+                    driver,
+                    "FBMaintenanceManagerImpl"
+            );
 
-            Driver driver = null;
-            Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
-            for (String driverName : drivers.keySet()) {
-                if (driverName.startsWith(String.valueOf(dc.getDriverId()))) {
-                    driver = drivers.get(driverName);
-                    break;
-                }
-            }
-            if (driver == null)
-                driver = DefaultDriverLoader.getDefaultDriver();
-
-            IFBMaintenanceManager maintenanceManager = (IFBMaintenanceManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                    driver.getMajorVersion(), driver, "FBMaintenanceManagerImpl");
-
+            IFBMaintenanceManager maintenanceManager = (IFBMaintenanceManager) library;
             maintenanceManager.setUser(dc.getUserName());
             maintenanceManager.setPassword(dc.getUnencryptedPassword());
             maintenanceManager.setDatabase(dc.getSourceName());
@@ -74,12 +75,26 @@ public class TableValidationCommand extends OpenFrameCommand
             return maintenanceManager;
 
         } catch (ClassNotFoundException | SQLException e) {
-            GUIUtilities.displayExceptionErrorDialog(
-                    "Unable to init IFBMaintenanceManager instance", e, this.getClass());
+            GUIUtilities.displayExceptionErrorDialog(bundleString("initError"), e, this.getClass());
         }
 
         return null;
     }
+
+    private static Driver getDriver(DatabaseConnection dc) throws SQLException {
+
+        Map<String, Driver> drivers = DefaultDriverLoader.getLoadedDrivers();
+        for (Map.Entry<String, Driver> entry : drivers.entrySet()) {
+
+            String driverName = entry.getKey();
+            if (driverName.startsWith(String.valueOf(dc.getDriverId())))
+                return entry.getValue();
+        }
+
+        return DefaultDriverLoader.getDefaultDriver();
+    }
+
+    // ---
 
     private void showPanel(TableValidationPanel tableValidationPanel) {
 
@@ -89,7 +104,6 @@ public class TableValidationCommand extends OpenFrameCommand
 
         try {
             GUIUtilities.showWaitCursor();
-
             GUIUtilities.addCentralPane(
                     title,
                     TableValidationPanel.FRAME_ICON,
@@ -102,10 +116,8 @@ public class TableValidationCommand extends OpenFrameCommand
         }
     }
 
-    @Override
-    public void execute(ActionEvent e) {
-        if (isConnected())
-            showPanel(new TableValidationPanel());
+    private static String bundleString(String key) {
+        return Bundles.get(TableValidationCommand.class, key);
     }
 
 }

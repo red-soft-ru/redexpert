@@ -14,16 +14,17 @@ import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseMetaTag;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
 import org.executequery.datasource.ConnectionManager;
+import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.grantmanager.PrivilegesTablePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -55,36 +56,27 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
     private PrivilegesTablePanel tablePanel;
     private JComboBox<String> userTypeBox;
-    private JComboBox<DatabaseConnection> databaseBox;
+    private ConnectionsComboBox connectionsCombo;
 
     // ---
 
-    public DatabaseConnection connection;
     private JList<NamedObject> userList;
     private DefaultListModel<NamedObject> userListModel;
-
-    boolean connected;
-    boolean databaseBoxEnabled;
-    boolean elementsEnabled;
 
     // ---
 
     public GrantManagerPanel() {
-
-        elementsEnabled = true;
-        databaseBoxEnabled = true;
-
         init();
         setElementsEnabled(true);
-        loadConnections();
+        connectionChanged(new ItemEvent(connectionsCombo, -1, null, ItemEvent.SELECTED));
     }
 
     private void init() {
 
         // --- init ---
 
-        databaseBox = new JComboBox<>();
-        databaseBox.addActionListener(evt -> databaseBoxActionPerformed());
+        connectionsCombo = WidgetFactory.createConnectionComboBox("connectionsCombo", false, true, true);
+        connectionsCombo.addItemListener(this::connectionChanged);
 
         userTypeBox = new JComboBox<>();
         userTypeBox.addActionListener(evt -> loadUserList());
@@ -106,7 +98,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 .anchorNorthWest();
 
         add(new JLabel(Bundles.getCommon("connection")), gbh.get());
-        add(databaseBox, gbh.nextCol().get());
+        add(connectionsCombo, gbh.nextCol().get());
         add(new JLabel(bundleString("PrivilegesFor")), gbh.nextRowFirstCol().get());
         add(userTypeBox, gbh.nextCol().get());
         add(recipientsOfPrivilegesScroll, gbh.nextRowFirstCol().fillBoth().setWidth(2).spanY().get());
@@ -122,19 +114,17 @@ public class GrantManagerPanel extends JPanel implements TabView {
         recipients.add("Triggers");
         recipients.add("Procedures");
 
-        if (databaseBox.getSelectedItem() != null) {
-            if (((DatabaseConnection) (databaseBox.getSelectedItem())).getMajorServerVersion() >= 3) {
-                recipients.add("Functions");
-                recipients.add("Packages");
-            }
+        DatabaseConnection dc = getSelectedConnection();
+        if (dc != null && dc.getMajorServerVersion() >= 3) {
+            recipients.add("Functions");
+            recipients.add("Packages");
         }
 
         userTypeBox.setModel(new DefaultComboBoxModel<>(bundleString(recipients)));
     }
 
     public void setElementsEnabled(boolean enable) {
-        elementsEnabled = enable;
-        databaseBox.setEnabled(enable);
+        connectionsCombo.setEnabled(enable);
         userTypeBox.setEnabled(enable);
         userList.setEnabled(enable);
     }
@@ -143,14 +133,14 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
         List<NamedObject> users = new ArrayList<>();
 
-        DatabaseConnection databaseConnection = (DatabaseConnection) databaseBox.getSelectedItem();
-        if (databaseConnection == null)
+        DatabaseConnection dc = getSelectedConnection();
+        if (dc == null)
             return users;
 
-        if (databaseConnection.getMajorServerVersion() >= 3) {
+        if (dc.getMajorServerVersion() >= 3) {
             users.addAll(ConnectionsTreePanel
                     .getPanelFromBrowser()
-                    .getDefaultDatabaseHostFromConnection(databaseConnection)
+                    .getDefaultDatabaseHostFromConnection(dc)
                     .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[NamedObject.USER])
             );
 
@@ -159,8 +149,8 @@ public class GrantManagerPanel extends JPanel implements TabView {
             IFBUserManager userManager = null;
             try {
                 userManager = (IFBUserManager) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                        (databaseConnection).getDriverMajorVersion(),
-                        ConnectionManager.getTemporaryConnection(databaseConnection).unwrap(Connection.class),
+                        (dc).getDriverMajorVersion(),
+                        ConnectionManager.getTemporaryConnection(dc).unwrap(Connection.class),
                         "FBUserManagerImpl"
                 );
 
@@ -174,7 +164,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 return users;
 
             try {
-                Map<String, IFBUser> userMap = getUserManager(userManager, databaseConnection).getUsers();
+                Map<String, IFBUser> userMap = getUserManager(userManager, dc).getUsers();
                 for (IFBUser user : userMap.values())
                     users.add(getCreateUser(user.getUserName(), user.getPlugin()));
 
@@ -191,7 +181,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
                 new DefaultDatabaseMetaTag(
                         ConnectionsTreePanel
                                 .getPanelFromBrowser()
-                                .getDefaultDatabaseHostFromConnection(connection),
+                                .getDefaultDatabaseHostFromConnection(getSelectedConnection()),
                         NamedObject.META_TYPES[NamedObject.USER]
                 ),
                 name,
@@ -202,40 +192,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     private void userListValueChanged() {
         tablePanel.setDatabaseObject(userList.getSelectedValue());
         repaint();
-    }
-
-    @SuppressWarnings("DataFlowIssue")
-    public void loadConnections() {
-
-        boolean selected = databaseBox.getSelectedIndex() >= 0;
-        databaseBoxEnabled = false;
-        connected = false;
-
-        setElementsEnabled(true);
-        databaseBox.removeAllItems();
-
-        DatabaseConnection item = selected ? databaseBox.getItemAt(databaseBox.getSelectedIndex()) : null;
-        List<DatabaseConnection> connections = ((DatabaseConnectionRepository) RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)).findAll();
-
-        for (DatabaseConnection connection : connections) {
-            if (connection.isConnected()) {
-
-                connected = true;
-                databaseBoxEnabled = true;
-                databaseBox.addItem(connection);
-
-                if (!selected) {
-                    item = connection;
-                    selected = true;
-                }
-            }
-        }
-
-        if (!connected) {
-            GUIUtilities.displayErrorMessage(bundleString("message.notConnected"));
-            GUIUtilities.closeTab(TITLE);
-        } else
-            databaseBox.setSelectedItem(item);
     }
 
     private IFBUserManager getUserManager(IFBUserManager userManager, DatabaseConnection dc) {
@@ -312,7 +268,7 @@ public class GrantManagerPanel extends JPanel implements TabView {
 
             List<NamedObject> list = ConnectionsTreePanel
                     .getPanelFromBrowser()
-                    .getDefaultDatabaseHostFromConnection(connection)
+                    .getDefaultDatabaseHostFromConnection(getSelectedConnection())
                     .getDatabaseObjectsForMetaTag(tag);
 
             for (NamedObject object : list)
@@ -321,9 +277,6 @@ public class GrantManagerPanel extends JPanel implements TabView {
     }
 
     private void loadUserList() {
-
-        if (!connected)
-            return;
 
         userListModel = new DefaultListModel<>();
         userList.setModel(userListModel);
@@ -358,14 +311,16 @@ public class GrantManagerPanel extends JPanel implements TabView {
             userList.setSelectedIndex(0);
     }
 
-    private void databaseBoxActionPerformed() {
-        if (databaseBoxEnabled) {
-            connection = (DatabaseConnection) databaseBox.getSelectedItem();
+    private void connectionChanged(ItemEvent event) {
+        if (event.getStateChange() == ItemEvent.SELECTED) {
             fillUserBox();
             loadUserList();
         }
     }
 
+    private DatabaseConnection getSelectedConnection() {
+        return connectionsCombo.getSelectedConnection();
+    }
 
     @Override
     public boolean tabViewClosing() {

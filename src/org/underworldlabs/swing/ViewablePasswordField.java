@@ -4,6 +4,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,8 +51,8 @@ public class ViewablePasswordField extends JPanel {
         setPreferredSize(new Dimension(getPreferredSize().width, WidgetFactory.defaultHeight()));
 
         GridBagHelper gbh = new GridBagHelper().setMaxWeightX().fillBoth();
-        add(passwordField, gbh.get());
-        add(toggleButton, gbh.nextCol().setMinWeightX().get());
+        add(passwordField, gbh.leftGap(5).get());
+        add(toggleButton, gbh.nextCol().leftGap(0).setMinWeightX().get());
     }
 
     private void update() {
@@ -81,6 +82,7 @@ public class ViewablePasswordField extends JPanel {
         super.setEnabled(enabled);
         toggleButton.setEnabled(enabled);
         passwordField.setEnabled(enabled);
+        setBackground(passwordField.getBackground());
     }
 
     // ---
@@ -89,11 +91,11 @@ public class ViewablePasswordField extends JPanel {
         passwordField.setText(text);
     }
 
-    public char[] getPassword() {
-        return passwordField.getPassword();
+    public String getPassword() {
+        return MiscUtils.charsToString(passwordField.getPassword());
     }
 
-    public JPasswordField getPasswordField() {
+    public JPasswordField getField() {
         return passwordField;
     }
 

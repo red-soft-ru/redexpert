@@ -24,6 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.actions.toolscommands.ComparerDBCommands;
 import org.executequery.actions.toolscommands.DatabaseBackupRestoreCommands;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.QueryTypes;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -715,6 +716,10 @@ public class BrowserTreePopupMenuActionListener extends ReflectiveAction {
 
     protected boolean hasCurrentPath() {
         return currentPath != null;
+    }
+
+    protected boolean isSelectionEmbedded() {
+        return ConnectionType.isEmbedded(currentSelection);
     }
 
     protected void setCurrentSelection(DatabaseConnection currentSelection) {

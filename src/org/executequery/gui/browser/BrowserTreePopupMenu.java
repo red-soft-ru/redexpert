@@ -180,6 +180,7 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         boolean isView = nodeType == NamedObject.VIEW;
         boolean isTable = nodeType == NamedObject.TABLE;
         boolean isIndex = nodeType == NamedObject.INDEX;
+        boolean isEmbedded = listener.isSelectionEmbedded();
         boolean isSeveralSelected = listener.isSelectedSeveralPaths();
         boolean isViewColumn = nodeType == NamedObject.TABLE_COLUMN
                 && ((DatabaseObjectNode) objectNode.getParent()).getType() == NamedObject.VIEW;
@@ -212,10 +213,10 @@ public class BrowserTreePopupMenu extends JPopupMenu {
         if (isIndex)
             add(refreshIndexStatistic);
 
-        if (isTable)
+        if (isTable && !isEmbedded)
             add(validateTable);
 
-        if (isTable || isIndex)
+        if ((isTable && !isEmbedded) || isIndex)
             addSeparator();
 
         if (!isSeveralSelected)

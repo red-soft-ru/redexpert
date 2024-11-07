@@ -69,6 +69,11 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   private String port;
 
   /**
+   * The tunnel port for this connection for the SHH connected DB
+   */
+  private int tunnelPort;
+
+  /**
    * The driver specific URL for this connection
    */
   private String url;
@@ -141,7 +146,9 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   private String authMethod;
 
-  private String connectionMethod;
+  private String authMethodMode;
+
+  private String connType;
 
   private String folderId;
 
@@ -387,14 +394,6 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
 
   public void setUseNewAPI(boolean useNewAPI) {
     this.useNewAPI = useNewAPI;
-  }
-
-  public String getConnectionMethod() {
-    return connectionMethod == null ? "Standard" : connectionMethod;
-  }
-
-  public void setConnectionMethod(String method) {
-    this.connectionMethod = method;
   }
 
   public String getAuthMethod() {
@@ -805,10 +804,37 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   }
 
   @Override
+  public void setAuthMethodMode(String val) {
+    authMethodMode = val;
+  }
+
+  @Override
+  public String getAuthMethodMode() {
+    return authMethodMode;
+  }
+
+  @Override
+  public void setConnType(String val) {
+    connType = val;
+  }
+
+  @Override
+  public String getConnType() {
+    return connType;
+  }
+
+  @Override
+  public int getTunnelPort() {
+    return tunnelPort;
+  }
+
+  @Override
+  public void setTunnelPort(int val) {
+    tunnelPort = val;
+  }
+
+  @Override
   public void setValues(DatabaseConnection source) {
   }
 
 }
-
-
-

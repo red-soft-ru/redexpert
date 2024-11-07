@@ -20,15 +20,15 @@
 
 package org.executequery.datasource;
 
-import biz.redsoft.IFBCryptoPluginInit;
-import biz.redsoft.IFBDataSource;
-import biz.redsoft.ITPB;
+import biz.redsoft.*;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.ApplicationContext;
 import org.executequery.EventMediator;
 import org.executequery.ExecuteQuery;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
+import org.executequery.datasource.util.LibraryManager;
 import org.executequery.event.ConnectionRepositoryEvent;
 import org.executequery.event.DefaultConnectionRepositoryEvent;
 import org.executequery.gui.LoginPasswordDialog;
@@ -43,10 +43,9 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.sql.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -63,7 +62,9 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
 
     private Properties properties = new Properties();
 
+    private Object fbclient;
     private final Driver driver;
+    private Connection connection;
     private IFBDataSource dataSource;
     private final String url;
     private final DatabaseConnection databaseConnection;
@@ -75,18 +76,17 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     public SimpleDataSource(DatabaseConnection databaseConnection) {
 
         this.databaseConnection = databaseConnection;
-        if (databaseConnection.hasAdvancedProperties()) {
-
+        if (databaseConnection.hasAdvancedProperties())
             populateAdvancedProperties();
-        }
 
         driver = loadDriver(databaseConnection.getJDBCDriver());
-        if (driver == null) {
-
+        if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
-        }
 
-        url = generateUrl(databaseConnection, properties);
+        url = ConnectionType.isEmbedded(databaseConnection) ?
+                generateEmbeddedUrl(databaseConnection) :
+                generateUrl(databaseConnection, properties);
+
         Log.info("JDBC Driver class: " + databaseConnection.getJDBCDriver().getClassName());
     }
 
@@ -114,12 +114,14 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         try {
             return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
         } catch (SQLException e) {
-            if (e.getSQLState().contentEquals("28000")&&e.getErrorCode()==335544472
+            if (e.getSQLState().contentEquals("28000") && e.getErrorCode() == 335544472
                     && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
                 databaseConnection.setPassword("");
                 dataSource = null;
                 return getConnection(tpb);
             }
+
+            maybeShutdownNativeResources();
             throw e;
         }
     }
@@ -131,99 +133,125 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     public Connection getConnection(String username, String password, ITPB tpb) throws SQLException {
 
         Properties advancedProperties = buildAdvancedProperties();
-
-        // in the case of multifactor authentication, the user name and
-        // password may not be specify, if a certificate is specify
         if (!advancedProperties.containsKey("useGSSAuth")) {
-            if (StringUtils.isNotBlank(username)) {
+            // in the case of multifactor authentication, the username and
+            // password may not be specified, if a certificate is specified
 
+            if (StringUtils.isNotBlank(username))
                 advancedProperties.put("user", username);
-            }
-
-            if (StringUtils.isNotBlank(password)) {
-
+            if (StringUtils.isNotBlank(password))
                 advancedProperties.put("password", password);
-            }
         }
 
-        if (driver != null) {
-            if (dataSource != null)
-                return dataSource.getConnection(tpb);
+        if (driver == null)
+            throw new DataSourceException("Error loading specified JDBC driver");
 
-            // If used jaybird
-            if (databaseConnection.getJDBCDriver().getClassName().contains("FBDriver") &&
-                    !StringUtils.equalsIgnoreCase(databaseConnection.getConnectionMethod(), "jdbc")) {
+        // If embedded connection selected
+        if (ConnectionType.isEmbedded(databaseConnection)) {
 
-                try {
-
-                    // Checking for original jaybird or rdb jaybird...
-                    try {
-                        driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
-                    } catch (ClassNotFoundException e) {
-                        driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
-                    }
-
-                    String jarPath = databaseConnection.getJDBCDriver().getPath();
-                    jarPath = jarPath.replace("../", "./") + ";" + jarPath.replace("./", "../");
-                    jarPath = jarPath.replace(".../", "../");
-                    jarPath += ";" + DynamicLibraryLoader.getFbPluginImplPath(driver.getMajorVersion());
-
-                    if (cryptoPlugin == null) {
-                        try {
-                            Object odb = DynamicLibraryLoader.loadingObjectFromClassLoader(
-                                    driver,
-                                    "biz.redsoft.FBCryptoPluginInitImpl",
-                                    jarPath
-                            );
-
-                            cryptoPlugin = (IFBCryptoPluginInit) odb;
-                            cryptoPlugin.init();
-
-                        } catch (Throwable e) {
-                            Log.warning("Unable to initialize cryptographic plugin. " +
-                                    "Authentication using cryptographic mechanisms will not be available. " +
-                                    "Please install the crypto pro library to enable cryptographic modules."
-                            );
-                            advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
-                        }
-                    }
-
-                    if (databaseConnection.useNewAPI()) {
-                        try {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
-                                    driver,
-                                    "biz.redsoft.FBDataSourceImpl",
-                                    jarPath,
-                                    new DynamicLibraryLoader.Parameter(String.class, "FBOONATIVE")
-                            );
-
-                        } catch (ClassNotFoundException e) {
-                            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
-                                    "FBDataSourceImpl");
-                        }
-
-                    } else {
-                        dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoader(driver.getMajorVersion(), driver,
-                                "FBDataSourceImpl");
-                    }
-
-                    for (Map.Entry<Object, Object> entry : advancedProperties.entrySet()) {
-                        dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
-                    }
-                    dataSource.setURL(url);
-                    classLoaderFromPlugin = dataSource.getClass().getClassLoader();
-
-                    return dataSource.getConnection(tpb);
-                } catch (ClassNotFoundException e) {
-                    // ...original jaybird
-                    return driver.connect(url, advancedProperties);
-                }
-            } else { // another databases...
-                return driver.connect(url, advancedProperties);
+            if (connection == null) {
+                LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
+                fbclient = LibraryManager.loadFbClientLibrary(driver);
+                connection = driver.connect(url, advancedProperties);
             }
+
+            return connection;
         }
 
-        throw new DataSourceException("Error loading specified JDBC driver");
+        if (dataSource != null)
+            return dataSource.getConnection(tpb);
+
+        // If jaybird not in use
+        if (!databaseConnection.getJDBCDriver().getClassName().contains("FBDriver"))
+            return driver.connect(url, advancedProperties);
+
+        // Checking for original jaybird or rdb jaybird...
+        if (!loadJaybirdClass())
+            return driver.connect(url, advancedProperties);
+
+        List<Path> jarPathsList = LibraryManager.getJarPathsList(databaseConnection, driver.getMajorVersion());
+        initCryptoPlugin(jarPathsList, advancedProperties);
+        initDataSource(jarPathsList, advancedProperties);
+
+        return dataSource.getConnection(tpb);
+    }
+
+    private boolean loadJaybirdClass() {
+
+        try {
+            driver.getClass().getClassLoader().loadClass("org.firebirdsql.jca.FBSADataSource");
+            return true;
+
+        } catch (ClassNotFoundException e) {
+            Log.debug(e.getMessage(), e);
+        }
+
+        try {
+            driver.getClass().getClassLoader().loadClass("org.firebirdsql.jaybird.xca.FBSADataSource");
+            return true;
+
+        } catch (ClassNotFoundException e) {
+            Log.debug(e.getMessage(), e);
+        }
+
+        return false;
+    }
+
+    private void initCryptoPlugin(List<Path> pathList, Properties advancedProperties) {
+
+        if (cryptoPlugin != null)
+            return;
+
+        try {
+            Object library = DynamicLibraryLoader.loadingObjectFromClassLoader(
+                    driver,
+                    "biz.redsoft.FBCryptoPluginInitImpl",
+                    LibraryManager.convertToStringParameter(pathList)
+            );
+
+            cryptoPlugin = (IFBCryptoPluginInit) library;
+            cryptoPlugin.init();
+
+        } catch (Exception | LinkageError e) {
+            Log.warning("Unable to initialize cryptographic plugin.");
+            Log.warning("Authentication using cryptographic mechanisms will not be available.");
+            Log.warning("Please install the crypto pro library to enable cryptographic modules.");
+
+            advancedProperties.put("excludeCryptoPlugins", "Multifactor,GostPassword,Certificate");
+        }
+    }
+
+    private void initDataSource(List<Path> pathList, Properties advancedProperties) throws DataSourceException {
+        try {
+            String connType = getConnectionType();
+            dataSource = (IFBDataSource) DynamicLibraryLoader.loadingObjectFromClassLoaderWithParams(
+                    driver,
+                    "biz.redsoft.FBDataSourceImpl",
+                    LibraryManager.convertToStringParameter(pathList),
+                    new DynamicLibraryLoader.Parameter(String.class, connType)
+            );
+
+        } catch (ClassNotFoundException e) {
+            throw new DataSourceException("Couldn't connect, class not found", e);
+        }
+
+        for (Map.Entry<Object, Object> entry : advancedProperties.entrySet())
+            dataSource.setNonStandardProperty(entry.getKey().toString(), entry.getValue().toString());
+
+        dataSource.setURL(url);
+        classLoaderFromPlugin = dataSource.getClass().getClassLoader();
+    }
+
+    private String getConnectionType() {
+        String connType = databaseConnection.getConnType();
+
+        if (Objects.equals(connType, ConnectionType.NATIVE.name()))
+            return ConnectionType.NATIVE.value(databaseConnection.useNewAPI());
+
+        if (Objects.equals(connType, ConnectionType.EMBEDDED.name()))
+            return ConnectionType.EMBEDDED.value(databaseConnection.useNewAPI());
+
+        return ConnectionType.PURE_JAVA.name();
     }
 
     public ClassLoader getClassLoaderFromPlugin() {
@@ -278,30 +306,26 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         return DRIVER_LOADER.load(databaseDriver);
     }
 
+    private static String generateEmbeddedUrl(DatabaseConnection databaseConnection) {
+        String url = "jdbc:firebirdsql:embedded:" + databaseConnection.getSourceName();
+        Log.info("JDBC URL pattern: " + url);
+        return url;
+    }
+
     public static String generateUrl(DatabaseConnection databaseConnection, Properties properties) {
 
-        String url = databaseConnection.getURL();
+        String url = databaseConnection.getJDBCDriver().getURL();
+        Log.info("JDBC URL pattern: " + url);
 
-        String connectionMethod = databaseConnection.getConnectionMethod();
+        url = replacePart(url, databaseConnection.getHost(), HOST);
+        url = replacePart(url, databaseConnection.getPort(), PORT);
+        url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
+        Log.info("JDBC URL generated: " + url);
 
-        if (connectionMethod.equalsIgnoreCase("jdbc")) {
-            Log.info("Using user specified JDBC URL: " + url);
-
-        } else {
-
-            url = databaseConnection.getJDBCDriver().getURL();
-            Log.info("JDBC URL pattern: " + url);
-
-            url = replacePart(url, databaseConnection.getHost(), HOST);
-            url = replacePart(url, databaseConnection.getPort(), PORT);
-            url = replacePart(url, databaseConnection.getSourceName(), SOURCE);
-            Log.info("JDBC URL generated: " + url);
-            Properties clone = (Properties) properties.clone();
-            if (clone.getProperty("isc_dpb_repository_pin") != null)
-                clone.setProperty("isc_dpb_repository_pin", "********");
-            Log.info("JDBC properties: " + clone);
-
-        }
+        Properties clone = (Properties) properties.clone();
+        if (clone.getProperty("isc_dpb_repository_pin") != null)
+            clone.setProperty("isc_dpb_repository_pin", "********");
+        Log.info("JDBC properties: " + clone);
 
         return url;
     }
@@ -430,19 +454,28 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public void close() throws ResourceException {
+        try {
 
-        if (dataSource != null) {
-            try {
+            if (dataSource != null)
                 dataSource.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+
+            if (connection != null) {
+                connection.close();
+                connection = null;
             }
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
         }
 
+        maybeShutdownNativeResources();
+    }
+
+    private void maybeShutdownNativeResources() {
+        if (ConnectionType.isEmbedded(databaseConnection)) {
+            LibraryManager.shutdownNativeResources(driver, fbclient);
+            fbclient = null;
+        }
     }
 
 }
-
-
-
-

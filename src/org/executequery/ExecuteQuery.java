@@ -25,6 +25,8 @@ import org.executequery.log.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * The entry point for RedExpert application.
@@ -32,6 +34,7 @@ import java.io.IOException;
  * @author Takis Diakoumis
  */
 public final class ExecuteQuery {
+    public static final Path TMP_APP_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "redexpert");
 
     private static ProcessBuilder shutdownHook = null;
 

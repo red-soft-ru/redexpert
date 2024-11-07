@@ -593,12 +593,26 @@ public final class WidgetFactory {
      * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
      * with the automatically updated active connections list
      *
-     * @param name                      the component's name
-     * @param showOnlyActiveConnections whether comboBox will contain only active connections
+     * @param name           the component's name
+     * @param showOnlyActive whether comboBox will contain only active connections
      */
-    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive) {
+        return createConnectionComboBox(name, showOnlyActive, false, false);
+    }
 
-        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+    /**
+     * Create named <code>ConnectionsComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
+     * with the automatically updated active connections list
+     *
+     * @param name             the component's name
+     * @param showOnlyActive   whether comboBox will contain only active connections
+     * @param allowAutoConnect whether comboBox will automatically connect to the selected database
+     * @param embeddedFilter   whether comboBox will prevent to select embedded connections
+     */
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean allowAutoConnect, boolean embeddedFilter) {
+
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, allowAutoConnect, embeddedFilter);
         connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 
@@ -633,20 +647,6 @@ public final class WidgetFactory {
         passwordField.setName(name);
 
         return passwordField;
-    }
-
-    /**
-     * Create named <code>ComponentTitledPanel</code> class instance,
-     * that has border with the <code>JComponents</code> instead of title.
-     *
-     * @param name the component's name
-     */
-    public static ComponentTitledPanel createComponentTitledPanel(String name, JComponent component) {
-
-        ComponentTitledPanel panel = new ComponentTitledPanel(component);
-        panel.setName(name);
-
-        return panel;
     }
 
     /**

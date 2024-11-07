@@ -102,13 +102,15 @@ public class SimpleSqlTextPanel extends DefaultTextEditorContainer {
         Color foreground = SystemProperties.getColourProperty("user", "editor.text.foreground.colour");
         Color background = SystemProperties.getColourProperty("user", "editor.text.background.colour");
         Color selection = SystemProperties.getColourProperty("user", "editor.text.selection.background");
+        Color gutterBackground = SystemProperties.getColourProperty("user", "editor.linenumber.background");
+        Color gutterForeground = SystemProperties.getColourProperty("user", "editor.linenumber.foreground");
 
         queryScroll.setLineNumbersEnabled(true);
         queryScroll.setFoldIndicatorEnabled(true);
-        queryScroll.getGutter().setBackground(background);
-        queryScroll.getGutter().setLineNumberColor(foreground);
+        queryScroll.getGutter().setBackground(gutterBackground);
+        queryScroll.getGutter().setLineNumberColor(gutterForeground);
         queryScroll.getGutter().setCurrentLineNumberColor(selection);
-        queryScroll.getGutter().setLineNumberFont(QueryEditorSettings.getEditorFont());
+        queryScroll.getGutter().setFont(QueryEditorSettings.getEditorFont());
 
         textPane.setCaretPosition(0);
         textPane.setDragEnabled(true);

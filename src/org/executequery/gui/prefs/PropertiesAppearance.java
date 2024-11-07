@@ -20,6 +20,7 @@
 
 package org.executequery.gui.prefs;
 
+import org.executequery.Application;
 import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.localization.InterfaceLanguage;
@@ -31,6 +32,7 @@ import org.underworldlabs.util.SystemProperties;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.io.IOException;
 import java.net.URI;
@@ -142,7 +144,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
 
         addContent(preferencesPanel);
-        lookAndFeelCombBox().addItemListener(this::lookAndFeelChanged);
+        lookAndFeelCombBox().addActionListener(this::lookAndFeelChanged);
 
         // TODO: remove when refactor portuguese resources
         interfaceLanguageCombBox().addItemListener(this::interfaceLanguageChanged);
@@ -153,17 +155,13 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
         return (JComboBox) preferencesPanel.getComponentEditorForKey("startup.display.lookandfeel");
     }
 
-    private synchronized void lookAndFeelChanged(ItemEvent e) {
-
-        if (e.getStateChange() != ItemEvent.SELECTED)
-            return;
+    private synchronized void lookAndFeelChanged(ActionEvent e) {
 
         LookAndFeelType selectedLaf = getCurrentlySelectedLookAndFeel();
         AbstractPropertiesColours.setSelectedLookAndFeel(selectedLaf);
-        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
+        scheduleThemeColorsUpdating();
 
-        restoreAndSaveDefaults(PropertyTypes.EDITOR_COLOURS);
-        restoreAndSaveDefaults(PropertyTypes.RESULT_SET_COLOURS);
+        lafSelectionPanel.setVisible(LookAndFeelType.PLUGIN.equals(selectedLaf));
     }
 
     /// TODO: remove when refactor portuguese resources
@@ -232,6 +230,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
     public void restoreDefaults() {
         lafSelectionPanel.restore();
         preferencesPanel.restoreDefaults();
+        scheduleThemeColorsUpdating();
         apply();
     }
 
@@ -244,6 +243,13 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
 
     private void apply() {
         GUIUtilities.displayStatusBar(SystemProperties.getBooleanProperty("user", "system.display.statusbar"));
+    }
+
+    private void scheduleThemeColorsUpdating() {
+        LookAndFeelType laf = getCurrentlySelectedLookAndFeel();
+        Application.addShutdownAction("updating-theme-colors",
+                () -> AbstractPropertiesColours.resetLookAndFeelColors(laf)
+        );
     }
 
     /// TODO: remove when refactor portuguese resources

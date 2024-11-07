@@ -35,22 +35,11 @@ import java.awt.event.ActionEvent;
  */
 public class ExitCommand implements BaseCommand {
 
+    @Override
     public void execute(ActionEvent e) {
-
-        if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("exit-confirmation")) != JOptionPane.YES_OPTION)
-            return;
-        Application.getInstance().exitProgram();
+        int exitProgram = GUIUtilities.displayConfirmDialog(Bundles.getCommon("exit-confirmation"));
+        if (exitProgram == JOptionPane.YES_OPTION)
+            Application.exitProgram();
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

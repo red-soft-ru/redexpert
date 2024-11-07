@@ -20,10 +20,8 @@
 
 package org.executequery.gui;
 
-import org.executequery.Application;
-import org.executequery.GUIUtilities;
+import org.executequery.actions.filecommands.ExitCommand;
 import org.executequery.gui.browser.BrowserConstants;
-import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.GlassPanePanel;
@@ -63,14 +61,10 @@ public class ExecuteQueryFrame extends JFrame
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
-
+            @Override
             public void windowClosing(WindowEvent e) {
-
-                if (GUIUtilities.displayConfirmDialog(Bundles.getCommon("exit-confirmation")) != JOptionPane.YES_OPTION)
-                    return;
-                Application.getInstance().exitProgram();
+                new ExitCommand().execute(null);
             }
-
         });
 
         addComponentListener(this);

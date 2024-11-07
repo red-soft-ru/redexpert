@@ -248,7 +248,7 @@ public final class DerivedQuery {
     }
 
     public boolean isExecutable() {
-        return StringUtils.isNotBlank(getDerivedQuery());
+        return StringUtils.isNotBlank(getQueryWithoutComments());
     }
 
 }

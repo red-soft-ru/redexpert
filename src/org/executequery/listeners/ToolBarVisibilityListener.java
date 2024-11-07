@@ -23,8 +23,15 @@ package org.executequery.listeners;
 import org.executequery.event.ApplicationEvent;
 import org.executequery.event.ApplicationEventListener;
 import org.executequery.toolbars.ToolBarEvent;
+import org.underworldlabs.swing.GUIUtils;
+import org.underworldlabs.swing.toolbar.ToolBarProperties;
 
 public class ToolBarVisibilityListener implements ApplicationEventListener {
+
+    @SuppressWarnings("unused")
+    public void toolBarChanged(ToolBarEvent e) {
+        GUIUtils.invokeLater(ToolBarProperties::saveTools);
+    }
 
     @Override
     public boolean canHandleEvent(ApplicationEvent event) {

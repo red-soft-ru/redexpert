@@ -71,8 +71,8 @@ public abstract class AbstractConnectionPanel extends JPanel
     private static final String BASIC_AUTH = bundleString("BasicAu");
     private static final String MULTI_FACTOR_AUTH = bundleString("MultiFactor");
 
-    protected static final String OLD_SERVER = "Red Database (Firebird) 2.X";
-    protected static final String NEW_SERVER = "Red Database (Firebird) 3+";
+    public static final String OLD_SERVER = "Red Database (Firebird) 2.X";
+    public static final String NEW_SERVER = "Red Database (Firebird) 3+";
 
     private boolean driverChangeEnable;
 

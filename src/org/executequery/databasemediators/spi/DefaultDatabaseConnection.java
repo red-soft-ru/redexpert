@@ -29,6 +29,7 @@ import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.MetaDataValues;
 import org.executequery.databaseobjects.NamedObject;
+import org.executequery.gui.browser.AbstractConnectionPanel;
 import org.executequery.gui.browser.ConnectionsFolder;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.nodes.DatabaseObjectNode;
@@ -236,42 +237,38 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
      * Creates a new empty <code>DatabaseConnection</code> object.
      */
     public DefaultDatabaseConnection() {
-
-        this(null);
+        this(null, null, null);
     }
 
     /**
      * Creates a new empty <code>DatabaseConnection</code> object
      * with the specified name.
      *
-     * @param name - A unique name for this connection.
+     * @param name a unique name for this connection.
      */
     public DefaultDatabaseConnection(String name) {
-
-        this.name = name;
-        transactionIsolation = -1;
+        this(name, null, null);
     }
 
     /**
-     * @param name - A unique name for this connection
-     * @param sourceName - File path for this connection
+     * @param name       a unique name for this connection
+     * @param sourceName file path for this connection
      */
     public DefaultDatabaseConnection(String name, String sourceName) {
-
-        this(name);
-        this.sourceName = sourceName;
-
+        this(name, sourceName, null);
     }
 
     public DefaultDatabaseConnection(String name, String sourceName, TemplateDatabaseConnection tdc) {
-
-       this(name,sourceName);
-
-        this.userName = tdc.getUserName();
-        this.password = tdc.getPassword();
-        this.passwordStored = tdc.isPasswordStored();
-        this.charset = tdc.getCharset();
-
+        this.authMethodMode = AbstractConnectionPanel.NEW_SERVER;
+        this.transactionIsolation = -1;
+        this.sourceName = sourceName;
+        this.name = name;
+        if (tdc != null) {
+            this.userName = tdc.getUserName();
+            this.password = tdc.getPassword();
+            this.passwordStored = tdc.isPasswordStored();
+            this.charset = tdc.getCharset();
+        }
     }
 
     public boolean isPasswordStored() {

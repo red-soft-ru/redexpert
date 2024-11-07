@@ -266,4 +266,8 @@ public interface DatabaseConnection extends Serializable {
         return Objects.equals(host, "localhost") || Objects.equals(host, "127.0.0.1");
     }
 
+    int getTunnelPort();
+
+    void setTunnelPort(int val);
+
 }

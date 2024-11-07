@@ -129,7 +129,7 @@ public class DatabaseStatisticCommand {
             );
 
             statisticManager.setHost(dc.getHost());
-            statisticManager.setPort(dc.getPortInt());
+            statisticManager.setPort(dc.isSshTunnel() ? dc.getTunnelPort() : dc.getPortInt());
             statisticManager.setUser(dc.getUserName());
             if (!MiscUtils.isNull(dc.getCharset()) && !Objects.equals(dc.getCharset(), "NONE"))
                 statisticManager.setCharSet(MiscUtils.getJavaCharsetFromSqlCharset(dc.getCharset()));

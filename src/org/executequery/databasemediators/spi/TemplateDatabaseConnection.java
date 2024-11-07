@@ -69,6 +69,11 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   private String port;
 
   /**
+   * The tunnel port for this connection for the SHH connected DB
+   */
+  private int tunnelPort;
+
+  /**
    * The driver specific URL for this connection
    */
   private String url;
@@ -816,6 +821,16 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
   @Override
   public String getConnType() {
     return connType;
+  }
+
+  @Override
+  public int getTunnelPort() {
+    return tunnelPort;
+  }
+
+  @Override
+  public void setTunnelPort(int val) {
+    tunnelPort = val;
   }
 
 }

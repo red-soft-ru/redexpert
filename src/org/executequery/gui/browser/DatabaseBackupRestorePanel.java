@@ -106,7 +106,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         restoreHelper.getRestoreButton().addActionListener(e -> runDaemon("restore", this::performRestore));
 
         // Initialize connection-related fields
-        connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false);
+        connectionCombo = WidgetFactory.createConnectionComboBox("connectionCombo", false, false, true);
         charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", loadCharsets());
         passwordField = WidgetFactory.createViewablePasswordField("passwordField");
         databaseFileField = WidgetFactory.createTextField("databaseFileField");

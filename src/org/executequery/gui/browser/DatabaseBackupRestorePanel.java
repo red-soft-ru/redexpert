@@ -135,7 +135,7 @@ public class DatabaseBackupRestorePanel extends AbstractDockedTabPanel {
         connectionCombo.addItemListener(connectionComboListener);
         hostField.getDocument().addDocumentListener(new SimpleDocumentListener(this::hostChanged));
 
-        passwordField.getPasswordField().getDocument().addDocumentListener(connectionChangeListener);
+        passwordField.getField().getDocument().addDocumentListener(connectionChangeListener);
         databaseFileField.getDocument().addDocumentListener(connectionChangeListener);
         hostField.getDocument().addDocumentListener(connectionChangeListener);
         portField.getDocument().addDocumentListener(connectionChangeListener);

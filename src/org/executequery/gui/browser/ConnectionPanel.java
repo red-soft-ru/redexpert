@@ -212,6 +212,14 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         rightPanel.add(checkPwdPanel, gbh.nextRow().nextCol().leftGap(2).get());
         rightPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().spanY().get());
 
+        // --- bottom panel ---
+
+        JPanel bottomPanel = WidgetFactory.createPanel("mainPanel");
+
+        gbh = new GridBagHelper().anchorNorthWest().spanX();
+        bottomPanel.add(sshPanel, gbh.setMinWeightX().bottomGap(10).get());
+        bottomPanel.add(multiFactorPanel, gbh.nextRowFirstCol().bottomGap(0).get());
+
         // --- main panel ---
 
         JPanel mainPanel = WidgetFactory.createPanel("mainPanel");
@@ -219,9 +227,8 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillBoth();
         mainPanel.add(leftPanel, gbh.setMaxWeightX().get());
         mainPanel.add(rightPanel, gbh.nextCol().spanX().get());
-        mainPanel.add(multiFactorPanel, gbh.nextRowFirstCol().leftGap(5).get());
-        mainPanel.add(sshPanel, gbh.nextRow().get());
-        mainPanel.add(buttonsPanel, gbh.nextRow().fillNone().get());
+        mainPanel.add(bottomPanel, gbh.nextRowFirstCol().fillNone().get());
+        mainPanel.add(buttonsPanel, gbh.nextRow().get());
         mainPanel.add(new JPanel(), gbh.nextRow().setMaxWeightY().fillBoth().spanY().get());
 
         // --- tab pane ---

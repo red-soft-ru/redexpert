@@ -86,7 +86,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         leftPanel.add(fileField, gbh.nextRow().setWidth(1).get());
         leftPanel.add(browseFileButton, gbh.nextCol().setMinWeightX().get());
         leftPanel.add(charsetsCombo, gbh.nextRow().previousCol().spanX().get());
-        leftPanel.add(pageSizeCombo, gbh.nextRow().get());
+        leftPanel.add(pageSizeCombo, gbh.nextRow().spanY().get());
 
         // --- right panel ---
 
@@ -106,7 +106,7 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         rightPanel.add(authCombo, gbh.nextRow().get());
         rightPanel.add(userField, gbh.nextRow().get());
         rightPanel.add(userPasswordField, gbh.nextRow().get());
-        rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).get());
+        rightPanel.add(checkPanel, gbh.nextRow().nextCol().leftGap(2).spanY().get());
 
         // --- main panel ---
 
@@ -115,9 +115,9 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         gbh = new GridBagHelper().anchorNorthWest().setInsets(5, 5, 5, 5).fillBoth();
         mainPanel.add(leftPanel, gbh.setMaxWeightX().get());
         mainPanel.add(rightPanel, gbh.nextCol().get());
-        mainPanel.add(multiFactorPanel, gbh.nextRowFirstCol().spanX().get());
-        mainPanel.add(createButton, gbh.nextRowFirstCol().setMinWeightX().fillNone().get());
-        mainPanel.add(new JPanel(), gbh.nextRow().fillBoth().setMaxWeightY().spanX().spanY().get());
+        mainPanel.add(multiFactorPanel, gbh.nextRowFirstCol().fillNone().spanX().get());
+        mainPanel.add(createButton, gbh.nextRowFirstCol().setMinWeightX().get());
+        mainPanel.add(new JPanel(), gbh.nextRow().fillBoth().setMaxWeightY().spanY().get());
 
         // --- tab pane ---
 

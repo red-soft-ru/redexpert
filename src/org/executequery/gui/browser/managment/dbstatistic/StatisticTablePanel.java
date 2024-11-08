@@ -6,6 +6,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
+import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
@@ -167,6 +168,11 @@ public class StatisticTablePanel extends AbstractPanel {
     public void setRows(List rows) {
         this.rows = rows;
         model.fireTableDataChanged();
+    }
+
+    public void exportTable()
+    {
+        new ExportDataPanel(table.getModel(), null);
     }
 
     class StatisticTableModel extends AbstractTableModel {

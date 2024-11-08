@@ -17,8 +17,8 @@ public interface T {
     String BIGINT = "BIGINT";
     String BLOB = "BLOB";
     String BLOB_SUB_TYPE_V0 = "BLOB SUB_TYPE <0";
-    String BLOB_SUB_TYPE_0 = "BLOB SUB_TYPE 0";
-    String BLOB_SUB_TYPE_1 = "BLOB SUB_TYPE 1";
+    String BLOB_SUB_TYPE_BINARY = "BLOB SUB_TYPE BINARY";
+    String BLOB_SUB_TYPE_TEXT = "BLOB SUB_TYPE TEXT";
     String ARRAY = "ARRAY";
     String BOOLEAN = "BOOLEAN";
     String CSTRING = "CSTRING";

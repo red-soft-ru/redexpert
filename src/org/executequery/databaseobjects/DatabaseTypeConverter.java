@@ -34,79 +34,77 @@ DatabaseTypeConverter {
         switch (sqlType) {
             case smallint_type:
                 if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.NUMERIC+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else if (sqlSubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.DECIMAL+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else
-                    return "SMALLINT";
+                    return T.SMALLINT;
             case integer_type:
                 if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.NUMERIC+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else if (sqlSubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.DECIMAL+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else
-                    return "INTEGER";
+                    return T.INTEGER;
             case double_type:
             case d_float_type:
                 if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.NUMERIC+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else if (sqlSubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.DECIMAL+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else
-                    return "DOUBLE PRECISION";
+                    return T.DOUBLE_PRECISION;
             case float_type:
-                return "FLOAT";
+                return T.FLOAT;
             case char_type:
-                return "CHAR(" + sqlSize + ")";
+                return T.CHAR+"(" + sqlSize + ")";
             case varchar_type:
-                return "VARCHAR(" + sqlSize + ")";
+                return T.VARCHAR+"(" + sqlSize + ")";
             case timestamp_type:
-                return "TIMESTAMP";
-            case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIME ZONE";
             case timestamp_without_timezone:
-                return "TIMESTAMP WITHOUT TIME ZONE";
+                return T.TIMESTAMP;
+            case timestamp_with_timezone:
+                return T.TIMESTAMP_WITH_TIMEZONE;
             case time_type:
-                return "TIME";
-            case time_with_timezone:
-                return "TIME WITH TIME ZONE";
             case time_without_timezone:
-                return "TIME WITHOUT TIME ZONE";
+                return T.TIME;
+            case time_with_timezone:
+                return T.TIME_WITH_TIMEZONE;
             case date_type:
-                return "DATE";
+                return T.DATE;
             case int64_type:
                 if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.NUMERIC+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else if (sqlSubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.DECIMAL+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else
-                    return "BIGINT";
+                    return T.BIGINT;
             case blob_type:
                 if (sqlSubtype < 0)
-                    return "BLOB SUB_TYPE <0";
+                    return T.BLOB_SUB_TYPE_V0;
                 else if (sqlSubtype == 0)
-                    return "BLOB SUB_TYPE 0";
+                    return T.BLOB_SUB_TYPE_BINARY;
                 else if (sqlSubtype == 1)
-                    return "BLOB SUB_TYPE 1";
+                    return T.BLOB_SUB_TYPE_TEXT;
                 else
-                    return "BLOB SUB_TYPE " + sqlSubtype;
+                    return T.BLOB + " SUB_TYPE " + sqlSubtype;
             case quad_type:
-                return "ARRAY";
+                return T.ARRAY;
             case boolean_type:
-                return "BOOLEAN";
+                return T.BOOLEAN;
             case cstring_type:
-                return "CSTRING(" + sqlSize + ")";
+                return T.CSTRING+"(" + sqlSize + ")";
             case decfloat16_type:
-                return "DECFLOAT(16)";
+                return T.DECFLOAT+"(16)";
             case decfloat34_type:
-                return "DECFLOAT(34)";
+                return T.DECFLOAT+"(34)";
             case int128:
                 if (sqlSubtype == SUBTYPE_NUMERIC || (sqlSubtype == 0 && sqlScale < 0))
-                    return "NUMERIC(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.NUMERIC+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else if (sqlSubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL(" + sqlSize + "," + Math.abs(sqlScale) + ")";
+                    return T.DECIMAL+"(" + sqlSize + "," + Math.abs(sqlScale) + ")";
                 else
-                    return "INT128";
+                    return T.INT128;
             default:
                 return "NULL";
         }
@@ -116,80 +114,79 @@ DatabaseTypeConverter {
         switch (sqltype) {
             case smallint_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
+                    return T.NUMERIC;
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
+                    return T.DECIMAL;
                 else
-                    return "SMALLINT";
+                    return T.SMALLINT;
             case integer_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
+                    return T.NUMERIC;
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
+                    return T.DECIMAL;
                 else
-                    return "INTEGER";
+                    return T.INTEGER;
             case double_type:
             case d_float_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
+                    return T.NUMERIC;
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
+                    return T.DECIMAL;
                 else
-                    return "DOUBLE PRECISION";
+                    return T.DOUBLE_PRECISION;
             case float_type:
-                return "FLOAT";
+                return T.FLOAT;
             case char_type:
-                return "CHAR";
+                return T.CHAR;
             case varchar_type:
-                return "VARCHAR";
+                return T.VARCHAR;
             case timestamp_type:
-                return "TIMESTAMP";
+                return T.TIMESTAMP;
             case timestamp_with_timezone:
-                return "TIMESTAMP WITH TIME ZONE";
+                return T.TIMESTAMP_WITH_TIMEZONE;
             case timestamp_without_timezone:
                 return "TIMESTAMP WITHOUT TIME ZONE";
             case time_type:
-                return "TIME";
+                return T.TIME;
             case time_with_timezone:
-                return "TIME WITH TIME ZONE";
+                return T.TIME_WITH_TIMEZONE;
             case time_without_timezone:
                 return "TIME WITHOUT TIME ZONE";
             case date_type:
-                return "DATE";
+                return T.DATE;
             case int64_type:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
+                    return T.NUMERIC;
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
+                    return T.DECIMAL;
                 else
-                    return "BIGINT";
+                    return T.BIGINT;
             case blob_type:
                 if (sqlsubtype < 0)
-                    // TODO Include actual subtype?
-                    return "BLOB SUB_TYPE <0";
+                    return T.BLOB_SUB_TYPE_V0;
                 else if (sqlsubtype == 0)
-                    return "BLOB SUB_TYPE BINARY";
+                    return T.BLOB_SUB_TYPE_BINARY;
                 else if (sqlsubtype == 1)
-                    return "BLOB SUB_TYPE TEXT";
+                    return T.BLOB_SUB_TYPE_TEXT;
                 else
                     return "BLOB SUB_TYPE " + sqlsubtype;
             case quad_type:
-                return "ARRAY";
+                return T.ARRAY;
             case boolean_type:
-                return "BOOLEAN";
+                return T.BOOLEAN;
             case cstring_type:
-                return "CSTRING";
+                return T.CSTRING;
             case decfloat16_type:
-                return "DECFLOAT(16)";
+                return T.DECFLOAT+"(16)";
             case decfloat34_type:
-                return "DECFLOAT(34)";
+                return T.DECFLOAT+"(34)";
             case int128:
                 if (sqlsubtype == SUBTYPE_NUMERIC || (sqlsubtype == 0 && sqlscale < 0))
-                    return "NUMERIC";
+                    return T.NUMERIC;
                 else if (sqlsubtype == SUBTYPE_DECIMAL)
-                    return "DECIMAL";
+                    return T.DECIMAL;
                 else
-                    return "INT128";
+                    return T.INT128;
             default:
                 return "NULL";
         }
@@ -205,51 +202,51 @@ DatabaseTypeConverter {
 
     public static int getSQLDataTypeFromName(String databaseType) {
         switch (databaseType.trim().toUpperCase()) {
-            case "BIGINT":
+            case T.BIGINT:
                 return Types.BIGINT;
-            case "BLOB SUB_TYPE BINARY":
+            case T.BLOB_SUB_TYPE_BINARY:
                 return Types.LONGVARBINARY;
-            case "VARCHAR":
+            case T.VARCHAR:
                 return Types.VARCHAR;
-            case "CHAR":
+            case T.CHAR:
                 return Types.CHAR;
-            case "BLOB SUB_TYPE TEXT":
+            case T.BLOB_SUB_TYPE_TEXT:
                 return Types.LONGVARCHAR;
-            case "NUMERIC":
+            case T.NUMERIC:
                 return Types.NUMERIC;
-            case "DECIMAL":
+            case T.DECIMAL:
                 return Types.DECIMAL;
-            case "INT128":
+            case T.INT128:
                 return Types.INT128;
-            case "INTEGER":
+            case T.INTEGER:
                 return Types.INTEGER;
-            case "SMALLINT":
+            case T.SMALLINT:
                 return Types.SMALLINT;
-            case "FLOAT":
+            case T.FLOAT:
                 return Types.FLOAT;
-            case "DOUBLE PRECISION":
+            case T.DOUBLE_PRECISION:
                 return Types.DOUBLE;
-            case "BOOLEAN":
+            case T.BOOLEAN:
                 return Types.BOOLEAN;
-            case "DATE":
+            case T.DATE:
                 return Types.DATE;
-            case "TIME":
+            case T.TIME:
             case "TIME WITHOUT TIME ZONE":
                 return Types.TIME;
-            case "TIME WITH TIME ZONE":
+            case T.TIME_WITH_TIMEZONE:
                 return Types.TIME_WITH_TIMEZONE;
-            case "TIMESTAMP":
+            case T.TIMESTAMP:
             case "TIMESTAMP WITHOUT TIME ZONE":
                 return Types.TIMESTAMP;
-            case "TIMESTAMP WITH TIME ZONE":
+            case T.TIMESTAMP_WITH_TIMEZONE:
                 return Types.TIMESTAMP_WITH_TIMEZONE;
-            case "ARRAY":
+            case T.ARRAY:
                 return Types.OTHER;
-            case "BLOB SUB_TYPE <0":
+            case T.BLOB_SUB_TYPE_V0:
                 return Types.BLOB;
-            case "DECFLOAT(16)":
-            case "DECFLOAT(34)":
-                return -6001;
+            case T.DECFLOAT+"(16)":
+            case T.DECFLOAT+"(34)":
+                return Types.DECFLOAT;
             default:
                 return 0;
         }
@@ -323,7 +320,7 @@ DatabaseTypeConverter {
                 }
             case decfloat16_type:
             case decfloat34_type:
-                return -6001;
+                return Types.DECFLOAT;
             case int128:
                 switch (subtype) {
                     case 1:

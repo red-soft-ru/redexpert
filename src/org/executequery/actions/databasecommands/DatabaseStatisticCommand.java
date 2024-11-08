@@ -128,7 +128,7 @@ public class DatabaseStatisticCommand {
                     driver.getMajorVersion(), driver, "FBStatisticManagerImpl"
             );
 
-            statisticManager.setHost(dc.getHost());
+            statisticManager.setHost(dc.isSshTunnel() ? "localhost" : dc.getHost());
             statisticManager.setPort(dc.isSshTunnel() ? dc.getTunnelPort() : dc.getPortInt());
             statisticManager.setUser(dc.getUserName());
             if (!MiscUtils.isNull(dc.getCharset()) && !Objects.equals(dc.getCharset(), "NONE"))

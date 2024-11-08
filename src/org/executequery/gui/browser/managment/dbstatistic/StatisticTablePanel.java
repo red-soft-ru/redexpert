@@ -8,6 +8,7 @@ import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.localization.Bundles;
+import org.executequery.log.Log;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 import org.underworldlabs.util.MiscUtils;
@@ -21,6 +22,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 public class StatisticTablePanel extends AbstractPanel {
@@ -105,7 +107,8 @@ public class StatisticTablePanel extends AbstractPanel {
 
             @Override
             public void ancestorMoved(AncestorEvent event) {
-                scrollPane.getViewport().setViewPosition(scrollPane.getRowHeader().getViewPosition());
+                if(!Objects.equals(scrollPane.getViewport().getViewPosition(),scrollPane.getRowHeader().getViewPosition()))
+                    scrollPane.getViewport().setViewPosition(new Point(scrollPane.getViewport().getViewPosition().x,scrollPane.getRowHeader().getViewPosition().y));
             }
         });
     }

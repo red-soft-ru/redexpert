@@ -459,6 +459,8 @@ public class ErdDependanciesPanel extends JComponent {
 
         Rectangle rec1 = table1.getColumnBounds(dependency.getColumn1());
         Rectangle rec2 = table2.getColumnBounds(dependency.getColumn2());
+        if(rec1==null||rec2==null)
+            return;
 
         if (rec2.x < (rec1.x + rec1.width + indent) && (rec2.x + rec2.width + indent) > rec1.x) {
 

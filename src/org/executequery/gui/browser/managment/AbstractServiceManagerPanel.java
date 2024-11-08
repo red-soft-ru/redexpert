@@ -130,6 +130,7 @@ public abstract class AbstractServiceManagerPanel extends AbstractPanel {
         tabPane = new JTabbedPane();
         connectionPanel = new JPanel();
         initOtherComponents();
+        changeDatabaseConnection();
     }
 
     protected abstract void initOtherComponents();

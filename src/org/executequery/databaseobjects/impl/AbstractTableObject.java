@@ -599,7 +599,7 @@ public abstract class AbstractTableObject extends DefaultDatabaseObject
                 .map(NamedObject::getName)
                 .collect(Collectors.toList());
 
-        return columnList.isEmpty() ? Collections.singletonList("<field_name>") : columnNames;
+        return columnNames.isEmpty() ? Collections.singletonList("<field_name>") : columnNames;
     }
 
     public Integer getRelationID() {

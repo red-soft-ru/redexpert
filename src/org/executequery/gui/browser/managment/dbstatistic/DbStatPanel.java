@@ -7,13 +7,15 @@ import org.underworldlabs.swing.AbstractPanel;
 
 import javax.swing.*;
 
+import java.awt.*;
+
 public class DbStatPanel extends AbstractPanel {
     StatisticTablePanel tablesPanel;
     StatisticTablePanel indexesPanel;
     StatisticTablePanel tablespacesPanel;
     SimpleTextArea textPanel;
     StatDatabase db;
-    JTabbedPane tabPane = new JTabbedPane();
+    JTabbedPane tabPane;
 
     public DbStatPanel(StatDatabase db) {
         super();
@@ -58,5 +60,9 @@ public class DbStatPanel extends AbstractPanel {
     @Override
     protected void postInitActions() {
 
+    }
+    public Component getSelectedComponent()
+    {
+        return tabPane.getSelectedComponent();
     }
 }

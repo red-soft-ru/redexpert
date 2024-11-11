@@ -15,7 +15,9 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.AbstractServiceManagerPanel;
 import org.executequery.gui.browser.managment.dbstatistic.CompareStatPanel;
+import org.executequery.gui.browser.managment.dbstatistic.CompareStatisticTablePanel;
 import org.executequery.gui.browser.managment.dbstatistic.DbStatPanel;
+import org.executequery.gui.browser.managment.dbstatistic.StatisticTablePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.statParser.*;
@@ -44,10 +46,12 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     public static final String TITLE = Bundles.get(DatabaseStatisticPanel.class, "title");
     public static final String FRAME_ICON = "icon_db_statistic";
+    protected static final String NOT_TABLE_MESSAGE = "notTableMessage";
 
     private IFBStatisticManager statisticManager;
     protected RolloverButton fileStatButton;
     protected RolloverButton compareButton;
+    protected RolloverButton exportButton;
     protected JToolBar toolBar;
 
     private JButton getStatButton;
@@ -91,6 +95,8 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         toolBar.add(fileStatButton);
         compareButton = WidgetFactory.createRolloverButton("compareButton", bundleString("compare"), "icon_compare_db");
         toolBar.add(compareButton);
+        exportButton = WidgetFactory.createRolloverButton("exportButton", bundleString("export"), "icon_export_file");
+        toolBar.add(exportButton);
         fileStatButton.addActionListener(new ActionListener() {
             final FileChooserDialog fileChooser = new FileChooserDialog();
 
@@ -100,6 +106,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
             }
         });
         compareButton.addActionListener(e -> showCompareDialog());
+        exportButton.addActionListener(e -> exportTable());
         progressBar = new IndeterminateProgressBar(true);
         toolBar.add(progressBar);
         getStatButton = WidgetFactory.createButton("getStatButton", bundleString("Start"));
@@ -318,6 +325,27 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
 
     }
 
+    private void exportTable() {
+        if (tabPane.getSelectedComponent() == connectionPanel)
+            GUIUtilities.displayInformationMessage(bundleString(NOT_TABLE_MESSAGE));
+        else {
+            if (tabPane.getSelectedComponent() instanceof DbStatPanel) {
+                DbStatPanel dbStatPanel = (DbStatPanel) tabPane.getSelectedComponent();
+                Component activeTab = dbStatPanel.getSelectedComponent();
+                if (activeTab instanceof StatisticTablePanel) {
+                    StatisticTablePanel stp = (StatisticTablePanel) dbStatPanel.getSelectedComponent();
+                    stp.exportTable();
+                } else GUIUtilities.displayInformationMessage(bundleString(NOT_TABLE_MESSAGE));
+            } else if (tabPane.getSelectedComponent() instanceof CompareStatPanel) {
+                CompareStatPanel dbStatPanel = (CompareStatPanel) tabPane.getSelectedComponent();
+                if (dbStatPanel.getSelectedComponent() instanceof CompareStatisticTablePanel) {
+                    CompareStatisticTablePanel stp = (CompareStatisticTablePanel) dbStatPanel.getSelectedComponent();
+                    stp.exportTable();
+                } else GUIUtilities.displayInformationMessage(bundleString(NOT_TABLE_MESSAGE));
+            } else GUIUtilities.displayInformationMessage("Unknown error");
+        }
+    }
+
     private void showCompareDialog() {
 
         BaseDialog dialog = new BaseDialog(bundleString("selectStatsDialogTitle"), true);
@@ -338,6 +366,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
             @Override
             protected void arrangeComponents() {
                 gbh = new GridBagHelper().setInsets(5, 5, 5, 5).anchorCenter().fillHorizontally();
+                comboBox1.setPreferredSize(new Dimension(300, comboBox1.getPreferredSize().height));
                 add(comboBox1, gbh.spanX().get());
                 add(comboBox2, gbh.nextRow().topGap(0).get());
                 add(okButton, gbh.nextRow().setWidth(1).topGap(5).get());
@@ -357,7 +386,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         };
 
         dialog.setContentPane(panel);
-        dialog.setPreferredSize(new Dimension(300, dialog.getPreferredSize().height));
+        dialog.pack();
         dialog.setResizable(false);
         dialog.display();
     }
@@ -367,7 +396,7 @@ public class DatabaseStatisticPanel extends AbstractServiceManagerPanel implemen
         SwingWorker sw = new SwingWorker("compareStatistics") {
             @Override
             public Object construct() {
-                StatDatabase compareDB = new StatDatabase();
+                StatDatabase compareDB = compareDBS(db1, db2);
                 CompareStatPanel compareStatPanel = new CompareStatPanel(compareDB, db1, db2);
                 tabPane.addTab(null, null, compareStatPanel, db1 + " vs " + db2);
                 tabPane.setTabComponentAt(tabPane.indexOfComponent(compareStatPanel), new ClosableTabTitle(bundleString("compare"), null, compareStatPanel));

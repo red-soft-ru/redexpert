@@ -987,40 +987,17 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
 
     @Override
     public String getSelectSQLText() {
-
-        List<DatabaseColumn> columnList = getColumns();
-        if (columnList == null || columnList.isEmpty())
-            return "SELECT * FROM " + MiscUtils.getFormattedObject(getName(), getHost().getDatabaseConnection()) + ";\n";
-
         return SQLUtils.generateDefaultSelectStatement(getName(), getColumns(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getInsertSQLText() {
-
-        List<DatabaseColumn> columnList = getColumns();
-        if (columnList == null || columnList.isEmpty()) {
-            DatabaseColumn column = new DefaultDatabaseColumn();
-            column.setName("field_name");
-
-            columnList = Collections.singletonList(column);
-        }
-
-        return SQLUtils.generateDefaultInsertStatement(getName(), columnList, getHost().getDatabaseConnection());
+        return SQLUtils.generateDefaultInsertStatement(getName(), getColumnsForInsertQuery(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getUpdateSQLText() {
-
-        List<DatabaseColumn> columnList = getColumns();
-        if (columnList == null || columnList.isEmpty()) {
-            DatabaseColumn column = new DefaultDatabaseColumn();
-            column.setName("field_name");
-
-            columnList = Collections.singletonList(column);
-        }
-
-        return SQLUtils.generateDefaultUpdateStatement(getName(), columnList, getHost().getDatabaseConnection());
+        return SQLUtils.generateDefaultUpdateStatement(getName(), getColumnsForInsertQuery(), getHost().getDatabaseConnection());
     }
 
     protected TokenizingFormatter getFormatter() {

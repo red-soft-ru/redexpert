@@ -43,9 +43,11 @@ public final class LoggingStream extends ByteArrayOutputStream {
             return;
 
         try {
-            Path logFilePath = Paths.get(filePath);
-            if (Files.notExists(logFilePath.getParent()))
-                Files.createDirectories(logFilePath.getParent());
+            Path logFilePath = Paths.get(filePath).toAbsolutePath();
+
+            Path parentPath = logFilePath.getParent();
+            if (parentPath != null && Files.notExists(parentPath))
+                Files.createDirectories(parentPath);
 
             fileStream = new FileOutputStream(logFilePath.toFile(), true);
             enableFileStream = true;

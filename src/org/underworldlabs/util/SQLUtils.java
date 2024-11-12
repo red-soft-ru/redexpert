@@ -1661,11 +1661,17 @@ public final class SQLUtils {
         return String.format(queryTemplate, "\n\t" + fields + "\n");
     }
 
-    public static String generateDefaultUpdateStatement(String name, List<String> columns, DatabaseConnection dc) {
+    public static String generateDefaultUpdateStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
 
         List<String> updateFields = new ArrayList<>();
-        for (String columnName : columns)
-            updateFields.add(columnName + " = :" + columnName);
+        for (DatabaseColumn column : columns) {
+            boolean setDefault = column.isGenerated() || column.isIdentity();
+            String value = setDefault ? "DEFAULT" : ":" + column.getName();
+            updateFields.add(column.getName() + " = " + value);
+        }
+
+        if (updateFields.isEmpty())
+            updateFields.add("<field_name> = :<param_name>");
 
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(format(name.trim(), dc)).append(" SET\n\t");
@@ -1674,13 +1680,22 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateDefaultInsertStatement(String name, List<String> columns, DatabaseConnection dc) {
-        StringBuilder sb = new StringBuilder();
+    public static String generateDefaultInsertStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
 
+        if (MiscUtils.isEmpty(columns) || columns.stream().allMatch(col -> col.isGenerated() || col.isIdentity()))
+            return "INSERT INTO " + format(name.trim(), dc) + " DEFAULT VALUES;\n";
+
+        List<String> updateFields = new ArrayList<>();
+        for (DatabaseColumn column : columns) {
+            boolean setDefault = column.isGenerated() || column.isIdentity();
+            updateFields.add(setDefault ? "DEFAULT" : ":" + column.getName());
+        }
+
+        StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ").append(format(name.trim(), dc)).append(" (\n\t");
-        sb.append(String.join(",\n\t", columns));
-        sb.append("\n) VALUES (\n\t:");
-        sb.append(String.join(",\n\t:", columns));
+        sb.append(columns.stream().map(NamedObject::getName).collect(Collectors.joining(",\n\t")));
+        sb.append("\n) VALUES (\n\t");
+        sb.append(String.join(",\n\t", updateFields));
         sb.append("\n);\n");
 
         return sb.toString();

@@ -25,7 +25,7 @@ if (-Not (Test-Path env:\BUILD)) { die("BUILD not defined") }
 $BUILD=$env:BUILD
 
 echo "Downloading tests"
-git clone -q http://git.red-soft.biz/red-database/re-tests-robot -b connection-panel-rework
+git clone -q http://git.red-soft.biz/red-database/re-tests-robot
 
 echo "Installing components"
 start-process "${PYTHON}" "-m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git" -wait -nonewwindow

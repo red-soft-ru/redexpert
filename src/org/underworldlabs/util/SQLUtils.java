@@ -1657,7 +1657,7 @@ public final class SQLUtils {
         if (columns == null || columns.isEmpty())
             return String.format(queryTemplate, "*");
 
-        String fields = columns.stream().map(NamedObject::getName).collect(Collectors.joining(",\n\t"));
+        String fields = String.join(",\n\t", getFormattedColumnsNames(columns, dc));
         return String.format(queryTemplate, "\n\t" + fields + "\n");
     }
 
@@ -1666,8 +1666,8 @@ public final class SQLUtils {
         List<String> updateFields = new ArrayList<>();
         for (DatabaseColumn column : columns) {
             boolean setDefault = column.isGenerated() || column.isIdentity();
-            String value = setDefault ? "DEFAULT" : ":" + column.getName();
-            updateFields.add(column.getName() + " = " + value);
+            String value = setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName());
+            updateFields.add(format(column.getName(), dc) + " = " + value);
         }
 
         if (updateFields.isEmpty())
@@ -1688,12 +1688,12 @@ public final class SQLUtils {
         List<String> updateFields = new ArrayList<>();
         for (DatabaseColumn column : columns) {
             boolean setDefault = column.isGenerated() || column.isIdentity();
-            updateFields.add(setDefault ? "DEFAULT" : ":" + column.getName());
+            updateFields.add(setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName()));
         }
 
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO ").append(format(name.trim(), dc)).append(" (\n\t");
-        sb.append(columns.stream().map(NamedObject::getName).collect(Collectors.joining(",\n\t")));
+        sb.append(String.join(",\n\t", getFormattedColumnsNames(columns, dc)));
         sb.append("\n) VALUES (\n\t");
         sb.append(String.join(",\n\t", updateFields));
         sb.append("\n);\n");
@@ -2206,5 +2206,14 @@ public final class SQLUtils {
     private static String format(ColumnData.DefaultValue value, ColumnData cd) {
         return MiscUtils.formattedDefaultValue(value, cd.getSQLType(), cd.getConnection()).trim();
     }
+
+    private static String replaceWhitespace(String text) {
+        return text != null ? text.trim().replaceAll("\\s+", "_") : null;
+    }
+
+    private static List<String> getFormattedColumnsNames(List<DatabaseColumn> columns, DatabaseConnection dc) {
+        return columns.stream().map(NamedObject::getName).map(e -> format(e, dc)).collect(Collectors.toList());
+    }
+
 }
 

@@ -50,7 +50,7 @@ public final class ExecuteQuery {
         new ApplicationLauncher().startup();
     }
 
-    public static void restart(String repoArg, boolean updateEnv) {
+    public static void restart(String repoArg, boolean updateEnv, boolean closeApp) {
         try {
 
             StringBuilder sb = new StringBuilder("./RedExpert");
@@ -74,7 +74,8 @@ public final class ExecuteQuery {
             Log.error(e.getMessage(), e);
         }
 
-        Application.exitProgram();
+        if (closeApp)
+            Application.exitProgram();
     }
 
     public static void setShutdownHook(ProcessBuilder shutdownHook) {

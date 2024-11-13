@@ -357,7 +357,7 @@ public class PropertiesPanel extends JPanel
                     restoreRestartNeed();
 
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
-                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed);
+                    ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed, true);
 
             } else if (isHasChanges()) {
                 GUIUtilities.displayInformationMessage(bundledString("setting-applied"));

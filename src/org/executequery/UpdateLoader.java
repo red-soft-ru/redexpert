@@ -128,7 +128,7 @@ public class UpdateLoader extends JFrame {
     }
 
     public void launch() {
-        ExecuteQuery.restart(repoArg, false);
+        ExecuteQuery.restart(repoArg, false, false);
     }
 
     private void cleanup() {
@@ -706,8 +706,18 @@ public class UpdateLoader extends JFrame {
         updateLoader.replaceFiles();
         if (launch)
             updateLoader.launch();
-        else
-            Application.exitProgram(true);
+
+        exit();
+    }
+
+    private static void exit() {
+        try {
+            Application.exitProgram();
+
+        } catch (Exception | NoClassDefFoundError e) {
+            System.out.println(e.getMessage());
+            System.exit(0);
+        }
     }
 
 }

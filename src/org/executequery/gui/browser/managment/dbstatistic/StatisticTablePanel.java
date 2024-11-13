@@ -8,17 +8,13 @@ import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
 import org.executequery.gui.exportData.ExportDataPanel;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -175,7 +171,65 @@ public class StatisticTablePanel extends AbstractPanel {
 
     public void exportTable()
     {
-        new ExportDataPanel(table.getModel(), null);
+        TableModel model = new TableModel() {
+            int offset() {
+                return headerRows.getColumnCount();
+            }
+
+            int processRow(int rowIndex) {
+                return table.convertRowIndexToModel(rowIndex);
+            }
+
+            int processCol(int columnIndex) {
+                return columnIndex < offset() ? columnIndex : table.convertColumnIndexToModel(columnIndex - offset());
+            }
+
+            @Override
+            public int getRowCount() {
+                return table.getRowSorter().getViewRowCount();
+            }
+
+            @Override
+            public int getColumnCount() {
+                return offset() + table.getColumnCount();
+            }
+
+            @Override
+            public String getColumnName(int columnIndex) {
+                return table.getModel().getColumnName(processCol(columnIndex));
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return table.getModel().getColumnClass(processCol(columnIndex));
+            }
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return table.getModel().isCellEditable(processRow(rowIndex), processCol(columnIndex));
+            }
+
+            @Override
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                return table.getModel().getValueAt(processRow(rowIndex), processCol(columnIndex));
+            }
+
+            @Override
+            public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+                table.getModel().setValueAt(aValue, processRow(rowIndex), processCol(columnIndex));
+            }
+
+            @Override
+            public void addTableModelListener(TableModelListener l) {
+                table.getModel().addTableModelListener(l);
+            }
+
+            @Override
+            public void removeTableModelListener(TableModelListener l) {
+                table.getModel().removeTableModelListener(l);
+            }
+        };
+        new ExportDataPanel(model, null);
     }
 
     class StatisticTableModel extends AbstractTableModel {

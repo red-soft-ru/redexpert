@@ -1160,11 +1160,15 @@ public class ConnectionsTreePanel extends TreePanel
 
                 @Override
                 public Object construct() {
+
+                    if (dc.getHost() == null || dc.getPort() == null || dc.getSourceName() == null)
+                        return Constants.WORKER_CANCEL;
+
                     properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc));
                     propertiesPanel.restoreHeaders();
                     propertiesPanel.setDatabaseProperties(properties, false);
 
-                    return null;
+                    return Constants.WORKER_SUCCESS;
                 }
 
             }.start();

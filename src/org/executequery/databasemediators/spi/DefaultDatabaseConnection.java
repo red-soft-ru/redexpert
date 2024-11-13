@@ -323,8 +323,9 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
         return StringUtils.isNotBlank(url);
     }
 
+    @Override
     public int getPortInt() {
-        if (port.isEmpty())
+        if (MiscUtils.isNull(port))
             return 3050;
         return Integer.parseInt(port);
     }

@@ -143,6 +143,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         addListeners();
         initComponentsLists();
         updateVisibleComponents();
+        serverChanged();
         hostChanged();
 
         EventMediator.registerListener(this);
@@ -181,7 +182,9 @@ public abstract class AbstractConnectionPanel extends JPanel
         authCombo = WidgetFactory.createComboBox("authCombo", authMethods);
         driverCombo = WidgetFactory.createComboBox("driverCombo", jdbcDrivers);
         charsetsCombo = WidgetFactory.createComboBox("charsetsCombo", charsets);
+
         serverCombo = WidgetFactory.createComboBox("serverCombo", availableServers);
+        serverCombo.setSelectedItem(NEW_SERVER);
 
         // --- text fields ---
 
@@ -394,6 +397,10 @@ public abstract class AbstractConnectionPanel extends JPanel
             connection.setAuthMethod((String) authCombo.getSelectedItem());
             storeJdbcProperties();
         }
+    }
+
+    protected void serverChanged() {
+        serverChanged(new ItemEvent(serverCombo, -1, null, ItemEvent.SELECTED));
     }
 
     private void serverChanged(ItemEvent e) {

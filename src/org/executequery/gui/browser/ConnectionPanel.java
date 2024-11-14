@@ -824,7 +824,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         userPasswordField.setPassword(dc.getUnencryptedPassword());
         encryptPasswordCheck.setSelected(dc.isPasswordEncrypted());
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());
-        serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : OLD_SERVER);
+        serverCombo.setSelectedItem(dc.getAuthMethodMode() != null ? dc.getAuthMethodMode() : NEW_SERVER);
 
         ConnectionType connType = ConnectionType.contains(dc.getConnType()) ?
                 ConnectionType.valueOf(dc.getConnType()) :
@@ -837,6 +837,7 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         enableFields(connection.isConnected());
         propertiesPanel.setConnection(connection);
         updateVisibleComponents();
+        serverChanged();
     }
 
     public void addTab(String title, Component component) {

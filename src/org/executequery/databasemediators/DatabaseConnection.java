@@ -250,7 +250,8 @@ public interface DatabaseConnection extends Serializable {
 
         boolean markUpdate = false;
         if (!properties.contains("lc_ctype")) {
-            properties.setProperty("lc_ctype", "NONE");
+            String charset = MiscUtils.isNull(getCharset()) ? "NONE" : getCharset();
+            properties.setProperty("lc_ctype", charset);
             markUpdate = true;
         }
 

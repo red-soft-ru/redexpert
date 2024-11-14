@@ -195,7 +195,7 @@ public class AdvancedPropertiesPanel extends JPanel {
         if (properties == null)
             return new Object[0][0];
 
-        for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+        for (Map.Entry<Object, Object> prop : new Properties(properties).entrySet()) {
             String key = (String) prop.getKey();
             if (propertyIgnored(key))
                 properties.remove(key);

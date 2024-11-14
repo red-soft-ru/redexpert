@@ -862,6 +862,7 @@ public final class WidgetFactory {
      * @param link the string of the link to browse
      */
     public static LinkLabel createLinkLabel(String name, String text, String link) {
+        link = link != null ? link : "";
 
         LinkLabel linkLabel = new LinkLabel(text, link);
         linkLabel.setName(name);

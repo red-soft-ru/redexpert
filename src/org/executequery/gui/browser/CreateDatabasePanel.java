@@ -17,6 +17,7 @@ import org.underworldlabs.util.DynamicLibraryLoader;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.*;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.util.Objects;
@@ -199,15 +200,16 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
             GUIUtilities.displayExceptionErrorDialog(bundleString("fbclientNotFound"), e, this.getClass());
 
         } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog(bundleString("connectionNotEstablished"), e, this.getClass());
+            GUIUtilities.displayExceptionErrorDialog(bundleString("databaseNotCreated", e), e, this.getClass());
 
         } finally {
             GUIUtilities.showNormalCursor();
         }
 
-        if (!success)
+        if (success) {
             registerDatabase(databaseDriver, connectionName, port);
-        GUIUtilities.closeSelectedCentralPane();
+            GUIUtilities.closeSelectedCentralPane();
+        }
     }
 
     private void registerDatabase(DatabaseDriver databaseDriver, String connectionName, int port) {
@@ -251,10 +253,15 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
     // ---
 
     private static Driver loadDriver(DatabaseDriver databaseDriver) {
+
         Driver driver = null;
-        try (URLClassLoader classLoader = new URLClassLoader(MiscUtils.loadURLs(databaseDriver.getPath()))) {
-            Class<?> driverClass = classLoader.loadClass(databaseDriver.getClassName());
-            driver = (Driver) driverClass.getDeclaredConstructor().newInstance();
+        try {
+            URL[] loadURLs = MiscUtils.loadURLs(databaseDriver.getPath());
+
+            // suppressing AutoClosable warning to prevent exceptions with the subclasses loading
+            @SuppressWarnings("resource") URLClassLoader loader = new URLClassLoader(loadURLs);
+            Class<?> driverClass = loader.loadClass(databaseDriver.getClassName());
+            driver = (Driver) driverClass.getConstructor().newInstance();
 
         } catch (Exception e) {
             Log.error(e.getMessage(), e);

@@ -103,7 +103,7 @@ latex_elements = {
 
 \begin{flushright}
 \Huge {\xhrulefill{red}{2mm}\color{red} Ред} Эксперт\\
-\LARGE Версия 2024.08\\
+\LARGE Версия 2024.11\\
 \huge Руководство пользователя\\
 
 \end{flushright}

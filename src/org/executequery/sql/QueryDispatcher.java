@@ -1184,7 +1184,7 @@ public class QueryDispatcher {
                             @SuppressWarnings("rawtypes")
                             Map results = (Map) result.getOtherResult();
 
-                            if (results == null && result.getUpdateCount() < 0) {
+                            if (results == null && result.getUpdateCount() < 0 && !MiscUtils.isNull(result.getErrorMessage())) {
 
                                 //printExecutionPlan(before, after);
 

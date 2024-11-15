@@ -48,6 +48,8 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static org.executequery.gui.browser.AbstractConnectionPanel.*;
+
 /**
  * @author Takis Diakoumis
  */
@@ -95,35 +97,67 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     public Connection getConnection(ITPB tpb) throws SQLException {
-        while (MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
-                && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
-            LoginPasswordDialog lpd = new LoginPasswordDialog(Bundles.getCommon("title-enter-password"), Bundles.getCommon("message-enter-password"),
-                    null, databaseConnection.getUserName());
-            lpd.display();
-            if (lpd.isClosedDialog())
-                throw new DataSourceException("Connection cancelled");
-            else {
-                databaseConnection.setUserName(lpd.getUsername());
-                databaseConnection.setPassword(lpd.getPassword());
-                databaseConnection.setPasswordStored(lpd.isStorePassword());
-                EventMediator.fireEvent(
-                        new DefaultConnectionRepositoryEvent(
-                                this, ConnectionRepositoryEvent.CONNECTION_MODIFIED, (DatabaseConnection) null));
-            }
-        }
+        checkUserPassword();
+
         try {
-            return getConnection(databaseConnection.getUserName(), databaseConnection.getUnencryptedPassword(), tpb);
+            return getConnection(
+                    databaseConnection.getUserName(),
+                    databaseConnection.getUnencryptedPassword(),
+                    tpb
+            );
+
         } catch (SQLException e) {
-            if (e.getSQLState().contentEquals("28000") && e.getErrorCode() == 335544472
-                    && databaseConnection.getAuthMethod().contentEquals(Bundles.get("ConnectionPanel.BasicAu"))) {
+
+            boolean isAuthException = e.getSQLState().contentEquals("28000") && e.getErrorCode() == 335544472;
+            if (isAuthException && !Objects.equals(databaseConnection.getAuthMethod(), GSS_AUTH)) {
                 databaseConnection.setPassword("");
                 dataSource = null;
+
                 return getConnection(tpb);
             }
 
             maybeShutdownNativeResources();
             throw e;
         }
+    }
+
+    private void checkUserPassword() {
+
+        while (shouldShowAuthDialog()) {
+            LoginPasswordDialog loginDialog = new LoginPasswordDialog(
+                    Bundles.getCommon("title-enter-password"),
+                    Bundles.getCommon("message-enter-password"),
+                    null,
+                    databaseConnection.getUserName()
+            );
+
+            loginDialog.display();
+            if (loginDialog.isClosedDialog())
+                throw new DataSourceException("Connection cancelled");
+
+            databaseConnection.setUserName(loginDialog.getUsername());
+            databaseConnection.setPassword(loginDialog.getPassword());
+            databaseConnection.setPasswordStored(loginDialog.isStorePassword());
+
+            EventMediator.fireEvent(new DefaultConnectionRepositoryEvent(
+                    this,
+                    ConnectionRepositoryEvent.CONNECTION_MODIFIED,
+                    (DatabaseConnection) null
+            ));
+        }
+    }
+
+    private boolean shouldShowAuthDialog() {
+        boolean showDialog = false;
+
+        if (Objects.equals(databaseConnection.getAuthMethod(), BASIC_AUTH))
+            showDialog = MiscUtils.isNull(databaseConnection.getUnencryptedPassword());
+
+        if (Objects.equals(databaseConnection.getAuthMethod(), MULTI_FACTOR_AUTH))
+            showDialog = MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
+                    && MiscUtils.isNull(databaseConnection.getCertificate());
+
+        return showDialog;
     }
 
     public Connection getConnection(String username, String password) throws SQLException {

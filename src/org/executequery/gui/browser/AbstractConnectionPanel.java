@@ -67,9 +67,9 @@ import java.util.List;
 public abstract class AbstractConnectionPanel extends JPanel
         implements DatabaseDriverListener {
 
-    private static final String GSS_AUTH = "GSS";
-    private static final String BASIC_AUTH = bundleString("BasicAu");
-    private static final String MULTI_FACTOR_AUTH = bundleString("MultiFactor");
+    public static final String GSS_AUTH = "GSS";
+    public static final String BASIC_AUTH = bundleString("BasicAu");
+    public static final String MULTI_FACTOR_AUTH = bundleString("MultiFactor");
 
     public static final String OLD_SERVER = "Red Database (Firebird) 2.X";
     public static final String NEW_SERVER = "Red Database (Firebird) 3+";

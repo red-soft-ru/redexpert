@@ -21,6 +21,8 @@
 package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseConnection;
+import org.executequery.databasemediators.ConnectionType;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseHost;
 import org.executequery.databaseobjects.DatabaseMetaTag;
@@ -168,7 +170,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return;
 
         boolean first = true;
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getConnection());
         String query = ((AbstractDatabaseObject) objects.get(0)).queryForInfoAllObjects();
 
         try {
@@ -248,7 +250,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return;
 
         boolean first = true;
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getConnection());
         try {
             String query = ((AbstractDatabaseObject) objects.get(0)).getBuilderLoadColsForAllTables().getSQLQuery();
 
@@ -333,7 +335,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     SelectBuilder getBuilderForPackageChildren(String metatag) {
-        SelectBuilder sb = new SelectBuilder(getHost().getDatabaseConnection());
+        SelectBuilder sb = new SelectBuilder(getConnection());
         Table mainTable = Table.createTable("RDB$" + metatag + "S", metatag + "S");
         sb.appendTable(mainTable);
         sb.appendField(Field.createField(mainTable, metatag + "_NAME"));
@@ -352,7 +354,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             return;
 
         boolean first = true;
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getConnection());
         String query = getBuilderForPackageChildren(metatag).getSQLQuery();
 
         try {
@@ -486,7 +488,8 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             List<NamedObject> list = new ArrayList<>();
             while (rs.next()) {
 
-                if (!getHost().getDatabaseConnection().isConnected())
+                DatabaseConnection dc = getConnection();
+                if (dc == null || !dc.isConnected())
                     return new ArrayList<>();
 
                 AbstractDatabaseObject namedObject = null;
@@ -579,7 +582,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
         } finally {
             try {
-                releaseResources(rs, getHost().getDatabaseMetaData().getConnection());
+                DatabaseMetaData metaData = getHost().getDatabaseMetaData();
+                releaseResources(rs, metaData != null ? metaData.getConnection() : null);
+
             } catch (SQLException e) {
                 releaseResources(rs, null);
             }
@@ -787,7 +792,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getResultSetFromQuery(String query) throws SQLException {
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getConnection());
         return querySender.getResultSet(query).getResultSet();
     }
 
@@ -801,8 +806,14 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
             int majorVersion = 0;
             try {
                 Connection fbConn = realConnection.unwrap(Connection.class);
+                DatabaseConnection dc = getConnection();
+
                 IFBDatabaseConnection db = (IFBDatabaseConnection) DynamicLibraryLoader.loadingObjectFromClassLoader(
-                        getHost().getDatabaseConnection().getDriverMajorVersion(), fbConn, "FBDatabaseConnectionImpl");
+                        dc != null ? dc.getDriverMajorVersion() : -1,
+                        fbConn,
+                        "FBDatabaseConnectionImpl"
+                );
+
                 db.setConnection(fbConn);
                 majorVersion = db.getMajorVersion();
 
@@ -861,7 +872,7 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
                 "LEFT JOIN RDB$RELATION_CONSTRAINTS AS C ON I.RDB$INDEX_NAME = C.RDB$INDEX_NAME\n" +
                 "WHERE I.RDB$SYSTEM_FLAG = 0 AND I.RDB$INDEX_NAME = ?";
 
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getHost().getDatabaseConnection());
+        DefaultStatementExecutor querySender = new DefaultStatementExecutor(getConnection());
         PreparedStatement st = querySender.getPreparedStatement(query);
         st.setString(1, name);
 
@@ -971,6 +982,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
 
     private ResultSet getUsersResultSet() throws SQLException {
 
+        if (ConnectionType.isEmbedded(getConnection()))
+            return null;
+
         String query = "SELECT\n" +
                 "CAST (SEC$USER_NAME as VARCHAR(1024)),\n" +
                 "SEC$PLUGIN\n" +
@@ -1008,6 +1022,9 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
     }
 
     private ResultSet getJobsResultSet() throws SQLException {
+
+        if (ConnectionType.isEmbedded(getConnection()))
+            return null;
 
         String query = "SELECT\n" +
                 "CAST (RDB$JOB_NAME as VARCHAR(1024))\n" +
@@ -1246,6 +1263,11 @@ public class DefaultDatabaseMetaTag extends AbstractNamedObject
         objects.add(new DefaultSystemFunctionMetaTag(this, SYSTEM_DATE_TIME_FUNCTIONS, "Date/Time Functions"));
 
         return objects;
+    }
+
+    private DatabaseConnection getConnection() {
+        DatabaseHost databaseHost = getHost();
+        return databaseHost != null ? databaseHost.getDatabaseConnection() : null;
     }
 
     /**

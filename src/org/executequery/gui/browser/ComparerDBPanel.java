@@ -4,6 +4,7 @@ import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.base.TabView;
 import org.executequery.databasemediators.ConnectionMediator;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
@@ -493,12 +494,19 @@ public class ComparerDBPanel extends JPanel implements TabView {
             DefaultDatabaseHost masterHost = new DefaultDatabaseHost(dbMasterComboBox.getSelectedConnection());
             DefaultDatabaseHost slaveHost = new DefaultDatabaseHost(dbTargetComboBox.getSelectedConnection());
 
-            if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase") ||
-                    (!isExtractMetadata && !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase"))) {
+            if (!slaveHost.getDatabaseProductName().toLowerCase().contains("reddatabase")
+                    || (!isExtractMetadata && !masterHost.getDatabaseProductName().toLowerCase().contains("reddatabase"))) {
 
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("TABLESPACE")).setSelected(false);
                 attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
                 loggingOutputPanel.append(bundleString("FDBCompared"));
+            }
+
+            if (ConnectionType.isEmbedded(slaveHost.getDatabaseConnection())
+                    || (!isExtractMetadata && ConnectionType.isEmbedded(masterHost.getDatabaseConnection()))) {
+
+                attributesCheckBoxMap.get(Arrays.asList(NamedObject.META_TYPES_FOR_BUNDLE).indexOf("JOB")).setSelected(false);
+                loggingOutputPanel.append(bundleString("EmbeddedConnectionSelected"));
             }
 
             if (slaveHost.getDatabaseMajorVersion() < 3 || (!isExtractMetadata && masterHost.getDatabaseMajorVersion() < 3)) {

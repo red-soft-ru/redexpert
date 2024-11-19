@@ -24,76 +24,173 @@ import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.SaveFunction;
 import org.executequery.gui.SaveOnExitDialog;
 import org.executequery.log.Log;
+import org.executequery.repository.ConnectionFoldersRepository;
+import org.executequery.repository.DatabaseConnectionRepository;
+import org.executequery.repository.Repository;
+import org.executequery.repository.RepositoryCache;
+import org.executequery.util.SystemResources;
 import org.executequery.util.UserProperties;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.toolbar.ToolBarProperties;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Properties;
 
 public final class Application {
 
-    private static Application application;
+    private static Map<String, Runnable> beforeShutdownActions;
 
+    /// Private constructor to prevent installation
     private Application() {
-    }
-
-    public static synchronized Application getInstance() {
-
-        if (application == null) {
-
-            application = new Application();
-        }
-
-        return application;
     }
 
     /**
      * Program shutdown method.
      * Does some logging and closes connections cleanly.
      */
-    public void exitProgram() {
-
-        if (promptToSave() && GUIUtilities.getOpenSaveFunctionCount() > 0) {
-            int result = new SaveOnExitDialog().getResult();
-            if (result != SaveFunction.SAVE_COMPLETE && result != SaveFunction.SAVE_CANCELLED)
-                return;
-        }
-
-        releaseConnections();
-
-        GUIUtilities.shuttingDown();
-        GUIUtilities.getParentFrame().dispose();
-
-        ApplicationInstanceCounter.remove();
-        System.exit(0);
+    public static void exitProgram() {
+        exitProgram(false);
     }
 
-    private void releaseConnections() {
+    /**
+     * Program shutdown method.
+     * Does some logging and closes connections cleanly.
+     */
+    public static void exitProgram(boolean force) {
 
+        if (force) {
+            System.exit(0);
+            return;
+        }
+
+        if (!trySaveOpenedFiles())
+            return;
+
+        runBeforeShutdownActions();
+        releaseConnections();
+        storeProperties();
+        shutdown();
+    }
+
+    // ---
+
+    private static boolean trySaveOpenedFiles() {
+
+        boolean shouldDisplaySaveDialog = UserProperties.getInstance().getBooleanProperty("general.save.prompt")
+                && GUIUtilities.hasValidSaveFunction()
+                && GUIUtilities.getOpenSaveFunctionCount() > 0;
+
+        if (shouldDisplaySaveDialog) {
+            int result = new SaveOnExitDialog().getResult();
+            return result == SaveFunction.SAVE_COMPLETE || result == SaveFunction.SAVE_CANCELLED;
+        }
+
+        return true;
+    }
+
+    private static void runBeforeShutdownActions() {
+        for (Map.Entry<String, Runnable> entry : getBeforeShutdownActions().entrySet()) {
+            String threadName = entry.getKey();
+            Runnable threadTask = entry.getValue();
+
+            try {
+                Log.info("Executing [" + threadName + "] action...");
+                Thread thread = new Thread(threadTask, threadName);
+                thread.start();
+                thread.join();
+
+            } catch (InterruptedException e) {
+                Log.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private static void releaseConnections() {
         Log.info("Releasing database resources...");
 
         try {
             ConnectionManager.close();
+            Log.info("Connection pools destroyed");
 
         } catch (DataSourceException e) {
-            e.printStackTrace(System.out);
+            Log.error("Releasing database resources interrupted by the exception", e);
         }
-
-        Log.info("Connection pools destroyed");
     }
 
-    private boolean promptToSave() {
+    // --- store app properties files ---
 
-        return (userProperties().getBooleanProperty("general.save.prompt")
-                && GUIUtilities.hasValidSaveFunction());
+    private static void storeProperties() {
+        Log.info("Saving properties files...");
+
+        storeUserProperties();
+        storeDatabaseConnections();
+        storeDatabaseFolders();
+        storeToolbars();
     }
 
-    private UserProperties userProperties() {
+    private static void storeUserProperties() {
+        Properties properties = UserProperties.getInstance().getProperties();
+        SystemResources.setUserPreferences(properties);
+    }
 
-        return UserProperties.getInstance();
+    private static void storeDatabaseConnections() {
+        try {
+            Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+            if (repo instanceof DatabaseConnectionRepository)
+                ((DatabaseConnectionRepository) repo).save();
+
+        } catch (Exception e) {
+            Log.error(String.format("Saving %s properties failed", DatabaseConnectionRepository.REPOSITORY_ID), e);
+        }
+    }
+
+    private static void storeDatabaseFolders() {
+        try {
+            Repository repo = RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID);
+            if (repo instanceof ConnectionFoldersRepository)
+                ((ConnectionFoldersRepository) repo).save();
+
+        } catch (Exception e) {
+            Log.error(String.format("Saving %s properties failed", ConnectionFoldersRepository.REPOSITORY_ID), e);
+        }
+    }
+
+    private static void storeToolbars() {
+        try {
+            ToolBarProperties.saveTools();
+
+        } catch (Exception e) {
+            Log.error("Saving toolbar properties failed", e);
+        }
+    }
+
+    // ---
+
+    private static void shutdown() {
+        Log.info("System exiting...");
+
+        GUIUtilities.getParentFrame().dispose();
+        ApplicationInstanceCounter.remove();
+
+        System.exit(0);
+    }
+
+    // --- before shutdown actions manager methods ---
+
+    private static Map<String, Runnable> getBeforeShutdownActions() {
+        if (beforeShutdownActions == null)
+            beforeShutdownActions = new HashMap<>();
+        return beforeShutdownActions;
+    }
+
+    public static void addShutdownAction(String name, Runnable runnable) {
+        getBeforeShutdownActions().put(name, runnable);
+    }
+
+    public static void removeShutdownAction(String name) {
+        getBeforeShutdownActions().remove(name);
     }
 
 }
-
-
-
-
-
-

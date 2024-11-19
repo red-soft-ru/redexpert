@@ -28,7 +28,12 @@ import org.underworldlabs.util.SystemProperties;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+
+import static org.executequery.Constants.*;
 
 public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePanel {
 
@@ -56,14 +61,18 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
     }
 
     protected Properties defaultsForTheme() {
+        return defaultsForTheme(selectedLookAndFeel());
+    }
+
+    protected static Properties defaultsForTheme(LookAndFeelType lookAndFeel) {
 
         String resourcePath;
-        if (selectedLookAndFeel().isDefaultTheme()) {
-            resourcePath = selectedLookAndFeel().isDarkTheme() ?
+        if (lookAndFeel.isDefaultTheme()) {
+            resourcePath = lookAndFeel.isDarkTheme() ?
                     "org/executequery/gui/editor/resource/sql-syntax.default.dark.profile" :
                     "org/executequery/gui/editor/resource/sql-syntax.default.light.profile";
         } else {
-            resourcePath = selectedLookAndFeel().isDarkTheme() ?
+            resourcePath = lookAndFeel.isDarkTheme() ?
                     "org/executequery/gui/editor/resource/sql-syntax.classic.dark.profile" :
                     "org/executequery/gui/editor/resource/sql-syntax.classic.light.profile";
         }
@@ -90,13 +99,27 @@ public abstract class AbstractPropertiesColours extends AbstractPropertiesBasePa
         return LookAndFeelType.valueOf(lookAndFeel);
     }
 
-    protected Color asColour(String rgb) {
-
+    protected static Color asColour(String rgb) {
         return new Color(Integer.parseInt(rgb));
     }
 
     public static void setSelectedLookAndFeel(LookAndFeelType selectedLookAndFeel) {
         AbstractPropertiesColours.selectedLookAndFeel = selectedLookAndFeel;
+    }
+
+    public static void resetLookAndFeelColors(LookAndFeelType selectedLookAndFeel) {
+        Properties themeDefaultsProperty = defaultsForTheme(selectedLookAndFeel);
+
+        List<String> colorPropertiesKeys = new ArrayList<>();
+        colorPropertiesKeys.addAll(Arrays.asList(OUTPUT_PANEL_COLOR_KEYS));
+        colorPropertiesKeys.addAll(Arrays.asList(QUERY_EDITOR_COLOR_KEYS));
+        colorPropertiesKeys.addAll(Arrays.asList(SQL_SYNTAX_COLOR_KEYS));
+        colorPropertiesKeys.addAll(Arrays.asList(RESULT_SET_COLOR_KEYS));
+
+        for (String key : colorPropertiesKeys) {
+            Color color = asColour(themeDefaultsProperty.getProperty(key));
+            SystemProperties.setColourProperty("user", key, color);
+        }
     }
 
 }

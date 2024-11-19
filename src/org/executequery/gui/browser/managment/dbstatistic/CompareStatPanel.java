@@ -7,6 +7,7 @@ import org.underworldlabs.swing.AbstractPanel;
 import org.underworldlabs.swing.util.SwingWorker;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class CompareStatPanel extends AbstractPanel {
     CompareStatisticTablePanel tablesPanel;
@@ -14,7 +15,7 @@ public class CompareStatPanel extends AbstractPanel {
     CompareStatisticTablePanel tablespacesPanel;
     DifferenceTextPanel textPanel;
     StatDatabase db;
-    JTabbedPane tabPane = new JTabbedPane();
+    JTabbedPane tabPane;
 
     public CompareStatPanel(StatDatabase db, StatDatabase db1, StatDatabase db2) {
         super();
@@ -56,5 +57,9 @@ public class CompareStatPanel extends AbstractPanel {
     @Override
     protected void postInitActions() {
 
+    }
+    public Component getSelectedComponent()
+    {
+        return tabPane.getSelectedComponent();
     }
 }

@@ -29,8 +29,7 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -372,6 +371,20 @@ public final class WidgetFactory {
         JSpinner spinner = createSpinner(name);
         spinner.setModel(model);
 
+        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spinner.getEditor();
+        editor.getTextField().addMouseListener(
+                new MouseAdapter() {
+                    @Override
+                    public void mousePressed(final MouseEvent e) {
+                        SwingUtilities.invokeLater(() -> {
+                            JTextField tf = (JTextField) e.getSource();
+                            int offset = tf.viewToModel(e.getPoint());
+                            tf.setCaretPosition(offset);
+                        });
+                    }
+                }
+        );
+
         return spinner;
     }
 
@@ -393,6 +406,23 @@ public final class WidgetFactory {
         spinnerModel.setValue(value);
 
         return createSpinner(name, spinnerModel);
+    }
+
+    /**
+     * Create named JSpinner class instance
+     *
+     * @param name      the component's name
+     * @param maximum   the maximum (non-null) number
+     * @param alignment the value alignment
+     */
+    public static JSpinner createSpinner(String name, int maximum, int alignment) {
+
+        JSpinner spinner = createSpinner(name, 1, 1, maximum, 1);
+
+        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) spinner.getEditor();
+        editor.getTextField().setHorizontalAlignment(alignment);
+
+        return spinner;
     }
 
     /**
@@ -563,12 +593,26 @@ public final class WidgetFactory {
      * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
      * with the automatically updated active connections list
      *
-     * @param name                      the component's name
-     * @param showOnlyActiveConnections whether comboBox will contain only active connections
+     * @param name           the component's name
+     * @param showOnlyActive whether comboBox will contain only active connections
      */
-    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActiveConnections) {
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive) {
+        return createConnectionComboBox(name, showOnlyActive, false, false);
+    }
 
-        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActiveConnections);
+    /**
+     * Create named <code>ConnectionsComboBox</code> class instance,
+     * that extended from <code>JComboBox</code> with the <code>DatabaseConnection</code> items
+     * with the automatically updated active connections list
+     *
+     * @param name             the component's name
+     * @param showOnlyActive   whether comboBox will contain only active connections
+     * @param allowAutoConnect whether comboBox will automatically connect to the selected database
+     * @param embeddedFilter   whether comboBox will prevent to select embedded connections
+     */
+    public static ConnectionsComboBox createConnectionComboBox(String name, boolean showOnlyActive, boolean allowAutoConnect, boolean embeddedFilter) {
+
+        ConnectionsComboBox connectionsCombo = new ConnectionsComboBox(showOnlyActive, allowAutoConnect, embeddedFilter);
         connectionsCombo.setPreferredSize(getPreferredSize(connectionsCombo));
         connectionsCombo.setName(name);
 
@@ -603,20 +647,6 @@ public final class WidgetFactory {
         passwordField.setName(name);
 
         return passwordField;
-    }
-
-    /**
-     * Create named <code>ComponentTitledPanel</code> class instance,
-     * that has border with the <code>JComponents</code> instead of title.
-     *
-     * @param name the component's name
-     */
-    public static ComponentTitledPanel createComponentTitledPanel(String name, JComponent component) {
-
-        ComponentTitledPanel panel = new ComponentTitledPanel(component);
-        panel.setName(name);
-
-        return panel;
     }
 
     /**
@@ -832,6 +862,7 @@ public final class WidgetFactory {
      * @param link the string of the link to browse
      */
     public static LinkLabel createLinkLabel(String name, String text, String link) {
+        link = link != null ? link : "";
 
         LinkLabel linkLabel = new LinkLabel(text, link);
         linkLabel.setName(name);

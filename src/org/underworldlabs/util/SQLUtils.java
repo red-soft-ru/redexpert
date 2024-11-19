@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.executequery.databaseobjects.NamedObject.*;
 import static org.executequery.gui.browser.ColumnConstraint.RESTRICT;
@@ -1650,25 +1651,54 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateDefaultUpdateStatement(String name, String settings, DatabaseConnection dc) {
-        String sb = "UPDATE " + format(name.trim(), dc) +
-                " SET " + settings.trim() + ";\n";
-        return sb;
+    public static String generateDefaultSelectStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
+        String queryTemplate = "SELECT %s FROM " + format(name.trim(), dc) + ";\n";
+
+        if (columns == null || columns.isEmpty())
+            return String.format(queryTemplate, "*");
+
+        String fields = String.join(",\n\t", getFormattedColumnsNames(columns, dc));
+        return String.format(queryTemplate, "\n\t" + fields + "\n");
     }
 
-    public static String generateDefaultInsertStatement(String name, String fields, String values, DatabaseConnection dc) {
-        String sb = "INSERT INTO " + format(name.trim(), dc) +
-                " (" + fields.trim() + ")" +
-                " VALUES (" + values.trim() + ");\n";
-        return sb;
+    public static String generateDefaultUpdateStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
+
+        List<String> updateFields = new ArrayList<>();
+        for (DatabaseColumn column : columns) {
+            boolean setDefault = column.isGenerated() || column.isIdentity();
+            String value = setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName());
+            updateFields.add(format(column.getName(), dc) + " = " + value);
+        }
+
+        if (updateFields.isEmpty())
+            updateFields.add("<field_name> = :<param_name>");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(format(name.trim(), dc)).append(" SET\n\t");
+        sb.append(String.join(",\n\t", updateFields)).append(";\n");
+
+        return sb.toString();
     }
 
-    public static String generateDefaultSelectStatement(String name, String fields, DatabaseConnection dc) {
+    public static String generateDefaultInsertStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
 
-        String sb = "SELECT " + fields.trim() +
-                " FROM " + format(name.trim(), dc) + ";\n";
+        if (MiscUtils.isEmpty(columns) || columns.stream().allMatch(col -> col.isGenerated() || col.isIdentity()))
+            return "INSERT INTO " + format(name.trim(), dc) + " DEFAULT VALUES;\n";
 
-        return sb;
+        List<String> updateFields = new ArrayList<>();
+        for (DatabaseColumn column : columns) {
+            boolean setDefault = column.isGenerated() || column.isIdentity();
+            updateFields.add(setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName()));
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(format(name.trim(), dc)).append(" (\n\t");
+        sb.append(String.join(",\n\t", getFormattedColumnsNames(columns, dc)));
+        sb.append("\n) VALUES (\n\t");
+        sb.append(String.join(",\n\t", updateFields));
+        sb.append("\n);\n");
+
+        return sb.toString();
     }
 
     public static String generateCreateTriggerStatement(
@@ -2176,5 +2206,14 @@ public final class SQLUtils {
     private static String format(ColumnData.DefaultValue value, ColumnData cd) {
         return MiscUtils.formattedDefaultValue(value, cd.getSQLType(), cd.getConnection()).trim();
     }
+
+    private static String replaceWhitespace(String text) {
+        return text != null ? text.trim().replaceAll("\\s+", "_") : null;
+    }
+
+    private static List<String> getFormattedColumnsNames(List<DatabaseColumn> columns, DatabaseConnection dc) {
+        return columns.stream().map(NamedObject::getName).map(e -> format(e, dc)).collect(Collectors.toList());
+    }
+
 }
 

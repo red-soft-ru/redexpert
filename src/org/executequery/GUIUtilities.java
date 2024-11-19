@@ -33,7 +33,6 @@ import org.executequery.gui.*;
 import org.executequery.gui.browser.ConnectionHistory;
 import org.executequery.gui.browser.ConnectionPanel;
 import org.executequery.gui.browser.ConnectionsTreePanel;
-import org.executequery.gui.browser.managment.GrantManagerConnectionListener;
 import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.menu.ExecuteQueryMenu;
@@ -186,7 +185,6 @@ public final class GUIUtilities {
         EventMediator.registerListener(new HttpProxyUserPreferenceListener());
         EventMediator.registerListener(new LogUserPreferenceListener(errLogger, outLogger));
         EventMediator.registerListener(new KeyboardShortcutsUserPreferenceListener());
-        EventMediator.registerListener(new GrantManagerConnectionListener());
         EventMediator.registerListener(ConnectionHistory.getInstance());
     }
 
@@ -1115,32 +1113,6 @@ public final class GUIUtilities {
                 }
             }
         }
-    }
-
-    public static void shuttingDown() {
-
-        Properties properties = UserProperties.getInstance().getProperties();
-        SystemResources.setUserPreferences(properties);
-
-        try {
-            ((DatabaseConnectionRepository) Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID))).save();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        try {
-            ((ConnectionFoldersRepository) Objects.requireNonNull(RepositoryCache.load(ConnectionFoldersRepository.REPOSITORY_ID))).save();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        try {
-            ToolBarProperties.saveTools();
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-
-        Log.info("System exiting...");
     }
 
     /**

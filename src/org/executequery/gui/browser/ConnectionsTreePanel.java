@@ -1137,10 +1137,13 @@ public class ConnectionsTreePanel extends TreePanel
         if (!isPropertiesPanelVisible())
             return;
 
+        String server = dc.getHost() + "/" + dc.getPort();
+        String status = bundleString(dc.isConnected() ? "status.on" : "status.off");
+
         Map<Object, Object> properties = new LinkedHashMap<>();
-        properties.put(bundleString("status"), bundleString(dc.isConnected() ? "status.on" : "status.off"));
+        properties.put(bundleString("status"), status);
         properties.put(bundleString("name"), dc.getName());
-        properties.put(bundleString("server"), dc.getHost() + "/" + dc.getPort());
+        properties.put(bundleString("server"), !server.equals("/") ? server : null);
         properties.put(bundleString("source"), dc.getSourceName());
         properties.put(bundleString("charset"), dc.getCharset());
         properties.put(bundleString("user"), dc.getUserName());
@@ -1157,11 +1160,15 @@ public class ConnectionsTreePanel extends TreePanel
 
                 @Override
                 public Object construct() {
-                    properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc, false));
+
+                    if (dc.getHost() == null || dc.getPort() == null || dc.getSourceName() == null)
+                        return Constants.WORKER_CANCEL;
+
+                    properties.putAll(DefaultDatabaseHost.getDatabaseProperties(dc));
                     propertiesPanel.restoreHeaders();
                     propertiesPanel.setDatabaseProperties(properties, false);
 
-                    return null;
+                    return Constants.WORKER_SUCCESS;
                 }
 
             }.start();

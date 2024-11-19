@@ -145,11 +145,65 @@ public interface Constants {
      */
     String WORKER_CANCEL = "cancel";
 
+    // --- output panel colors ---
+
+    String[] OUTPUT_PANEL_COLOR_KEYS = new String[]{
+            "editor.output.background",
+            "editor.output.plain.color",
+            "editor.output.error.color",
+            "editor.output.warning.color",
+            "editor.output.action.color",
+    };
+
+    // --- editor panel colors ---
+
+    String[] QUERY_EDITOR_COLOR_KEYS = new String[]{
+            "editor.caret.colour",
+            "editor.linenumber.background",
+            "editor.linenumber.foreground",
+            "editor.text.background.colour",
+            "editor.text.background.alternate.color",
+            "editor.text.foreground.colour",
+            "editor.output.background",
+            "editor.text.selection.foreground",
+            "editor.text.selection.background",
+            "editor.text.selection.background.alternative",
+            "editor.display.linehighlight.colour",
+    };
+
+    // --- SQL syntax colors ---
+
+    String[] SQL_SYNTAX_COLOR_KEYS = new String[]{
+            "sqlsyntax.colour.normal",
+            "sqlsyntax.colour.keyword",
+            "sqlsyntax.colour.quote",
+            "sqlsyntax.colour.singlecomment",
+            "sqlsyntax.colour.multicomment",
+            "sqlsyntax.colour.number",
+            "sqlsyntax.colour.operator",
+            "sqlsyntax.colour.literal",
+            "sqlsyntax.colour.dbobjects",
+            "sqlsyntax.colour.datatype",
+    };
+
+    // --- Result Set colors ---
+
+    String[] RESULT_SET_COLOR_KEYS = new String[]{
+            "results.table.cell.background.colour",
+            "results.alternating.row.background",
+            "results.table.cell.null.background.colour",
+            "results.table.cell.null.adding.background.colour",
+            "results.table.cell.null.deleting.background.colour",
+            "results.table.cell.changed.background.colour",
+            "results.table.cell.char.background.colour",
+            "results.table.cell.numeric.background.colour",
+            "results.table.cell.date.background.colour",
+            "results.table.cell.boolean.background.colour",
+            "results.table.cell.blob.background.colour",
+            "results.table.cell.other.background.colour",
+            "results.table.focus.row.background.colour",
+            "results.table.cell.new.background.colour",
+            "results.table.cell.deleted.background.colour",
+    };
+
 }
-
-
-
-
-
-
-

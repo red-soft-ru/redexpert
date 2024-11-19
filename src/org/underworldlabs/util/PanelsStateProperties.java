@@ -24,8 +24,9 @@ public final class PanelsStateProperties {
         this.className = className;
     }
 
-    public void put(String key, String value) {
+    public PanelsStateProperties put(String key, String value) {
         stateMap.put(buildKey(key), value);
+        return this;
     }
 
     public String get(String key) {

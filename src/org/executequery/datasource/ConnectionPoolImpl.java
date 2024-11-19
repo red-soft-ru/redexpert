@@ -130,8 +130,8 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
         }
 
         if (databaseConnection.isSshTunnel() && sshTunnel == null) {
-
             createSshTunnel();
+            databaseConnection.setTunnelPort(sshTunnel.getTunnelPort());
         }
 
         if (size < minimumConnections) {
@@ -246,8 +246,8 @@ public class ConnectionPoolImpl extends AbstractConnectionPool implements Pooled
                 if (databaseConnection.isSshTunnel()) {
 
                     if (sshTunnel == null) {
-
                         createSshTunnel();
+                        databaseConnection.setTunnelPort(sshTunnel.getTunnelPort());
                     }
 
                     _databaseConnection = databaseConnection.copy();

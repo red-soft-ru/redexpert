@@ -73,7 +73,11 @@ public class NumberTextField extends JTextField {
     }
 
     private void initPopup() {
-        new SimpleTextComponentPopUpMenu(this);
+        try {
+            new SimpleTextComponentPopUpMenu(this);
+        } catch (Exception e) {
+            Log.debug(e.getMessage(), e);
+        }
     }
 
     public void setEnableNegativeNumbers(boolean enableNegativeNumbers) {

@@ -23,6 +23,7 @@ package org.executequery.datasource;
 import biz.redsoft.ITPB;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.ConnectionBuilder;
+import org.executequery.databasemediators.ConnectionType;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.databasemediators.spi.DefaultStatementExecutor;
@@ -39,12 +40,14 @@ import org.underworldlabs.util.SystemProperties;
 
 import javax.resource.ResourceException;
 import javax.sql.DataSource;
+import javax.swing.*;
 import javax.swing.tree.TreeNode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Manages all data source connections across multiple
@@ -54,73 +57,82 @@ import java.util.*;
  */
 public final class ConnectionManager {
 
-    private static final Map<DatabaseConnection, ConnectionPool> connectionPools = Collections.synchronizedMap(new HashMap<DatabaseConnection, ConnectionPool>());
+    private static final int MAX_CONNECTION_USE_COUNT = 50;
+    private static final Map<String, ConnectionData> connections = Collections.synchronizedMap(new HashMap<>());
 
-    public static synchronized void createDataSource(
-            DatabaseConnection databaseConnection, ConnectionBuilder connectionBuilder, boolean isAutoconnect
-    ) throws IllegalArgumentException {
+    /// Private constructor to prevent installation.
+    private ConnectionManager() {
+    }
 
-        databaseConnection.setAutoConnect(isAutoconnect);
+    // --- establish connection ---
 
-        // check the connection has a driver
-        if (databaseConnection.getJDBCDriver() == null) {
-            long driverId = databaseConnection.getDriverId();
-            DatabaseDriver driver = driverById(driverId);
+    public static synchronized void createDataSource(DatabaseConnection dc, ConnectionBuilder connectionBuilder, boolean isAutoConnect)
+            throws IllegalArgumentException {
 
-            if (driver != null)
-                databaseConnection.setJDBCDriver(driver);
-            else
-                throw new DataSourceException("No JDBC driver specified");
-        }
+        dc.setAutoConnect(isAutoConnect);
+        checkConnectionDriver(dc);
 
-        Log.info("Initialising data source for " + databaseConnection.getName());
-
-        ConnectionPool pool = new ConnectionPoolImpl(databaseConnection);
-        pool.setMinimumConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
-        pool.setInitialConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
-        connectionPools.put(databaseConnection, pool);
-
-        databaseConnection.setConnected(true);
+        Log.info("Initialising data source for " + dc.getName());
         long startTime = System.currentTimeMillis();
 
-        ConnectionsTreePanel panel = (ConnectionsTreePanel) GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
-        if (panel != null) {
-            DatabaseObjectNode hostNode = panel.getHostNode(databaseConnection);
-            loadTree(hostNode, connectionBuilder);
-            panel.getTree().nodeChanged(hostNode);
-        }
-
-        DefaultStatementExecutor querySender = new DefaultStatementExecutor(databaseConnection);
-        try {
-
-            ResultSet rs = querySender.getResultSet("select rdb$character_set_name from rdb$database").getResultSet();
-            if (rs != null && rs.next())
-                if (rs.getString(1) != null)
-                    databaseConnection.setDBCharset(rs.getString(1).trim());
-
-        } catch (Exception e) {
-            Log.error(e.getMessage(), e);
-
-        } finally {
-            querySender.releaseResources();
-        }
+        initConnectionPool(dc);
+        loadConnectionTree(dc, connectionBuilder);
+        loadCharset(dc);
 
         if (connectionBuilder != null && connectionBuilder.isCancelled())
-            databaseConnection.setConnected(false);
+            dc.setConnected(false);
 
-        if (databaseConnection.isConnected()) {
+        if (dc.isConnected()) {
             Log.info("Connection time = " + (System.currentTimeMillis() - startTime) + "ms");
-            Log.info("Data source " + databaseConnection.getName() + " initialized.");
+            Log.info("Data source " + dc.getName() + " initialized.");
         }
     }
 
-    public static void loadTree(DatabaseObjectNode root, ConnectionBuilder connectionBuilder) {
+    private static void checkConnectionDriver(DatabaseConnection dc) throws DataSourceException {
+
+        if (dc.getJDBCDriver() != null)
+            return;
+
+        Repository repo = RepositoryCache.load(DatabaseDriverRepository.REPOSITORY_ID);
+        if (repo instanceof DatabaseDriverRepository) {
+            DatabaseDriver driver = ((DatabaseDriverRepository) repo).findById(dc.getDriverId());
+            if (driver != null) {
+                dc.setJDBCDriver(driver);
+                return;
+            }
+        }
+
+        throw new DataSourceException("No JDBC driver specified");
+    }
+
+    private static void initConnectionPool(DatabaseConnection dc) {
+
+        ConnectionPool pool = new ConnectionPoolImpl(dc);
+        pool.setMinimumConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
+        pool.setInitialConnections(SystemProperties.getIntProperty("user", "connection.initialcount"));
+
+        connections.put(dc.getId(), new ConnectionData(dc, pool));
+        dc.setConnected(true);
+    }
+
+    private static void loadConnectionTree(DatabaseConnection dc, ConnectionBuilder connectionBuilder) {
+
+        JPanel tabComponent = GUIUtilities.getDockedTabComponent(ConnectionsTreePanel.PROPERTY_KEY);
+        if (tabComponent instanceof ConnectionsTreePanel) {
+            ConnectionsTreePanel treePanel = (ConnectionsTreePanel) tabComponent;
+
+            DatabaseObjectNode hostNode = treePanel.getHostNode(dc);
+            loadTree(hostNode, connectionBuilder);
+            treePanel.getTree().nodeChanged(hostNode);
+        }
+    }
+
+    private static void loadTree(DatabaseObjectNode root, ConnectionBuilder connectionBuilder) {
         try {
             root.populateChildren();
 
             Enumeration<TreeNode> nodes = root.children();
             while (nodes.hasMoreElements()) {
-
                 DatabaseObjectNode node = (DatabaseObjectNode) nodes.nextElement();
                 if (node.isHostNode() || node.getType() == NamedObject.META_TAG)
                     loadTree(node, connectionBuilder);
@@ -132,87 +144,198 @@ public final class ConnectionManager {
         }
     }
 
+    private static void loadCharset(DatabaseConnection dc) {
+
+        DefaultStatementExecutor executor = new DefaultStatementExecutor(dc);
+        String query = "SELECT RDB$CHARACTER_SET_NAME FROM RDB$DATABASE";
+
+        try {
+            ResultSet rs = executor.getResultSet(query).getResultSet();
+            if (rs != null && rs.next()) {
+                String charset = rs.getString(1);
+                if (charset != null && !charset.trim().isEmpty())
+                    dc.setDBCharset(charset.trim());
+            }
+
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+
+        } finally {
+            executor.releaseResources();
+        }
+    }
+
+    // --- close connection ---
+
+    /// Closes all connections and removes the pool of the specified type.
+    public static synchronized void closeConnection(DatabaseConnection dc) {
+
+        if (dc == null || !connections.containsKey(dc.getId()))
+            return;
+
+        Log.info("Disconnecting from data source " + dc.getName());
+
+        String dcId = dc.getId();
+        ConnectionPool pool = connections.get(dcId).getConnectionPool();
+        try {
+            DataSource dataSource = pool.getDataSource();
+            if (dataSource instanceof SimpleDataSource) {
+                SimpleDataSource simpleDataSource = (SimpleDataSource) pool.getDataSource();
+                simpleDataSource.close();
+            }
+
+        } catch (ResourceException e) {
+            Log.error(e.getMessage(), e);
+        }
+        pool.close();
+
+        connections.remove(dcId);
+        dc.setConnected(false);
+
+        ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(dc).close();
+    }
+
+    /// Closes all connections and removes the pool of the specified type.
+    public static void close() {
+        if (!connections.isEmpty()) {
+            connections.values().forEach(ConnectionData::close);
+            connections.clear();
+        }
+    }
+
+    /**
+     * Closes the connection completely.<br>
+     * The specified connection is not returned to the pool.
+     */
+    public static void close(DatabaseConnection dc, Connection connection) {
+        if (dc != null && connection != null) {
+            String dcId = dc.getId();
+            if (connections.containsKey(dcId))
+                connections.get(dcId).close(connection);
+        }
+    }
+
+    // --- get connection ---
+
+    /**
+     * Returns a collection of database connection property
+     * objects that are active (connected).
+     *
+     * @return a collection of active connections
+     */
+    public static List<DatabaseConnection> getActiveConnections() {
+        return connections.values().stream().map(ConnectionData::getDatabaseConnection).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a collection of database connection property
+     * objects that are active (connected).
+     *
+     * @return a collection of active connections
+     */
+    public static List<DatabaseConnection> getAllConnections() {
+
+        ArrayList<DatabaseConnection> connections = new ArrayList<>();
+        Repository repository = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
+        if (repository instanceof DatabaseConnectionRepository)
+            connections.addAll(((DatabaseConnectionRepository) repository).findAll());
+
+        return connections;
+    }
+
     /**
      * Returns a connection from the pool of the specified type.
      *
-     * @param databaseConnection stored database connection properties object
+     * @param dc stored database connection properties object
      * @return the connection itself
      */
-    public static Connection getConnection(DatabaseConnection databaseConnection) {
+    @SuppressWarnings({"java:S2445", "SynchronizationOnLocalVariableOrMethodParameter"})
+    public static Connection getConnection(DatabaseConnection dc) {
 
-        if (databaseConnection == null) {
-
+        if (dc == null)
             return null;
+
+        String dcId = dc.getId();
+        synchronized (dc) {
+            // ignoring SynchronizationOnLocalVariableOrMethodParameter warning
+            // to make available parallel method invocation for different DatabaseConnection objects
+
+            if (!connections.containsKey(dcId))
+                createDataSource(dc, null, false);
+
+            return connections.get(dcId).getConnection();
         }
-
-        synchronized (databaseConnection) {
-
-            if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
-
-                createDataSource(databaseConnection, null, false);
-            }
-
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            Connection connection = pool.getConnection();
-
-            return connection;
-        }
-
     }
 
-    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection) {
-        return getTemporaryConnection(databaseConnection, null);
+    public static Connection getTemporaryConnection(DatabaseConnection dc) {
+        return getTemporaryConnection(dc, null);
     }
 
-    public static Connection getTemporaryConnection(DatabaseConnection databaseConnection, ITPB tpb) {
+    @SuppressWarnings({"java:S2445", "SynchronizationOnLocalVariableOrMethodParameter"})
+    public static Connection getTemporaryConnection(DatabaseConnection dc, ITPB tpb) {
 
-        if (databaseConnection == null) {
-
+        if (dc == null)
             return null;
-        }
 
-        synchronized (databaseConnection) {
+        String dcId = dc.getId();
+        synchronized (dc) {
+            // ignoring SynchronizationOnLocalVariableOrMethodParameter warning
+            // to make available parallel method invocation for different DatabaseConnection objects
 
-            if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
+            if (!connections.containsKey(dcId))
+                createDataSource(dc, null, false);
 
-                createDataSource(databaseConnection, null, false);
-            }
-
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            DataSource dataSource = getDataSource(databaseConnection);
-            Connection con;
             try {
-                if (dataSource instanceof SimpleDataSource)
-                    con = ((SimpleDataSource) dataSource).getConnection(tpb);
-                else con = dataSource.getConnection();
+                Connection connection = null;
+                DataSource dataSource = getDataSource(dc);
 
-                return new PooledConnection(con, databaseConnection);
+                if (dataSource instanceof SimpleDataSource)
+                    connection = ((SimpleDataSource) dataSource).getConnection(tpb);
+                else if (dataSource != null)
+                    connection = dataSource.getConnection();
+
+                return connection != null ?
+                        new PooledConnection(connection, dc) :
+                        connections.get(dcId).getConnection();
+
             } catch (SQLException e) {
                 Log.error("Error get connection", e);
-                return pool.getConnection();
+                return connections.get(dcId).getConnection();
             }
         }
-
     }
 
-    public static void setTPBtoConnection(DatabaseConnection databaseConnection, Connection connection, ITPB tpb) {
-        DataSource dataSource = getDataSource(databaseConnection);
+    public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {
+        if (dmd instanceof PooledDatabaseMetaData)
+            return ((PooledDatabaseMetaData) dmd).getRealConnection();
+        return dmd.getConnection();
+    }
+
+    // ---
+
+    public static void setTPBtoConnection(DatabaseConnection dc, Connection connection, ITPB tpb) {
+
+        if (dc == null || connection == null)
+            return;
+
+        DataSource dataSource = getDataSource(dc);
         if (dataSource instanceof SimpleDataSource) {
-            SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
             try {
+                SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
                 simpleDataSource.setTPBtoConnection(connection, tpb);
+
             } catch (SQLException e) {
-                e.printStackTrace();
+                Log.error(e.getMessage(), e);
             }
         }
     }
 
-    public static long getIDTransaction(DatabaseConnection databaseConnection, Connection connection) {
+    public static long getIDTransaction(DatabaseConnection dc, Connection connection) {
 
-        if (connection == null)
+        if (dc == null || connection == null)
             return -1;
 
-        DataSource dataSource = getDataSource(databaseConnection);
+        DataSource dataSource = getDataSource(dc);
         if (dataSource instanceof SimpleDataSource) {
             try {
                 SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
@@ -226,170 +349,80 @@ public final class ConnectionManager {
         return -1;
     }
 
-    public static long getCurrentSnapshotTransaction(DatabaseConnection databaseConnection, Connection connection) {
-        if (databaseConnection != null && databaseConnection.getMajorServerVersion() >= 4) {
-            DataSource dataSource = getDataSource(databaseConnection);
-            if (dataSource instanceof SimpleDataSource) {
+    public static long getCurrentSnapshotTransaction(DatabaseConnection dc, Connection connection) {
+
+        if (dc == null || connection == null || dc.getMajorServerVersion() < 4)
+            return -1;
+
+        DataSource dataSource = getDataSource(dc);
+        if (dataSource instanceof SimpleDataSource) {
+            try {
                 SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
-                try {
-                    return simpleDataSource.getSnapshotTransaction(connection);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                return simpleDataSource.getSnapshotTransaction(connection);
+
+            } catch (Exception e) {
+                Log.error(e.getMessage(), e);
             }
         }
+
         return -1;
     }
 
-    public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection databaseConnection) {
-        DataSource dataSource = getDataSource(databaseConnection);
+    public static ClassLoader getClassLoaderForDatabaseConnection(DatabaseConnection dc) {
+
+        if (dc == null)
+            return null;
+
+        DataSource dataSource = getDataSource(dc);
         if (dataSource instanceof SimpleDataSource) {
             SimpleDataSource simpleDataSource = (SimpleDataSource) dataSource;
             return simpleDataSource.getClassLoaderFromPlugin();
         }
+
         return null;
     }
 
-    public static String getURL(DatabaseConnection databaseConnection) {
-        if (databaseConnection == null) {
-
-            return null;
-        }
-        return SimpleDataSource.generateUrl(databaseConnection, SimpleDataSource.buildAdvancedProperties(databaseConnection));
-    }
-
-    public static Connection realConnection(DatabaseMetaData dmd) throws SQLException {
-        if (dmd instanceof PooledDatabaseMetaData)
-            return ((PooledDatabaseMetaData) dmd).getRealConnection();
-        else return dmd.getConnection();
-    }
-
     /**
-     * Closes all connections and removes the pool of the specified type.
-     *
-     * @param the stored database connection properties object
-     */
-    public static synchronized void closeConnection(DatabaseConnection databaseConnection) {
-
-        if (connectionPools.containsKey(databaseConnection)) {
-
-            Log.info("Disconnecting from data source " + databaseConnection.getName());
-
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            SimpleDataSource dataSource = (SimpleDataSource) pool.getDataSource();
-            try {
-                dataSource.close();
-            } catch (ResourceException e) {
-                e.printStackTrace();
-            }
-            pool.close();
-
-            connectionPools.remove(databaseConnection);
-            databaseConnection.setConnected(false);
-            ConnectionsTreePanel.getPanelFromBrowser().getDefaultDatabaseHostFromConnection(databaseConnection).close();
-        }
-    }
-
-    /**
-     * Closes all connections and removes the pool of the specified type.
-     *
-     * @param the stored database connection properties object
-     */
-    public static void close() {
-
-        if (connectionPools == null || connectionPools.isEmpty()) {
-
-            return;
-        }
-
-        // iterate and close all the pools
-        for (Iterator<DatabaseConnection> i = connectionPools.keySet().iterator(); i.hasNext(); ) {
-
-            ConnectionPool pool = connectionPools.get(i.next());
-            pool.close();
-        }
-        connectionPools.clear();
-    }
-
-    /**
-     * Retrieves the data source objetc of the specified connection.
+     * Retrieves the data source object of the specified connection.
      *
      * @return the data source object
      */
-    public static DataSource getDataSource(DatabaseConnection databaseConnection) {
-        if (connectionPools == null || !connectionPools.containsKey(databaseConnection)) {
+    public static DataSource getDataSource(DatabaseConnection dc) {
 
+        if (dc == null)
             return null;
-        }
-        return connectionPools.get(databaseConnection).getDataSource();
+
+        String dcId = dc.getId();
+        return connections.containsKey(dcId) ? connections.get(dcId).getDataSource() : null;
     }
 
     /**
      * Sets the transaction isolation level to that specified
-     * for <i>all</i> connections in the pool of the specified connection.
+     * for all connections in the pool of the specified connection.
      *
-     * @param the isolation level
      * @see java.sql.Connection for possible values
      */
-    public static void setTransactionIsolationLevel(DatabaseConnection databaseConnection, int isolationLevel) {
-
-        if (connectionPools == null || connectionPools.containsKey(databaseConnection)) {
-
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            pool.setTransactionIsolationLevel(isolationLevel);
+    public static void setTransactionIsolationLevel(DatabaseConnection dc, int isolationLevel) {
+        if (dc != null) {
+            String dcId = dc.getId();
+            if (connections.containsKey(dcId))
+                connections.get(dcId).setTransactionIsolationLevel(isolationLevel);
         }
-
     }
 
     /**
-     * Returns a collection of database connection property
-     * objects that are active (connected).
+     * Returns whether the specified connection [driver] supports transactions.
      *
-     * @return a collection of active connections
+     * @param dc the connection to be polled
+     * @return true | false
      */
-    public static Vector<DatabaseConnection> getActiveConnections() {
+    public static boolean isTransactionSupported(DatabaseConnection dc) {
 
-        if (connectionPools.isEmpty())
-            return new Vector<>(0);
+        if (dc == null)
+            return false;
 
-        Vector<DatabaseConnection> connections = new Vector<>(connectionPools.size());
-        connections.addAll(connectionPools.keySet());
-
-        return connections;
-    }
-
-    /**
-     * Returns a collection of database connection property
-     * objects that are active (connected).
-     *
-     * @return a collection of active connections
-     */
-    public static Vector<DatabaseConnection> getAllConnections() {
-
-        Vector<DatabaseConnection> connections = new Vector<>();
-        Repository repository = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repository instanceof DatabaseConnectionRepository)
-            connections.addAll(((DatabaseConnectionRepository) repository).findAll());
-
-        return connections;
-    }
-
-    /**
-     * Returns the open connection count for the specified connection.
-     *
-     * @param dc - the connection to be polled
-     */
-    public static int getOpenConnectionCount(DatabaseConnection dc) {
-        ConnectionPool pool = connectionPools.get(dc);
-        if (pool != null) {
-            return pool.getSize();
-        }
-        return 0;
-    }
-
-    public static boolean hasConnections() {
-
-        return getActiveConnectionPoolCount() > 0;
+        String dcId = dc.getId();
+        return connections.containsKey(dcId) && connections.get(dcId).isTransactionSupported();
     }
 
     /**
@@ -398,49 +431,18 @@ public final class ConnectionManager {
      * @return number of active pools
      */
     public static int getActiveConnectionPoolCount() {
-        if (connectionPools == null) {
-            return 0;
-        }
-        return connectionPools.size();
+        return connections.size();
     }
 
-    /**
-     * Closes the connection completely. The specified connection
-     * is not returned to the pool.
-     *
-     * @param the connection be closed
-     */
-    public static void close(DatabaseConnection databaseConnection, Connection connection) {
-
-        if (connectionPools == null || connectionPools.isEmpty()) {
-
-            return;
-        }
-
-        if (connectionPools.containsKey(databaseConnection)) {
-
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            pool.close(connection);
-        }
-
+    public static boolean noActiveConnections() {
+        return getActiveConnectionPoolCount() < 1;
     }
 
-    /**
-     * Returns whether the specified connection [driver] supports transactions.
-     *
-     * @param databaseConnection the connection to be polled
-     * @return true | false
-     */
-    public static boolean isTransactionSupported(
-            DatabaseConnection databaseConnection) {
-        if (connectionPools.containsKey(databaseConnection)) {
-            ConnectionPool pool = connectionPools.get(databaseConnection);
-            return pool.isTransactionSupported();
-        }
-        return false;
+    public static boolean allConnectionsAreEmbedded() {
+        return connections.values().stream()
+                .map(ConnectionData::getDatabaseConnection)
+                .allMatch(ConnectionType::isEmbedded);
     }
-
-    private static final int MAX_CONNECTION_USE_COUNT = 50;
 
     /**
      * Retrieves the maximum use count for each open connection
@@ -449,23 +451,52 @@ public final class ConnectionManager {
      * @return the max connection use count
      */
     public static int getMaxUseCount() {
-
         return MAX_CONNECTION_USE_COUNT;
     }
 
-    private static DatabaseDriver driverById(long driverId) {
+    // ---
 
-        return ((DatabaseDriverRepository) RepositoryCache.load(
-                DatabaseDriverRepository.REPOSITORY_ID)).findById(driverId);
-    }
+    private static class ConnectionData {
+        private final DatabaseConnection databaseConnection;
+        private final ConnectionPool connectionPool;
 
-    private ConnectionManager() {
-    }
+        public ConnectionData(DatabaseConnection databaseConnection, ConnectionPool connectionPool) {
+            this.databaseConnection = databaseConnection;
+            this.connectionPool = connectionPool;
+        }
+
+        public void setTransactionIsolationLevel(int isolationLevel) {
+            connectionPool.setTransactionIsolationLevel(isolationLevel);
+        }
+
+        public void close() {
+            connectionPool.close();
+        }
+
+        public void close(Connection connection) {
+            connectionPool.close(connection);
+        }
+
+        public DataSource getDataSource() {
+            return connectionPool.getDataSource();
+        }
+
+        public DatabaseConnection getDatabaseConnection() {
+            return databaseConnection;
+        }
+
+        public ConnectionPool getConnectionPool() {
+            return connectionPool;
+        }
+
+        public Connection getConnection() {
+            return connectionPool.getConnection();
+        }
+
+        public boolean isTransactionSupported() {
+            return connectionPool.isTransactionSupported();
+        }
+
+    } // ConnectionData class
+
 }
-
-
-
-
-
-
-

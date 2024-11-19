@@ -22,7 +22,8 @@ package org.executequery.gui;
 
 import org.executequery.UserPreferencesManager;
 import org.executequery.components.BasicPopupMenuListener;
-import org.executequery.components.LoggingOutputPane;
+import org.executequery.gui.logging.output.LoggingOutputPane;
+import org.executequery.gui.logging.output.LoggingStream;
 import org.underworldlabs.swing.plaf.UIUtils;
 
 import javax.swing.*;
@@ -32,164 +33,132 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 
-/**
- * @author Takis Diakoumis
- */
+/// @author Takis Diakoumis
 public class LoggingOutputPanel extends JPanel
-        implements DocumentListener, ReadOnlyTextPane {
+        implements DocumentListener,
+        ReadOnlyTextPane {
 
-    private LoggingOutputPane outputPane;
+    private final LoggingOutputPane outputPane;
 
     public LoggingOutputPanel() {
-
         super(new BorderLayout());
+
+        Color bg = UserPreferencesManager.getOutputPaneBackground();
 
         outputPane = new LoggingOutputPane();
         outputPane.setMargin(new Insets(5, 5, 5, 5));
         outputPane.setDisabledTextColor(Color.black);
-
-        Color bg = UserPreferencesManager.getOutputPaneBackground();
         outputPane.setBackground(bg);
 
-        JScrollPane textOutputScroller = new JScrollPane(outputPane);
-        textOutputScroller.setBackground(bg);
-        textOutputScroller.setBorder(null);
-        textOutputScroller.getViewport().setBackground(bg);
+        JScrollPane scrollPane = new JScrollPane(outputPane);
+        scrollPane.getViewport().setBackground(bg);
+        scrollPane.setBackground(bg);
+        scrollPane.setBorder(null);
 
         setBorder(BorderFactory.createLineBorder(UIUtils.getDefaultBorderColour()));
-
-        add(textOutputScroller, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         addDocumentListener(this);
 
-        ReadOnlyTextPanePopUpMenu readOnlyTextPanePopUpMenu = new ReadOnlyTextPanePopUpMenu(this);
-        outputPane.addMouseListener(new BasicPopupMenuListener(readOnlyTextPanePopUpMenu));
-    }
-
-    @Override
-    public void setBackground(Color bg) {
-
-        super.setBackground(bg);
-        if (outputPane != null) {
-
-            outputPane.setBackground(bg);
-        }
+        ReadOnlyTextPanePopUpMenu popUpMenu = new ReadOnlyTextPanePopUpMenu(this);
+        outputPane.addMouseListener(new BasicPopupMenuListener(popUpMenu));
     }
 
     public void append(String text) {
-
         outputPane.append(text);
     }
 
     public void append(int type, String text) {
-
         outputPane.append(type, text);
     }
 
     public void appendError(String text) {
-
         outputPane.appendError(text);
     }
 
     public void appendWarning(String text) {
-
         outputPane.appendWarning(text);
     }
 
     public void appendPlain(String text) {
-
         outputPane.appendPlain(text);
     }
 
     public void appendAction(String text) {
-
         outputPane.appendAction(text);
     }
 
-    public void appendErrorFixedWidth(String text) {
-
-        outputPane.appendErrorFixedWidth(text);
-    }
-
-    public void appendWarningFixedWidth(String text) {
-
-        outputPane.appendWarningFixedWidth(text);
-    }
-
-    public void appendPlainFixedWidth(String text) {
-
-        outputPane.appendPlainFixedWidth(text);
-    }
-
     public void appendActionFixedWidth(String text) {
-
         outputPane.appendActionFixedWidth(text);
     }
 
     public Document getDocument() {
-
         return outputPane.getDocument();
     }
 
     public void addDocumentListener(DocumentListener listener) {
-
         outputPane.getDocument().addDocumentListener(listener);
     }
 
-    public JTextPane getTextPane() {
-
-        return outputPane;
+    public LoggingStream getLoggingStream(int bufferSize, boolean trimByLine) {
+        return new LoggingStream(outputPane, bufferSize, trimByLine);
     }
 
+    // --- JComponent impl ---
+
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        if (outputPane != null)
+            outputPane.setBackground(bg);
+    }
+
+    // --- DocumentListener impl ---
+
+    @Override
     public void changedUpdate(DocumentEvent e) {
-
         documentChanged();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
-
         documentChanged();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
-
         documentChanged();
     }
 
     private void documentChanged() {
-
         outputPane.setCaretPosition(getDocument().getLength());
     }
 
-    public JTextComponent getTextComponent() {
+    // --- ReadOnlyTextPane impl ---
 
+    @Override
+    public JTextComponent getTextComponent() {
         return outputPane;
     }
 
+    @Override
     public void clear() {
-
         outputPane.setText("");
         outputPane.setCaretPosition(0);
     }
 
+    @Override
     public void selectAll() {
-
         outputPane.selectAll();
     }
 
+    @Override
     public String getText() {
-
         return outputPane.getText();
     }
 
+    @Override
     public void copy() {
-
         outputPane.copy();
     }
 
 }
-
-
-
-
-
-

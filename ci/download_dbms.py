@@ -17,10 +17,10 @@ if "rdb" in DBMS:
     bin = "bin" if os == "linux" else "exe"
 
     if DBMS == "rdb30":
-        last_stable_version = "3.0.17"
+        last_stable_version = "3.0.18"
 
     if DBMS == "rdb50":
-        last_stable_version = "5.0.0-rc.3"       
+        last_stable_version = "5.0.0"       
 
     url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:{os}-x86_64-enterprise:{last_stable_version}:{bin}"
 

@@ -3,16 +3,13 @@ package org.executequery.gui;
 import org.executequery.GUIUtilities;
 import org.executequery.actions.databasecommands.TableValidationCommand;
 import org.executequery.base.TabView;
-import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseIndex;
 import org.executequery.databaseobjects.impl.DefaultDatabaseTable;
 import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.localization.Bundles;
-import org.executequery.repository.DatabaseConnectionRepository;
-import org.executequery.repository.RepositoryCache;
-import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.swing.ConnectionsComboBox;
 import org.underworldlabs.swing.ListSelectionPanel;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.MiscUtils;
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Alexey Kozlov
@@ -33,7 +29,6 @@ public class TableValidationPanel extends JPanel implements TabView {
     public static final String TITLE = bundledString("Title");
     public static final String FRAME_ICON = "icon_table_validation";
 
-    private List<DatabaseConnection> databaseConnections;
     private DatabaseConnection selectedConnection;
 
     private String originalOutputText;
@@ -41,7 +36,7 @@ public class TableValidationPanel extends JPanel implements TabView {
 
     // --- GUI components ---
 
-    private JComboBox<String> connectionsComboBox;
+    private ConnectionsComboBox connectionsComboBox;
     private JButton startValidationButton;
     private ListSelectionPanel tableSelectionPanel;
     private ListSelectionPanel indexSelectionPanel;
@@ -65,14 +60,7 @@ public class TableValidationPanel extends JPanel implements TabView {
         originalOutputText = "";
         formattedOutputText = "";
 
-        databaseConnections = ((DatabaseConnectionRepository)
-                Objects.requireNonNull(RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID)))
-                .findAll().stream()
-                .sorted((o1, o2) -> Boolean.compare(o1.isConnected(), o2.isConnected()) * -1)
-                .collect(Collectors.toList());
-
-        connectionsComboBox = new JComboBox<>();
-        databaseConnections.forEach(item -> connectionsComboBox.addItem(item.getName()));
+        connectionsComboBox = WidgetFactory.createConnectionComboBox("connectionsComboBox", false, true, true);
         connectionsComboBox.addActionListener(e -> refreshTables());
 
         startValidationButton = new JButton();
@@ -198,7 +186,7 @@ public class TableValidationPanel extends JPanel implements TabView {
 
         // set selected connection
         this.selectedConnection = selectedConnection;
-        connectionsComboBox.setSelectedIndex(getConnectionIndex(selectedConnection));
+        connectionsComboBox.setSelectedItem(selectedConnection);
 
         // set selected objects to display
         List<String> selectedTables = Arrays.asList(tableIncl.split("\\|"));
@@ -235,19 +223,10 @@ public class TableValidationPanel extends JPanel implements TabView {
         if (tableSelectionPanel == null)
             return;
 
-        selectedConnection = databaseConnections.get(connectionsComboBox.getSelectedIndex());
-        try {
-            if (!selectedConnection.isConnected())
-                ConnectionMediator.getInstance().connect(selectedConnection, true);
-
-        } catch (DataSourceException e) {
-            GUIUtilities.displayExceptionErrorDialog(bundledString("UnableCreateConnections"), e, this.getClass());
-            return;
-        }
-
-        List<NamedObject> connactionTableList = ConnectionsTreePanel.getPanelFromBrowser().
-                getDefaultDatabaseHostFromConnection(selectedConnection).
-                getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[1]);
+        selectedConnection = connectionsComboBox.getSelectedConnection();
+        List<NamedObject> connactionTableList = ConnectionsTreePanel.getPanelFromBrowser()
+                .getDefaultDatabaseHostFromConnection(selectedConnection)
+                .getDatabaseObjectsForMetaTag(NamedObject.META_TYPES[1]);
 
         tableSelectionPanel.createAvailableList(connactionTableList);
     }
@@ -262,17 +241,6 @@ public class TableValidationPanel extends JPanel implements TabView {
 
         indexSelectionPanel.createAvailableList(indexesList);
         indexSelectionPanel.selectAllAction();
-    }
-
-    private int getConnectionIndex(DatabaseConnection connection) {
-
-        int index = 0;
-        for (DatabaseConnection dc : databaseConnections)
-            if (!dc.getName().equals(connection.getName()))
-                index++;
-            else break;
-
-        return index;
     }
 
     @Override

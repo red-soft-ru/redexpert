@@ -986,86 +986,18 @@ public class DefaultDatabaseTable extends AbstractTableObject implements Databas
     }
 
     @Override
+    public String getSelectSQLText() {
+        return SQLUtils.generateDefaultSelectStatement(getName(), getColumns(), getHost().getDatabaseConnection());
+    }
+
+    @Override
     public String getInsertSQLText() {
-
-        String fields = "";
-        String values = "";
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-                fields += column.getNameForQuery();
-                values += ":" + toCamelCase(column.getName());
-
-                if (i < n - 1) {
-                    fields += ", ";
-                    values += ", ";
-                }
-            }
-
-        } catch (DataSourceException e) {
-
-            fields = "_fields_";
-            values = "_values_";
-            e.printStackTrace();
-        }
-
-        return getFormatter().format(SQLUtils.generateDefaultInsertStatement(getName(), fields, values, getHost().getDatabaseConnection()));
+        return SQLUtils.generateDefaultInsertStatement(getName(), getColumnsForInsertQuery(), getHost().getDatabaseConnection());
     }
 
     @Override
     public String getUpdateSQLText() {
-
-        String settings = "";
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-                settings += column.getNameForQuery() + " = :" + toCamelCase(column.getName());
-
-                if (i < n - 1)
-                    settings += ", ";
-            }
-
-        } catch (DataSourceException e) {
-
-            settings = "_oldValue_ = _newValue_";
-            e.printStackTrace();
-        }
-
-        return getFormatter().format(SQLUtils.generateDefaultUpdateStatement(getName(), settings, getHost().getDatabaseConnection()));
-    }
-
-    @Override
-    public String getSelectSQLText() {
-
-        String fields = "";
-
-        try {
-
-            List<DatabaseColumn> columns = getColumns();
-            for (int i = 0, n = columns.size(); i < n; i++) {
-
-                DatabaseTableColumn column = (DatabaseTableColumn) columns.get(i);
-                fields += column.getNameForQuery();
-
-                if (i < n - 1)
-                    fields += ", ";
-            }
-
-        } catch (DataSourceException e) {
-
-            fields = "*";
-            e.printStackTrace();
-        }
-
-        return getFormatter().format(SQLUtils.generateDefaultSelectStatement(getName(), fields, getHost().getDatabaseConnection()));
+        return SQLUtils.generateDefaultUpdateStatement(getName(), getColumnsForInsertQuery(), getHost().getDatabaseConnection());
     }
 
     protected TokenizingFormatter getFormatter() {

@@ -1,7 +1,7 @@
 package org.underworldlabs.swing;
 
 import org.executequery.Constants;
-import org.executequery.gui.browser.ConnectionPanel;
+import org.executequery.gui.browser.AbstractConnectionPanel;
 import org.executequery.localization.Bundles;
 
 import javax.swing.*;
@@ -15,7 +15,7 @@ public class TransactionIsolationComboBox extends JComboBox<String> {
     public TransactionIsolationComboBox() {
 
         String[] isolationLevels = new String[4];
-        isolationLevels[0] = Bundles.get(ConnectionPanel.class, "DatabaseDefault");
+        isolationLevels[0] = Bundles.get(AbstractConnectionPanel.class, "DatabaseDefault");
         System.arraycopy(Constants.TRANSACTION_LEVELS, 2, isolationLevels, 1, isolationLevels.length - 1);
 
         setModel(new DynamicComboBoxModel<>(isolationLevels));

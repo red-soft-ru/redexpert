@@ -73,6 +73,11 @@
                 <order>11</order>
             </button>
 
+            <button id="111" action-id="database-backup-restore-command">
+                <visible>true</visible>
+                <order>12</order>
+            </button>
+
         </buttons>
 
     </toolbar>

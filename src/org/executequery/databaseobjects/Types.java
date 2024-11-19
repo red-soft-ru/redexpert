@@ -320,4 +320,6 @@ public interface Types {
      */
     int INT128 = -55;
 
+    int DECFLOAT = -6001;
+
 }

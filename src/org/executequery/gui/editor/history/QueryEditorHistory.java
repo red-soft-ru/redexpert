@@ -170,7 +170,8 @@ public final class QueryEditorHistory {
     public static void removeFile(String path) {
         try {
             Path fileToDeletePath = Paths.get(path).normalize();
-            Files.delete(fileToDeletePath);
+            if (Files.exists(fileToDeletePath))
+                Files.delete(fileToDeletePath);
 
         } catch (IOException e) {
             Log.debug(String.format("Error occurred deleting %s", path), e);

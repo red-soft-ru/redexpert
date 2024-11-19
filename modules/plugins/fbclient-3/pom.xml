@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>fbclient-3</artifactId>
-    <version>3.0.15</version>
+    <version>3.0.17</version>
     <packaging>jar</packaging>
 
     <inceptionYear>2019</inceptionYear>

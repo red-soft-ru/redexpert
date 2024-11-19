@@ -22,7 +22,6 @@ package org.executequery.databaseobjects.impl;
 
 import biz.redsoft.IFBDatabaseMetadata;
 import org.executequery.Constants;
-import org.executequery.actions.databasecommands.DatabaseStatisticCommand;
 import org.executequery.databasemediators.ConnectionMediator;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.DatabaseDriver;
@@ -37,6 +36,7 @@ import org.executequery.gui.browser.ConnectionsTreePanel;
 import org.executequery.gui.browser.tree.TreePanel;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.executequery.service.managers.StatisticsManager;
 import org.executequery.sql.sqlbuilder.Field;
 import org.executequery.sql.sqlbuilder.SelectBuilder;
 import org.executequery.sql.sqlbuilder.Table;
@@ -51,7 +51,7 @@ import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
 
-import static org.executequery.actions.databasecommands.DatabaseStatisticCommand.getHeaderValue;
+import static org.executequery.service.managers.StatisticsManager.*;
 
 /**
  * Default database host object implementation.
@@ -649,7 +649,7 @@ public class DefaultDatabaseHost extends AbstractNamedObject
     @Override
     public Map<Object, Object> getDatabaseProperties() {
         if (databaseProperties == null || databaseProperties.isEmpty()) {
-            databaseProperties = getDatabaseProperties(getDatabaseConnection(), true);
+            databaseProperties = getDatabaseProperties(getDatabaseConnection());
             databaseProperties.put(bundleString("ServerVersion"), getDatabaseProductNameVersion());
 
             Map<Object, Object> metaProperties = getMetaProperties();
@@ -659,31 +659,36 @@ public class DefaultDatabaseHost extends AbstractNamedObject
         return databaseProperties;
     }
 
-    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection, boolean handleException) {
+    public static Map<Object, Object> getDatabaseProperties(DatabaseConnection connection) {
+        String databaseHeader = StatisticsManager.getDatabaseHeader(connection);
+
+        String serverVersion = getHeaderValue(SERVER, databaseHeader);
+        if (connection.getMajorServerVersion() > 0)
+            serverVersion += " " + connection.getMajorServerVersion();
+        serverVersion = serverVersion.trim();
 
         Map<Object, Object> databaseProperties = new HashMap<>();
+        databaseProperties.put(bundleString("ServerVersion"), serverVersion);
         databaseProperties.put(bundleString("Driver"), connection.getDriverName());
 
-        String databaseHeader = DatabaseStatisticCommand.getDatabaseHeader(connection, handleException);
-        databaseProperties.put(bundleString("GUID"), getHeaderValue(DatabaseStatisticCommand.GUID, databaseHeader));
-        databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(DatabaseStatisticCommand.NEXT_ATACHMENT, databaseHeader));
-        databaseProperties.put(bundleString("GENERATION"), getHeaderValue(DatabaseStatisticCommand.GENERATION, databaseHeader));
-        databaseProperties.put(bundleString("AUTOSWEEP_GAP"), getHeaderValue(DatabaseStatisticCommand.AUTOSWEEP_GAP, databaseHeader));
-        databaseProperties.put(bundleString("SEQUENCE_NUM"), getHeaderValue(DatabaseStatisticCommand.SEQUENCE_NUM, databaseHeader));
-        databaseProperties.put(bundleString("IMPLEMENTATION"), getHeaderValue(DatabaseStatisticCommand.IMPLEMENTATION, databaseHeader));
-        databaseProperties.put(bundleString("SHADOW_COUNT"), getHeaderValue(DatabaseStatisticCommand.SHADOW_COUNT, databaseHeader));
-        databaseProperties.put(bundleString("SCN"), getHeaderValue(DatabaseStatisticCommand.SCN, databaseHeader));
-        databaseProperties.put(bundleString("CREATION_DATE"), getHeaderValue(DatabaseStatisticCommand.CREATION_DATE, databaseHeader));
-        databaseProperties.put(bundleString("SQL_DIALECT"), getHeaderValue(DatabaseStatisticCommand.DIALECT, databaseHeader));
-        databaseProperties.put(bundleString("NEXT_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.NEXT_TRANSACTION, databaseHeader));
-        databaseProperties.put(bundleString("PAGE_SIZE"), getHeaderValue(DatabaseStatisticCommand.PAGE_SIZE, databaseHeader));
-        databaseProperties.put(bundleString("ODS_VERSION"), getHeaderValue(DatabaseStatisticCommand.ODS, databaseHeader));
-        databaseProperties.put(bundleString("ServerVersion"), (getHeaderValue(DatabaseStatisticCommand.SERVER, databaseHeader) + " " + connection.getMajorServerVersion()).trim());
-        databaseProperties.put(bundleString("OLDEST_TRANSACTION"), getHeaderValue(DatabaseStatisticCommand.OIT, databaseHeader));
-        databaseProperties.put(bundleString("OLDEST_ACTIVE"), getHeaderValue(DatabaseStatisticCommand.OAT, databaseHeader));
-        databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), getHeaderValue(DatabaseStatisticCommand.OST, databaseHeader));
+        databaseProperties.put(bundleString("GUID"), getHeaderValue(GUID, databaseHeader));
+        databaseProperties.put(bundleString("NEXT_ATTACHMENT"), getHeaderValue(NEXT_ATTACHMENT, databaseHeader));
+        databaseProperties.put(bundleString("GENERATION"), getHeaderValue(GENERATION, databaseHeader));
+        databaseProperties.put(bundleString("AUTOSWEEP_GAP"), getHeaderValue(AUTOSWEEP_GAP, databaseHeader));
+        databaseProperties.put(bundleString("SEQUENCE_NUM"), getHeaderValue(SEQUENCE_NUM, databaseHeader));
+        databaseProperties.put(bundleString("IMPLEMENTATION"), getHeaderValue(IMPLEMENTATION, databaseHeader));
+        databaseProperties.put(bundleString("SHADOW_COUNT"), getHeaderValue(SHADOW_COUNT, databaseHeader));
+        databaseProperties.put(bundleString("SCN"), getHeaderValue(SCN, databaseHeader));
+        databaseProperties.put(bundleString("CREATION_DATE"), getHeaderValue(CREATION_DATE, databaseHeader));
+        databaseProperties.put(bundleString("SQL_DIALECT"), getHeaderValue(DIALECT, databaseHeader));
+        databaseProperties.put(bundleString("NEXT_TRANSACTION"), getHeaderValue(NEXT_TRANSACTION, databaseHeader));
+        databaseProperties.put(bundleString("PAGE_SIZE"), getHeaderValue(PAGE_SIZE, databaseHeader));
+        databaseProperties.put(bundleString("ODS_VERSION"), getHeaderValue(ODS, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_TRANSACTION"), getHeaderValue(OIT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_ACTIVE"), getHeaderValue(OAT, databaseHeader));
+        databaseProperties.put(bundleString("OLDEST_SNAPSHOT"), getHeaderValue(OST, databaseHeader));
 
-        Object value = getHeaderValue(DatabaseStatisticCommand.PAGE_BUFF, databaseHeader);
+        Object value = getHeaderValue(PAGE_BUFF, databaseHeader);
         if (value != null && !MiscUtils.isNull(value.toString())) {
             int intVal = Integer.parseInt(value.toString());
             value = Objects.equals(intVal, 0) ? Bundles.getCommon("default") : value;

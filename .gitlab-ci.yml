@@ -98,13 +98,14 @@ build_docs:
     - docker
     - builder
     - x86_64
-  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2022-2023-03-12-full
+  variables:
+    SPHINXBUILD: sphinx-build
+  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2024-2024-11-17-full-sphinx
   before_script:
     - apt update && apt install -y python3-venv python3-pip
     - mkdir -p dist/guide
   script:
     - cd guide_rst
-    - make bootstrap
     - make latexpdf
     - cp build/latex/Red_Expert.pdf ../dist/guide/RedExpert_Guide-ru.pdf
 
@@ -237,7 +238,7 @@ test:windows:
   parallel:
     matrix:
       - TEST_TYPE: core
-        ARCH: ["x86_64", "x86"]
+        ARCH: ["x86_64"]
         DBMS: ["rdb30", "rdb50"]
   before_script:
    - $TEST_DIR = New-TempDirectory -Prefix 'test_re_'
@@ -252,11 +253,6 @@ test:windows:
   dependencies: ["prepare", "sources", "build:windows"]
   needs: ["prepare", "sources", "build:windows"]
   timeout: 2 hours
-  only:
-    variables:
-      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
 test:windows-robot:
   extends: .test_template
@@ -275,7 +271,7 @@ test:windows-robot:
   parallel:
     matrix:
       - TEST_TYPE: core
-        ARCH: ["x86_64", "x86"]
+        ARCH: ["x86_64"]
         DBMS: ["rdb30", "rdb50"]
   before_script:
    - $TEST_DIR = New-TempDirectory -Prefix 'robot_test_re_'
@@ -290,11 +286,6 @@ test:windows-robot:
   dependencies: ["prepare", "sources", "build:windows"]
   needs: ["prepare", "sources", "build:windows"]
   timeout: 2 hours
-  only:
-    variables:
-      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
 test:linux-robot:
   extends: .test_template
@@ -333,11 +324,6 @@ test:linux-robot:
   dependencies: ["prepare", "sources", "build:linux"]
   needs: ["prepare", "sources", "build:linux"]
   timeout: 2 hours
-  only:
-    variables:
-      - ($CONTEXT == "weekly" || $CI_COMMIT_TAG) && $TEST_TYPE == "core"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb50"
-      - $CONTEXT == "commit" && $ARCH == "x86_64" && $DBMS == "rdb30"
 
 repackage:
   tags:

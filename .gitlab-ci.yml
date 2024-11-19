@@ -98,13 +98,14 @@ build_docs:
     - docker
     - builder
     - x86_64
-  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2022-2023-03-12-full
+  variables:
+    SPHINXBUILD: sphinx-build
+  image: registry.red-soft.biz:5000/docker-images/3rdparty/texlive:TL2024-2024-11-17-full-sphinx
   before_script:
     - apt update && apt install -y python3-venv python3-pip
     - mkdir -p dist/guide
   script:
     - cd guide_rst
-    - make bootstrap
     - make latexpdf
     - cp build/latex/Red_Expert.pdf ../dist/guide/RedExpert_Guide-ru.pdf
 

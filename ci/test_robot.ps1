@@ -29,7 +29,7 @@ git clone -q http://git.red-soft.biz/red-database/re-tests-robot
 
 echo "Installing components"
 start-process "${PYTHON}" "-m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git" -wait -nonewwindow
-start-process "${PYTHON}" "-m pip install robotframework" -wait -nonewwindow
+start-process "${PYTHON}" "-m pip install robotframework psutil" -wait -nonewwindow
 
 echo "Set .xml"
 $BUILD_PATH="$env:USERPROFILE\.redexpert\${BUILD}"

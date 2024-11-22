@@ -168,9 +168,10 @@ body:
 ;
  datatypeSQL
  : K_BOOLEAN array_size?
-    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128)spases_or_comment? array_size?
-    | (K_FLOAT | K_DOUBLE spases_or_comment K_PRECISION)spases_or_comment? array_size?
-    | (K_DATE | K_TIME | K_TIMESTAMP| K_TIME spases_or_comment K_WITH spases_or_comment K_TIMEZONE | K_TIMESTAMP spases_or_comment K_WITH spases_or_comment K_TIMEZONE) spases_or_comment? array_size?
+    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128 | K_INT | K_LONG)spases_or_comment? array_size?
+    | (K_FLOAT | K_REAL ) spases_or_comment?('('scale')')?spases_or_comment? array_size?
+    | (K_DOUBLE spases_or_comment K_PRECISION| K_LONG spases_or_comment K_FLOAT) spases_or_comment? array_size?
+    | (K_DATE | K_TIME | K_TIMESTAMP| ((K_TIME | K_TIMESTAMP) spases_or_comment (K_WITH|K_WITHOUT) spases_or_comment K_TIME spases_or_comment K_ZONE )) spases_or_comment? array_size?
     | (K_DECIMAL | K_NUMERIC | K_DECFLOAT)spases_or_comment? ('(' type_size spases_or_comment?(',' spases_or_comment? scale)?')')?spases_or_comment? array_size?
     | (K_CHAR | K_CHARACTER | K_VARYING spases_or_comment K_CHARACTER | K_VARCHAR) spases_or_comment?('('type_size')')?
     (spases_or_comment K_CHARACTER spases_or_comment K_SET spases_or_comment charset_name)?spases_or_comment? array_size?
@@ -1462,7 +1463,6 @@ K_TIES : T I E S ;
 K_TIME : T I M E ;
 K_TIMESTAMP : T I M E S T A M P ;
 K_TIMEOUT : T I M E O U T ;
-K_TIMEZONE : T I M E Z O N E ;
 K_TIMEZONE_HOUR : T I M E Z O N E '_' H O U R ;
 K_TIMEZONE_MINUTE : T I M E Z O N E '_' M I N U T E ;
 K_TIMEZONE_NAME : T I M E Z O N E '_' N A M E ;

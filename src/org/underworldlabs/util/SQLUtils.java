@@ -824,9 +824,6 @@ public final class SQLUtils {
                 sb.append(SPACE).append(format(cd.getDefaultValue(), cd));
             }
 
-            if (!MiscUtils.isNull(cd.getCheck()))
-                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
-
         } else
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
 
@@ -1673,11 +1670,10 @@ public final class SQLUtils {
         if (updateFields.isEmpty())
             updateFields.add("<field_name> = :<param_name>");
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(format(name.trim(), dc)).append(" SET\n\t");
-        sb.append(String.join(",\n\t", updateFields)).append(";\n");
+        String sb = "UPDATE " + format(name.trim(), dc) + " SET\n\t" +
+                String.join(",\n\t", updateFields) + ";\n";
 
-        return sb.toString();
+        return sb;
     }
 
     public static String generateDefaultInsertStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
@@ -1691,14 +1687,13 @@ public final class SQLUtils {
             updateFields.add(setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName()));
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(format(name.trim(), dc)).append(" (\n\t");
-        sb.append(String.join(",\n\t", getFormattedColumnsNames(columns, dc)));
-        sb.append("\n) VALUES (\n\t");
-        sb.append(String.join(",\n\t", updateFields));
-        sb.append("\n);\n");
+        String sb = "INSERT INTO " + format(name.trim(), dc) + " (\n\t" +
+                String.join(",\n\t", getFormattedColumnsNames(columns, dc)) +
+                "\n) VALUES (\n\t" +
+                String.join(",\n\t", updateFields) +
+                "\n);\n";
 
-        return sb.toString();
+        return sb;
     }
 
     public static String generateCreateTriggerStatement(
@@ -1818,7 +1813,7 @@ public final class SQLUtils {
         }
 
         if (!argumentssBuilder.toString().isEmpty())
-            sb.append(argumentssBuilder.substring(0, argumentssBuilder.length() - 2));
+            sb.append(argumentssBuilder, 0, argumentssBuilder.length() - 2);
 
         sb.append("\nRETURNS\n");
 

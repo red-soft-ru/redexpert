@@ -390,8 +390,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
                                         if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
 
-                                            List<ParseTree> children = type.datatypeSQL().children;
-                                            variable.setSqlType(children.get(0).getText());
+                                            String sqlType = type.datatypeSQL().getText();
+                                            int ind = sqlType.indexOf("(");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            ind = sqlType.indexOf("[");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            ind = sqlType.toUpperCase().indexOf("SEGMENT");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            sqlType = sqlType.replaceAll("(?i)CHARACTER\\s+SET.*", "");
+                                            variable.setSqlType(MiscUtils.trimEnd(sqlType));
 
                                             if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty())
                                                 variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));

@@ -296,6 +296,9 @@ public class ColumnData implements Serializable {
                 if (getScale() > 0)
                     sb.append(",").append(getScale());
                 sb.append(")");
+            } else if (type == Types.FLOAT) {
+                if (getScale() > 0)
+                    sb.append("(").append(getScale()).append(")");
             }
 
             if (!MiscUtils.isNull(getCharset()) && connection != null && !getCharset().equalsIgnoreCase(connection.getDBCharset()))

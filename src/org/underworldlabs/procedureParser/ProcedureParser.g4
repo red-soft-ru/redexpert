@@ -168,14 +168,14 @@ body:
 ;
  datatypeSQL
  : K_BOOLEAN array_size?
-    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128 | K_INT | K_LONG)spases_or_comment? array_size?
+    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128 | K_INT | K_LONG )spases_or_comment? array_size?
     | (K_FLOAT | K_REAL ) spases_or_comment?('('scale')')?spases_or_comment? array_size?
     | (K_DOUBLE spases_or_comment K_PRECISION| K_LONG spases_or_comment K_FLOAT) spases_or_comment? array_size?
     | (K_DATE | K_TIME | K_TIMESTAMP| ((K_TIME | K_TIMESTAMP) spases_or_comment (K_WITH|K_WITHOUT) spases_or_comment K_TIME spases_or_comment K_ZONE )) spases_or_comment? array_size?
-    | (K_DECIMAL | K_NUMERIC | K_DECFLOAT)spases_or_comment? ('(' type_size spases_or_comment?(',' spases_or_comment? scale)?')')?spases_or_comment? array_size?
-    | (K_CHAR | K_CHARACTER | K_VARYING spases_or_comment K_CHARACTER | K_VARCHAR) spases_or_comment?('('type_size')')?
+    | (K_DECIMAL | K_NUMERIC | K_DECFLOAT| K_DEC)spases_or_comment? ('(' type_size spases_or_comment?(',' spases_or_comment? scale)?')')?spases_or_comment? array_size?
+    | (K_CHAR | K_CHARACTER | K_VARYING spases_or_comment K_CHARACTER | K_VARCHAR | K_VARBINARY ) spases_or_comment?('('type_size')')?
     (spases_or_comment K_CHARACTER spases_or_comment K_SET spases_or_comment charset_name)?spases_or_comment? array_size?
-    | (K_NCHAR | K_NATIONAL spases_or_comment K_CHARACTER | K_NATIONAL spases_or_comment K_CHAR) (K_VARYING)? spases_or_comment?('(' spases_or_comment? int_number spases_or_comment?')')? spases_or_comment? array_size?
+    | (K_NCHAR | K_BINARY | K_NATIONAL spases_or_comment K_CHARACTER | K_NATIONAL spases_or_comment K_CHAR) (spases_or_comment K_VARYING)? spases_or_comment?('(' spases_or_comment? type_size spases_or_comment?')')? spases_or_comment? array_size?
     | K_BLOB (spases_or_comment K_SUB_TYPE spases_or_comment subtype)?
     (spases_or_comment K_SEGMENT spases_or_comment K_SIZE spases_or_comment type_size)? (spases_or_comment K_CHARACTER spases_or_comment K_SET spases_or_comment charset_name)?
     | K_BLOB ('('spases_or_comment? (type_size spases_or_comment?)? (','spases_or_comment? subtype spases_or_comment?)?')')?

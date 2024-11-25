@@ -201,20 +201,34 @@ DatabaseTypeConverter {
     }
 
     public static int getSQLDataTypeFromName(String databaseType) {
+        databaseType = databaseType.replaceAll("[\n\t\r]", " ");
+        databaseType = databaseType.replaceAll("[/][*].*[\\*][/]", " ");
+        while (databaseType.contains("  "))
+            databaseType = databaseType.replaceAll("  ", " ");
         switch (databaseType.trim().toUpperCase()) {
             case T.BIGINT:
                 return Types.BIGINT;
             case T.BLOB_SUB_TYPE_BINARY:
                 return Types.LONGVARBINARY;
             case T.VARCHAR:
+            case "VARBINARY":
                 return Types.VARCHAR;
             case T.CHAR:
+            case "BINARY":
+            case "CHARACTER":
                 return Types.CHAR;
+            case T.NCHAR:
+            case "NATIONAL CHAR":
+            case "NATIONAL CHARACTER":
+                return Types.NCHAR;
+            case "NATIONAL CHARACTER VARYING":
+                return Types.NVARCHAR;
             case T.BLOB_SUB_TYPE_TEXT:
                 return Types.LONGVARCHAR;
             case T.NUMERIC:
                 return Types.NUMERIC;
             case T.DECIMAL:
+            case "DEC":
                 return Types.DECIMAL;
             case T.INT128:
                 return Types.INT128;
@@ -223,8 +237,10 @@ DatabaseTypeConverter {
             case T.SMALLINT:
                 return Types.SMALLINT;
             case T.FLOAT:
+            case "REAL":
                 return Types.FLOAT;
             case T.DOUBLE_PRECISION:
+            case "LONG FLOAT":
                 return Types.DOUBLE;
             case T.BOOLEAN:
                 return Types.BOOLEAN;

@@ -24,6 +24,7 @@ public interface T {
     String CSTRING = "CSTRING";
     String DECFLOAT = "DECFLOAT";
     String INT128 = "INT128";
+    String NCHAR = "NCHAR";
 
     String[] DEFAULT_TYPES = {
             NUMERIC,

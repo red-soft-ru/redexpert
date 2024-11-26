@@ -794,6 +794,11 @@ public class TemplateDatabaseConnection implements DatabaseConnection {
     }
 
   @Override
+  public TreeSet<String> getReservedKeywords() {
+    return null;
+  }
+
+  @Override
   public void setAutoConnect(boolean val) {
     isAutoConnected = val;
   }

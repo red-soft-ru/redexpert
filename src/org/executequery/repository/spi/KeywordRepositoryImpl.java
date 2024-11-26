@@ -39,11 +39,6 @@ public class KeywordRepositoryImpl implements KeywordRepository {
     private TreeSet<String> allWords;
 
     @Override
-    public boolean contains(String word) {
-        return getSQLKeywords().contains(word);
-    }
-
-    @Override
     public synchronized TreeSet<String> getSQLKeywords() {
 
         if (allWords == null || keyWordsListUpdated) {
@@ -81,18 +76,8 @@ public class KeywordRepositoryImpl implements KeywordRepository {
         }
     }
 
-    @Override
-    public List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName) {
+    List<String> getKeywords(String path, int majorVersion, int minorVersion) {
         try {
-
-            if (serverName != null && serverName.toLowerCase().contains("firebird")) {
-                serverName = "firebird";
-            } else if (serverName != null && serverName.toLowerCase().contains("reddatabase")) {
-                serverName = "reddatabase";
-            } else
-                serverName = "sql92";
-
-            String path = "org/executequery/keywords/" + serverName.toLowerCase() + ".keywords";
             String values = FileUtils.loadResource(path);
 
             StringTokenizer st = new StringTokenizer(values, "\n");
@@ -133,11 +118,7 @@ public class KeywordRepositoryImpl implements KeywordRepository {
                 } else
                     list.add(trim);
             }
-
-            this.firebirdKeyWords = list;
-            keyWordsListUpdated = true;
-            list.addAll(getDefaultKeywords());
-            return this.firebirdKeyWords;
+            return list;
 
         } catch (IOException e) {
             Log.error("Error retrieving SQL92 keyword list");
@@ -145,6 +126,36 @@ public class KeywordRepositoryImpl implements KeywordRepository {
 
             return new ArrayList<>(0);
         }
+    }
+
+    @Override
+    public List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName) {
+        if (serverName != null && serverName.toLowerCase().contains("firebird")) {
+                serverName = "firebird";
+            } else if (serverName != null && serverName.toLowerCase().contains("reddatabase")) {
+                serverName = "reddatabase";
+            } else
+                serverName = "sql92";
+
+            String path = "org/executequery/keywords/" + serverName.toLowerCase() + ".keywords";
+        this.firebirdKeyWords = getKeywords(path, majorVersion, minorVersion);
+        keyWordsListUpdated = true;
+        this.firebirdKeyWords.addAll(getDefaultKeywords());
+        return this.firebirdKeyWords;
+
+    }
+
+    @Override
+    public List<String> getServerReservedKeywords(int majorVersion, int minorVersion, String serverName) {
+        if (serverName != null && serverName.toLowerCase().contains("firebird")) {
+            serverName = "firebird";
+        } else if (serverName != null && serverName.toLowerCase().contains("reddatabase")) {
+            serverName = "reddatabase";
+        } else
+            serverName = "sql92";
+
+        String path = "org/executequery/keywords/" + serverName.toLowerCase() + (serverName.contentEquals("sql92") ? "" : ".reserved") + ".keywords";
+        return getKeywords(path, majorVersion, minorVersion);
     }
 
     @Override

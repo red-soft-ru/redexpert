@@ -783,7 +783,7 @@ public final class MiscUtils {
 
         TreeSet<String> keywords = keywords().getSQLKeywords();
         if (connection != null)
-            keywords = connection.getKeywords();
+            keywords = connection.getReservedKeywords();
 
         return keywords.contains(str.toUpperCase());
     }

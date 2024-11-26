@@ -231,6 +231,8 @@ public interface DatabaseConnection extends Serializable {
 
     TreeSet<String> getKeywords();
 
+    TreeSet<String> getReservedKeywords();
+
     void setServerName(String serverName);
 
     void setAutoConnect(boolean val);

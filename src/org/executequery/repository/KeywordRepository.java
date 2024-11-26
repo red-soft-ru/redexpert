@@ -32,7 +32,7 @@ public interface KeywordRepository extends Repository {
 
     TreeSet<String> getSQLKeywords();
 
-    boolean contains(String word);
-
     List<String> getServerKeywords(int majorVersion, int minorVersion, String serverName);
+
+    List<String> getServerReservedKeywords(int majorVersion, int minorVersion, String serverName);
 }

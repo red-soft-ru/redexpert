@@ -351,8 +351,8 @@ public final class SQLUtils {
 
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty())
             sb.append("\nAS\n").append(fullProcedureBody);
-
-        sb.append("\n^\n");
+        if (setTerm)
+            sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
@@ -369,24 +369,26 @@ public final class SQLUtils {
     public static String generateDownCreateProcedureScript(String name, String comment, Vector<ColumnData> inputParameters,
                                                            Vector<ColumnData> outputParameters, boolean setComment, DatabaseConnection dc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
             sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
             sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
         }
+        if (sb.length() > 0)
+            sb.insert(0, "\n^\n");
         return sb.toString();
     }
 
     public static String generateDownCreateFunctionScript(String name, String comment, Vector<ColumnData> inputArguments, boolean setComment, DatabaseConnection dc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
             sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         }
+        if (sb.length() > 0)
+            sb.insert(0, "\n^\n");
 
 
         return sb.toString();
@@ -616,8 +618,8 @@ public final class SQLUtils {
 
         if (fullFunctionBody != null && !fullFunctionBody.isEmpty())
             sb.append("\nAS\n").append(fullFunctionBody);
-
-        sb.append("\n^\n");
+        if (setTerm)
+            sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
@@ -1724,7 +1726,8 @@ public final class SQLUtils {
         } else if (!MiscUtils.isNull(sourceCode))
             sb.append(sourceCode);
 
-        sb.append("^\n");
+        if (setTerm)
+            sb.append("^\n");
 
         if (!MiscUtils.isNull(comment) && !comment.equals("")) {
             comment = comment.replace("'", "''");

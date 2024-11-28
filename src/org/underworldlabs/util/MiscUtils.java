@@ -885,5 +885,18 @@ public final class MiscUtils {
         return value != null ? value : "";
     }
 
+    public static String delimitValue(long value, String delimiter) {
+        return delimitValue(value, "", delimiter);
+    }
+
+    public static String delimitValue(long value, String result, String delimiter) {
+        if (value >= 1000) {
+            String div = String.valueOf(value % 1000);
+            while (div.length() < 3)
+                div = "0" + div;
+            return delimitValue(value / 1000, delimiter + div + result, delimiter);
+        } else return value + result;
+    }
+
 }
 

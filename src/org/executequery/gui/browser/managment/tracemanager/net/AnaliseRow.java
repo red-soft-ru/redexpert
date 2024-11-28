@@ -2,6 +2,7 @@ package org.executequery.gui.browser.managment.tracemanager.net;
 
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -271,7 +272,7 @@ public class AnaliseRow {
                         break;
 
                 }
-            } else displayValue = delimitValue(longValue, "");
+            } else displayValue = MiscUtils.delimitValue(longValue, " ");
             if (percent != -1)
                 displayValue = displayValue + " [" + percent + "%" + "]";
             return displayValue;
@@ -301,15 +302,6 @@ public class AnaliseRow {
             isRoundValue = roundValue;
         }
 
-        private String delimitValue(long value, String result) {
-            if (value >= 1000) {
-                String div = String.valueOf(value % 1000);
-                while (div.length() < 3)
-                    div = "0" + div;
-                return delimitValue(value / 1000, " " + div + result);
-            } else return value + result;
-        }
-
         public String roundBytes(long value) {
             String suff = "b";
             while (value > 10000 && !suff.contentEquals("pb")) {
@@ -334,7 +326,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }
@@ -363,7 +355,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }
@@ -392,7 +384,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }

@@ -1503,7 +1503,7 @@ public class QueryDispatcher {
 
             sb.append("\t").append(entry.getKey()).append(":\n");
             for (KeyValuePair elem : list)
-                sb.append("\t\t").append(elem.getKey()).append(" = ").append(elem.getValue()).append("\n");
+                sb.append("\t\t").append(elem.getKey()).append(" = ").append(MiscUtils.delimitValue((long) elem.getValue(), "'")).append("\n");
         }
 
         setOutputMessage(dc, SqlMessages.PLAIN_MESSAGE, sb.toString(), anyConnections);

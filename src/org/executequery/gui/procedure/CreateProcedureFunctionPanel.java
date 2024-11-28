@@ -444,6 +444,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
                                     if (var.default_statement() != null)
                                         variable.setDefaultValue(var.default_statement().getText());
+                                    if (var.order_collate() != null)
+                                        variable.setCollate(var.order_collate().getText());
 
                                     if (var.comment() != null) {
 

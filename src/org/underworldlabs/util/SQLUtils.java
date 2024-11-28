@@ -819,6 +819,8 @@ public final class SQLUtils {
                 sb.append(cd.getFormattedDataType());
 
             sb.append(cd.isNotNull() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
+            if (!MiscUtils.isNull(cd.getCollate()))
+                sb.append(" COLLATE ").append(cd.getCollate());
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER
                     && !MiscUtils.isNull(cd.getDefaultValue().getValue())
                     && !cd.getDefaultValue().isDomain()
@@ -870,6 +872,7 @@ public final class SQLUtils {
         cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
         cd.setRemarkAsSingleComment(parameter.isDescriptionAsSingleComment());
         cd.setColumnPosition(parameter.getPosition());
+        cd.setCollate(parameter.getCollate());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {

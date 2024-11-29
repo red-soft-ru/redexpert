@@ -625,7 +625,7 @@ fragment TWO_DIGIT
 ;
 
 id
-:(LETTER|DIGIT|IP_SEG)+
+:(LETTER|DIGIT|IP_SEG|'#')+
 ;
 
 any_name
@@ -819,4 +819,8 @@ SPACE:(' ')+;
 
 TAB:
 '\t'
+;
+
+UNKNOWN_CHAR:
+.
 ;

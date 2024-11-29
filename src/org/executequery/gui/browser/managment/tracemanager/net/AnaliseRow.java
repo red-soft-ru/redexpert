@@ -10,7 +10,6 @@ import java.util.List;
 
 public class AnaliseRow {
     LogMessage logMessage;
-    StringBuilder logMessages;
     public final static int TIME = 0;
     public final static int READ = TIME + 1;
     public final static int FETCH = READ + 1;
@@ -59,7 +58,10 @@ public class AnaliseRow {
     }
 
     public String getLogMessages() {
-        return logMessages.toString();
+        StringBuilder sb = new StringBuilder();
+        for (LogMessage msg : allRows)
+            sb.append(msg.getBody());
+        return sb.toString();
     }
 
     public void setLogMessage(LogMessage logMessage) {
@@ -68,7 +70,6 @@ public class AnaliseRow {
 
     public AnaliseRow() {
         allRows = new ArrayList<>();
-        logMessages = new StringBuilder();
         rows = new List[TYPES.length];
         for (int i = 0; i < TYPES.length; i++) {
             rows[i] = new ArrayList<>();
@@ -157,7 +158,6 @@ public class AnaliseRow {
 
     public void addMessage(LogMessage msg) {
         allRows.add(msg);
-        logMessages.append(msg.getBody()).append("\n");
         if (msg.getPlanText() != null) {
             if (plans.isEmpty())
                 plans.add(msg.getPlanText());

@@ -820,7 +820,3 @@ SPACE:(' ')+;
 TAB:
 '\t'
 ;
-
-UNKNOWN_CHAR:
-.
-;

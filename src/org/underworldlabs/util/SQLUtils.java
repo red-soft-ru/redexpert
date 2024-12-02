@@ -768,10 +768,9 @@ public final class SQLUtils {
                     sb.append("DECLARE ");
 
                 if (cd.isCursor()) {
-
-                    sb.append(cd.getColumnName()).append(" CURSOR FOR ");
                     if (cd.isScroll())
-                        sb.append("SCROLL ");
+                        sb.append(" SCROLL");
+                    sb.append(cd.getColumnName()).append(" CURSOR FOR ");
                     sb.append("(").append(cd.getSelectOperator()).append(")");
 
                 } else {

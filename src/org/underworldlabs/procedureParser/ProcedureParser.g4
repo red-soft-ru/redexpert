@@ -109,7 +109,7 @@ body:
   ;
 
   cursor:
-  K_CURSOR spases_or_comment K_FOR (spases_or_comment scroll)? spases_or_comment operator_select
+  (scroll spases_or_comment)?K_CURSOR spases_or_comment K_FOR spases_or_comment operator_select
   ;
 
   operator_select:

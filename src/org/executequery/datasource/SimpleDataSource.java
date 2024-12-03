@@ -180,11 +180,14 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
 
+        // Unpack client library and update jna.library.path
+        if (!ConnectionType.isPureJava(databaseConnection))
+            LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
+
         // If embedded connection selected
         if (ConnectionType.isEmbedded(databaseConnection)) {
 
             if (connection == null) {
-                LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
                 fbclient = LibraryManager.loadFbClientLibrary(driver);
                 connection = driver.connect(url, advancedProperties);
             }

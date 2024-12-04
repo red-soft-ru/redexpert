@@ -54,12 +54,13 @@ declare_function_block
 
  declare_function_block
  : ('('spases_or_comment? input_parameter (','spases_or_comment? input_parameter)*')')?
-       K_RETURNS spases_or_comment  output_parameter
+       spases_or_comment K_RETURNS spases_or_comment  return_parameter
        spases_or_comment? K_AS spases_or_comment
        declare_stmt*
        K_BEGIN
        body
        K_END
+       spases_or_comment?
 ;
 
  declare_block
@@ -150,8 +151,18 @@ body:
  ;
 
  desciption_parameter
- :parameter_name spases_or_comment datatype (spases_or_comment notnull)? (spases_or_comment K_COLLATE spases_or_comment order_collate)?
+ :parameter_name spases_or_comment description_datatype_parameter
  ;
+
+ description_datatype_parameter
+ :datatype (spases_or_comment notnull)? (spases_or_comment K_COLLATE spases_or_comment order_collate)?
+ ;
+
+ return_parameter
+ :description_datatype_parameter
+ ;
+
+
  parameter_name
  : any_name
  ;

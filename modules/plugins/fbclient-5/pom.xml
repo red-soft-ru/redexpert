@@ -12,26 +12,21 @@
     </parent>
 
     <artifactId>fbclient-5</artifactId>
-    <version>5.0.0-rc.5</version>
+    <version>${fbclient5.version}</version>
     <packaging>jar</packaging>
 
-    <inceptionYear>2019</inceptionYear>
-    <developers>
-        <developer>
-            <id>mrotteveel</id>
-            <name>Mark Rotteveel</name>
-            <email>mark@lawinegevaar.nl</email>
-            <roles>
-                <role>Administrator</role>
-            </roles>
-        </developer>
-    </developers>
-    <licenses>
-        <license>
-            <name>Initial Developer's Public License Version 1.0</name>
-            <url>https://firebirdsql.org/en/initial-developer-s-public-license-version-1-0/</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <outputDirectory>../../../lib</outputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -9,7 +9,6 @@ import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
 import java.io.*;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -265,17 +264,17 @@ public final class LibraryManager {
     private static String getEntryName(String platform, JarEntry jarEntry) {
 
         String entryName = jarEntry.getName();
-        if (!entryName.contains(platform))
-            return null;
+        if (entryName.contains(platform))
+            return entryName.replace(platform, "").trim();
 
-        entryName = entryName.replace(platform, "").trim();
-        if (entryName.isEmpty() || Objects.equals(entryName, FileSystems.getDefault().getSeparator()))
-            return null;
-
-        return entryName;
+        return null;
     }
 
     private static void createDirectory(File file) throws IOException {
+
+        if (Files.exists(file.toPath().toAbsolutePath()))
+            return;
+
         Log.debug("Creating directory: " + file.getAbsolutePath());
         if (!file.mkdir())
             throw new IOException("Couldn't create directory [" + file.getAbsolutePath() + "]");

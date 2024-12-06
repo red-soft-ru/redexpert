@@ -152,7 +152,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
-        tabbedPane.add(bundleString("Subprograms"), subProgramPanel);
+        tabbedPane.add(bundleStaticString("Subprograms"), subProgramPanel);
         addCommentTab(null);
 
         showHelpersCheck = WidgetFactory.createCheckBox("showHelpersCheck", bundleString("showHelpersCheck"));

@@ -19,24 +19,35 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ExportHelperXLSX extends AbstractExportHelper {
+
+    private String filePath;
+    private String nullReplacement;
+
+    private boolean addHeaders;
+    private boolean saveBlobsIndividually;
 
     public ExportHelperXLSX(ExportDataPanel parent) {
         super(parent);
     }
 
     @Override
+    void extractExportParameters() {
+        filePath = parent.getFilePath();
+        addHeaders = parent.isAddHeaders();
+        nullReplacement = parent.getNullReplacement();
+        saveBlobsIndividually = parent.isSaveBlobsIndividually();
+    }
+
+    // ---
+
+    @Override
     void exportResultSet(ResultSet resultSet) {
-
-        String filePath = parent.getFilePath();
-        String nullReplacement = parent.getNullReplacement();
-
-        boolean addHeaders = parent.isAddHeaders();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
-
         try {
 
             ResultSetMetaData metaData = resultSet.getMetaData();
@@ -46,51 +57,12 @@ public class ExportHelperXLSX extends AbstractExportHelper {
             ExcelBookBuilder builder = new ExcelBookBuilder();
             builder.createSheet("Exported Data");
 
-            if (addHeaders) {
-
-                List<String> headers = new ArrayList<>();
-                for (int i = 1; i < columnCount + 1; i++)
-                    if (isFieldSelected(i))
-                        headers.add(metaData.getColumnName(i));
-
-                builder.addRowHeader(headers);
-            }
+            if (addHeaders)
+                builder.addRowHeader(getHeaders(metaData, columnCount));
 
             int row = 0;
-            while (resultSet.next()) {
-
-                if (row >= SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
-                    GUIUtilities.displayWarningMessage(String.format(bundleString("maxRowMessage"), SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
-                    break;
-                }
-
-                if (isCancel())
-                    break;
-
-                List<String> values = new ArrayList<>();
-                for (int col = 1; col < columnCount + 1; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col - 1))
-                        continue;
-
-                    String stringValue = null;
-                    Object value = resultSet.getObject(col);
-                    ColumnData columnData = columns.get(col - 1);
-
-                    if (value != null) {
-
-                        if (isBlobType(columnData))
-                            stringValue = writeBlob(resultSet.getBlob(col), saveBlobsIndividually, getCreateBlobFileName(columnData, col, row));
-                        else
-                            stringValue = getFormattedValue(value, null, nullReplacement);
-                    }
-
-                    values.add(stringValue != null ? stringValue : nullReplacement);
-                }
-
+            while (resultSet.next() && canAdd(row) && !isCancel()) {
+                List<String> values = getStringValues(resultSet, columns, columnCount + 1, row);
                 builder.addRow(values);
                 row++;
             }
@@ -104,72 +76,55 @@ public class ExportHelperXLSX extends AbstractExportHelper {
         }
     }
 
+    private List<String> getStringValues(ResultSet resultSet, List<ColumnData> columns, int columnCount, int row)
+            throws SQLException, IOException {
+
+        List<String> values = new LinkedList<>();
+        for (int col = 1; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col - 1)) {
+                String stringValue = getStringValue(resultSet, columns.get(col - 1), row, col);
+                values.add(stringValue != null ? stringValue : nullReplacement);
+            }
+        }
+
+        return values;
+    }
+
+    private String getStringValue(ResultSet resultSet, ColumnData columnData, int row, int col)
+            throws SQLException, IOException {
+
+        Object value = resultSet.getObject(col);
+        if (value == null)
+            return null;
+
+        if (isBlobType(columnData)) {
+            return writeBlob(
+                    resultSet.getBlob(col),
+                    saveBlobsIndividually,
+                    getCreateBlobFileName(columnData, col, row)
+            );
+        }
+
+        return getFormattedValue(value, null, nullReplacement);
+    }
+
+    // ---
+
     @Override
     void exportTableModel(TableModel tableModel) {
-
-        String filePath = parent.getFilePath();
-        String nullReplacement = parent.getNullReplacement();
-
-        boolean addHeaders = parent.isAddHeaders();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
-
-        int rowCount = tableModel.getRowCount();
-        int columnCount = tableModel.getColumnCount();
-
         try {
 
-            if (rowCount > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
-                GUIUtilities.displayWarningMessage(String.format(bundleString("maxRowMessage"), SpreadsheetVersion.EXCEL2007.getLastRowIndex()));
-                rowCount = SpreadsheetVersion.EXCEL2007.getLastRowIndex();
-            }
+            int rowCount = tableModel.getRowCount();
+            int columnCount = tableModel.getColumnCount();
 
             ExcelBookBuilder builder = new ExcelBookBuilder();
             builder.createSheet("Exported Data");
 
-            if (addHeaders) {
+            if (addHeaders)
+                builder.addRowHeader(getHeaders(tableModel, columnCount));
 
-                List<String> headers = new ArrayList<>();
-                for (int i = 0; i < columnCount; i++)
-                    if (isFieldSelected(i))
-                        headers.add(tableModel.getColumnName(i));
-
-                builder.addRowHeader(headers);
-            }
-
-            for (int row = 0; row < rowCount; row++) {
-
-                if (isCancel())
-                    break;
-
-                List<String> values = new ArrayList<>();
-                for (int col = 0; col < columnCount; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col))
-                        continue;
-
-                    String stringValue = null;
-                    Object value = tableModel.getValueAt(row, col);
-                    if (value instanceof RecordDataItem) {
-                        RecordDataItem rdi = (RecordDataItem) value;
-
-                        if (!rdi.isValueNull()) {
-
-                            if (isBlobType(rdi))
-                                stringValue = writeBlob((AbstractLobRecordDataItem) rdi, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
-                            else
-                                stringValue = getFormattedValue(rdi, null, nullReplacement);
-                        }
-                    } else {
-                        if (value != null) {
-                            stringValue = getFormattedValue(value, null, nullReplacement);
-                        }
-                    }
-                    values.add(stringValue != null ? stringValue : nullReplacement);
-                }
-
+            for (int row = 0; row < rowCount && canAdd(row) && !isCancel(); row++) {
+                List<String> values = getStringValues(tableModel, columnCount, row);
                 builder.addRow(values);
             }
 
@@ -181,6 +136,60 @@ public class ExportHelperXLSX extends AbstractExportHelper {
             displayErrorMessage(e);
         }
     }
+
+    private List<String> getStringValues(TableModel tableModel, int columnCount, int row) throws IOException {
+
+        List<String> values = new ArrayList<>();
+        for (int col = 0; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col)) {
+                String stringValue = getStringValue(tableModel, row, col);
+                values.add(stringValue != null ? stringValue : nullReplacement);
+            }
+        }
+
+        return values;
+    }
+
+    private String getStringValue(TableModel tableModel, int row, int col) throws IOException {
+
+        Object value = tableModel.getValueAt(row, col);
+        if (value == null)
+            return null;
+
+        if (value instanceof RecordDataItem) {
+
+            if (((RecordDataItem) value).isValueNull())
+                return null;
+
+            if (isBlobType(value)) {
+                return writeBlob(
+                        (AbstractLobRecordDataItem) value,
+                        saveBlobsIndividually,
+                        getCreateBlobFileName(tableModel, col, row)
+                );
+            }
+        }
+
+        return getFormattedValue(value, null, nullReplacement);
+    }
+
+    // --- helper methods ---
+
+    private boolean canAdd(int row) {
+
+        if (row >= SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
+            GUIUtilities.displayWarningMessage(String.format(
+                    bundleString("maxRowMessage"),
+                    SpreadsheetVersion.EXCEL2007.getLastRowIndex()
+            ));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    // ---
 
     private static class ExcelBookBuilder {
 

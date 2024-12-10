@@ -1,10 +1,9 @@
 package org.executequery.gui.export;
 
-import org.executequery.GUIUtilities;
+import org.executequery.actions.filecommands.OpenCommand;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
 import org.executequery.gui.browser.ColumnData;
-import org.executequery.gui.editor.QueryEditor;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
 import org.executequery.log.Log;
@@ -12,205 +11,189 @@ import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.SQLUtils;
 
 import javax.swing.table.TableModel;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ExportHelperSQL extends AbstractExportHelper {
+
+    private String filePath;
+    private String tableName;
+    private boolean containsBlob;
+    private boolean saveBlobsIndividually;
+    private boolean addCreateTableStatement;
+    private List<DatabaseColumn> databaseColumns;
 
     public ExportHelperSQL(ExportDataPanel parent) {
         super(parent);
     }
 
     @Override
+    void extractExportParameters() {
+        filePath = parent.getFilePath();
+        containsBlob = parent.isContainsBlob();
+        tableName = parent.getExportTableName();
+        databaseColumns = parent.getDatabaseColumns();
+        saveBlobsIndividually = parent.isSaveBlobsIndividually();
+        addCreateTableStatement = parent.isAddCreateTableStatement();
+    }
+
+    // ---
+
+    @Override
     void exportResultSet(ResultSet resultSet) {
-
-        String tableName = parent.getExportTableName();
-        boolean addCreateTableStatement = parent.isAddCreateTableStatement();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
-
-        StringBuilder result = new StringBuilder();
-        try {
+        try (
+                FileWriter fileWriter = new FileWriter(filePath, false);
+                PrintWriter writer = new PrintWriter(fileWriter, true)
+        ) {
 
             ResultSetMetaData metaData = resultSet.getMetaData();
             List<ColumnData> columns = getCreateColumnData(metaData);
             int columnCount = metaData.getColumnCount();
-            List<DatabaseColumn> databaseColumns = parent.getDatabaseColumns();
 
             String insertTemplate = getInsertTemplate(tableName, columnCount, columns);
             if (addCreateTableStatement)
-                result.append(getCreateTableStatement(databaseColumns, tableName, metaData));
-            if (!saveBlobsIndividually && parent.isContainsBlob())
-                result.append(getSetBlobFileStatement());
+                writer.println(getCreateTableStatement(databaseColumns, tableName, metaData));
+            if (!saveBlobsIndividually && containsBlob)
+                writer.println(getSetBlobFileStatement());
 
             // --- add values to script ---
 
             int row = 0;
-            StringBuilder values = new StringBuilder();
-            while (resultSet.next()) {
-
-                if (isCancel())
-                    break;
-
-                for (int col = 1; col < columnCount + 1; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col - 1))
-                        continue;
-
-                    values.append("\n\t");
-
-                    Object value = resultSet.getObject(col);
-                    ColumnData columnData = columns.get(col - 1);
-                    String stringValue = getFormattedValue(value, null, "");
-
-                    if (value == null) {
-                        values.append("NULL");
-
-                    } else if (isBlobType(columnData)) {
-
-                        stringValue = writeBlob(resultSet.getBlob(col), saveBlobsIndividually, getCreateBlobFileName(columnData, col, row));
-                        if (saveBlobsIndividually)
-                            values.append("?'").append(stringValue).append("'");
-                        else
-                            values.append(stringValue);
-
-                    } else if (!stringValue.isEmpty()) {
-
-                        if (isCharType(columnData))
-                            values.append("'").append(stringValue).append("'");
-                        else if (isDateType(columnData))
-                            values.append("'").append(stringValue.replace('T', ' ')).append("'");
-                        else
-                            values.append(stringValue);
-
-                    }
-
-                    values.append(",");
-                }
-                values.deleteCharAt(values.lastIndexOf(","));
-                result.append(String.format(insertTemplate, values));
-                values.setLength(0);
+            while (resultSet.next() && !isCancel()) {
+                List<String> stringValues = getStringValues(resultSet, columnCount + 1, columns, row);
+                writer.println(String.format(insertTemplate, String.join(",", stringValues)));
                 row++;
             }
-            write(result.toString().trim());
 
         } catch (Exception e) {
             displayErrorMessage(e);
         }
+
+        openQueryEditor();
     }
+
+    private List<String> getStringValues(ResultSet resultSet, int columnCount, List<ColumnData> columns, int row)
+            throws SQLException, IOException {
+
+        List<String> values = new LinkedList<>();
+        for (int col = 1; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col - 1)) {
+                String stringValue = getStringValue(resultSet, columns.get(col - 1), row, col);
+                values.add("\n\t" + stringValue);
+            }
+        }
+
+        return values;
+    }
+
+    private String getStringValue(ResultSet resultSet, ColumnData columnData, int row, int col)
+            throws SQLException, IOException {
+
+        Object value = resultSet.getObject(col);
+        if (value == null)
+            return "NULL";
+
+        if (isBlobType(columnData)) {
+            return formattedBlob(writeBlob(
+                    resultSet.getBlob(col),
+                    saveBlobsIndividually,
+                    getCreateBlobFileName(columnData, col, row)
+            ));
+        }
+
+        return formatted(
+                getFormattedValue(value, null, ""),
+                isCharType(columnData),
+                isDateType(columnData)
+        );
+    }
+
+    // ---
 
     @Override
     void exportTableModel(TableModel tableModel) {
+        try (
+                FileWriter fileWriter = new FileWriter(filePath, false);
+                PrintWriter writer = new PrintWriter(fileWriter, true)
+        ) {
 
-        String tableName = parent.getExportTableName();
-        boolean addCreateTableStatement = parent.isAddCreateTableStatement();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
-
-        int rowCount = tableModel.getRowCount();
-        int columnCount = tableModel.getColumnCount();
-        List<DatabaseColumn> databaseColumns = parent.getDatabaseColumns();
-
-        StringBuilder result = new StringBuilder();
-        try {
+            int rowCount = tableModel.getRowCount();
+            int columnCount = tableModel.getColumnCount();
 
             String insertTemplate = getInsertTemplate(tableName, columnCount, tableModel);
             if (addCreateTableStatement)
-                result.append(getCreateTableStatement(databaseColumns, tableName, tableModel));
-            if (!saveBlobsIndividually && parent.isContainsBlob())
-                result.append(getSetBlobFileStatement());
+                writer.println(getCreateTableStatement(databaseColumns, tableName, tableModel));
+            if (!saveBlobsIndividually && containsBlob)
+                writer.println(getSetBlobFileStatement());
 
             // --- add values to script ---
 
-            StringBuilder values = new StringBuilder();
-            for (int row = 0; row < rowCount; row++) {
-
-                if (isCancel())
-                    break;
-
-                for (int col = 0; col < columnCount; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col))
-                        continue;
-
-                    values.append("\n\t");
-
-                    Object value = tableModel.getValueAt(row, col);
-                    String stringValue = getFormattedValue(value, null, "");
-
-                    if (isBlobType(value)) {
-
-                        stringValue = writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row));
-                        if (saveBlobsIndividually)
-                            values.append("?'").append(stringValue).append("'");
-                        else
-                            values.append(stringValue);
-
-                    } else if (!stringValue.isEmpty()) {
-
-                        if (value instanceof RecordDataItem) {
-
-                            if (isCharType(value))
-                                values.append("'").append(stringValue).append("'");
-                            else if (isDateType(value))
-                                values.append("'").append(stringValue.replace('T', ' ')).append("'");
-                            else
-                                values.append(stringValue);
-
-                        } else {
-
-                            if (tableModel.getColumnClass(col) == String.class)
-                                values.append("'").append(stringValue).append("'");
-                            else if (tableModel.getColumnClass(col) == Timestamp.class)
-                                values.append("'").append(stringValue.replace('T', ' ')).append("'");
-                            else
-                                values.append(stringValue);
-                        }
-                    } else
-                        values.append("NULL");
-
-                    values.append(",");
-                }
-                values.deleteCharAt(values.lastIndexOf(","));
-                result.append(String.format(insertTemplate, values));
-                values.setLength(0);
+            for (int row = 0; row < rowCount && !isCancel(); row++) {
+                List<String> values = getStringValues(tableModel, columnCount, row);
+                writer.println(String.format(insertTemplate, String.join(",", values)));
             }
-            write(result.toString().trim());
 
         } catch (Exception e) {
             displayErrorMessage(e);
         }
+
+        openQueryEditor();
     }
 
-    private void write(String text) throws IOException {
+    private List<String> getStringValues(TableModel tableModel, int columnCount, int row) throws IOException {
 
-        PrintWriter writer = new PrintWriter(new FileWriter(parent.getFilePath(), false), true);
-        writer.println(text);
-        writer.close();
-
-        if (parent.isOpenQueryEditor()) {
-            GUIUtilities.addCentralPane(
-                    QueryEditor.TITLE, QueryEditor.FRAME_ICON,
-                    new QueryEditor(text), null, true
-            );
+        List<String> values = new LinkedList<>();
+        for (int col = 0; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col)) {
+                String stringValue = getStringValue(tableModel, row, col);
+                values.add("\n\t" + stringValue);
+            }
         }
+
+        return values;
     }
+
+    private String getStringValue(TableModel tableModel, int row, int col) throws IOException {
+
+        Object value = tableModel.getValueAt(row, col);
+        if (value == null)
+            return "NULL";
+
+        if (value instanceof RecordDataItem) {
+
+            if (((RecordDataItem) value).isValueNull())
+                return "NULL";
+
+            if (isBlobType(value)) {
+                return formattedBlob(writeBlob(
+                        (AbstractLobRecordDataItem) value,
+                        saveBlobsIndividually,
+                        getCreateBlobFileName(tableModel, col, row)
+                ));
+            }
+        }
+
+        return formatted(
+                getFormattedValue(value, null, ""),
+                isCharType(value),
+                isDateType(value)
+        );
+    }
+
+    // ---
 
     @SuppressWarnings("unchecked")
     private String getInsertTemplate(String tableName, int columnCount, Object columnData) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\nINSERT INTO ").append(MiscUtils.getFormattedObject(tableName, null)).append(" (");
+        sb.append("INSERT INTO ").append(MiscUtils.getFormattedObject(tableName, null)).append(" (");
 
         for (int col = 0; col < columnCount; col++) {
 
@@ -255,11 +238,40 @@ public class ExportHelperSQL extends AbstractExportHelper {
             return null;
         }
 
-        return createTableTemplate + "\n-- inserting data --\n";
+        return createTableTemplate + "\n\n-- inserting data --\n";
     }
 
     private String getSetBlobFileStatement() {
         return "\nSET BLOBFILE '" + parent.getBlobPath() + "';\n";
+    }
+
+    // --- helper methods ---
+
+    private String formatted(String stringValue, boolean isChar, boolean isDate) {
+
+        if (stringValue.isEmpty())
+            return "NULL";
+
+        if (isChar)
+            return "'" + stringValue + "'";
+
+        if (isDate)
+            return "'" + stringValue.replace('T', ' ') + "'";
+
+        return stringValue;
+    }
+
+    private String formattedBlob(String value) {
+
+        if (saveBlobsIndividually)
+            value = "?'" + value + "'";
+
+        return value;
+    }
+
+    private void openQueryEditor() {
+        if (parent.isOpenQueryEditor())
+            new OpenCommand().openFile(new File(filePath));
     }
 
 }

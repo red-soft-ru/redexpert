@@ -2,132 +2,160 @@ package org.executequery.gui.export;
 
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
+import org.executequery.gui.resultset.RecordDataItem;
 
 import javax.swing.table.TableModel;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 
 public class ExportHelperXML extends AbstractExportHelper {
+
+    public static final String DATA_INDENT = "\n\t\t\t<";
+
+    private String filePath;
+    private String nullReplacement;
+    private boolean saveBlobsIndividually;
 
     public ExportHelperXML(ExportDataPanel parent) {
         super(parent);
     }
 
     @Override
+    void extractExportParameters() {
+        filePath = parent.getFilePath();
+        nullReplacement = parent.getNullReplacement();
+        saveBlobsIndividually = parent.isSaveBlobsIndividually();
+    }
+
+    // ---
+
+    @Override
     void exportResultSet(ResultSet resultSet) {
-
-        String filePath = parent.getFilePath();
-        String nullReplacement = parent.getNullReplacement();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
-
-        try {
+        try (
+                FileWriter fileWriter = new FileWriter(filePath, false);
+                PrintWriter writer = new PrintWriter(fileWriter, true)
+        ) {
 
             ResultSetMetaData metaData = resultSet.getMetaData();
             List<ColumnData> columns = getCreateColumnData(metaData);
             int columnCount = metaData.getColumnCount();
 
-            StringBuilder rowData = new StringBuilder();
-            PrintWriter writer = new PrintWriter(new FileWriter(filePath, false), true);
             writer.write(getHeader());
 
             int row = 0;
-            while (resultSet.next()) {
-
-                if (isCancel())
-                    break;
-
-                for (int col = 1; col < columnCount + 1; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col - 1))
-                        continue;
-
-                    Object value = resultSet.getObject(col);
-                    ColumnData columnData = columns.get(col - 1);
-
-                    if (value != null) {
-
-                        if (isCharType(columnData))
-                            rowData.append(getCellData(metaData.getColumnName(col), "<![CDATA[" + value + "]]>"));
-                        else if (isBlobType(columnData))
-                            rowData.append(getCellData(metaData.getColumnName(col), writeBlob(resultSet.getBlob(col), saveBlobsIndividually, getCreateBlobFileName(columnData, col, row))));
-                        else
-                            rowData.append(getCellData(metaData.getColumnName(col), value.toString()));
-                    } else
-                        rowData.append(getNullData(metaData.getColumnName(col), nullReplacement));
-                }
-
+            while (resultSet.next() && !isCancel()) {
+                String rowData = getRowData(resultSet, columns, metaData, columnCount + 1, row);
                 writer.println(String.format(getRowDataTemplate(row), rowData));
-                rowData.setLength(0);
                 row++;
             }
 
             writer.write(getFooter());
-            writer.close();
 
         } catch (Exception e) {
             displayErrorMessage(e);
         }
     }
+
+    private String getRowData(ResultSet resultSet, List<ColumnData> columns, ResultSetMetaData metaData, int columnCount, int row)
+            throws SQLException, IOException {
+
+        StringBuilder rowData = new StringBuilder();
+        for (int col = 1; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col - 1)) {
+                String stringValue = getStringValue(resultSet, columns.get(col - 1), metaData.getColumnName(col), row, col);
+                rowData.append(stringValue);
+            }
+        }
+
+        return rowData.toString();
+    }
+
+    private String getStringValue(ResultSet resultSet, ColumnData columnData, String columnName, int row, int col)
+            throws SQLException, IOException {
+
+        Object value = resultSet.getObject(col);
+        if (value == null || value.toString().isEmpty())
+            return getNullData(columnName, nullReplacement);
+
+        if (isBlobType(columnData)) {
+            return getCellData(columnName, writeBlob(
+                    resultSet.getBlob(col),
+                    saveBlobsIndividually,
+                    getCreateBlobFileName(columnData, col, row)
+            ));
+        }
+
+        return getCellData(columnName, formatted(value.toString(), isCharType(columnData)));
+    }
+
+    // ---
 
     @Override
     void exportTableModel(TableModel tableModel) {
+        try (
+                FileWriter fileWriter = new FileWriter(filePath, false);
+                PrintWriter writer = new PrintWriter(fileWriter, true)
+        ) {
 
-        String filePath = parent.getFilePath();
-        String nullReplacement = parent.getNullReplacement();
-        boolean saveBlobsIndividually = parent.isSaveBlobsIndividually();
+            int rowCount = tableModel.getRowCount();
+            int columnCount = tableModel.getColumnCount();
 
-        int rowCount = tableModel.getRowCount();
-        int columnCount = tableModel.getColumnCount();
-
-        try {
-
-            StringBuilder rowData = new StringBuilder();
-            PrintWriter writer = new PrintWriter(new FileWriter(filePath, false), true);
             writer.write(getHeader());
 
-            for (int row = 0; row < rowCount; row++) {
-
-                if (isCancel())
-                    break;
-
-                for (int col = 0; col < columnCount; col++) {
-
-                    if (isCancel())
-                        break;
-
-                    if (!isFieldSelected(col))
-                        continue;
-
-                    Object value = tableModel.getValueAt(row, col);
-                    if (value != null && value.toString() != null) {
-
-                        if (isCharType(value))
-                            rowData.append(getCellData(tableModel.getColumnName(col), "<![CDATA[" + value + "]]>"));
-                        else if (isBlobType(value))
-                            rowData.append(getCellData(tableModel.getColumnName(col), writeBlob((AbstractLobRecordDataItem) value, saveBlobsIndividually, getCreateBlobFileName(tableModel, col, row))));
-                        else
-                            rowData.append(getCellData(tableModel.getColumnName(col), value.toString()));
-                    } else
-                        rowData.append(getNullData(tableModel.getColumnName(col), nullReplacement));
-                }
-
+            for (int row = 0; row < rowCount && !isCancel(); row++) {
+                String rowData = getRowData(tableModel, columnCount, row);
                 writer.println(String.format(getRowDataTemplate(row), rowData));
-                rowData.setLength(0);
             }
 
             writer.write(getFooter());
-            writer.close();
 
         } catch (Exception e) {
             displayErrorMessage(e);
         }
     }
+
+    private String getRowData(TableModel tableModel, int columnCount, int row) throws IOException {
+
+        StringBuilder rowData = new StringBuilder();
+        for (int col = 0; col < columnCount && !isCancel(); col++) {
+            if (isFieldSelected(col)) {
+                String stringValue = getStringValue(tableModel, tableModel.getColumnName(col), row, col);
+                rowData.append(stringValue);
+            }
+        }
+
+        return rowData.toString();
+    }
+
+    private String getStringValue(TableModel tableModel, String columnName, int row, int col) throws IOException {
+
+        Object value = tableModel.getValueAt(row, col);
+        if (value == null || value.toString().isEmpty())
+            return getNullData(columnName, nullReplacement);
+
+        if (value instanceof RecordDataItem) {
+
+            if (((RecordDataItem) value).isValueNull())
+                return getNullData(columnName, nullReplacement);
+
+            if (isBlobType(value)) {
+                return getCellData(columnName, writeBlob(
+                        (AbstractLobRecordDataItem) value,
+                        saveBlobsIndividually,
+                        getCreateBlobFileName(tableModel, col, row)
+                ));
+            }
+        }
+
+        return getCellData(columnName, formatted(value.toString(), isCharType(value)));
+    }
+
+    // --- helper methods ---
 
     private String getHeader() {
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" +
@@ -145,13 +173,21 @@ public class ExportHelperXML extends AbstractExportHelper {
     }
 
     private String getCellData(String columnName, String value) {
-        return "\n\t\t\t<" + columnName + ">" + value + "</" + columnName + ">";
+        return DATA_INDENT + columnName + ">" + value + "</" + columnName + ">";
     }
 
     private String getNullData(String columnName, String nullReplacement) {
-        return nullReplacement.isEmpty() ?
-                "\n\t\t\t<" + columnName + "/>" :
-                "\n\t\t\t<" + columnName + ">" + nullReplacement + "</" + columnName + ">";
+        if (nullReplacement.isEmpty())
+            return DATA_INDENT + columnName + "/>";
+        return getCellData(columnName, nullReplacement);
+    }
+
+    private String formatted(String stringValue, boolean isChar) {
+
+        if (isChar)
+            stringValue = "<![CDATA[" + stringValue + "]]>";
+
+        return stringValue;
     }
 
 }

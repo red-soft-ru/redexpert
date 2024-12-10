@@ -30,6 +30,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.listener.RequiredFieldPainter;
 import org.underworldlabs.util.*;
 
 import javax.swing.*;
@@ -94,6 +95,9 @@ public class ExportDataPanel extends AbstractBaseDialog {
     private JButton exportButton;
     private JButton cancelButton;
 
+    private List<RequiredFieldPainter> requirements;
+    private RequiredFieldPainter blobPathFieldRequiredPainter;
+
     // ---
 
     private final String tableNameForExport;
@@ -122,6 +126,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         init();
+        addListeners();
         arrange();
     }
 
@@ -285,6 +290,16 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         pack();
         setVisible(true);
+    }
+
+    private void addListeners() {
+
+        blobPathFieldRequiredPainter = RequiredFieldPainter.initialize(blobPathField);
+        blobPathFieldRequiredPainter.setEnable(isContainsBlob(true));
+
+        requirements = new ArrayList<>();
+        requirements.add(blobPathFieldRequiredPainter);
+        requirements.add(RequiredFieldPainter.initialize(filePathField));
     }
 
     // --- display handlers ---
@@ -474,6 +489,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
             blobPathField.setEnabled(enableBlobFields);
             browseBlobFileButton.setEnabled(enableBlobFields);
             saveBlobsIndividuallyCheck.setEnabled(enableBlobFields && isBlobFilePathSpecified());
+
+            blobPathFieldRequiredPainter.setEnable(isContainsBlob(true));
         }
 
         columnTable.repaint();
@@ -490,21 +507,15 @@ public class ExportDataPanel extends AbstractBaseDialog {
         String exportFilePath = getFilePath();
         String exportBlobPath = getBlobPath();
 
-        // export file defined
-        if (MiscUtils.isNull(exportFilePath)) {
-            GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return false;
+        // export files defined
+        if (!requirements.stream().allMatch(RequiredFieldPainter::check)) {
+            GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAFileToExportTo"));
+            return true;
         }
 
         // export file writable
         if (!new File(exportFilePath).getAbsoluteFile().getParentFile().exists()) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
-            return false;
-        }
-
-        // blob file defined (it is required for binary BLOBs)
-        if (isContainsBlob(true) && MiscUtils.isNull(exportBlobPath)) {
-            GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
             return false;
         }
 

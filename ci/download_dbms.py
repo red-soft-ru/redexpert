@@ -20,7 +20,7 @@ if "rdb" in DBMS:
         last_stable_version = "3.0.18"
 
     if DBMS == "rdb50":
-        last_stable_version = "5.0.0"       
+        last_stable_version = "5.0.1-rc.1"       
 
     url = f"http://builds.red-soft.biz/release_hub/{DBMS}/{last_stable_version}/download/red-database:{os}-x86_64-enterprise:{last_stable_version}:{bin}"
 

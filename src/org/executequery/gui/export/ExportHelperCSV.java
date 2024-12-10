@@ -18,6 +18,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
 
     private boolean addQuotes;
     private boolean addHeaders;
+    private boolean blobFileSpecified;
     private boolean saveBlobsIndividually;
 
     private String filePath;
@@ -37,6 +38,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
         columnDelimiter = parent.getColumnDelimiter();
         endlReplacement = parent.getEndlReplacement();
         nullReplacement = parent.getNullReplacement();
+        blobFileSpecified = parent.isBlobFilePathSpecified();
         saveBlobsIndividually = parent.isSaveBlobsIndividually();
     }
 
@@ -89,7 +91,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
         if (value == null)
             return null;
 
-        if (isBlobType(columnData)) {
+        if (isBlobType(columnData) && blobFileSpecified) {
             return writeBlob(
                     resultSet.getBlob(col),
                     saveBlobsIndividually,
@@ -149,7 +151,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
             if (((RecordDataItem) value).isValueNull())
                 return null;
 
-            if (isBlobType(value)) {
+            if (isBlobType(value) && blobFileSpecified) {
                 return writeBlob(
                         (AbstractLobRecordDataItem) value,
                         saveBlobsIndividually,

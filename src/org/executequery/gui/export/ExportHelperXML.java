@@ -19,6 +19,7 @@ public class ExportHelperXML extends AbstractExportHelper {
 
     private String filePath;
     private String nullReplacement;
+    private boolean blobFileSpecified;
     private boolean saveBlobsIndividually;
 
     public ExportHelperXML(ExportDataPanel parent) {
@@ -29,6 +30,7 @@ public class ExportHelperXML extends AbstractExportHelper {
     void extractExportParameters() {
         filePath = parent.getFilePath();
         nullReplacement = parent.getNullReplacement();
+        blobFileSpecified = parent.isBlobFilePathSpecified();
         saveBlobsIndividually = parent.isSaveBlobsIndividually();
     }
 
@@ -82,7 +84,7 @@ public class ExportHelperXML extends AbstractExportHelper {
         if (value == null || value.toString().isEmpty())
             return getNullData(columnName, nullReplacement);
 
-        if (isBlobType(columnData)) {
+        if (isBlobType(columnData) && blobFileSpecified) {
             return getCellData(columnName, writeBlob(
                     resultSet.getBlob(col),
                     saveBlobsIndividually,
@@ -143,7 +145,7 @@ public class ExportHelperXML extends AbstractExportHelper {
             if (((RecordDataItem) value).isValueNull())
                 return getNullData(columnName, nullReplacement);
 
-            if (isBlobType(value)) {
+            if (isBlobType(value) && blobFileSpecified) {
                 return getCellData(columnName, writeBlob(
                         (AbstractLobRecordDataItem) value,
                         saveBlobsIndividually,

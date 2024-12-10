@@ -144,9 +144,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
                     String oldValue = columnTable.getValueAt(selectedRow, selectedColumn).toString().toLowerCase();
                     columnTable.setValueAt(!oldValue.contains("true"), selectedRow, selectedColumn);
 
-                    blobPathField.setEnabled(isContainsBlob());
-                    browseBlobFileButton.setEnabled(isContainsBlob());
-                    saveBlobsIndividuallyCheck.setEnabled(isContainsBlob());
+                    boolean enableBlobFields = isContainsBlob();
+                    blobPathField.setEnabled(enableBlobFields);
+                    browseBlobFileButton.setEnabled(enableBlobFields);
+                    saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
                 }
 
                 columnTable.repaint();
@@ -170,9 +171,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
         browseFileButton = WidgetFactory.createButton("browseFileButton", Bundles.get("common.browse.button"));
         browseFileButton.addActionListener(e -> browseFile(filePathField));
 
+        boolean enableBlobFields = isContainsBlob();
         browseBlobFileButton = WidgetFactory.createButton("browseFolderButton", Bundles.get("common.browse.button"));
         browseBlobFileButton.addActionListener(e -> browseFile(blobPathField));
-        browseBlobFileButton.setEnabled(isContainsBlob());
+        browseBlobFileButton.setEnabled(enableBlobFields);
 
         exportButton = WidgetFactory.createButton("exportButton", Bundles.get("common.export.button"));
         exportButton.addActionListener(e -> export());
@@ -193,7 +195,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(addCreateTableStatementCheck.getName(), addCreateTableStatementCheck);
 
         saveBlobsIndividuallyCheck = WidgetFactory.createCheckBox("saveBlobsIndividuallyCheck", bundleString("saveBlobsIndividually"));
-        saveBlobsIndividuallyCheck.setEnabled(isContainsBlob());
+        saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
@@ -216,7 +218,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(exportTableNameField.getName(), exportTableNameField);
 
         blobPathField = WidgetFactory.createTextField("folderPathField");
-        blobPathField.setEnabled(isContainsBlob());
+        blobPathField.setEnabled(enableBlobFields);
         components.put(blobPathField.getName(), blobPathField);
 
         filePathField = WidgetFactory.createTextField("filePathField");
@@ -490,14 +492,14 @@ public class ExportDataPanel extends AbstractBaseDialog {
             return false;
         }
 
-        // blob file defined
-        if (isContainsBlob() && MiscUtils.isNull(exportBlobPath)) {
+        // blob file defined (it is required for binary BLOBs)
+        if (isContainsBlob(true) && MiscUtils.isNull(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
             return false;
         }
 
-        // blob file writable
-        if (!new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
+        // if blob file defined check if it writable
+        if (isBlobFilePathSpecified() && !new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
@@ -534,33 +536,32 @@ public class ExportDataPanel extends AbstractBaseDialog {
             }
         }
 
-        // overwrite blob file check
-        if (isContainsBlob()) {
+        // if blob file defined check if it for overwrite
+        if (isBlobFilePathSpecified()) {
 
-            if (!saveBlobsIndividuallyCheck.isSelected()) {
+            if (saveBlobsIndividuallyCheck.isSelected())
+                return new File(exportBlobPath).mkdirs();
 
-                if (FileUtils.fileExists(exportBlobPath)) {
+            if (FileUtils.fileExists(exportBlobPath)) {
 
-                    int result = GUIUtilities.displayYesNoDialog(
-                            String.format(bundleString("OverwriteFile"), exportBlobPath),
-                            Bundles.get("common.confirmation")
-                    );
+                int result = GUIUtilities.displayYesNoDialog(
+                        String.format(bundleString("OverwriteFile"), exportBlobPath),
+                        Bundles.get("common.confirmation")
+                );
 
-                    if (result == JOptionPane.NO_OPTION) {
-                        blobPathField.selectAll();
-                        blobPathField.requestFocus();
-                        return false;
-                    }
+                if (result == JOptionPane.NO_OPTION) {
+                    blobPathField.selectAll();
+                    blobPathField.requestFocus();
+                    return false;
                 }
+            }
 
-                try {
-                    Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
-                } catch (IOException ignored) {
-                }
+            try {
+                Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
 
-            } else
-                //noinspection ResultOfMethodCallIgnored
-                new File(exportBlobPath).mkdirs();
+            } catch (IOException e) {
+                Log.debug(e.getMessage(), e);
+            }
         }
 
         return true;
@@ -575,26 +576,54 @@ public class ExportDataPanel extends AbstractBaseDialog {
         return value.toString().toLowerCase().contains("true");
     }
 
-    protected boolean isContainsBlob() {
+    protected boolean isBlobFilePathSpecified() {
+        return !MiscUtils.isNull(getBlobPath());
+    }
 
-        if (exportData instanceof TableModel) {
+    protected boolean isContainsBlob() {
+        return isContainsBlob(false);
+    }
+
+    protected boolean isContainsBlob(boolean subTypeByn) {
+        String checkPattern = subTypeByn ? "blob sub_type 0" : "blob";
+        return isContainsBlobAsTableModel(checkPattern) || isContainsBlobAsResultSet(checkPattern);
+    }
+
+    private boolean isContainsBlobAsTableModel(String checkPattern) {
+        try {
 
             TableModel tableModel = (TableModel) exportData;
-            for (int col = 0; col < tableModel.getColumnCount(); col++)
-                if (isFieldSelected(col) && tableModel.getValueAt(0, col) instanceof AbstractLobRecordDataItem)
+            for (int col = 0; col < tableModel.getColumnCount(); col++) {
+                if (isFieldSelected(col)) {
+                    Object value = tableModel.getValueAt(0, col);
+                    if (value instanceof AbstractLobRecordDataItem) {
+                        AbstractLobRecordDataItem blob = (AbstractLobRecordDataItem) value;
+                        if (blob.getDataTypeName().toLowerCase().contains(checkPattern))
+                            return true;
+                    }
+                }
+            }
+
+        } catch (ClassCastException e) {
+            // do nothing
+        }
+
+        return false;
+    }
+
+    private boolean isContainsBlobAsResultSet(String checkPattern) {
+        try {
+
+            ResultSetMetaData metaData = ((ResultSet) exportData).getMetaData();
+            for (int col = 1; col < metaData.getColumnCount() + 1; col++)
+                if (metaData.getColumnTypeName(col).toLowerCase().contains(checkPattern))
                     return true;
 
-        } else if (exportData instanceof ResultSet) {
-            try {
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
 
-                ResultSetMetaData metaData = ((ResultSet) exportData).getMetaData();
-                for (int i = 1; i < metaData.getColumnCount() + 1; i++)
-                    if (metaData.getColumnTypeName(i).toLowerCase().contains("blob"))
-                        return true;
-
-            } catch (SQLException e) {
-                Log.error(e.getMessage(), e);
-            }
+        } catch (ClassCastException e) {
+            // do nothing
         }
 
         return false;

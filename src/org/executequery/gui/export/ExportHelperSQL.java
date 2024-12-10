@@ -25,7 +25,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
 
     private String filePath;
     private String tableName;
-    private boolean containsBlob;
+    private boolean blobFileSpecified;
     private boolean saveBlobsIndividually;
     private boolean addCreateTableStatement;
     private List<DatabaseColumn> databaseColumns;
@@ -37,9 +37,9 @@ public class ExportHelperSQL extends AbstractExportHelper {
     @Override
     void extractExportParameters() {
         filePath = parent.getFilePath();
-        containsBlob = parent.isContainsBlob();
         tableName = parent.getExportTableName();
         databaseColumns = parent.getDatabaseColumns();
+        blobFileSpecified = parent.isBlobFilePathSpecified();
         saveBlobsIndividually = parent.isSaveBlobsIndividually();
         addCreateTableStatement = parent.isAddCreateTableStatement();
     }
@@ -60,7 +60,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
             String insertTemplate = getInsertTemplate(tableName, columnCount, columns);
             if (addCreateTableStatement)
                 writer.println(getCreateTableStatement(databaseColumns, tableName, metaData));
-            if (!saveBlobsIndividually && containsBlob)
+            if (!saveBlobsIndividually && blobFileSpecified)
                 writer.println(getSetBlobFileStatement());
 
             // --- add values to script ---
@@ -100,7 +100,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
         if (value == null)
             return "NULL";
 
-        if (isBlobType(columnData)) {
+        if (isBlobType(columnData) && blobFileSpecified) {
             return formattedBlob(writeBlob(
                     resultSet.getBlob(col),
                     saveBlobsIndividually,
@@ -130,7 +130,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
             String insertTemplate = getInsertTemplate(tableName, columnCount, tableModel);
             if (addCreateTableStatement)
                 writer.println(getCreateTableStatement(databaseColumns, tableName, tableModel));
-            if (!saveBlobsIndividually && containsBlob)
+            if (!saveBlobsIndividually && blobFileSpecified)
                 writer.println(getSetBlobFileStatement());
 
             // --- add values to script ---
@@ -171,7 +171,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
             if (((RecordDataItem) value).isValueNull())
                 return "NULL";
 
-            if (isBlobType(value)) {
+            if (isBlobType(value) && blobFileSpecified) {
                 return formattedBlob(writeBlob(
                         (AbstractLobRecordDataItem) value,
                         saveBlobsIndividually,

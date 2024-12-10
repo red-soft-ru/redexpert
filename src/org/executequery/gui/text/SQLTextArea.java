@@ -739,7 +739,7 @@ public class SQLTextArea extends RSyntaxTextArea
             };
             worker.start();
 
-        }
+        } else isCtrlPressed = false;
     }
 
     @Override

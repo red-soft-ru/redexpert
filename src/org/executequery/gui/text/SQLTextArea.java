@@ -713,39 +713,35 @@ public class SQLTextArea extends RSyntaxTextArea
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
     public void keyPressed(KeyEvent e) {
-
-        if (e.isControlDown()) {
-
-            isCtrlPressed = true;
-            SwingWorker worker = new SwingWorker("query editor cursor changer") {
-                @Override
-                public Object construct() {
-
-                    while (isCtrlPressed) {
-                        if (isHyperlinkHovered())
-                            GUIUtilities.showHandCursor(getEditorTextComponent());
-                        else
-                            GUIUtilities.showTextCursor(getEditorTextComponent());
-                    }
-
-                    GUIUtilities.showTextCursor(getEditorTextComponent());
-                    return null;
-                }
-            };
-            worker.start();
-
-        } else isCtrlPressed = false;
+        if (e.isControlDown())
+            SwingWorker.run("query editor cursor changer", this::doCursorChanging);
+        else isCtrlPressed = false;
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_CONTROL)
             isCtrlPressed = false;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // do nothing
+    }
+
+    private void doCursorChanging() {
+
+        isCtrlPressed = true;
+        while (isCtrlPressed && isFocusOwner()) {
+            if (isHyperlinkHovered())
+                GUIUtilities.showHandCursor(getEditorTextComponent());
+            else
+                GUIUtilities.showTextCursor(getEditorTextComponent());
+        }
+
+        isCtrlPressed = false;
+        GUIUtilities.showTextCursor(getEditorTextComponent());
     }
 
     class CommentAction extends RecordableTextAction {

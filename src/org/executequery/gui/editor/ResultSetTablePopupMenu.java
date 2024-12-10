@@ -24,7 +24,7 @@ import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseTableObject;
 import org.executequery.gui.BaseDialog;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 import org.executequery.gui.resultset.*;
 import org.executequery.localization.Bundles;
 import org.executequery.print.PrintingSupport;

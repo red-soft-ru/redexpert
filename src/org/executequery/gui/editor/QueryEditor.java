@@ -33,7 +33,7 @@ import org.executequery.gui.browser.profiler.ProfilerPanel;
 import org.executequery.gui.editor.history.EditorData;
 import org.executequery.gui.editor.history.QueryEditorHistory;
 import org.executequery.gui.editor.history.QueryEditorsManager;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.gui.text.TextEditor;

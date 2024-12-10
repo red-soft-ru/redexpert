@@ -1,4 +1,4 @@
-package org.executequery.gui.exportData;
+package org.executequery.gui.export;
 
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.CellStyle;

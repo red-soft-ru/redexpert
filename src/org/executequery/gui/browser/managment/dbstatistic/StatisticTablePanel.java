@@ -6,7 +6,7 @@ import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.managment.tracemanager.AnalisePanel;
 import org.executequery.gui.browser.managment.tracemanager.ServiceManagerPopupMenu;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.statParser.*;
 import org.underworldlabs.swing.AbstractPanel;

@@ -22,7 +22,7 @@ package org.executequery.actions.othercommands;
 
 import org.executequery.GUIUtilities;
 import org.executequery.gui.editor.QueryEditor;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

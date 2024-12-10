@@ -18,7 +18,7 @@
  *
  */
 
-package org.executequery.gui.exportData;
+package org.executequery.gui.export;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;

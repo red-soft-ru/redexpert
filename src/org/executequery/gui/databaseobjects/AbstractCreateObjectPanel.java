@@ -349,8 +349,8 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
             if (executeDialog.getCommit()) {
                 commit = true;
                 reloadNodes();
-                finish();
                 reset();
+                finish();
             }
 
         } else if (parent != null)

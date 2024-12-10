@@ -780,6 +780,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         loadParameters();
         fillSqlBody();
+        generateDdlScript(false);
     }
 
     @Override

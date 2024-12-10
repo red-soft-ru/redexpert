@@ -263,7 +263,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
 
     private String formattedBlob(String value) {
 
-        if (saveBlobsIndividually)
+        if (saveBlobsIndividually && blobFileSpecified)
             value = "?'" + value + "'";
 
         return value;

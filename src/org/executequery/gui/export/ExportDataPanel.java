@@ -25,6 +25,7 @@ import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
@@ -180,7 +181,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(addCreateTableStatementCheck.getName(), addCreateTableStatementCheck);
 
         saveBlobsIndividuallyCheck = WidgetFactory.createCheckBox("saveBlobsIndividuallyCheck", bundleString("saveBlobsIndividually"));
-        saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
+        saveBlobsIndividuallyCheck.setEnabled(enableBlobFields && isBlobFilePathSpecified());
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
@@ -203,6 +204,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(exportTableNameField.getName(), exportTableNameField);
 
         blobPathField = WidgetFactory.createTextField("folderPathField");
+        SimpleDocumentListener.initialize(blobPathField, this::blobPathFieldTriggered);
         blobPathField.setEnabled(enableBlobFields);
         components.put(blobPathField.getName(), blobPathField);
 
@@ -471,10 +473,14 @@ public class ExportDataPanel extends AbstractBaseDialog {
             boolean enableBlobFields = isContainsBlob();
             blobPathField.setEnabled(enableBlobFields);
             browseBlobFileButton.setEnabled(enableBlobFields);
-            saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
+            saveBlobsIndividuallyCheck.setEnabled(enableBlobFields && isBlobFilePathSpecified());
         }
 
         columnTable.repaint();
+    }
+
+    private void blobPathFieldTriggered() {
+        saveBlobsIndividuallyCheck.setEnabled(isContainsBlob() && isBlobFilePathSpecified());
     }
 
     // --- helper method ---
@@ -687,11 +693,11 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     protected String getFilePath() {
-        return filePathField.getText().trim();
+        return filePathField != null ? filePathField.getText().trim() : "";
     }
 
     protected String getBlobPath() {
-        return blobPathField.getText().trim();
+        return blobPathField != null ? blobPathField.getText().trim() : "";
     }
 
     protected boolean isAddHeaders() {

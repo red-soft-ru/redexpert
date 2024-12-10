@@ -95,10 +95,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     // ---
 
-    private final Object exportData;
     private final String tableNameForExport;
-    private final ParameterSaver parametersSaver;
+    private final transient Object exportData;
     private final List<DatabaseColumn> databaseColumns;
+    private final transient ParameterSaver parametersSaver;
 
     // ---
 
@@ -135,22 +135,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         columnTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-
-                int selectedRow = columnTable.getSelectedRow();
-                int selectedColumn = columnTable.getSelectedColumn();
-
-                if (selectedColumn == 0) {
-
-                    String oldValue = columnTable.getValueAt(selectedRow, selectedColumn).toString().toLowerCase();
-                    columnTable.setValueAt(!oldValue.contains("true"), selectedRow, selectedColumn);
-
-                    boolean enableBlobFields = isContainsBlob();
-                    blobPathField.setEnabled(enableBlobFields);
-                    browseBlobFileButton.setEnabled(enableBlobFields);
-                    saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
-                }
-
-                columnTable.repaint();
+                columnTableTriggered();
             }
         });
 
@@ -293,7 +278,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         setPreferredSize(new Dimension(500, 455));
         setMinimumSize(getPreferredSize());
         setSize(getPreferredSize());
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
 
         pack();
@@ -471,6 +456,25 @@ public class ExportDataPanel extends AbstractBaseDialog {
             GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
             dispose();
         }
+    }
+
+    private void columnTableTriggered() {
+
+        int selectedRow = columnTable.getSelectedRow();
+        int selectedColumn = columnTable.getSelectedColumn();
+
+        if (selectedColumn == 0) {
+
+            String oldValue = columnTable.getValueAt(selectedRow, selectedColumn).toString().toLowerCase();
+            columnTable.setValueAt(!oldValue.contains("true"), selectedRow, selectedColumn);
+
+            boolean enableBlobFields = isContainsBlob();
+            blobPathField.setEnabled(enableBlobFields);
+            browseBlobFileButton.setEnabled(enableBlobFields);
+            saveBlobsIndividuallyCheck.setEnabled(enableBlobFields);
+        }
+
+        columnTable.repaint();
     }
 
     // --- helper method ---
@@ -758,19 +762,19 @@ public class ExportDataPanel extends AbstractBaseDialog {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            if (rows.size() > rowIndex) {
+            if (rows.size() <= rowIndex)
+                return null;
 
-                switch (columnIndex) {
-                    case 0:
-                        return rows.get(rowIndex).isSelected();
-                    case 1:
-                        return rows.get(rowIndex).getName();
-                    case 2:
-                        return rows.get(rowIndex).getType();
-                }
+            switch (columnIndex) {
+                case 0:
+                    return rows.get(rowIndex).isSelected();
+                case 1:
+                    return rows.get(rowIndex).getName();
+                case 2:
+                    return rows.get(rowIndex).getType();
+                default:
+                    return null;
             }
-
-            return null;
         }
 
         @Override
@@ -781,10 +785,12 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         @Override
         public void addTableModelListener(TableModelListener l) {
+            // do nothing
         }
 
         @Override
         public void removeTableModelListener(TableModelListener l) {
+            // do nothing
         }
 
     } // class ColumnTableModel

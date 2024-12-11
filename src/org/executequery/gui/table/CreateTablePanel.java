@@ -186,6 +186,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         constraintsToolBar.enableButtons(true);
         columnsToolBar.enableButtons(true);
         centralPanel.setVisible(false);
+        columnChangeConnection(getSelectedConnection());
     }
 
     @Override

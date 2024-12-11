@@ -83,6 +83,8 @@ public class ResultSetTablePopupMenu extends JPopupMenu
         // the copy sub-menu
         JMenu copyMenu = MenuItemFactory.createMenu(bundleString("CopyOtherOptions"));
         copyMenu.add(create(bundleString("CopySelectedColumnNames"), "copySelectedColumnNames"));
+        copyMenu.add(create(bundleString("CopySelectedColumnNamesFormated"), "copySelectedColumnNamesFormated"));
+        //copyMenu.add(create(bundleString("CopySelectedColumnNamesWithDataTypes"), "copySelectedColumnNamesWithDataTypes"));
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparated"), "copySelectedCellsAsCSV"));
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparatedWithNames"), "copySelectedCellsAsCSVWithNames"));
         copyMenu.add(create(bundleString("CopySelectedCells-CommaSeparatedAndQuoted"), "copySelectedCellsAsCSVQuoted"));
@@ -186,8 +188,17 @@ public class ResultSetTablePopupMenu extends JPopupMenu
 
     @SuppressWarnings("unused")
     public void copySelectedColumnNames(ActionEvent e) {
-        table.copySelectedColumnNames();
+        table.copySelectedColumnNames(false, false);
     }
+
+    public void copySelectedColumnNamesFormated(ActionEvent e) {
+        table.copySelectedColumnNames(true, false);
+    }
+
+    public void copySelectedColumnNamesWithDataTypes(ActionEvent e) {
+        table.copySelectedColumnNames(true, true);
+    }
+
 
     @SuppressWarnings("unused")
     public void copySelectedCellsAsCSV(ActionEvent e) {

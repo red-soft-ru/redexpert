@@ -121,23 +121,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         this(resultSet, maxRecords, null, isTable);
     }
 
-    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) throws SQLException {
-
-        this.maxRecords = maxRecords;
-        this.query = query;
-        this.isTable = isTable;
-
-        table = new ResultSetTable();
-        tableData = new ArrayList<>();
-        columnHeaders = new ArrayList<>();
-        visibleColumnHeaders = new ArrayList<>();
-        recordDataItemFactory = new RecordDataItemFactory();
-
-        holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
-
-        if (resultSet != null)
-            createTable(resultSet);
-    }
+    private DatabaseConnection databaseConnection;
 
     public ResultSetTableModel(List<String> columnHeaders, List<List<RecordDataItem>> tableData) {
 
@@ -178,6 +162,24 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
     ResultSet rs;
     int count;
     private int recordCount;
+    public ResultSetTableModel(ResultSet resultSet, int maxRecords, String query, boolean isTable) throws SQLException {
+
+        this.maxRecords = maxRecords;
+        this.query = query;
+        this.isTable = isTable;
+
+        table = new ResultSetTable();
+        tableData = new ArrayList<>();
+        columnHeaders = new ArrayList<>();
+        visibleColumnHeaders = new ArrayList<>();
+        recordDataItemFactory = new RecordDataItemFactory();
+
+        holdMetaData = UserProperties.getInstance().getBooleanProperty("editor.results.metadata");
+
+        if (resultSet != null) {
+            createTable(resultSet);
+        }
+    }
 
     public synchronized void createTable(ResultSet resultSet, List<ColumnData> columnDataList) throws SQLException {
 
@@ -190,6 +192,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         try {
             resetMetaData();
             ResultSetMetaData rsmd = resultSet.getMetaData();
+            try {
+                databaseConnection = ((PooledStatement) resultSet.getStatement()).getPooledConnection().getDatabaseConnection();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             columnHeaders.clear();
             visibleColumnHeaders.clear();
@@ -376,7 +383,7 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         if (executor != null)
             executor.releaseResources();
         executor = new DefaultStatementExecutor(dc, true);
-
+        databaseConnection = dc;
         try {
             resetMetaData();
 
@@ -1099,6 +1106,11 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
         return visibleColumnHeaders.get(column).getNameHint() + " " + visibleColumnHeaders.get(column).getDataTypeName() + (visibleColumnHeaders.get(column).getDisplaySize() != 0 ? " (" + visibleColumnHeaders.get(column).getDisplaySize() + ")" : "");
     }
 
+    public String getColumnType(int column) {
+
+        return visibleColumnHeaders.get(column).getDataTypeName() + (visibleColumnHeaders.get(column).getDisplaySize() != 0 ? " (" + visibleColumnHeaders.get(column).getDisplaySize() + ")" : "");
+    }
+
     @Override
     public String getColumnName(int column) {
 
@@ -1197,5 +1209,9 @@ public class ResultSetTableModel extends AbstractSortableTableModel {
 
     public SQLException getException() {
         return exception;
+    }
+
+    public DatabaseConnection getDatabaseConnection() {
+        return databaseConnection;
     }
 }

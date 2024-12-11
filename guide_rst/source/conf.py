@@ -6,12 +6,6 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-latex_use_latex_multicolumn = True
-
-project = 'Red_Expert'
-copyright = '2024, Red Soft'
-author = 'Red Soft'
-
 # General configuration
 
 import re
@@ -19,7 +13,18 @@ import os
 import sys
 sys.path.append(os.path.abspath("./_ext"))
 import globalvar
+from datetime import datetime
 
+
+year = datetime.now().year
+
+version = os.environ.get('VERSION', "VERSION")
+
+latex_use_latex_multicolumn = True
+
+project = 'Red_Expert'
+copyright = f'{year}, Red Soft'
+author = 'Red Soft'
 
 # функция подменяет один список слов на другой в rst файлах
 # эта функция вспомогательная, она работает, но выполнить ее достаточно один раз для замены необходимых слов
@@ -103,7 +108,7 @@ latex_elements = {
 
 \begin{flushright}
 \Huge {\xhrulefill{red}{2mm}\color{red} Ред} Эксперт\\
-\LARGE Версия 2024.11\\
+\LARGE Версия """ + f"{version}" + r"""\\
 \huge Руководство пользователя\\
 
 \end{flushright}

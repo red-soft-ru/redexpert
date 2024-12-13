@@ -1,5 +1,29 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <h1>RedExpert Changelog</h1>
+<h2><a name='v2024.12'>Major changes - v2024.12</a></h2>
+<p>Added:</p>
+<ol>
+    <li>Formatting numbers for table statistics</li>
+    <li>Copying formatted column names</li>
+</ol>
+<p>Improved:</p>
+<ol>
+    <li>The amount of memory required for audit analysis has been reduced</li>
+    <li>Exporting data with BLOB SUB_TYPE TEXT type now does not require mandatory file specification for exported
+        blobs
+    </li>
+</ol>
+<p>Fixed:</p>
+<ol>
+    <li>Recalculation of index selectivity</li>
+    <li>Parsing of the nested procedures</li>
+    <li>Parsing of the procedure cursors</li>
+    <li>Parsing of the procedure variables with NCHAR, REAL, INT, LONG FLOAT and other types</li>
+    <li>Generating SQL statements for variables with COLLATE</li>
+    <li>Display SQL queries containing special characters on the “Analyze” tab in the Trace Manager</li>
+    <li>Increased CPU load after repeated opening of the search window in the Query Editor</li>
+    <li>Mismatch between the versions of the client library and driver used for native connection</li>
+</ol>
 <h2><a name='v2024.11'>Major changes - v2024.11</a></h2>
 <p>Added:</p>
 <ol>

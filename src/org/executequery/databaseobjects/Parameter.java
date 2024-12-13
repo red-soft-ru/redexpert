@@ -28,6 +28,7 @@ public class Parameter {
     protected boolean defaultValueFromDomain = false;
     protected boolean descriptionAsSingleComment;
     protected String systemDomain;
+    protected String collate;
 
     public int getDataType() {
         return dataType;
@@ -217,6 +218,14 @@ public class Parameter {
 
     public void setDefaultValueFromDomain(boolean defaultValueFromDomain) {
         this.defaultValueFromDomain = defaultValueFromDomain;
+    }
+
+    public String getCollate() {
+        return collate;
+    }
+
+    public void setCollate(String collate) {
+        this.collate = collate;
     }
 }
 

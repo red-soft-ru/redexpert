@@ -13,7 +13,7 @@ import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.NamedView;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 import org.executequery.gui.resultset.ResultSetTable;
 import org.executequery.gui.resultset.ResultSetTableModel;
 import org.executequery.localization.Bundles;

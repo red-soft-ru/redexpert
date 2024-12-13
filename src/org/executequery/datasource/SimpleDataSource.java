@@ -180,17 +180,13 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         if (driver == null)
             throw new DataSourceException("Error loading specified JDBC driver");
 
+        // Unpack client library and update jna.library.path
+        if (!ConnectionType.isPureJava(databaseConnection))
+            LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
+
         // If embedded connection selected
-        if (ConnectionType.isEmbedded(databaseConnection)) {
-
-            if (connection == null) {
-                LibraryManager.updateJnaPath(databaseConnection, driver.getMajorVersion());
-                fbclient = LibraryManager.loadFbClientLibrary(driver);
-                connection = driver.connect(url, advancedProperties);
-            }
-
-            return connection;
-        }
+        if (ConnectionType.isEmbedded(databaseConnection))
+            throw new DataSourceException("Embedded connections doesn't supports yet");
 
         if (dataSource != null)
             return dataSource.getConnection(tpb);
@@ -506,10 +502,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     }
 
     private void maybeShutdownNativeResources() {
-        if (ConnectionType.isEmbedded(databaseConnection)) {
-            LibraryManager.shutdownNativeResources(driver, fbclient);
-            fbclient = null;
-        }
+//        if (ConnectionType.isEmbedded(databaseConnection)) {
+//            LibraryManager.shutdownNativeResources(driver, fbclient);
+//            fbclient = null;
+//        }
     }
 
 }

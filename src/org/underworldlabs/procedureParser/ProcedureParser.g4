@@ -54,12 +54,13 @@ declare_function_block
 
  declare_function_block
  : ('('spases_or_comment? input_parameter (','spases_or_comment? input_parameter)*')')?
-       K_RETURNS spases_or_comment  output_parameter
+       spases_or_comment K_RETURNS spases_or_comment  return_parameter
        spases_or_comment? K_AS spases_or_comment
        declare_stmt*
        K_BEGIN
        body
        K_END
+       spases_or_comment?
 ;
 
  declare_block
@@ -109,7 +110,7 @@ body:
   ;
 
   cursor:
-  K_CURSOR spases_or_comment K_FOR (spases_or_comment scroll)? spases_or_comment operator_select
+  (scroll spases_or_comment)?K_CURSOR spases_or_comment K_FOR spases_or_comment operator_select
   ;
 
   operator_select:
@@ -142,6 +143,7 @@ body:
  variable_name
  : IDENTIFIER
    | STRING_LITERAL
+   | non_reserved_keyword
  ;
 
  input_parameter
@@ -149,8 +151,18 @@ body:
  ;
 
  desciption_parameter
- :parameter_name spases_or_comment datatype (spases_or_comment notnull)? (spases_or_comment K_COLLATE spases_or_comment order_collate)?
+ :parameter_name spases_or_comment description_datatype_parameter
  ;
+
+ description_datatype_parameter
+ :datatype (spases_or_comment notnull)? (spases_or_comment K_COLLATE spases_or_comment order_collate)?
+ ;
+
+ return_parameter
+ :description_datatype_parameter
+ ;
+
+
  parameter_name
  : any_name
  ;
@@ -168,13 +180,14 @@ body:
 ;
  datatypeSQL
  : K_BOOLEAN array_size?
-    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128)spases_or_comment? array_size?
-    | (K_FLOAT | K_DOUBLE spases_or_comment K_PRECISION)spases_or_comment? array_size?
-    | (K_DATE | K_TIME | K_TIMESTAMP| K_TIME spases_or_comment K_WITH spases_or_comment K_TIMEZONE | K_TIMESTAMP spases_or_comment K_WITH spases_or_comment K_TIMEZONE) spases_or_comment? array_size?
-    | (K_DECIMAL | K_NUMERIC | K_DECFLOAT)spases_or_comment? ('(' type_size spases_or_comment?(',' spases_or_comment? scale)?')')?spases_or_comment? array_size?
-    | (K_CHAR | K_CHARACTER | K_VARYING spases_or_comment K_CHARACTER | K_VARCHAR) spases_or_comment?('('type_size')')?
+    | (K_SMALLINT | K_INTEGER | K_BIGINT | K_INT128 | K_INT | K_LONG )spases_or_comment? array_size?
+    | (K_FLOAT | K_REAL ) spases_or_comment?('('scale')')?spases_or_comment? array_size?
+    | (K_DOUBLE spases_or_comment K_PRECISION| K_LONG spases_or_comment K_FLOAT) spases_or_comment? array_size?
+    | (K_DATE | K_TIME | K_TIMESTAMP| ((K_TIME | K_TIMESTAMP) spases_or_comment (K_WITH|K_WITHOUT) spases_or_comment K_TIME spases_or_comment K_ZONE )) spases_or_comment? array_size?
+    | (K_DECIMAL | K_NUMERIC | K_DECFLOAT| K_DEC)spases_or_comment? ('(' type_size spases_or_comment?(',' spases_or_comment? scale)?')')?spases_or_comment? array_size?
+    | (K_CHAR | K_CHARACTER | K_VARYING spases_or_comment K_CHARACTER | K_VARCHAR | K_VARBINARY ) spases_or_comment?('('type_size')')?
     (spases_or_comment K_CHARACTER spases_or_comment K_SET spases_or_comment charset_name)?spases_or_comment? array_size?
-    | (K_NCHAR | K_NATIONAL spases_or_comment K_CHARACTER | K_NATIONAL spases_or_comment K_CHAR) (K_VARYING)? spases_or_comment?('(' spases_or_comment? int_number spases_or_comment?')')? spases_or_comment? array_size?
+    | (K_NCHAR | K_BINARY | K_NATIONAL spases_or_comment K_CHARACTER | K_NATIONAL spases_or_comment K_CHAR) (spases_or_comment K_VARYING)? spases_or_comment?('(' spases_or_comment? type_size spases_or_comment?')')? spases_or_comment? array_size?
     | K_BLOB (spases_or_comment K_SUB_TYPE spases_or_comment subtype)?
     (spases_or_comment K_SEGMENT spases_or_comment K_SIZE spases_or_comment type_size)? (spases_or_comment K_CHARACTER spases_or_comment K_SET spases_or_comment charset_name)?
     | K_BLOB ('('spases_or_comment? (type_size spases_or_comment?)? (','spases_or_comment? subtype spases_or_comment?)?')')?
@@ -832,6 +845,357 @@ datatypeKeyword
  | K_VARCHAR
  ;
 
+ non_reserved_keyword:
+ K_ABS
+ | K_ABSENT
+ | K_ABSOLUTE
+ | K_ACCENT
+ | K_ACOS
+ | K_ACOSH
+ | K_ACTION
+ | K_ACTIVE
+ | K_ADAPTER
+ | K_AFTER
+ | K_ALWAYS
+ | K_ARRAY
+ | K_ASC
+ | K_ASCENDING
+ | K_ASCII_CHAR
+ | K_ASCII_VAL
+ | K_ASIN
+ | K_ASINH
+ | K_ATAN
+ | K_ATAN2
+ | K_ATANH
+ | K_AUTHID
+ | K_AUTH_FACTORS
+ | K_AUTO
+ | K_AUTONOMOUS
+ | K_BACKUP
+ | K_BASE64_DECODE
+ | K_BASE64_ENCODE
+ | K_BEFORE
+ | K_BIND
+ | K_BIN_AND
+ | K_BIN_NOT
+ | K_BIN_OR
+ | K_BIN_SHL
+ | K_BIN_SHR
+ | K_BIN_XOR
+ | K_BLOB_APPEND
+ | K_BLOCK
+ | K_BODY
+ | K_BREAK
+ | K_CALLER
+ | K_CASCADE
+ | K_CEIL
+ | K_CEILING
+ | K_CERTIFICATE
+ | K_CHAR_TO_UUID
+ | K_CLEAR
+ | K_COALESCE
+ | K_COLLATION
+ | K_COLUMNS
+ | K_COMMAND
+ | K_COMMITTED
+ | K_COMMON
+ | K_COMPARE_DECFLOAT
+ | K_COMPUTED
+ | K_CONDITIONAL
+ | K_CONNECTIONS
+ | K_CONSISTENCY
+ | K_CONTAINING
+ | K_CONTENTS
+ | K_CONTINUE
+ | K_COS
+ | K_COSH
+ | K_COT
+ | K_COUNTER
+ | K_CPU_LOAD
+ | K_CREATE_FILE
+ | K_CRYPT_HASH
+ | K_CSTRING
+ | K_CTR_BIG_ENDIAN
+ | K_CTR_LENGTH
+ | K_CTR_LITTLE_ENDIAN
+ | K_CUME_DIST
+ | K_CURRENT_LABEL
+ | K_DAMLEV
+ | K_DATA
+ | K_DATABASE
+ | K_DATEADD
+ | K_DATEDIFF
+ | K_DDL
+ | K_DEBUG
+ | K_DECODE
+ | K_DECRYPT
+ | K_DEFINER
+ | K_DELETE_FILE
+ | K_DENSE_RANK
+ | K_DESC
+ | K_DESCENDING
+ | K_DESCRIPTOR
+ | K_DIFFERENCE
+ | K_DISABLE
+ | K_DO
+ | K_DOMAIN
+ | K_DUMP
+ | K_EMPTY
+ | K_ENABLE
+ | K_ENCRYPT
+ | K_ENGINE
+ | K_ENTRY_POINT
+ | K_ERROR
+ | K_EXCEPTION
+ | K_EXCESS
+ | K_EXCLUDE
+ | K_EXIT
+ | K_EXP
+ | K_EXTENDED
+ | K_FILE
+ | K_FIRST
+ | K_FIRSTNAME
+ | K_FIRST_DAY
+ | K_FIRST_VALUE
+ | K_FLOOR
+ | K_FOLLOWING
+ | K_FORMAT
+ | K_FREE_IT
+ | K_GENERATED
+ | K_GENERATOR
+ | K_GEN_ID
+ | K_GEN_UUID
+ | K_GOSTPASSWORD
+ | K_GRANTED
+ | K_GSS
+ | K_HASH
+ | K_HASH_CP
+ | K_HEX_DECODE
+ | K_HEX_ENCODE
+ | K_IDENTITY
+ | K_IDLE
+ | K_IF
+ | K_IGNORE
+ | K_IIF
+ | K_INACTIVE
+ | K_INCLUDE
+ | K_INCLUDING
+ | K_INCREMENT
+ | K_INITIAL_LABEL
+ | K_INPUT_TYPE
+ | K_INVOKER
+ | K_ISOLATION
+ | K_IS_LABEL_VALID
+ | K_IV
+ | K_JOB
+ | K_JSON
+ | K_JSON_ARRAY
+ | K_JSON_ARRAYAGG
+ | K_JSON_EXISTS
+ | K_JSON_MODIFY
+ | K_JSON_OBJECT
+ | K_JSON_OBJECTAGG
+ | K_JSON_QUERY
+ | K_JSON_TABLE
+ | K_JSON_VALUE
+ | K_KEEP
+ | K_KEY
+ | K_KEYS
+ | K_LAG
+ | K_LAST
+ | K_LASTNAME
+ | K_LAST_DAY
+ | K_LAST_VALUE
+ | K_LDAP_ATTR
+ | K_LDAP_GROUPS
+ | K_LDAP_USER_GROUPS
+ | K_LEAD
+ | K_LEAVE
+ | K_LEGACY
+ | K_LENGTH
+ | K_LEVEL
+ | K_LIFETIME
+ | K_LIMBO
+ | K_LINGER
+ | K_LIST
+ | K_LN
+ | K_LOCK
+ | K_LOCKED
+ | K_LOG
+ | K_LOG10
+ | K_LPAD
+ | K_LPARAM
+ | K_MAKE_DBKEY
+ | K_MANUAL
+ | K_MAPPING
+ | K_MATCHED
+ | K_MATCHING
+ | K_MAXVALUE
+ | K_MAX_FAILED_COUNT
+ | K_MAX_IDLE_TIME
+ | K_MAX_SESSIONS
+ | K_MAX_UNUSED_DAYS
+ | K_MESSAGE
+ | K_MIDDLENAME
+ | K_MILLISECOND
+ | K_MINVALUE
+ | K_MOD
+ | K_MODE
+ | K_MODULE_NAME
+ | K_NAME
+ | K_NAMES
+ | K_NATIVE
+ | K_NEXT
+ | K_NORMALIZE_DECFLOAT
+ | K_NTH_VALUE
+ | K_NTILE
+ | K_NULLIF
+ | K_NULLS
+ | K_NUMBER
+ | K_OBJECT
+ | K_OFFLINE
+ | K_OLDEST
+ | K_OMIT
+ | K_ONCE
+ | K_ONLINE
+ | K_OPTIMIZE
+ | K_OPTION
+ | K_OS_NAME
+ | K_OTHERS
+ | K_OUTPUT_TYPE
+ | K_OVERFLOW
+ | K_OVERLAY
+ | K_OVERRIDING
+ | K_OWNER
+ | K_PACKAGE
+ | K_PAD
+ | K_PAGE
+ | K_PAGES
+ | K_PAGE_SIZE
+ | K_PARTITION
+ | K_PASSWORD
+ | K_PERCENT_RANK
+ | K_PI
+ | K_PIN
+ | K_PKCS_1_5
+ | K_PLACING
+ | K_PLUGIN
+ | K_POLICY
+ | K_POOL
+ | K_POWER
+ | K_PRECEDING
+ | K_PRESERVE
+ | K_PRIMARY
+ | K_PRIOR
+ | K_PRIVILEGE
+ | K_PRIVILEGES
+ | K_PROTECTED
+ | K_PSWD_MIN_LEN
+ | K_PSWD_NEED_CHAR
+ | K_PSWD_NEED_DIFF_CASE
+ | K_PSWD_NEED_DIGIT
+ | K_PSWD_UNIQUE_COUNT
+ | K_PSWD_VALID_DAYS
+ | K_QUANTIZE
+ | K_QUOTES
+ | K_RAND
+ | K_RANGE
+ | K_RANK
+ | K_READ
+ | K_READ_FILE
+ | K_REGEXP_SUBSTR
+ | K_RELATIVE
+ | K_REPLACE
+ | K_REQUESTS
+ | K_RESERV
+ | K_RESERVING
+ | K_RESET
+ | K_RESTART
+ | K_RESTRICT
+ | K_RETAIN
+ | K_RETURNING
+ | K_REVERSE
+ | K_ROLE
+ | K_ROUND
+ | K_ROW_NUMBER
+ | K_RPAD
+ | K_RSA_DECRYPT
+ | K_RSA_ENCRYPT
+ | K_RSA_PRIVATE
+ | K_RSA_PUBLIC
+ | K_RSA_SIGN_HASH
+ | K_RSA_VERIFY_HASH
+ | K_RUN
+ | K_SALT_LENGTH
+ | K_SCALAR
+ | K_SCALAR_ARRAY
+ | K_SECURITY
+ | K_SEGMENT
+ | K_SEQUENCE
+ | K_SERVERWIDE
+ | K_SESSION
+ | K_SHADOW
+ | K_SHARED
+ | K_SIGN
+ | K_SIGNATURE
+ | K_SIN
+ | K_SINGULAR
+ | K_SINH
+ | K_SIZE
+ | K_SKIP
+ | K_SNAPSHOT
+ | K_SORT
+ | K_SOURCE
+ | K_SPACE
+ | K_SQL
+ | K_SQRT
+ | K_SRP
+ | K_STABILITY
+ | K_STARTING
+ | K_STARTS
+ | K_STATEMENT
+ | K_STATISTICS
+ | K_STRING
+ | K_SUBSTRING
+ | K_SUB_TYPE
+ | K_SUSPEND
+ | K_SYSTEM
+ | K_TABLESPACE
+ | K_TAGS
+ | K_TAN
+ | K_TANH
+ | K_TARGET
+ | K_TEMPORARY
+ | K_TIES
+ | K_TIMEOUT
+ | K_TIMEZONE_NAME
+ | K_TOTALORDER
+ | K_TRANSACTION
+ | K_TRAPS
+ | K_TRUNC
+ | K_TRUSTED
+ | K_TWO_PHASE
+ | K_TYPE
+ | K_UNCOMMITTED
+ | K_UNCONDITIONAL
+ | K_UNDO
+ | K_UNICODE_CHAR
+ | K_UNICODE_VAL
+ | K_USAGE
+ | K_UTC_TIMESTAMP
+ | K_UUID_TO_CHAR
+ | K_VERIFYSERVER
+ | K_WAIT
+ | K_WEEK
+ | K_WEEKDAY
+ | K_WIN_SSPI
+ | K_WORK
+ | K_WRAPPER
+ | K_WRITE
+ | K_YEARDAY
+ | K_ZONE;
+
+
 //[a-zA-Z_0-9\t \-\[\]\=]+
 unknown
  : .+
@@ -1462,7 +1826,6 @@ K_TIES : T I E S ;
 K_TIME : T I M E ;
 K_TIMESTAMP : T I M E S T A M P ;
 K_TIMEOUT : T I M E O U T ;
-K_TIMEZONE : T I M E Z O N E ;
 K_TIMEZONE_HOUR : T I M E Z O N E '_' H O U R ;
 K_TIMEZONE_MINUTE : T I M E Z O N E '_' M I N U T E ;
 K_TIMEZONE_NAME : T I M E Z O N E '_' N A M E ;

@@ -21,6 +21,7 @@
 package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.databaseobjects.T;
 import org.executequery.databaseobjects.Types;
 
 import javax.swing.*;
@@ -129,12 +130,24 @@ public class ResultSetColumnHeader {
     public int getDisplaySize() {
         if (displaySize == -1 && rsmd != null) {
             try {
+                if (isDisplaySize())
                 displaySize = rsmd.getColumnDisplaySize(getOriginalIndex() + 1);
+                else displaySize = 0;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
         return displaySize;
+    }
+
+    protected boolean isDisplaySize() {
+        return getDataTypeName() != null && (getDataTypeName().equals(T.NUMERIC)
+                || getDataTypeName().equals(T.CHAR)
+                || getDataTypeName().equals(T.VARCHAR)
+                || getDataTypeName().equals(T.DECIMAL)
+                || getDataTypeName().equals(T.NCHAR)
+                || getDataTypeName().equalsIgnoreCase("CSTRING")
+                || getDataTypeName().equalsIgnoreCase(T.DECFLOAT));
     }
 
     public void setDisplaySize(int displaySize) {

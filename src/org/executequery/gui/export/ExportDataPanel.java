@@ -18,17 +18,19 @@
  *
  */
 
-package org.executequery.gui.exportData;
+package org.executequery.gui.export;
 
 import org.executequery.GUIUtilities;
 import org.executequery.components.FileChooserDialog;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
+import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.swing.listener.RequiredFieldPainter;
 import org.underworldlabs.util.*;
 
 import javax.swing.*;
@@ -93,12 +95,15 @@ public class ExportDataPanel extends AbstractBaseDialog {
     private JButton exportButton;
     private JButton cancelButton;
 
+    private List<RequiredFieldPainter> requirements;
+    private RequiredFieldPainter blobPathFieldRequiredPainter;
+
     // ---
 
-    private final Object exportData;
     private final String tableNameForExport;
-    private final ParameterSaver parametersSaver;
+    private final transient Object exportData;
     private final List<DatabaseColumn> databaseColumns;
+    private final transient ParameterSaver parametersSaver;
 
     // ---
 
@@ -121,6 +126,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         init();
+        addListeners();
         arrange();
     }
 
@@ -135,21 +141,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         columnTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-
-                int selectedRow = columnTable.getSelectedRow();
-                int selectedColumn = columnTable.getSelectedColumn();
-
-                if (selectedColumn == 0) {
-
-                    String oldValue = columnTable.getValueAt(selectedRow, selectedColumn).toString().toLowerCase();
-                    columnTable.setValueAt(!oldValue.contains("true"), selectedRow, selectedColumn);
-
-                    blobPathField.setEnabled(isContainsBlob());
-                    browseBlobFileButton.setEnabled(isContainsBlob());
-                    saveBlobsIndividuallyCheck.setEnabled(isContainsBlob());
-                }
-
-                columnTable.repaint();
+                columnTableTriggered();
             }
         });
 
@@ -170,9 +162,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
         browseFileButton = WidgetFactory.createButton("browseFileButton", Bundles.get("common.browse.button"));
         browseFileButton.addActionListener(e -> browseFile(filePathField));
 
+        boolean enableBlobFields = isContainsBlob();
         browseBlobFileButton = WidgetFactory.createButton("browseFolderButton", Bundles.get("common.browse.button"));
         browseBlobFileButton.addActionListener(e -> browseFile(blobPathField));
-        browseBlobFileButton.setEnabled(isContainsBlob());
+        browseBlobFileButton.setEnabled(enableBlobFields);
 
         exportButton = WidgetFactory.createButton("exportButton", Bundles.get("common.export.button"));
         exportButton.addActionListener(e -> export());
@@ -193,7 +186,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(addCreateTableStatementCheck.getName(), addCreateTableStatementCheck);
 
         saveBlobsIndividuallyCheck = WidgetFactory.createCheckBox("saveBlobsIndividuallyCheck", bundleString("saveBlobsIndividually"));
-        saveBlobsIndividuallyCheck.setEnabled(isContainsBlob());
+        saveBlobsIndividuallyCheck.setEnabled(enableBlobFields && isBlobFilePathSpecified());
         components.put(saveBlobsIndividuallyCheck.getName(), saveBlobsIndividuallyCheck);
 
         replaceEndlCheck = WidgetFactory.createCheckBox("replaceEndlCheck", bundleString("replaceEndlLabel"));
@@ -216,7 +209,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(exportTableNameField.getName(), exportTableNameField);
 
         blobPathField = WidgetFactory.createTextField("folderPathField");
-        blobPathField.setEnabled(isContainsBlob());
+        SimpleDocumentListener.initialize(blobPathField, this::blobPathFieldTriggered);
+        blobPathField.setEnabled(enableBlobFields);
         components.put(blobPathField.getName(), blobPathField);
 
         filePathField = WidgetFactory.createTextField("filePathField");
@@ -291,11 +285,21 @@ public class ExportDataPanel extends AbstractBaseDialog {
         setPreferredSize(new Dimension(500, 455));
         setMinimumSize(getPreferredSize());
         setSize(getPreferredSize());
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocation(GUIUtilities.getLocationForDialog(this.getSize()));
 
         pack();
         setVisible(true);
+    }
+
+    private void addListeners() {
+
+        blobPathFieldRequiredPainter = RequiredFieldPainter.initialize(blobPathField);
+        blobPathFieldRequiredPainter.setEnable(isContainsBlob(true));
+
+        requirements = new ArrayList<>();
+        requirements.add(blobPathFieldRequiredPainter);
+        requirements.add(RequiredFieldPainter.initialize(filePathField));
     }
 
     // --- display handlers ---
@@ -471,6 +475,31 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
     }
 
+    private void columnTableTriggered() {
+
+        int selectedRow = columnTable.getSelectedRow();
+        int selectedColumn = columnTable.getSelectedColumn();
+
+        if (selectedColumn == 0) {
+
+            String oldValue = columnTable.getValueAt(selectedRow, selectedColumn).toString().toLowerCase();
+            columnTable.setValueAt(!oldValue.contains("true"), selectedRow, selectedColumn);
+
+            boolean enableBlobFields = isContainsBlob();
+            blobPathField.setEnabled(enableBlobFields);
+            browseBlobFileButton.setEnabled(enableBlobFields);
+            saveBlobsIndividuallyCheck.setEnabled(enableBlobFields && isBlobFilePathSpecified());
+
+            blobPathFieldRequiredPainter.setEnable(isContainsBlob(true));
+        }
+
+        columnTable.repaint();
+    }
+
+    private void blobPathFieldTriggered() {
+        saveBlobsIndividuallyCheck.setEnabled(isContainsBlob() && isBlobFilePathSpecified());
+    }
+
     // --- helper method ---
 
     private boolean exportAllow() {
@@ -478,10 +507,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
         String exportFilePath = getFilePath();
         String exportBlobPath = getBlobPath();
 
-        // export file defined
-        if (MiscUtils.isNull(exportFilePath)) {
-            GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return false;
+        // export files defined
+        if (!requirements.stream().allMatch(RequiredFieldPainter::check)) {
+            GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAFileToExportTo"));
+            return true;
         }
 
         // export file writable
@@ -490,14 +519,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
             return false;
         }
 
-        // blob file defined
-        if (isContainsBlob() && MiscUtils.isNull(exportBlobPath)) {
-            GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return false;
-        }
-
-        // blob file writable
-        if (!new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
+        // if blob file defined check if it writable
+        if (isBlobFilePathSpecified() && !new File(exportBlobPath).getAbsoluteFile().getParentFile().exists()) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
@@ -534,33 +557,32 @@ public class ExportDataPanel extends AbstractBaseDialog {
             }
         }
 
-        // overwrite blob file check
-        if (isContainsBlob()) {
+        // if blob file defined check if it for overwrite
+        if (isBlobFilePathSpecified()) {
 
-            if (!saveBlobsIndividuallyCheck.isSelected()) {
+            if (saveBlobsIndividuallyCheck.isSelected())
+                return new File(exportBlobPath).mkdirs();
 
-                if (FileUtils.fileExists(exportBlobPath)) {
+            if (FileUtils.fileExists(exportBlobPath)) {
 
-                    int result = GUIUtilities.displayYesNoDialog(
-                            String.format(bundleString("OverwriteFile"), exportBlobPath),
-                            Bundles.get("common.confirmation")
-                    );
+                int result = GUIUtilities.displayYesNoDialog(
+                        String.format(bundleString("OverwriteFile"), exportBlobPath),
+                        Bundles.get("common.confirmation")
+                );
 
-                    if (result == JOptionPane.NO_OPTION) {
-                        blobPathField.selectAll();
-                        blobPathField.requestFocus();
-                        return false;
-                    }
+                if (result == JOptionPane.NO_OPTION) {
+                    blobPathField.selectAll();
+                    blobPathField.requestFocus();
+                    return false;
                 }
+            }
 
-                try {
-                    Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
-                } catch (IOException ignored) {
-                }
+            try {
+                Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
 
-            } else
-                //noinspection ResultOfMethodCallIgnored
-                new File(exportBlobPath).mkdirs();
+            } catch (IOException e) {
+                Log.debug(e.getMessage(), e);
+            }
         }
 
         return true;
@@ -575,26 +597,54 @@ public class ExportDataPanel extends AbstractBaseDialog {
         return value.toString().toLowerCase().contains("true");
     }
 
-    protected boolean isContainsBlob() {
+    protected boolean isBlobFilePathSpecified() {
+        return !MiscUtils.isNull(getBlobPath());
+    }
 
-        if (exportData instanceof TableModel) {
+    protected boolean isContainsBlob() {
+        return isContainsBlob(false);
+    }
+
+    protected boolean isContainsBlob(boolean subTypeByn) {
+        String checkPattern = subTypeByn ? "blob sub_type 0" : "blob";
+        return isContainsBlobAsTableModel(checkPattern) || isContainsBlobAsResultSet(checkPattern);
+    }
+
+    private boolean isContainsBlobAsTableModel(String checkPattern) {
+        try {
 
             TableModel tableModel = (TableModel) exportData;
-            for (int col = 0; col < tableModel.getColumnCount(); col++)
-                if (isFieldSelected(col) && tableModel.getValueAt(0, col) instanceof AbstractLobRecordDataItem)
+            for (int col = 0; col < tableModel.getColumnCount(); col++) {
+                if (isFieldSelected(col)) {
+                    Object value = tableModel.getValueAt(0, col);
+                    if (value instanceof AbstractLobRecordDataItem) {
+                        AbstractLobRecordDataItem blob = (AbstractLobRecordDataItem) value;
+                        if (blob.getDataTypeName().toLowerCase().contains(checkPattern))
+                            return true;
+                    }
+                }
+            }
+
+        } catch (ClassCastException e) {
+            // do nothing
+        }
+
+        return false;
+    }
+
+    private boolean isContainsBlobAsResultSet(String checkPattern) {
+        try {
+
+            ResultSetMetaData metaData = ((ResultSet) exportData).getMetaData();
+            for (int col = 1; col < metaData.getColumnCount() + 1; col++)
+                if (metaData.getColumnTypeName(col).toLowerCase().contains(checkPattern))
                     return true;
 
-        } else if (exportData instanceof ResultSet) {
-            try {
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
 
-                ResultSetMetaData metaData = ((ResultSet) exportData).getMetaData();
-                for (int i = 1; i < metaData.getColumnCount() + 1; i++)
-                    if (metaData.getColumnTypeName(i).toLowerCase().contains("blob"))
-                        return true;
-
-            } catch (SQLException e) {
-                Log.error(e.getMessage(), e);
-            }
+        } catch (ClassCastException e) {
+            // do nothing
         }
 
         return false;
@@ -654,11 +704,11 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     protected String getFilePath() {
-        return filePathField.getText().trim();
+        return filePathField != null ? filePathField.getText().trim() : "";
     }
 
     protected String getBlobPath() {
-        return blobPathField.getText().trim();
+        return blobPathField != null ? blobPathField.getText().trim() : "";
     }
 
     protected boolean isAddHeaders() {
@@ -729,19 +779,19 @@ public class ExportDataPanel extends AbstractBaseDialog {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            if (rows.size() > rowIndex) {
+            if (rows.size() <= rowIndex)
+                return null;
 
-                switch (columnIndex) {
-                    case 0:
-                        return rows.get(rowIndex).isSelected();
-                    case 1:
-                        return rows.get(rowIndex).getName();
-                    case 2:
-                        return rows.get(rowIndex).getType();
-                }
+            switch (columnIndex) {
+                case 0:
+                    return rows.get(rowIndex).isSelected();
+                case 1:
+                    return rows.get(rowIndex).getName();
+                case 2:
+                    return rows.get(rowIndex).getType();
+                default:
+                    return null;
             }
-
-            return null;
         }
 
         @Override
@@ -752,10 +802,12 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         @Override
         public void addTableModelListener(TableModelListener l) {
+            // do nothing
         }
 
         @Override
         public void removeTableModelListener(TableModelListener l) {
+            // do nothing
         }
 
     } // class ColumnTableModel

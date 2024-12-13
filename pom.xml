@@ -5,6 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <properties>
         <antlr.version>4.7</antlr.version>
+        <fbclient3.version>3.0.17</fbclient3.version>
+        <fbclient4.version>4.0.0</fbclient4.version>
+        <fbclient5.version>5.0.0-rc.5</fbclient5.version>
         <jaybird3.version>3.0.36</jaybird3.version>
         <jaybird4.version>4.0.30</jaybird4.version>
         <jaybird5.version>5.0.18</jaybird5.version>
@@ -12,7 +15,7 @@
     <groupId>org.executequery</groupId>
     <artifactId>RedExpert-parent</artifactId>
     <packaging>pom</packaging>
-    <version>2024.11</version>
+    <version>2024.12</version>
     <modules>
         <module>modules/plugins/fbplugin</module>
         <module>modules/plugins/fbclient-3</module>

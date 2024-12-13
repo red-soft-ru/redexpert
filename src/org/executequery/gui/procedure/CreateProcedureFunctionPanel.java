@@ -152,7 +152,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         tabbedPane.add(bundleString("OutputParameters"), outputParamsPanel);
         tabbedPane.add(bundleString("Variables"), variablesPanel);
         tabbedPane.add(bundleString("Cursors"), cursorsPanel);
-        tabbedPane.add(bundleString("Subprograms"), subProgramPanel);
+        tabbedPane.add(bundleStaticString("Subprograms"), subProgramPanel);
         addCommentTab(null);
 
         showHelpersCheck = WidgetFactory.createCheckBox("showHelpersCheck", bundleString("showHelpersCheck"));
@@ -390,8 +390,18 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
                                         if (type.datatypeSQL() != null && !type.datatypeSQL().isEmpty()) {
 
-                                            List<ParseTree> children = type.datatypeSQL().children;
-                                            variable.setSqlType(children.get(0).getText());
+                                            String sqlType = type.datatypeSQL().getText();
+                                            int ind = sqlType.indexOf("(");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            ind = sqlType.indexOf("[");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            ind = sqlType.toUpperCase().indexOf("SEGMENT");
+                                            if (ind > 0)
+                                                sqlType = sqlType.substring(0, ind);
+                                            sqlType = sqlType.replaceAll("(?i)CHARACTER\\s+SET.*", "");
+                                            variable.setSqlType(MiscUtils.trimEnd(sqlType));
 
                                             if (type.datatypeSQL().type_size() != null && !type.datatypeSQL().type_size().isEmpty())
                                                 variable.setSize(Integer.parseInt(type.datatypeSQL().type_size().getText().trim()));
@@ -434,6 +444,8 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
                                     if (var.default_statement() != null)
                                         variable.setDefaultValue(var.default_statement().getText());
+                                    if (var.order_collate() != null)
+                                        variable.setCollate(var.order_collate().getText());
 
                                     if (var.comment() != null) {
 
@@ -768,6 +780,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
 
         loadParameters();
         fillSqlBody();
+        generateDdlScript(false);
     }
 
     @Override

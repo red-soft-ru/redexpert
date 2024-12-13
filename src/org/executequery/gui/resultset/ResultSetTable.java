@@ -22,6 +22,7 @@ package org.executequery.gui.resultset;
 
 import org.apache.commons.lang.StringUtils;
 import org.executequery.GUIUtilities;
+import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.Types;
 import org.executequery.gui.StandardTable;
 import org.underworldlabs.swing.celleditor.*;
@@ -211,7 +212,7 @@ public class ResultSetTable extends JTable implements StandardTable {
         copySelectedCells(',', false, true);
     }
 
-    public void copySelectedColumnNames() {
+    public void copySelectedColumnNames(boolean formated, boolean datatypes) {
         StringBuilder sb = new StringBuilder();
         int cols = getSelectedColumnCount();
 
@@ -220,8 +221,23 @@ public class ResultSetTable extends JTable implements StandardTable {
 
         int[] selectedCols = getSelectedColumns();
         List<String> list = new ArrayList<>();
-        for (int j = 0; j < cols; j++)
-            list.add(getColumnName(selectedCols[j]));
+        DatabaseConnection dc = null;
+        ResultSetTableModel rstm = null;
+        if (getModel() instanceof TableSorter) {
+
+            TableSorter model = (TableSorter) getModel();
+            if (model.getTableModel() instanceof ResultSetTableModel) {
+
+                rstm = (ResultSetTableModel) model.getTableModel();
+                dc = rstm.getDatabaseConnection();
+            }
+        }
+        for (int j = 0; j < cols; j++) {
+            String value = formated ? MiscUtils.getFormattedObject(getColumnName(selectedCols[j]), dc) : getColumnName(selectedCols[j]);
+            if (datatypes && rstm != null)
+                value += " " + rstm.getColumnType(selectedCols[j]);
+            list.add(value);
+        }
         sb.append(StringUtils.join(list, ", ")).append('\n');
         GUIUtilities.copyToClipBoard(sb.toString());
     }

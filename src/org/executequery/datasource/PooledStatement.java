@@ -1,8 +1,6 @@
 package org.executequery.datasource;
 
-import biz.redsoft.IFBSQLException;
 import org.executequery.log.Log;
-import org.underworldlabs.util.DynamicLibraryLoader;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -14,9 +12,9 @@ import java.util.Map;
 
 public class PooledStatement implements CallableStatement {
 
-    private PooledConnection connection;
+    private final PooledConnection connection;
 
-    private Statement statement;
+    private final Statement statement;
 
     private PreparedStatement preparedStatement;
 
@@ -310,6 +308,10 @@ public class PooledStatement implements CallableStatement {
             handleException(e);
             return null;
         }
+    }
+
+    public PooledConnection getPooledConnection() throws SQLException {
+        return connection;
     }
 
     @Override
@@ -2165,4 +2167,6 @@ public class PooledStatement implements CallableStatement {
     public void setIndividual(boolean individual) {
         this.individual = individual;
     }
+
+
 }

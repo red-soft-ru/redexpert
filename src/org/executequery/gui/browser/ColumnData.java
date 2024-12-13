@@ -296,6 +296,9 @@ public class ColumnData implements Serializable {
                 if (getScale() > 0)
                     sb.append(",").append(getScale());
                 sb.append(")");
+            } else if (type == Types.FLOAT) {
+                if (getScale() > 0)
+                    sb.append("(").append(getScale()).append(")");
             }
 
             if (!MiscUtils.isNull(getCharset()) && connection != null && !getCharset().equalsIgnoreCase(connection.getDBCharset()))
@@ -426,6 +429,8 @@ public class ColumnData implements Serializable {
                 || getSQLType() == Types.BLOB
                 || getSQLType() == Types.LONGVARCHAR
                 || getSQLType() == Types.LONGVARBINARY
+                || getSQLType() == Types.NCHAR
+                || getSQLType() == Types.NVARCHAR
                 || getTypeName().equalsIgnoreCase("CSTRING")
                 || getTypeName().equalsIgnoreCase("VARCHAR")
                 || getTypeName().equalsIgnoreCase("CHAR")

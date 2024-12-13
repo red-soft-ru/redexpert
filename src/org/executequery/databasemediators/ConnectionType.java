@@ -36,6 +36,10 @@ public enum ConnectionType {
         return connection != null && Objects.equals(connection.getConnType(), EMBEDDED.name());
     }
 
+    public static boolean isPureJava(DatabaseConnection connection) {
+        return connection != null && Objects.equals(connection.getConnType(), PURE_JAVA.name());
+    }
+
     @Override
     public String toString() {
         return label();

@@ -2,6 +2,7 @@ package org.executequery.gui.browser.managment.tracemanager.net;
 
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
+import org.underworldlabs.util.MiscUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -9,7 +10,6 @@ import java.util.List;
 
 public class AnaliseRow {
     LogMessage logMessage;
-    StringBuilder logMessages;
     public final static int TIME = 0;
     public final static int READ = TIME + 1;
     public final static int FETCH = READ + 1;
@@ -58,7 +58,10 @@ public class AnaliseRow {
     }
 
     public String getLogMessages() {
-        return logMessages.toString();
+        StringBuilder sb = new StringBuilder();
+        for (LogMessage msg : allRows)
+            sb.append(msg.getBody());
+        return sb.toString();
     }
 
     public void setLogMessage(LogMessage logMessage) {
@@ -67,7 +70,6 @@ public class AnaliseRow {
 
     public AnaliseRow() {
         allRows = new ArrayList<>();
-        logMessages = new StringBuilder();
         rows = new List[TYPES.length];
         for (int i = 0; i < TYPES.length; i++) {
             rows[i] = new ArrayList<>();
@@ -156,7 +158,6 @@ public class AnaliseRow {
 
     public void addMessage(LogMessage msg) {
         allRows.add(msg);
-        logMessages.append(msg.getBody()).append("\n");
         if (msg.getPlanText() != null) {
             if (plans.isEmpty())
                 plans.add(msg.getPlanText());
@@ -271,7 +272,7 @@ public class AnaliseRow {
                         break;
 
                 }
-            } else displayValue = delimitValue(longValue, "");
+            } else displayValue = MiscUtils.delimitValue(longValue, " ");
             if (percent != -1)
                 displayValue = displayValue + " [" + percent + "%" + "]";
             return displayValue;
@@ -301,15 +302,6 @@ public class AnaliseRow {
             isRoundValue = roundValue;
         }
 
-        private String delimitValue(long value, String result) {
-            if (value >= 1000) {
-                String div = String.valueOf(value % 1000);
-                while (div.length() < 3)
-                    div = "0" + div;
-                return delimitValue(value / 1000, " " + div + result);
-            } else return value + result;
-        }
-
         public String roundBytes(long value) {
             String suff = "b";
             while (value > 10000 && !suff.contentEquals("pb")) {
@@ -334,7 +326,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }
@@ -363,7 +355,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }
@@ -392,7 +384,7 @@ public class AnaliseRow {
                         break;
                 }
             }
-            String result = delimitValue(value, "") +
+            String result = MiscUtils.delimitValue(value, " ") +
                     suff;
             return result;
         }

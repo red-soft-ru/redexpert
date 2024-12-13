@@ -351,8 +351,8 @@ public final class SQLUtils {
 
         if (fullProcedureBody != null && !fullProcedureBody.isEmpty())
             sb.append("\nAS\n").append(fullProcedureBody);
-
-        sb.append("\n^\n");
+        if (setTerm)
+            sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
@@ -369,24 +369,26 @@ public final class SQLUtils {
     public static String generateDownCreateProcedureScript(String name, String comment, Vector<ColumnData> inputParameters,
                                                            Vector<ColumnData> outputParameters, boolean setComment, DatabaseConnection dc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
             sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
             sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
         }
+        if (sb.length() > 0)
+            sb.insert(0, "\n^\n");
         return sb.toString();
     }
 
     public static String generateDownCreateFunctionScript(String name, String comment, Vector<ColumnData> inputArguments, boolean setComment, DatabaseConnection dc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
             sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         }
+        if (sb.length() > 0)
+            sb.insert(0, "\n^\n");
 
 
         return sb.toString();
@@ -616,8 +618,8 @@ public final class SQLUtils {
 
         if (fullFunctionBody != null && !fullFunctionBody.isEmpty())
             sb.append("\nAS\n").append(fullFunctionBody);
-
-        sb.append("\n^\n");
+        if (setTerm)
+            sb.append("\n^\n");
 
         if (setComment) {
             sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
@@ -766,10 +768,10 @@ public final class SQLUtils {
                     sb.append("DECLARE ");
 
                 if (cd.isCursor()) {
-
-                    sb.append(cd.getColumnName()).append(" CURSOR FOR ");
+                    sb.append(cd.getColumnName());
                     if (cd.isScroll())
-                        sb.append("SCROLL ");
+                        sb.append(" SCROLL");
+                    sb.append(" CURSOR FOR ");
                     sb.append("(").append(cd.getSelectOperator()).append(")");
 
                 } else {
@@ -817,15 +819,14 @@ public final class SQLUtils {
                 sb.append(cd.getFormattedDataType());
 
             sb.append(cd.isNotNull() ? " NOT NULL" : CreateTableSQLSyntax.EMPTY);
+            if (!MiscUtils.isNull(cd.getCollate()))
+                sb.append(" COLLATE ").append(cd.getCollate());
             if (cd.getTypeParameter() != ColumnData.OUTPUT_PARAMETER
                     && !MiscUtils.isNull(cd.getDefaultValue().getValue())
                     && !cd.getDefaultValue().isDomain()
             ) {
                 sb.append(SPACE).append(format(cd.getDefaultValue(), cd));
             }
-
-            if (!MiscUtils.isNull(cd.getCheck()))
-                sb.append(" CHECK ( ").append(cd.getCheck()).append(")");
 
         } else
             sb.append("COMPUTED BY ( ").append(cd.getComputedBy()).append(")");
@@ -871,6 +872,7 @@ public final class SQLUtils {
         cd.setDefaultValue(parameter.getDefaultValue(), true, parameter.isDefaultValueFromDomain());
         cd.setRemarkAsSingleComment(parameter.isDescriptionAsSingleComment());
         cd.setColumnPosition(parameter.getPosition());
+        cd.setCollate(parameter.getCollate());
         String[] dataTypes = dc.getDataTypesArray();
         int[] intDataTypes = dc.getIntDataTypesArray();
         for (int i = 0; i < dataTypes.length; i++) {
@@ -1673,11 +1675,10 @@ public final class SQLUtils {
         if (updateFields.isEmpty())
             updateFields.add("<field_name> = :<param_name>");
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(format(name.trim(), dc)).append(" SET\n\t");
-        sb.append(String.join(",\n\t", updateFields)).append(";\n");
+        String sb = "UPDATE " + format(name.trim(), dc) + " SET\n\t" +
+                String.join(",\n\t", updateFields) + ";\n";
 
-        return sb.toString();
+        return sb;
     }
 
     public static String generateDefaultInsertStatement(String name, List<DatabaseColumn> columns, DatabaseConnection dc) {
@@ -1691,14 +1692,13 @@ public final class SQLUtils {
             updateFields.add(setDefault ? "DEFAULT" : ":" + replaceWhitespace(column.getName()));
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO ").append(format(name.trim(), dc)).append(" (\n\t");
-        sb.append(String.join(",\n\t", getFormattedColumnsNames(columns, dc)));
-        sb.append("\n) VALUES (\n\t");
-        sb.append(String.join(",\n\t", updateFields));
-        sb.append("\n);\n");
+        String sb = "INSERT INTO " + format(name.trim(), dc) + " (\n\t" +
+                String.join(",\n\t", getFormattedColumnsNames(columns, dc)) +
+                "\n) VALUES (\n\t" +
+                String.join(",\n\t", updateFields) +
+                "\n);\n";
 
-        return sb.toString();
+        return sb;
     }
 
     public static String generateCreateTriggerStatement(
@@ -1729,7 +1729,8 @@ public final class SQLUtils {
         } else if (!MiscUtils.isNull(sourceCode))
             sb.append(sourceCode);
 
-        sb.append("^\n");
+        if (setTerm)
+            sb.append("^\n");
 
         if (!MiscUtils.isNull(comment) && !comment.equals("")) {
             comment = comment.replace("'", "''");
@@ -1818,7 +1819,7 @@ public final class SQLUtils {
         }
 
         if (!argumentssBuilder.toString().isEmpty())
-            sb.append(argumentssBuilder.substring(0, argumentssBuilder.length() - 2));
+            sb.append(argumentssBuilder, 0, argumentssBuilder.length() - 2);
 
         sb.append("\nRETURNS\n");
 

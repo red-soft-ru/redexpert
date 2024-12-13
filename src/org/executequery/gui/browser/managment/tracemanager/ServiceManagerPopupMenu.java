@@ -1,7 +1,7 @@
 package org.executequery.gui.browser.managment.tracemanager;
 
 import org.executequery.gui.editor.ResultSetTablePopupMenu;
-import org.executequery.gui.exportData.ExportDataPanel;
+import org.executequery.gui.export.ExportDataPanel;
 import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.actions.ReflectiveAction;
 import org.underworldlabs.swing.menu.MenuItemFactory;

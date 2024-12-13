@@ -9,7 +9,6 @@ import org.executequery.log.Log;
 import org.underworldlabs.util.DynamicLibraryLoader;
 
 import java.io.*;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,14 +46,22 @@ public final class LibraryManager {
 
         List<Path> jarPathsList = getJarPathsList(connection, driverVersion);
         Path fbClientJarPath = getFbClientJarPath(jarPathsList);
-        Path fbClientExtractedPath = checkExtractFbClient(fbClientJarPath, driverVersion);
-        String jnaLibraryPath = buildJnaLibraryPath(fbClientExtractedPath);
 
-        Log.info("Attempting to set jna.library.path to: " + jnaLibraryPath);
+        Path fbClientDirectory = getFbClientDirectory(fbClientJarPath);
+        if (fbClientDirectory == null || !Files.exists(fbClientDirectory)) {
+            Log.info("Extracting fbclient to: " + fbClientDirectory);
+            checkExtractFbClient(fbClientJarPath, fbClientDirectory, driverVersion);
+        }
 
-        System.setProperty("jna.library.path", jnaLibraryPath != null ? jnaLibraryPath : "");
-        System.setProperty("jna.platform.library.path", "");
-        System.setProperty("jna.debug_load", "true");
+        String jnaLibraryPath = buildJnaLibraryPath(fbClientDirectory);
+        String lastJnaLibraryPath = System.getProperty("jna.library.path");
+
+        if (!Objects.equals(jnaLibraryPath, lastJnaLibraryPath)) {
+            Log.info("Attempting to set jna.library.path to: " + jnaLibraryPath);
+            System.setProperty("jna.library.path", jnaLibraryPath != null ? jnaLibraryPath : "");
+            System.setProperty("jna.platform.library.path", "");
+            System.setProperty("jna.debug_load", "true");
+        }
     }
 
     /**
@@ -136,37 +143,25 @@ public final class LibraryManager {
      *
      * @param fbClientJarPath path to the <code>fbclient-n.jar</code> file to extract
      * @param driverVersion   driver version in use
-     * @return path to the extracted fbclient library or <code>null</code>
      */
-    private static Path checkExtractFbClient(Path fbClientJarPath, int driverVersion) {
+    private static void checkExtractFbClient(Path fbClientJarPath, Path fbClientDirectory, int driverVersion) {
 
         if (fbClientJarPath == null) {
             Log.info("Couldn't extract fbclient, file not found");
-            return null;
+            return;
         }
 
         Path tmpDirectory = ExecuteQuery.TMP_APP_DIR;
         if (checkCreateDirectory(tmpDirectory) == NOT_CREATED)
-            return null;
+            return;
 
-        String fbClientDirectoryName = FilenameUtils.removeExtension(fbClientJarPath.getFileName().toString());
-        Path fbClientDirectory = Paths.get(tmpDirectory.toString(), fbClientDirectoryName);
-
-        int createFbClientDirectoryResult = checkCreateDirectory(fbClientDirectory);
-        if (createFbClientDirectoryResult == EXISTS)
-            return fbClientDirectory;
-
-        if (createFbClientDirectoryResult == CREATED) {
+        if (checkCreateDirectory(fbClientDirectory) == CREATED) {
             extractFbClient(
                     fbClientJarPath,
                     fbClientDirectory.toString(),
                     getPlatformName(driverVersion)
             );
-
-            return fbClientDirectory;
         }
-
-        return null;
     }
 
     /**
@@ -192,7 +187,7 @@ public final class LibraryManager {
                     createDirectory(outputFile);
 
                 } else {
-                    Log.info("Extracting: " + entryName);
+                    Log.debug("Extracting: " + entryName);
                     createFile(jarFile, jarEntry, outputFile);
                 }
             }
@@ -251,6 +246,15 @@ public final class LibraryManager {
         return LINUX_X84_64;
     }
 
+    private static Path getFbClientDirectory(Path fbClientJarPath) {
+
+        if (fbClientJarPath == null)
+            return null;
+
+        String directoryName = FilenameUtils.removeExtension(fbClientJarPath.getFileName().toString());
+        return Paths.get(ExecuteQuery.TMP_APP_DIR.toString(), directoryName);
+    }
+
     private static boolean isFbClient(Path path) {
         return path.getFileName().toString().startsWith("fbclient");
     }
@@ -260,18 +264,18 @@ public final class LibraryManager {
     private static String getEntryName(String platform, JarEntry jarEntry) {
 
         String entryName = jarEntry.getName();
-        if (!entryName.contains(platform))
-            return null;
+        if (entryName.contains(platform))
+            return entryName.replace(platform, "").trim();
 
-        entryName = entryName.replace(platform, "").trim();
-        if (entryName.isEmpty() || Objects.equals(entryName, FileSystems.getDefault().getSeparator()))
-            return null;
-
-        return entryName;
+        return null;
     }
 
     private static void createDirectory(File file) throws IOException {
-        Log.info("Creating directory: " + file.getAbsolutePath());
+
+        if (Files.exists(file.toPath().toAbsolutePath()))
+            return;
+
+        Log.debug("Creating directory: " + file.getAbsolutePath());
         if (!file.mkdir())
             throw new IOException("Couldn't create directory [" + file.getAbsolutePath() + "]");
     }

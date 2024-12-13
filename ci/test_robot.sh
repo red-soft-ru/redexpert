@@ -27,7 +27,7 @@ git clone -q http://git.red-soft.biz/red-database/re-tests-robot
 
 echo "Installing components"
 $PYTHON -m pip install git+http://git.red-soft.biz/red-database/python/red-database-python-driver.git
-$PYTHON -m pip install robotframework
+$PYTHON -m pip install robotframework psutil
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/RedDatabase/lib
 

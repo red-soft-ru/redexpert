@@ -40,6 +40,7 @@ import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.tree.TreeNode;
+import java.sql.ResultSet;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -211,6 +212,7 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     private transient PasswordEncoderDecoder encoderDecoder;
 
     TreeSet<String> keywords;
+    TreeSet<String> reservedKeywords;
     String serverName;
 
     private boolean namesToUpperCase = true;
@@ -877,9 +879,44 @@ public class DefaultDatabaseConnection implements DatabaseConnection {
     public TreeSet<String> getKeywords() {
         if (keywords == null) {
             keywords = new TreeSet<String>();
-            keywords.addAll(keywords().getServerKeywords(getMajorServerVersion(), getMinorServerVersion(), getServerName()));
+            if (getMajorServerVersion() >= 5) {
+                DefaultStatementExecutor querySender = new DefaultStatementExecutor(this);
+                try {
+                    ResultSet rs = querySender.getResultSet("SELECT K.RDB$KEYWORD_NAME FROM RDB$KEYWORDS K").getResultSet();
+                    while (rs.next()) {
+                        keywords.add(MiscUtils.trimEnd(rs.getString(1)));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    querySender.releaseResources();
+                }
+
+            } else
+                keywords.addAll(keywords().getServerKeywords(getMajorServerVersion(), getMinorServerVersion(), getServerName()));
         }
         return keywords;
+    }
+
+    public TreeSet<String> getReservedKeywords() {
+        if (reservedKeywords == null) {
+            reservedKeywords = new TreeSet<String>();
+            if (getMajorServerVersion() >= 5) {
+                DefaultStatementExecutor querySender = new DefaultStatementExecutor(this);
+                try {
+                    ResultSet rs = querySender.getResultSet("SELECT K.RDB$KEYWORD_NAME FROM RDB$KEYWORDS K WHERE K.RDB$KEYWORD_RESERVED=TRUE").getResultSet();
+                    while (rs.next()) {
+                        reservedKeywords.add(MiscUtils.trimEnd(rs.getString(1)));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    querySender.releaseResources();
+                }
+            } else
+                reservedKeywords.addAll(keywords().getServerReservedKeywords(getMajorServerVersion(), getMinorServerVersion(), getServerName()));
+        }
+        return reservedKeywords;
     }
 
     @Override

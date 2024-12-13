@@ -14,7 +14,7 @@
         <groupId>org.executequery</groupId>
         <artifactId>RedExpert-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>2024.11</version>
+        <version>2024.12</version>
     </parent>
 
     <dependencies>
@@ -28,19 +28,19 @@
         <dependency>
             <groupId>org.executequery</groupId>
             <artifactId>fbclient-3</artifactId>
-            <version>3.0.17</version>
+            <version>${fbclient3.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.executequery</groupId>
             <artifactId>fbclient-4</artifactId>
-            <version>4.0.0</version>
+            <version>${fbclient4.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.executequery</groupId>
             <artifactId>fbclient-5</artifactId>
-            <version>5.0.0-rc.5</version>
+            <version>${fbclient5.version}</version>
         </dependency>
 
         <dependency>
@@ -312,6 +312,9 @@
                                 <resource>
                                     <directory>${pom.basedir}/../../lib</directory>
                                     <includes>
+                                        <include>fbclient-3.jar</include>
+                                        <include>fbclient-4.jar</include>
+                                        <include>fbclient-5.jar</include>
                                         <include>fbplugin-impl.jar</include>
                                         <include>fbplugin-impl5.jar</include>
                                         <include>jdbc-logger.jar</include>
@@ -391,18 +394,6 @@
                         </goals>
                         <configuration>
                             <excludeArtifactIds>fbclient-3,fbclient-4,fbclient-5</excludeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-fbclient-libs</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <stripVersion>true</stripVersion>
-                            <includeArtifactIds>fbclient-3,fbclient-4,fbclient-5</includeArtifactIds>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>

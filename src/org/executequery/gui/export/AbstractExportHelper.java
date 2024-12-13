@@ -1,4 +1,4 @@
-package org.executequery.gui.exportData;
+package org.executequery.gui.export;
 
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.Blob;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,6 +42,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
 
             @Override
             public Object construct() {
+                extractExportParameters();
 
                 if (data instanceof ResultSet)
                     exportResultSet((ResultSet) data);
@@ -64,6 +62,8 @@ public abstract class AbstractExportHelper implements ExportHelper {
         progressDialog.run();
     }
 
+    abstract void extractExportParameters();
+
     abstract void exportResultSet(ResultSet resultSet);
 
     abstract void exportTableModel(TableModel tableModel);
@@ -77,13 +77,13 @@ public abstract class AbstractExportHelper implements ExportHelper {
         if (value instanceof RecordDataItem) {
             RecordDataItem recordDataItem = (RecordDataItem) value;
             if (!recordDataItem.isValueNull())
-                formattedValue = recordDataItem.getDisplayValue().toString().replaceAll("'", "''");
+                formattedValue = recordDataItem.getDisplayValue().toString().replace("'", "''");
 
         } else if (value != null)
-            formattedValue = value.toString().replaceAll("'", "''");
+            formattedValue = value.toString().replace("'", "''");
 
         if (!formattedValue.isEmpty() && endlReplacement != null)
-            formattedValue = formattedValue.replaceAll("\n", endlReplacement);
+            formattedValue = formattedValue.replace("\n", endlReplacement);
 
         return formattedValue;
     }
@@ -113,7 +113,9 @@ public abstract class AbstractExportHelper implements ExportHelper {
 
         } else if (value instanceof ColumnData) {
             return ((ColumnData) value).isChar();
-        } else return value instanceof String;
+        }
+
+        return value instanceof String;
     }
 
     protected final boolean isDateType(Object value) {
@@ -126,7 +128,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
             return ((ColumnData) value).isDate();
         }
 
-        return false;
+        return value instanceof Timestamp;
     }
 
     protected final boolean isFieldSelected(int col) {
@@ -203,6 +205,34 @@ public abstract class AbstractExportHelper implements ExportHelper {
         }
 
         return stringValue;
+    }
+
+    // --- extract headers methods ---
+
+    protected List<String> getHeaders(Object columnData, int columnCount) {
+
+        List<String> columnNames = new LinkedList<>();
+        for (int i = 0; i < columnCount; i++)
+            if (isFieldSelected(i))
+                columnNames.add(getColumnName(columnData, i));
+
+        return columnNames;
+    }
+
+    private static String getColumnName(Object columnData, int col) {
+        try {
+
+            if (columnData instanceof ResultSetMetaData)
+                return ((ResultSetMetaData) columnData).getColumnName(col + 1);
+
+            if (columnData instanceof TableModel)
+                return ((TableModel) columnData).getColumnName(col);
+
+        } catch (SQLException e) {
+            Log.error(e.getMessage(), e);
+        }
+
+        return null;
     }
 
     // ---

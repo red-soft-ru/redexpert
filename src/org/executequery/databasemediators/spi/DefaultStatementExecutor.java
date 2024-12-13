@@ -27,8 +27,10 @@ import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databasemediators.ProcedureParameterSorter;
 import org.executequery.databasemediators.QueryTypes;
+import org.executequery.databaseobjects.DatabaseExecutable;
+import org.executequery.databaseobjects.DatabaseHost;
+import org.executequery.databaseobjects.ProcedureParameter;
 import org.executequery.databaseobjects.Types;
-import org.executequery.databaseobjects.*;
 import org.executequery.databaseobjects.impl.DatabaseObjectFactoryImpl;
 import org.executequery.datasource.ConnectionManager;
 import org.executequery.gui.editor.autocomplete.Parameter;
@@ -493,11 +495,10 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             hasOut = !(outs.isEmpty());
             procQuery = sb.toString();
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{ call ");
-            sb.append(databaseExecutable.getName()).append("( ) }");
+            String sb = "{ call " +
+                    databaseExecutable.getName() + "( ) }";
 
-            procQuery = sb.toString();
+            procQuery = sb;
         }
 
         //Log.debug(procQuery);
@@ -1039,6 +1040,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.CREATE_OR_ALTER:
             case QueryTypes.ALTER_OBJECT:
             case QueryTypes.DECLARE_OBJECT:
+            case QueryTypes.SET_STATISTICS:
                 return executeDDL(query);
 
             case QueryTypes.UNKNOWN:
@@ -1351,6 +1353,7 @@ public class DefaultStatementExecutor implements StatementExecutor, Serializable
             case QueryTypes.CREATE_OR_ALTER:
             case QueryTypes.ALTER_OBJECT:
             case QueryTypes.DECLARE_OBJECT:
+            case QueryTypes.SET_STATISTICS:
                 return executeDDL(statement);
 
             case QueryTypes.UNKNOWN:

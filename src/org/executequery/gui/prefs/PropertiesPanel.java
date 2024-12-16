@@ -89,10 +89,9 @@ public class PropertiesPanel extends JPanel
     private final ActionContainer parent;
     private final Map<String, PreferenceChangeEvent> preferenceChangeEvents;
 
-    private static boolean hasChanges;
     private static boolean updateEnvNeed;
     private static Integer lastSelectedNode = -1;
-    private static List<Class<?>> classesNeedRestart;
+    private static Map<Class<?>, Boolean> classesThatHasChanges;
 
     /**
      * Constructs a new instance.
@@ -106,7 +105,7 @@ public class PropertiesPanel extends JPanel
 
         this.parent = parent;
         this.preferenceChangeEvents = new HashMap<>();
-        restoreRestartNeed();
+        restoreHasChanges();
         restoreUpdateEnvNeed();
 
         init();
@@ -332,36 +331,37 @@ public class PropertiesPanel extends JPanel
             entry.getValue().preferenceChange(e);
 
         preferenceChangeEvents.put(e.getKey(), e);
-        setRestartNeed(e.getKey(), e.getSource().getClass());
+        setHasChanges(e.getKey(), e.getSource().getClass());
     }
 
     public void save(boolean isApplyAction) {
+        Class<?> clazz = currentlySelectedPanel.getClass();
 
         try {
             GUIUtilities.showWaitCursor();
-            boolean restartNeed = isRestartNeed();
+            boolean hasChanges = hasChanges();
+            boolean restartNeed = needRestart();
 
             if (isApplyAction) {
                 currentlySelectedPanel.save();
-                restartNeed &= isRestartNeed(currentlySelectedPanel.getClass());
+                hasChanges &= hasChanges(clazz);
+                restartNeed &= needRestart(clazz);
 
             } else
                 panelMap.values().forEach(UserPreferenceFunction::save);
 
             ThreadUtils.invokeLater(() -> EventMediator.fireEvent(createUserPreferenceEvent()));
 
+            restoreHasChanges(clazz);
+            if (!isApplyAction)
+                restoreHasChanges();
+
             if (restartNeed) {
-
-                restoreRestartNeed(currentlySelectedPanel.getClass());
-                if (!isApplyAction)
-                    restoreRestartNeed();
-
                 if (GUIUtilities.displayConfirmDialog(bundledString("restart-message")) == JOptionPane.YES_OPTION)
                     ExecuteQuery.restart(ApplicationContext.getInstance().getRepo(), updateEnvNeed, true);
 
-            } else if (isHasChanges()) {
+            } else if (hasChanges) {
                 GUIUtilities.displayInformationMessage(bundledString("setting-applied"));
-                setHasChanges(false);
             }
 
         } finally {
@@ -373,7 +373,7 @@ public class PropertiesPanel extends JPanel
     }
 
     private void cancel() {
-        setHasChanges(false);
+        restoreHasChanges();
         parent.finished();
     }
 
@@ -381,36 +381,41 @@ public class PropertiesPanel extends JPanel
         return new DefaultUserPreferenceEvent(this, null, UserPreferenceEvent.ALL);
     }
 
-    public static void setHasChanges(boolean hasChanges) {
-        PropertiesPanel.hasChanges = hasChanges;
+    // --- has changes ---
+
+    public static boolean hasChanges() {
+        return classesThatHasChanges != null && !classesThatHasChanges.isEmpty();
     }
 
-    public static boolean isHasChanges() {
-        return hasChanges;
+    public static boolean hasChanges(Class<?> clazz) {
+        return hasChanges() && classesThatHasChanges.containsKey(clazz);
     }
 
-    private boolean isRestartNeed() {
-        return !classesNeedRestart.isEmpty();
+    private static boolean needRestart() {
+        return hasChanges() && classesThatHasChanges.values().stream().anyMatch(val -> val);
     }
 
-    private boolean isRestartNeed(Class<?> className) {
-        return classesNeedRestart.contains(className);
+    private static boolean needRestart(Class<?> clazz) {
+        return hasChanges(clazz) && classesThatHasChanges.get(clazz);
     }
 
-    public static void setRestartNeed(String key, Class<?> className) {
+    public static void setHasChanges(String key, Class<?> clazz) {
 
-        boolean restartNeed = PROPERTIES_KEYS_NEED_RESTART.stream().anyMatch(propertyKey -> propertyKey.equals(key));
-        if (restartNeed && !classesNeedRestart.contains(className))
-            classesNeedRestart.add(className);
+        boolean restartNeed = PROPERTIES_KEYS_NEED_RESTART.stream().anyMatch(pref -> pref.equals(key));
+        restartNeed |= hasChanges(clazz) && classesThatHasChanges.get(clazz);
+
+        classesThatHasChanges.put(clazz, restartNeed);
     }
 
-    private static void restoreRestartNeed() {
-        PropertiesPanel.classesNeedRestart = new ArrayList<>();
+    private static void restoreHasChanges() {
+        PropertiesPanel.classesThatHasChanges = new HashMap<>();
     }
 
-    private static void restoreRestartNeed(Class<?> className) {
-        PropertiesPanel.classesNeedRestart.remove(className);
+    private static void restoreHasChanges(Class<?> clazz) {
+        PropertiesPanel.classesThatHasChanges.remove(clazz);
     }
+
+    // --- update ENV need ---
 
     public static void setUpdateEnvNeed(boolean updateEnvNeed) {
         PropertiesPanel.updateEnvNeed = PropertiesPanel.updateEnvNeed || updateEnvNeed;
@@ -419,6 +424,8 @@ public class PropertiesPanel extends JPanel
     private static void restoreUpdateEnvNeed() {
         PropertiesPanel.updateEnvNeed = false;
     }
+
+    // ---
 
     private String bundledString(String key) {
         return Bundles.get("preferences." + key);

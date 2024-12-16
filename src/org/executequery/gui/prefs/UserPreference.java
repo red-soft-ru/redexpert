@@ -164,10 +164,8 @@ public class UserPreference {
 
     public void reset(Object value, Class<?> clazz) {
 
-        if (!Objects.equals(this.value, value)) {
-            PropertiesPanel.setRestartNeed(key, clazz);
-            PropertiesPanel.setHasChanges(true);
-        }
+        if (!Objects.equals(this.value, value))
+            PropertiesPanel.setHasChanges(key, clazz);
 
         if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
 
@@ -191,8 +189,8 @@ public class UserPreference {
             this.value = value;
     }
 
-    public void setValue(Object value) {
-        PropertiesPanel.setHasChanges(true);
+    public void setValue(Object value, Class<?> clazz) {
+        PropertiesPanel.setHasChanges(key, clazz);
         this.value = value;
     }
 

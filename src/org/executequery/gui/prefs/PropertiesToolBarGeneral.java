@@ -100,7 +100,7 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
 
     @Override
     public void restoreDefaults() {
-        Arrays.stream(preferencesPanel.getPreferences()).forEach(pref -> pref.setValue(true));
+        Arrays.stream(preferencesPanel.getPreferences()).forEach(pref -> pref.setValue(true, PropertiesToolBarGeneral.class));
         preferencesPanel.repaint();
     }
 

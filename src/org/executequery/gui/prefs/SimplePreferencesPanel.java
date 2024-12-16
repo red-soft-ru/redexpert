@@ -524,7 +524,7 @@ public class SimplePreferencesPanel extends JPanel
         @Override
         public void setValueAt(Object value, int row, int column) {
             UserPreference preference = preferences[row];
-            preference.setValue(value);
+            preference.setValue(value, parentClass);
             fireTableCellUpdated(row, column);
         }
 

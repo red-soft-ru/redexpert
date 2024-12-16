@@ -545,7 +545,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
 
             Properties defaults = defaultsForTheme();
             for (UserPreference userPreference : coloursPreferences)
-                userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())));
+                userPreference.setValue(asColour(defaults.getProperty(userPreference.getKey())), PropertiesEditorColours.class);
             fireTableDataChanged();
         }
 
@@ -556,7 +556,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
             String property = defaults.getProperty(userPreference.getKey());
 
             try {
-                userPreference.setValue(asColour(property));
+                userPreference.setValue(asColour(property), PropertiesEditorColours.class);
 
             } catch (NumberFormatException e) {
                 Log.error("Unable to set up default color, loaded property [" + property + "] could not convert to Integer");
@@ -609,7 +609,7 @@ public class PropertiesEditorColours extends AbstractPropertiesColours
         @Override
         public void setValueAt(Object value, int row, int column) {
             UserPreference preference = coloursPreferences.get(row);
-            preference.setValue(value);
+            preference.setValue(value, PropertiesEditorColours.class);
             sampleTextPanel.repaint();
             fireTableRowsUpdated(row, row);
         }

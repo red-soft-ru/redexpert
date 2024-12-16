@@ -125,7 +125,7 @@ abstract class AbstractPropertiesBasePanel extends JPanel
 
     @Override
     public void preferenceChange(PreferenceChangeEvent e) {
-        PropertiesPanel.setRestartNeed(e.getKey(), e.getSource().getClass());
+        PropertiesPanel.setHasChanges(e.getKey(), e.getSource().getClass());
     }
 
     // --- PreferenceTableModelListener impl ---

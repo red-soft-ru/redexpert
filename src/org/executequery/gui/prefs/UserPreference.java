@@ -191,6 +191,9 @@ public class UserPreference {
                 if (availableValues != null) {
 
                     if (saveActual && value != null) {
+                        if (value instanceof LabelValuePair)
+                            return ((LabelValuePair) value).getValue().toString();
+
                         return value.toString();
                     }
 

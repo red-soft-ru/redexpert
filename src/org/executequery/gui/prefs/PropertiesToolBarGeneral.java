@@ -20,24 +20,16 @@
 
 package org.executequery.gui.prefs;
 
-
 import org.executequery.toolbars.ToolBarManager;
 import org.underworldlabs.swing.toolbar.ToolBarProperties;
+import org.underworldlabs.swing.toolbar.ToolBarWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
-/* ----------------------------------------------------------
- * CVS NOTE: Changes to the CVS repository prior to the
- *           release of version 3.0.0beta1 has meant a
- *           resetting of CVS revision numbers.
- * ----------------------------------------------------------
- */
-
 /**
- * <p>The tool bar general properties panel.
+ * The toolbar general properties panel.
  *
  * @author Takis Diakoumis
  */
@@ -45,83 +37,69 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
 
     private SimplePreferencesPanel preferencesPanel;
 
-    /**
-     * <p>Constructs a new instance.
-     */
     public PropertiesToolBarGeneral(PropertiesPanel parent) {
         super(parent);
         init();
     }
 
-    /**
-     * <p>Initializes the state of this instance.
-     */
     private void init() {
-
-        List<UserPreference> list = new ArrayList<UserPreference>();
+        List<UserPreference> list = new ArrayList<>();
 
         list.add(new UserPreference(
                 UserPreference.CATEGORY_TYPE,
                 null,
                 bundledStaticString("Visibility"),
-                null));
+                null
+        ));
 
         String key = ToolBarManager.DATABASE_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledStaticString("DatabaseToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                getToolBar(key).isVisible()
+        ));
 
         key = ToolBarManager.APPLICATION_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledStaticString("ApplicationToolBar"),
-                Objects.requireNonNull(ToolBarProperties.getToolBar(key)).isVisible()));
+                getToolBar(key).isVisible()
+        ));
 
         key = ToolBarManager.SYSTEM_TOOLS;
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,
                 key,
                 bundledStaticString("SystemToolBar"),
-                Boolean.valueOf(ToolBarProperties.getToolBar(key).isVisible())));
+                getToolBar(key).isVisible()
+        ));
 
-        UserPreference[] preferences =
-                list.toArray(new UserPreference[list.size()]);
+        UserPreference[] preferences = list.toArray(new UserPreference[0]);
         preferencesPanel = new SimplePreferencesPanel(preferences);
         addContent(preferencesPanel);
     }
 
-    public void restoreDefaults() {
-        preferencesPanel.restoreDefaults();
+    private static ToolBarWrapper getToolBar(String toolbarName) {
+        return Objects.requireNonNull(ToolBarProperties.getToolBar(toolbarName));
     }
 
+    // --- UserPreferenceFunction impl ---
+
+    @Override
     public void save() {
-        UserPreference[] preferences = preferencesPanel.getPreferences();
-        for (int i = 0; i < preferences.length; i++) {
-            if (preferences[i].getType() != UserPreference.CATEGORY_TYPE) {
-                boolean value = Boolean.valueOf(
-                        preferences[i].getValue().toString()).booleanValue();
-                ToolBarProperties.getToolBar(
-                        preferences[i].getKey()).setVisible(value);
+        for (UserPreference preference : preferencesPanel.getPreferences()) {
+            if (preference.getType() != UserPreference.CATEGORY_TYPE) {
+                boolean value = Boolean.parseBoolean(preference.getValue().toString());
+                getToolBar(preference.getKey()).setVisible(value);
             }
         }
     }
 
+    @Override
+    public void restoreDefaults() {
+        preferencesPanel.restoreDefaults();
+    }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

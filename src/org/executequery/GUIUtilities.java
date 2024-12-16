@@ -42,7 +42,6 @@ import org.executequery.http.ReddatabaseAPI;
 import org.executequery.io.RecentFileIOListener;
 import org.executequery.listeners.*;
 import org.executequery.localization.Bundles;
-import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
 import org.executequery.print.PrintFunction;
 import org.executequery.repository.*;
@@ -197,12 +196,11 @@ public final class GUIUtilities {
         // set up the default docked tabs and their positions
         setDockedTabViews(false);
 
-        if (SystemProperties.getBooleanProperty("user", "startup.connection.connect")
-                && !SystemProperties.getBooleanProperty("user", "editor.open.on-connect")) {
-
-            // add a query editor
+        String startupConnection = SystemProperties.getStringProperty("user", "startup.connection");
+        boolean openEditorOnConnect = SystemProperties.getBooleanProperty("user", "editor.open.on-connect");
+        String defaultStartupConnection = SystemProperties.getStringProperty("default", "startup.connection");
+        if (!Objects.equals(startupConnection, defaultStartupConnection) && !openEditorOnConnect)
             addCentralPane(QueryEditor.TITLE, QueryEditor.FRAME_ICON, new QueryEditor(), null, false);
-        }
 
         // divider locations
         setDividerLocations();

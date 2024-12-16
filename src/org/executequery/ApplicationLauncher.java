@@ -159,9 +159,6 @@ public class ApplicationLauncher {
             String fileForOpenPath = ApplicationContext.getInstance().getFileForOpenPath();
             boolean needOpenConnectionByFile = StringUtils.isNotBlank(fileForOpenPath);
 
-            boolean needAutoLogin =
-                    booleanUserProperty("startup.connection.connect");
-
             advanceSplash(splash);
 
             printVersionInfo();
@@ -219,12 +216,11 @@ public class ApplicationLauncher {
                     }
                 }
 
-                // auto-login if selected
-                if (needAutoLogin) {
+                String startupConnection = stringUserProperty("startup.connection");
+                String defaultStartupConnection = stringDefaultProperty("startup.connection");
+                if (!Objects.equals(startupConnection, defaultStartupConnection))
+                    openStartupConnection(databaseConnectionRepository().findById(startupConnection));
 
-                    openStartupConnection(
-                        databaseConnectionRepository().findByName(stringUserProperty("startup.connection.name")));
-                }
                 QueryEditorHistory.restoreTabs(null);
 
                 doCheckForUpdate();
@@ -441,6 +437,11 @@ public class ApplicationLauncher {
     private String stringUserProperty(String key) {
 
         return userProperties().getProperty(key);
+    }
+
+    private String stringDefaultProperty(String key) {
+
+        return SystemProperties.getStringProperty("default", key);
     }
 
     private String stringApplicationProperty(String key) {

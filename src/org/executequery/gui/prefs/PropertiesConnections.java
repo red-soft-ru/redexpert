@@ -20,12 +20,12 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.log.Log;
 import org.executequery.repository.DatabaseConnectionRepository;
 import org.executequery.repository.Repository;
 import org.executequery.repository.RepositoryCache;
 import org.underworldlabs.util.FileUtils;
+import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
 
 import java.io.IOException;
@@ -57,21 +57,13 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 null
         ));
 
-        key = "startup.connection.connect";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("ConnectAtStartup"),
-                Boolean.valueOf(SystemProperties.getProperty("user", key))
-        ));
-
-        key = "startup.connection.name";
+        key = "startup.connection";
         list.add(new UserPreference(
                 UserPreference.STRING_TYPE,
                 key,
                 bundledStaticString("StartupConnection"),
                 SystemProperties.getProperty("user", key),
-                connectionNames()
+                availableConnections()
         ));
 
         key = "connection.connect.timeout";
@@ -199,21 +191,20 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
         addContent(preferencesPanel);
     }
 
-    private String[] connectionNames() {
+    private Object[] availableConnections() {
+
+        List<LabelValuePair> values = new ArrayList<>();
+        values.add(new LabelValuePair("do-not-connect", bundledStaticString("do-not-connect")));
 
         Repository repo = RepositoryCache.load(DatabaseConnectionRepository.REPOSITORY_ID);
-        if (repo == null)
-            return null;
+        if (repo instanceof DatabaseConnectionRepository) {
+            ((DatabaseConnectionRepository) repo).findAll().stream()
+                    .map(dc -> new LabelValuePair(dc.getId(), dc.getName()))
+                    .forEach(values::add);
+        }
 
-        List<DatabaseConnection> connections = ((DatabaseConnectionRepository) repo).findAll();
-        String[] connectionNames = new String[connections.size()];
-
-        for (int i = 0; i < connectionNames.length; i++)
-            connectionNames[i] = connections.get(i).getName();
-
-        return connectionNames;
+        return values.toArray(new Object[0]);
     }
-
 
     private String[] availableCharsets() {
         List<String> available = new ArrayList<>();

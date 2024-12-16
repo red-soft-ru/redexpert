@@ -171,8 +171,14 @@ public class UserPreference {
             try {
                 int index = Integer.parseInt(savedValue);
                 this.value = availableValues[index];
+
             } catch (NumberFormatException e) {
-                this.value = value;
+                for (Object availableValue : availableValues) {
+                    if (valueOf(availableValue).equals(value)) {
+                        this.value = availableValue;
+                        break;
+                    }
+                }
             }
 
         } else

@@ -238,7 +238,7 @@ public class PropertiesGeneral extends AbstractPropertiesBasePanel {
                 stringUserProperty(key)
         ));
 
-        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]), getClass());
         addContent(preferencesPanel);
     }
 

@@ -101,6 +101,8 @@ public class SimplePreferencesPanel extends JPanel
 
     private List<PreferenceTableModelListener> listeners;
 
+    private Class<?> parentClass;
+
     static {
 
         GRID_COLOR = UIManager.getColor("Table.gridColor");// Color.LIGHT_GRAY;
@@ -110,10 +112,10 @@ public class SimplePreferencesPanel extends JPanel
     /**
      * Creates a new instance of SimplePreferencesPanel
      */
-    public SimplePreferencesPanel(UserPreference[] preferences) {
-
+    public SimplePreferencesPanel(UserPreference[] preferences, Class<?> parentClass) {
         super(new BorderLayout());
         this.preferences = preferences;
+        this.parentClass = parentClass;
 
         listeners = new ArrayList<>();
 
@@ -326,21 +328,21 @@ public class SimplePreferencesPanel extends JPanel
                 case UserPreference.INTEGER_TYPE:
                 case UserPreference.FILE_TYPE:
                 case UserPreference.DIR_TYPE:
-                    preference.reset(getDefaultStringValue(preference));
+                    preference.reset(getDefaultStringValue(preference), parentClass);
                     if (Objects.equals(preference.getKey(), "startup.java.path"))
                         JavaFileProperty.restore();
                     break;
 
                 case UserPreference.ENUM_TYPE:
-                    preference.reset(getDefaultEnumValue(preference));
+                    preference.reset(getDefaultEnumValue(preference), parentClass);
                     break;
 
                 case UserPreference.BOOLEAN_TYPE:
-                    preference.reset(getDefaultBooleanValue(preference));
+                    preference.reset(getDefaultBooleanValue(preference), parentClass);
                     break;
 
                 case UserPreference.COLOUR_TYPE:
-                    preference.reset(getDefaultColorValue(preference));
+                    preference.reset(getDefaultColorValue(preference), parentClass);
                     break;
             }
         }

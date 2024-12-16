@@ -78,7 +78,7 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
         ));
 
         UserPreference[] preferences = list.toArray(new UserPreference[0]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        preferencesPanel = new SimplePreferencesPanel(preferences, getClass());
         addContent(preferencesPanel);
     }
 

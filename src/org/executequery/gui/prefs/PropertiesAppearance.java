@@ -140,7 +140,7 @@ public class PropertiesAppearance extends AbstractPropertiesBasePanel {
                 LookAndFeelType.valueOf(stringUserProperty("startup.display.lookandfeel"))
         ));
 
-        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]), getClass());
         preferencesPanel.add(lafSelectionPanel, BorderLayout.SOUTH);
 
         addContent(preferencesPanel);

@@ -24,6 +24,7 @@ import org.executequery.Constants;
 import org.underworldlabs.util.LabelValuePair;
 
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * @author Takis Diakoumis
@@ -161,7 +162,12 @@ public class UserPreference {
         return value;
     }
 
-    public void reset(Object value) {
+    public void reset(Object value, Class<?> clazz) {
+
+        if (!Objects.equals(this.value, value)) {
+            PropertiesPanel.setRestartNeed(key, clazz);
+            PropertiesPanel.setHasChanges(true);
+        }
 
         if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
 

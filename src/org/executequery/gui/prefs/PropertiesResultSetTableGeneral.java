@@ -242,7 +242,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
                 SystemProperties.getProperty("user", key)
         ));
 
-        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]), getClass());
         addContent(preferencesPanel);
     }
 

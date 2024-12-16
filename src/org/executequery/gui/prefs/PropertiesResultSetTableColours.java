@@ -157,7 +157,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
                 SystemProperties.getColourProperty("user", key)));
 
         UserPreference[] preferences = list.toArray(new UserPreference[0]);
-        preferencesPanel = new SimplePreferencesPanel(preferences);
+        preferencesPanel = new SimplePreferencesPanel(preferences, getClass());
         addContent(preferencesPanel);
 
     }
@@ -169,7 +169,7 @@ public class PropertiesResultSetTableColours extends AbstractPropertiesColours {
         UserPreference[] preferences = preferencesPanel.getPreferences();
         for (UserPreference userPreference : preferences)
             if (userPreference.getType() == UserPreference.COLOUR_TYPE)
-                userPreference.reset(asColour(defaults.getProperty(userPreference.getKey())));
+                userPreference.reset(asColour(defaults.getProperty(userPreference.getKey())), getClass());
 
         preferencesPanel.fireTableDataChanged();
     }

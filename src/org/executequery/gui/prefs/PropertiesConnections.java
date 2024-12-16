@@ -187,7 +187,7 @@ public class PropertiesConnections extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
-        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]));
+        preferencesPanel = new SimplePreferencesPanel(list.toArray(new UserPreference[0]), getClass());
         addContent(preferencesPanel);
     }
 

@@ -84,11 +84,11 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
 
         selectedFontField = new JTextField();
         selectedFontField.setText(newFontName);
-        selectedFontField.addKeyListener(new KeyListenerImpl(fontList, fontNames));
+        selectedFontField.addKeyListener(new KeyListenerImpl(fontList, fontNames, getClass()));
 
         selectedSizeField = new NumberTextField();
         selectedSizeField.setText(newFontSize);
-        selectedSizeField.addKeyListener(new KeyListenerImpl(sizeList, Arrays.asList(fontSizes)));
+        selectedSizeField.addKeyListener(new KeyListenerImpl(sizeList, Arrays.asList(fontSizes), getClass()));
 
         sampleTextPanel = new SQLTextArea();
         sampleTextPanel.setText("Sample normal text");
@@ -170,6 +170,7 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
     public void restoreDefaults() {
         fontList.setSelectedValue(SystemProperties.getProperty("defaults", fontNameKey), true);
         sizeList.setSelectedValue(SystemProperties.getProperty("defaults", fontSizeKey), true);
+        PropertiesPanel.setHasChanges("", getClass());
     }
 
     @Override
@@ -181,13 +182,17 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
         selectedFontField.setText(fontList.getSelectedValue());
         selectedSizeField.setText(sizeList.getSelectedValue());
         updateSampleTextPanel();
+
+        PropertiesPanel.setHasChanges("", getClass());
     }
 
     private class KeyListenerImpl implements KeyListener {
+        private final Class<?> clazz;
         private final JList<String> targetList;
         private final List<String> availableValues;
 
-        public KeyListenerImpl(JList<String> targetList, List<String> availableValues) {
+        public KeyListenerImpl(JList<String> targetList, List<String> availableValues, Class<?> clazz) {
+            this.clazz = clazz;
             this.targetList = targetList;
             this.availableValues = availableValues;
         }
@@ -201,14 +206,17 @@ public class PropertiesEditorFonts extends AbstractPropertiesBasePanel
                 targetList.setSelectedValue(sourceText, true);
 
             updateSampleTextPanel();
+            PropertiesPanel.setHasChanges("", clazz);
         }
 
         @Override
         public void keyTyped(KeyEvent e) {
+            // do nothing
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
+            // do nothing
         }
 
     } // KeyListenerImpl class

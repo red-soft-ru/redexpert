@@ -20,7 +20,6 @@
 
 package org.executequery.gui.prefs;
 
-import org.executequery.GUIUtilities;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
@@ -101,6 +100,14 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         toolButtonModel = new ToolBarButtonModel();
         table = new JTable(toolButtonModel);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
+                super.mouseClicked(e);
+            }
+        });
+
         setTableProperties();
     }
 
@@ -201,6 +208,8 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         selections.add(newPosition, toolBarButton);
         table.setRowSelectionInterval(newPosition, newPosition);
         toolButtonModel.fireTableRowsUpdated(newPosition, selection);
+
+        PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
     }
 
     private void moveButtonDown() {
@@ -215,6 +224,8 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         selections.add(newPosition, toolBarButton);
         table.setRowSelectionInterval(newPosition, newPosition);
         toolButtonModel.fireTableRowsUpdated(selection, newPosition);
+
+        PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
     }
 
     private void addSeparator() {
@@ -235,6 +246,8 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         table.setRowSelectionInterval(selection, selection);
         checkEnableButtons();
+
+        PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
     }
 
     private void removeSeparator() {
@@ -252,6 +265,8 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         table.setRowSelectionInterval(selection, selection);
         checkEnableButtons();
+
+        PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
     }
 
     // --- UserPreferenceFunction impl ---
@@ -279,6 +294,7 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
         selections = toolBar.getButtonsVector();
         selections.sort(new ButtonComparator());
         toolButtonModel.fireTableRowsUpdated(0, selections.size() - 1);
+        PropertiesPanel.setHasChanges("", PropertiesToolBar.class);
     }
 
     // ---

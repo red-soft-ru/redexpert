@@ -169,6 +169,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         public void setShortcuts(Vector<ShortcutKey> shortcuts) {
             this.shortcuts = shortcuts;
             fireTableDataChanged();
+            PropertiesPanel.setHasChanges("", PropertiesKeyShortcuts.class);
         }
 
         public ShortcutKey getShortcut(int index) {
@@ -182,6 +183,7 @@ public class PropertiesKeyShortcuts extends AbstractPropertiesBasePanel
         public void updateShortcut(ShortcutKey shortcut, int row) {
             shortcuts.set(row, shortcut);
             fireTableRowsUpdated(row, row);
+            PropertiesPanel.setHasChanges("", PropertiesKeyShortcuts.class);
         }
 
         @Override

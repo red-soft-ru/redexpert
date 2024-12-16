@@ -25,6 +25,7 @@ import org.underworldlabs.swing.toolbar.ToolBarProperties;
 import org.underworldlabs.swing.toolbar.ToolBarWrapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -99,7 +100,8 @@ public class PropertiesToolBarGeneral extends AbstractPropertiesBasePanel {
 
     @Override
     public void restoreDefaults() {
-        preferencesPanel.restoreDefaults();
+        Arrays.stream(preferencesPanel.getPreferences()).forEach(pref -> pref.setValue(true));
+        preferencesPanel.repaint();
     }
 
 }

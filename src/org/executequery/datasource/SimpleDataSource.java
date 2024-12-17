@@ -109,7 +109,7 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
         } catch (SQLException e) {
 
             boolean isAuthException = e.getSQLState().contentEquals("28000") && e.getErrorCode() == 335544472;
-            if (isAuthException && !Objects.equals(databaseConnection.getAuthMethod(), GSS_AUTH)) {
+            if (isAuthException && !Objects.equals(databaseConnection.getAuthMethod(), GSS_AUTH_K)) {
                 databaseConnection.setPassword("");
                 dataSource = null;
 
@@ -150,10 +150,10 @@ public class SimpleDataSource implements DataSource, DatabaseDataSource {
     private boolean shouldShowAuthDialog() {
         boolean showDialog = false;
 
-        if (Objects.equals(databaseConnection.getAuthMethod(), BASIC_AUTH))
+        if (Objects.equals(databaseConnection.getAuthMethod(), BASIC_AUTH_K))
             showDialog = MiscUtils.isNull(databaseConnection.getUnencryptedPassword());
 
-        if (Objects.equals(databaseConnection.getAuthMethod(), MULTI_FACTOR_AUTH))
+        if (Objects.equals(databaseConnection.getAuthMethod(), MULTI_FACTOR_AUTH_K))
             showDialog = MiscUtils.isNull(databaseConnection.getUnencryptedPassword())
                     && MiscUtils.isNull(databaseConnection.getCertificate());
 

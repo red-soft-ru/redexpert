@@ -815,12 +815,12 @@ public class ConnectionPanel extends AbstractConnectionPanel {
         certField.setText(dc.getCertificate());
         useSshCheck.setSelected(dc.isSshTunnel());
         useNewApiCheck.setSelected(dc.useNewAPI());
-        authCombo.setSelectedItem(dc.getAuthMethod());
         charsetsCombo.setSelectedItem(dc.getCharset());
         storePasswordCheck.setSelected(dc.isPasswordStored());
         namesToUpperCheck.setSelected(dc.isNamesToUpperCase());
         contPasswordField.setPassword(dc.getContainerPassword());
         verifyCertCheck.setSelected(dc.isVerifyServerCertCheck());
+        authCombo.setSelectedItem(getAuthMethodFromConnection(dc));
         userPasswordField.setPassword(dc.getUnencryptedPassword());
         encryptPasswordCheck.setSelected(dc.isPasswordEncrypted());
         storeContPasswordCheck.setSelected(dc.isContainerPasswordStored());

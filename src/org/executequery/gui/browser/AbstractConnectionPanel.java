@@ -71,6 +71,10 @@ public abstract class AbstractConnectionPanel extends JPanel
     public static final String BASIC_AUTH = bundleString("BasicAu");
     public static final String MULTI_FACTOR_AUTH = bundleString("MultiFactor");
 
+    public static final String GSS_AUTH_K = "GSS";
+    public static final String BASIC_AUTH_K = "BASIC";
+    public static final String MULTI_FACTOR_AUTH_K = "MULTI_FACTOR";
+
     public static final String OLD_SERVER = "Red Database (Firebird) 2.X";
     public static final String NEW_SERVER = "Red Database (Firebird) 3+";
 
@@ -394,7 +398,7 @@ public abstract class AbstractConnectionPanel extends JPanel
         updateVisibleComponents();
 
         if (hasConnection()) {
-            connection.setAuthMethod((String) authCombo.getSelectedItem());
+            connection.setAuthMethod(getAuthMethodForConnection());
             storeJdbcProperties();
         }
     }
@@ -509,9 +513,9 @@ public abstract class AbstractConnectionPanel extends JPanel
         connection.setHost(hostField.getText());
         connection.setPort(portField.getText());
         connection.setUserName(userField.getText());
+        connection.setAuthMethod(getAuthMethodForConnection());
         connection.setPassword(userPasswordField.getPassword());
         connection.setPasswordStored(storePasswordCheck.isSelected());
-        connection.setAuthMethod((String) authCombo.getSelectedItem());
         connection.setCharset((String) charsetsCombo.getSelectedItem());
         connection.setPasswordEncrypted(encryptPasswordCheck.isSelected());
         connection.setAuthMethodMode((String) serverCombo.getSelectedItem());
@@ -814,6 +818,28 @@ public abstract class AbstractConnectionPanel extends JPanel
             defaultFileName = certField.getText().trim();
 
         return defaultFileName;
+    }
+
+    protected String getAuthMethodForConnection() {
+
+        String auth = (String) authCombo.getSelectedItem();
+        if (BASIC_AUTH.equals(auth))
+            return BASIC_AUTH_K;
+        if (GSS_AUTH.equals(auth))
+            return GSS_AUTH_K;
+
+        return MULTI_FACTOR_AUTH_K;
+    }
+
+    protected String getAuthMethodFromConnection(DatabaseConnection dc) {
+
+        String auth = dc.getAuthMethod();
+        if (BASIC_AUTH_K.equals(auth))
+            return BASIC_AUTH;
+        if (GSS_AUTH_K.equals(auth))
+            return GSS_AUTH;
+
+        return MULTI_FACTOR_AUTH;
     }
 
     protected boolean isGssAuthSelected() {

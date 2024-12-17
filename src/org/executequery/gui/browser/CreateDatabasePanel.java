@@ -235,9 +235,9 @@ public class CreateDatabasePanel extends AbstractConnectionPanel {
         databaseConnection.setCertificate(certField.getText());
         databaseConnection.setDriverId(databaseDriver.getId());
         databaseConnection.setDriverName(databaseDriver.getName());
+        databaseConnection.setAuthMethod(getAuthMethodForConnection());
         databaseConnection.setConnType(ConnectionType.PURE_JAVA.name());
         databaseConnection.setPasswordStored(storePasswordCheck.isSelected());
-        databaseConnection.setAuthMethod((String) authCombo.getSelectedItem());
         databaseConnection.setContainerPassword(contPasswordField.getPassword());
         databaseConnection.setVerifyServerCertCheck(verifyCertCheck.isSelected());
         databaseConnection.setAuthMethodMode((String) serverCombo.getSelectedItem());

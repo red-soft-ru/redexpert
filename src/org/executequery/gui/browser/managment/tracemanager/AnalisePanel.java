@@ -10,7 +10,10 @@ import org.executequery.gui.resultset.SimpleRecordDataItem;
 import org.executequery.gui.text.SimpleSqlTextPanel;
 import org.executequery.localization.Bundles;
 import org.executequery.sql.SqlMessages;
-import org.underworldlabs.swing.*;
+import org.underworldlabs.swing.ListSelectionPanel;
+import org.underworldlabs.swing.ListSelectionPanelEvent;
+import org.underworldlabs.swing.ListSelectionPanelListener;
+import org.underworldlabs.swing.NumberTextField;
 import org.underworldlabs.swing.celleditor.picker.TimestampPicker;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.util.SwingWorker;
@@ -599,7 +602,9 @@ public class AnalisePanel extends JPanel {
             if (value instanceof AnaliseRow.AnaliseValue) {
                 AnaliseRow.AnaliseValue analiseValue = (AnaliseRow.AnaliseValue) value;
                 setText(analiseValue.getDisplayValue(roundCheckBox.isSelected()));
-                superComp.setBackground(COLORS[analiseValue.getType()]);
+                if (isSelected) {
+                    superComp.setBackground(table.getSelectionBackground());
+                } else superComp.setBackground(COLORS[analiseValue.getType()]);
                 setHorizontalAlignment(SwingConstants.RIGHT);
             } else superComp.setBackground(Color.WHITE);
             return superComp;

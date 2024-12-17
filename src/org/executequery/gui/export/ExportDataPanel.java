@@ -470,7 +470,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         if (exportAllow()) {
             Objects.requireNonNull(getExportHelper()).export(exportData);
-            GUIUtilities.displayInformationMessage(bundleString("ResultSetExportComplete"));
+            GUIUtilities.displayInformationMessage(bundleString(
+                    "ResultSetExportComplete",
+                    new File(getFilePath()).getAbsoluteFile()
+            ));
             dispose();
         }
     }

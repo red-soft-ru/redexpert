@@ -510,7 +510,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         // export files defined
         if (!requirements.stream().allMatch(RequiredFieldPainter::check)) {
             GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAFileToExportTo"));
-            return true;
+            return false;
         }
 
         // export file writable

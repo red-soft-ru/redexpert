@@ -163,9 +163,7 @@ public class UserPreference {
     }
 
     public void reset(Object value, Class<?> clazz) {
-
-        if (!Objects.equals(this.value, value))
-            PropertiesPanel.setHasChanges(key, clazz);
+        Object oldValue = this.value != null ? this.value.toString() : null;
 
         if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
 
@@ -187,6 +185,10 @@ public class UserPreference {
 
         } else
             this.value = value;
+
+        Object newValue = this.value != null ? this.value.toString() : null;
+        if (!Objects.equals(newValue, oldValue))
+            PropertiesPanel.setHasChanges(key, clazz);
     }
 
     public void setValue(Object value, Class<?> clazz) {

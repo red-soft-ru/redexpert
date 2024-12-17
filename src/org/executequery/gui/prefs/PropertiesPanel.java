@@ -401,6 +401,9 @@ public class PropertiesPanel extends JPanel
 
     public static void setHasChanges(String key, Class<?> clazz) {
 
+        if (key == null)
+            return;
+
         boolean restartNeed = PROPERTIES_KEYS_NEED_RESTART.stream().anyMatch(pref -> pref.equals(key));
         restartNeed |= hasChanges(clazz) && classesThatHasChanges.get(clazz);
 

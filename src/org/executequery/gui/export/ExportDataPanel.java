@@ -43,7 +43,6 @@ import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -507,8 +506,8 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     private boolean exportAllow() {
 
-        String exportFilePath = getFilePath();
-        String exportBlobPath = getBlobPath();
+        File exportFilePath = new File(getFilePath()).getAbsoluteFile();
+        File exportBlobPath = new File(getBlobPath()).getAbsoluteFile();
 
         // export files defined
         if (!requirements.stream().allMatch(RequiredFieldPainter::check)) {
@@ -517,13 +516,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // export file writable
-        if (parentFileNotExists(exportFilePath)) {
+        if (couldNotWrite(exportFilePath)) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
             return false;
         }
 
         // if blob file defined check if it writable
-        if (isContainsBlob() && isBlobFilePathSpecified() && parentFileNotExists(exportBlobPath)) {
+        if (isContainsBlob() && isBlobFilePathSpecified() && couldNotWrite(exportBlobPath)) {
             GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
@@ -546,7 +545,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // overwrite export file check
-        if (FileUtils.fileExists(exportFilePath)) {
+        if (FileUtils.fileExists(exportFilePath.getAbsolutePath())) {
 
             int result = GUIUtilities.displayYesNoDialog(
                     String.format(bundleString("OverwriteFile"), exportFilePath),
@@ -564,9 +563,9 @@ public class ExportDataPanel extends AbstractBaseDialog {
         if (isBlobFilePathSpecified()) {
 
             if (saveBlobsIndividuallyCheck.isSelected())
-                return new File(exportBlobPath).mkdirs();
+                return exportBlobPath.mkdirs();
 
-            if (FileUtils.fileExists(exportBlobPath)) {
+            if (FileUtils.fileExists(exportBlobPath.getAbsolutePath())) {
 
                 int result = GUIUtilities.displayYesNoDialog(
                         String.format(bundleString("OverwriteFile"), exportBlobPath),
@@ -581,7 +580,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
             }
 
             try {
-                Files.write(Paths.get(exportBlobPath), "".getBytes(StandardCharsets.UTF_8));
+                Files.write(exportBlobPath.toPath(), "".getBytes(StandardCharsets.UTF_8));
 
             } catch (IOException e) {
                 Log.debug(e.getMessage(), e);
@@ -600,8 +599,9 @@ public class ExportDataPanel extends AbstractBaseDialog {
         return value.toString().toLowerCase().contains("true");
     }
 
-    private static boolean parentFileNotExists(String path) {
-        return !new File(path).getAbsoluteFile().getParentFile().exists();
+    private static boolean couldNotWrite(File file) {
+        File parent = file.getParentFile();
+        return parent == null || !parent.exists() || !parent.canWrite();
     }
 
     protected boolean isBlobFilePathSpecified() {

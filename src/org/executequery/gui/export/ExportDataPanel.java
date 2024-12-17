@@ -56,6 +56,7 @@ import java.util.*;
 public class ExportDataPanel extends AbstractBaseDialog {
 
     public static final String TITLE = bundleString("title");
+    private static final String SPACE = "SPACE";
 
     private static final int XML = 0;
     private static final int DELIMITED = XML + 1;
@@ -197,7 +198,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         components.put(replaceNullCheck.getName(), replaceNullCheck);
 
         replaceEndlField = WidgetFactory.createTextField("replaceEndlCombo");
-        replaceEndlField.setText("\\r\\n");
+        replaceEndlField.setText(SPACE);
         components.put(replaceEndlField.getName(), replaceEndlField);
 
         replaceNullField = WidgetFactory.createTextField("replaceNullField");
@@ -699,7 +700,12 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     protected String getEndlReplacement() {
-        return replaceEndlCheck.isSelected() ? replaceEndlField.getText().trim() : null;
+
+        if (!replaceEndlCheck.isSelected())
+            return null;
+
+        String replacement = replaceEndlField.getText().trim();
+        return Objects.equals(replacement, SPACE) ? " " : replacement;
     }
 
     protected String getNullReplacement() {

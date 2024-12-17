@@ -3,6 +3,7 @@ package org.executequery.gui.export;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
+import org.underworldlabs.util.MiscUtils;
 
 import javax.swing.table.TableModel;
 import java.io.FileWriter;
@@ -81,7 +82,7 @@ public class ExportHelperXML extends AbstractExportHelper {
             throws SQLException, IOException {
 
         Object value = resultSet.getObject(col);
-        if (value == null || value.toString().isEmpty())
+        if (value == null || MiscUtils.isNull(value.toString()))
             return getNullData(columnName, nullReplacement);
 
         if (isBlobType(columnData) && blobFileSpecified) {
@@ -137,7 +138,7 @@ public class ExportHelperXML extends AbstractExportHelper {
     private String getStringValue(TableModel tableModel, String columnName, int row, int col) throws IOException {
 
         Object value = tableModel.getValueAt(row, col);
-        if (value == null || value.toString().isEmpty())
+        if (value == null || MiscUtils.isNull(value.toString()))
             return getNullData(columnName, nullReplacement);
 
         if (value instanceof RecordDataItem) {

@@ -516,13 +516,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         // export file writable
         if (couldNotWrite(exportFilePath)) {
-            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportFilePath));
+            GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportFilePath));
             return false;
         }
 
         // if blob file defined check if it writable
         if (isContainsBlob() && isBlobFilePathSpecified() && couldNotWrite(exportBlobPath)) {
-            GUIUtilities.displayErrorMessage(bundleString("FileNotWritable", exportBlobPath));
+            GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
 
@@ -538,7 +538,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
             }
 
             if (!selected) {
-                GUIUtilities.displayErrorMessage(bundleString("YouMustSpecifyAColumnToExportTo"));
+                GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAColumnToExportTo"));
                 return false;
             }
         }
@@ -561,8 +561,14 @@ public class ExportDataPanel extends AbstractBaseDialog {
         // if blob file defined check if it for overwrite
         if (isContainsBlob() && isBlobFilePathSpecified()) {
 
-            if (saveBlobsIndividuallyCheck.isSelected())
-                return exportBlobPath.mkdirs();
+            if (saveBlobsIndividuallyCheck.isSelected()) {
+                if (!exportBlobPath.isDirectory() || (!exportBlobPath.exists() && !exportBlobPath.mkdirs())) {
+                    GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
+                    return false;
+                }
+
+                return true;
+            }
 
             if (FileUtils.fileExists(exportBlobPath.getAbsolutePath())) {
 

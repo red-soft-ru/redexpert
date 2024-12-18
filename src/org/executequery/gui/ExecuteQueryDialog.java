@@ -478,6 +478,32 @@ public class ExecuteQueryDialog extends BaseDialog {
         return Bundles.get(ExecuteQueryDialog.class, key);
     }
 
+    // --- BaseDialog impl ---
+
+    @Override
+    public void display() {
+        setupAlwaysOnTop();
+        super.display();
+    }
+
+    private void setupAlwaysOnTop() {
+        setAlwaysOnTop(true);
+
+        addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                setAlwaysOnTop(false);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                setAlwaysOnTop(true);
+            }
+        });
+    }
+
+    // --- inner classes ---
+
     private class ActionSelectionListener implements ListSelectionListener {
 
         @Override

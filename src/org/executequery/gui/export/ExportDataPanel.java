@@ -561,7 +561,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // if blob file defined check if it for overwrite
-        if (isBlobFilePathSpecified()) {
+        if (isContainsBlob() && isBlobFilePathSpecified()) {
 
             if (saveBlobsIndividuallyCheck.isSelected())
                 return exportBlobPath.mkdirs();

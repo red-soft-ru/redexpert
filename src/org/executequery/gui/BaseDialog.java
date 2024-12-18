@@ -25,6 +25,7 @@ import org.executequery.GUIUtilities;
 import org.underworldlabs.swing.AbstractBaseDialog;
 import org.underworldlabs.swing.GUIUtils;
 import org.underworldlabs.swing.GlassPanePanel;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,198 +41,66 @@ public class BaseDialog extends AbstractBaseDialog
         implements FocusListener,
         ActionContainer {
 
-    /**
-     * the content panel
-     */
     private JPanel contentPanel;
 
-    /**
-     * Creates a new instance of BaseDialog
-     */
     public BaseDialog(String name, boolean modal) {
         this(name, modal, null);
     }
 
-    /**
-     * Creates a new instance of BaseDialog
-     */
     public BaseDialog(String name, boolean modal, boolean resizeable) {
         this(name, modal, null);
         setResizable(resizeable);
     }
 
-    /**
-     * Creates a new instance of BaseDialog
-     */
     public BaseDialog(String name, boolean modal, JPanel panel) {
         super(GUIUtilities.getParentFrame(), name, modal);
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        getRootPane().setGlassPane(new GlassPanePanel());
         addDisplayComponentWithEmptyBorder(panel);
         addFocusListener(this);
-        getRootPane().setGlassPane(new GlassPanePanel());
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    }
-
-    /**
-     * Indicates that a [long-running] process has begun.
-     * This triggers the glass pane on and sets the cursor appropriately.
-     */
-    public void block() {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                if (getRootPane().getGlassPane().isVisible()) {
-                    return;
-                }
-                getRootPane().getGlassPane().setVisible(true);
-            }
-        });
-        updateCursor(true);
-    }
-
-    /**
-     * Indicates that a [long-running] process has ended.
-     * This triggers the glass pane off and sets the cursor appropriately.
-     */
-    public void unblock() {
-        GUIUtils.invokeLater(new Runnable() {
-            public void run() {
-                if (!getRootPane().getGlassPane().isVisible()) {
-                    return;
-                }
-                getRootPane().getGlassPane().setVisible(false);
-            }
-        });
-        updateCursor(false);
-    }
-
-    private void updateCursor(boolean inProcess) {
-        if (inProcess) {
-            GUIUtilities.showWaitCursor();
-        } else {
-            GUIUtilities.showNormalCursor();
-        }
-    }
-
-    // ------------------------------------------
-    // FocusListener implementation
-
-    public void focusGained(FocusEvent e) {
-        dialogFocusChanged(true);
-    }
-
-    public void focusLost(FocusEvent e) {
-        dialogFocusChanged(false);
-    }
-
-    // ------------------------------------------
-
-    /**
-     * Removes this dialog from the application
-     * controller <code>GUIUtilities</code> object before
-     * a call to <code>super.dispose()</code>.
-     */
-    public void dispose() {
-        if (contentPanel instanceof ActiveComponent) {
-            ((ActiveComponent) contentPanel).cleanup();
-        }
-        cleanupComponent(contentPanel);
-        contentPanel = null;
-        GUIUtilities.deregisterDialog(this);
-        GUIUtils.scheduleGC();
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                BaseDialog.this.superDispose();
-            }
-        });
-    }
-
-    private void superDispose() {
-        super.dispose();
-    }
-
-    /**
-     * Indicates the process has completed.
-     */
-    public void finished() {
-        dispose();
-    }
-
-    /**
-     * Indicates whether this is a dialog.
-     *
-     * @return true | false
-     */
-    public boolean isDialog() {
-        return true;
-    }
-
-    /**
-     * Called for a change in focus as specified. This
-     * method will pass this object into <code>GUIUtilities</code>
-     * methods <code>setFocusedDialog(JDialog)</code> and
-     * <code>removeFocusedDialog(JDialog)</code> depending on
-     * the focus parameter specified.
-     *
-     * @param whether this dialog has focus
-     */
-    private void dialogFocusChanged(boolean hasFocus) {
-        if (hasFocus) {
-            GUIUtilities.setFocusedDialog(this);
-        } else {
-            GUIUtilities.removeFocusedDialog(this);
-        }
     }
 
     /**
      * Adds the primary panel for display in this dialog.
      *
-     * @param the main panel display
-     */
-    public void addDisplayComponentWithEmptyBorder(JPanel panel) {
-        if (panel == null) {
-            return;
-        }
-        contentPanel = panel;
-        getContentPane().setLayout(new GridBagLayout());
-        getContentPane().add(panel,
-                new GridBagConstraints(1, 1, 1, 1, 1.0, 1.0,
-                        GridBagConstraints.SOUTHEAST, GridBagConstraints.BOTH,
-                        new Insets(5, 5, 5, 5), 0, 0));
-    }
-
-    /**
-     * Adds the primary panel for display in this dialog.
-     *
-     * @param the main panel display
+     * @param panel the panel to display
      */
     public void addDisplayComponent(JPanel panel) {
-        if (panel == null) {
+
+        if (panel == null)
             return;
-        }
+
         contentPanel = panel;
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(panel, BorderLayout.CENTER);
     }
 
     /**
-     * Returns the content panel of this dialog.
+     * Adds the primary panel for display in this dialog.
      *
-     * @return the dialog's content panel
+     * @param panel the panel display
      */
-    public JPanel getContentPanel() {
-        return contentPanel;
+    public void addDisplayComponentWithEmptyBorder(JPanel panel) {
+
+        if (panel == null)
+            return;
+
+        GridBagConstraints constraints = new GridBagHelper()
+                .setInsets(5, 5, 5, 5)
+                .fillBoth().spanX().spanY().get();
+
+        contentPanel = panel;
+        getContentPane().setLayout(new GridBagLayout());
+        getContentPane().add(panel, constraints);
     }
 
-    /**
-     * Packs, positions and displays the dialog.
-     */
+    /// Packs, positions and displays the dialog.
     public void display() {
 
         // check for multiple calls
-        if (isVisible()) {
-
+        if (isVisible())
             return;
-        }
 
         pack();
         setLocation(GUIUtilities.getLocationForDialog(getSize()));
@@ -239,23 +108,95 @@ public class BaseDialog extends AbstractBaseDialog
         setVisible(true);
 
         if (contentPanel instanceof FocusComponentPanel) {
-
-            GUIUtils.requestFocusInWindow(
-                    ((FocusComponentPanel) contentPanel).getDefaultFocusComponent());
+            FocusComponentPanel focusPanel = (FocusComponentPanel) contentPanel;
+            GUIUtils.requestFocusInWindow(focusPanel.getDefaultFocusComponent());
         }
 
         toFront();
     }
 
+    // --- helper methods ---
+
+    private void enableGlassPane() {
+        Component glassPane = getRootPane().getGlassPane();
+        if (!glassPane.isVisible())
+            glassPane.setVisible(true);
+    }
+
+    private void disableGlassPane() {
+        Component glassPane = getRootPane().getGlassPane();
+        if (glassPane.isVisible())
+            glassPane.setVisible(false);
+    }
+
+    public JPanel getContentPanel() {
+        return contentPanel;
+    }
+
+    // --- ActionContainer impl ---
+
+    /**
+     * Indicates that a [long-running] process has begun.
+     * This triggers the glass pane on and sets the cursor appropriately.
+     */
     @Override
-    public void setResizable(boolean resize) {
-        super.setResizable(resize);
+    public void block() {
+        GUIUtils.invokeLater(this::enableGlassPane);
+        GUIUtilities.showWaitCursor();
+    }
+
+    /**
+     * Indicates that a [long-running] process has ended.
+     * This triggers the glass pane off and sets the cursor appropriately.
+     */
+    @Override
+    public void unblock() {
+        GUIUtils.invokeLater(this::disableGlassPane);
+        GUIUtilities.showNormalCursor();
+    }
+
+    @Override
+    public void finished() {
+        dispose();
+    }
+
+    @Override
+    public boolean isDialog() {
+        return true;
+    }
+
+    // --- AbstractBaseDialog impl ---
+
+    /**
+     * Removes this dialog from the application
+     * controller <code>GUIUtilities</code> object before
+     * a call to <code>super.dispose()</code>.
+     */
+    @Override
+    public void dispose() {
+
+        if (contentPanel instanceof ActiveComponent)
+            ((ActiveComponent) contentPanel).cleanup();
+
+        cleanupComponent(contentPanel);
+        contentPanel = null;
+
+        GUIUtilities.deregisterDialog(this);
+        GUIUtils.scheduleGC();
+
+        SwingUtilities.invokeLater(super::dispose);
+    }
+
+    // --- FocusListener impl ---
+
+    @Override
+    public void focusGained(FocusEvent e) {
+        GUIUtilities.setFocusedDialog(this);
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        GUIUtilities.removeFocusedDialog(this);
     }
 
 }
-
-
-
-
-
-

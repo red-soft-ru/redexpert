@@ -1,5 +1,6 @@
 package org.executequery.gui.export;
 
+import org.executequery.Constants;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -45,7 +46,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
     // ---
 
     @Override
-    protected void exportResultSet(ResultSet resultSet) {
+    protected Object exportResultSet(ResultSet resultSet) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -67,7 +68,10 @@ public class ExportHelperCSV extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(ResultSet resultSet, List<ColumnData> columns, int columnCount, int row)
@@ -105,7 +109,7 @@ public class ExportHelperCSV extends AbstractExportHelper {
     // ---
 
     @Override
-    protected void exportTableModel(TableModel tableModel) {
+    protected Object exportTableModel(TableModel tableModel) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -124,7 +128,10 @@ public class ExportHelperCSV extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(TableModel tableModel, int columnCount, int row) throws IOException {

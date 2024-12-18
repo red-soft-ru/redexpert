@@ -1,5 +1,6 @@
 package org.executequery.gui.export;
 
+import org.executequery.Constants;
 import org.executequery.actions.filecommands.OpenCommand;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.impl.AbstractDatabaseObject;
@@ -47,7 +48,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportResultSet(ResultSet resultSet) {
+    protected Object exportResultSet(ResultSet resultSet) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -74,9 +75,11 @@ public class ExportHelperSQL extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
 
         openQueryEditor();
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(ResultSet resultSet, int columnCount, List<ColumnData> columns, int row)
@@ -118,7 +121,7 @@ public class ExportHelperSQL extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportTableModel(TableModel tableModel) {
+    protected Object exportTableModel(TableModel tableModel) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -142,9 +145,11 @@ public class ExportHelperSQL extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
 
         openQueryEditor();
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(TableModel tableModel, int columnCount, int row) throws IOException {

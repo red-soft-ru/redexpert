@@ -1,5 +1,6 @@
 package org.executequery.gui.export;
 
+import org.executequery.Constants;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
 import org.executequery.gui.resultset.RecordDataItem;
@@ -38,7 +39,7 @@ public class ExportHelperXML extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportResultSet(ResultSet resultSet) {
+    protected Object exportResultSet(ResultSet resultSet) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -61,7 +62,10 @@ public class ExportHelperXML extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private String getRowData(ResultSet resultSet, List<ColumnData> columns, ResultSetMetaData metaData, int columnCount, int row)
@@ -99,7 +103,7 @@ public class ExportHelperXML extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportTableModel(TableModel tableModel) {
+    protected Object exportTableModel(TableModel tableModel) {
         try (
                 FileWriter fileWriter = new FileWriter(filePath, false);
                 PrintWriter writer = new PrintWriter(fileWriter, true)
@@ -119,7 +123,10 @@ public class ExportHelperXML extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private String getRowData(TableModel tableModel, int columnCount, int row) throws IOException {

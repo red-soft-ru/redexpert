@@ -8,6 +8,7 @@ import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.gui.browser.ColumnData;
 import org.executequery.gui.resultset.AbstractLobRecordDataItem;
@@ -49,7 +50,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportResultSet(ResultSet resultSet) {
+    protected Object exportResultSet(ResultSet resultSet) {
         try {
 
             ResultSetMetaData metaData = resultSet.getMetaData();
@@ -75,7 +76,10 @@ public class ExportHelperXLSX extends AbstractExportHelper {
 
         } catch (Exception e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(ResultSet resultSet, List<ColumnData> columns, int columnCount, int row)
@@ -113,7 +117,7 @@ public class ExportHelperXLSX extends AbstractExportHelper {
     // ---
 
     @Override
-    void exportTableModel(TableModel tableModel) {
+    protected Object exportTableModel(TableModel tableModel) {
         try {
 
             int rowCount = tableModel.getRowCount();
@@ -136,7 +140,10 @@ public class ExportHelperXLSX extends AbstractExportHelper {
 
         } catch (IOException e) {
             displayErrorMessage(e);
+            return Constants.WORKER_FAIL;
         }
+
+        return Constants.WORKER_SUCCESS;
     }
 
     private List<String> getStringValues(TableModel tableModel, int columnCount, int row) throws IOException {

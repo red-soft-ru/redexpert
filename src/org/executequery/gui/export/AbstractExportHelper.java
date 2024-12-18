@@ -1,5 +1,6 @@
 package org.executequery.gui.export;
 
+import org.executequery.Constants;
 import org.executequery.GUIUtilities;
 import org.executequery.databaseobjects.Types;
 import org.executequery.gui.browser.ColumnData;
@@ -22,6 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractExportHelper implements ExportHelper {
 
@@ -35,7 +37,7 @@ public abstract class AbstractExportHelper implements ExportHelper {
     // --- export methods ---
 
     @Override
-    public final void export(Object data) {
+    public final boolean export(Object data) {
 
         progressDialog = new DefaultProgressDialog(ExportDataPanel.TITLE);
         SwingWorker worker = new SwingWorker("ExportData", parent) {
@@ -45,11 +47,12 @@ public abstract class AbstractExportHelper implements ExportHelper {
                 extractExportParameters();
 
                 if (data instanceof ResultSet)
-                    exportResultSet((ResultSet) data);
-                else if (data instanceof TableModel)
-                    exportTableModel((TableModel) data);
+                    return exportResultSet((ResultSet) data);
 
-                return null;
+                if (data instanceof TableModel)
+                    return exportTableModel((TableModel) data);
+
+                return Constants.WORKER_CANCEL;
             }
 
             @Override
@@ -60,13 +63,15 @@ public abstract class AbstractExportHelper implements ExportHelper {
 
         worker.start();
         progressDialog.run();
+
+        return Objects.equals(worker.get(), Constants.WORKER_SUCCESS);
     }
 
     abstract void extractExportParameters();
 
-    abstract void exportResultSet(ResultSet resultSet);
+    abstract Object exportResultSet(ResultSet resultSet);
 
-    abstract void exportTableModel(TableModel tableModel);
+    abstract Object exportTableModel(TableModel tableModel);
 
     // --- export helper methods ---
 

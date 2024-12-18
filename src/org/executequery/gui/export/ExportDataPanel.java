@@ -467,9 +467,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     private void export() {
-
-        if (exportAllow()) {
-            Objects.requireNonNull(getExportHelper()).export(exportData);
+        if (exportAllow() && getExportHelper().export(exportData)) {
             GUIUtilities.displayInformationMessage(bundleString(
                     "ResultSetExportComplete",
                     new File(getFilePath()).getAbsoluteFile()
@@ -685,7 +683,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
             case SQL:
                 return new ExportHelperSQL(this);
             default:
-                return null;
+                throw new IllegalArgumentException("Unsupported export type: " + getExportFileType());
         }
     }
 

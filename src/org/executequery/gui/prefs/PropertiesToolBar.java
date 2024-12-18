@@ -23,6 +23,7 @@ package org.executequery.gui.prefs;
 import org.executequery.gui.IconManager;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
+import org.executequery.util.UserProperties;
 import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.swing.toolbar.ButtonComparator;
 import org.underworldlabs.swing.toolbar.ToolBarButton;
@@ -37,6 +38,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -276,11 +278,17 @@ public class PropertiesToolBar extends AbstractPropertiesBasePanel {
 
         for (int i = 0; i < selections.size(); i++) {
             ToolBarButton toolBarButton = selections.elementAt(i);
+            maybeUpdateOtherProperty(toolBarButton);
             toolBarButton.setOrder(i);
         }
 
         toolBar.setButtonsVector(selections);
         ToolBarProperties.resetToolBar(toolBarName, toolBar);
+    }
+
+    private static void maybeUpdateOtherProperty(ToolBarButton button) {
+        if (Objects.equals(button.getActionId(), "editor-rs-metadata-command"))
+            UserProperties.getInstance().setBooleanProperty("editor.results.metadata", button.isVisible());
     }
 
     @Override

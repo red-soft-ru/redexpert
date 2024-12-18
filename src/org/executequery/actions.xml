@@ -301,7 +301,7 @@
             execute-class="org.executequery.actions.queryeditor.ToggleEditorTransactionParamsCommand"/>
 
     <action id="editor-rs-metadata-command"
-            name="Result Meta Data"
+            name="Result Metadata"
             accel-editable="false"
             small-icon="icon_rs_metadata"
             execute-class="org.executequery.actions.queryeditor.ResultSetMetaDataCommand"/>

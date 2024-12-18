@@ -782,7 +782,7 @@ public class QueryEditor extends DefaultTabView
      * Enables/disables the show metadata button.
      */
     public void setMetaDataButtonEnabled(boolean enable) {
-        getTools().setMetaDataButtonEnabled(retainMetaData() && enable);
+        getTools().setMetaDataButtonEnabled(enable);
     }
 
     /**
@@ -826,7 +826,7 @@ public class QueryEditor extends DefaultTabView
 
         QueryEditorToolBar tools = getTools();
 
-        tools.setMetaDataButtonEnabled(resultsPanel.hasResultSetMetaData() && retainMetaData());
+        tools.setMetaDataButtonEnabled(resultsPanel.hasResultSetMetaData());
         tools.setCommitsEnabled(!delegate.getCommitMode());
         tools.setNextButtonEnabled(delegate.hasNextStatement());
         tools.setPreviousButtonEnabled(delegate.hasPreviousStatement());
@@ -838,10 +838,6 @@ public class QueryEditor extends DefaultTabView
 
     @Override
     public void focusLost() {
-    }
-
-    private boolean retainMetaData() {
-        return userProperties().getBooleanProperty("editor.results.metadata");
     }
 
     private QueryEditorToolBar getTools() {

@@ -82,14 +82,6 @@ public class PropertiesEditorGeneral extends AbstractPropertiesBasePanel {
                 SystemProperties.getBooleanProperty("user", key)
         ));
 
-        key = "editor.results.metadata";
-        list.add(new UserPreference(
-                UserPreference.BOOLEAN_TYPE,
-                key,
-                bundledStaticString("RetainResultSetMetaData"),
-                Boolean.valueOf(stringUserProperty(key))
-        ));
-
         key = "editor.results.tabs.single";
         list.add(new UserPreference(
                 UserPreference.BOOLEAN_TYPE,

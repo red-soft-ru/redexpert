@@ -111,12 +111,8 @@ public final class SQLUtils {
 
     public static String generateCreateTable(String name, TableModel tableModel) {
 
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("CREATE TABLE ").append(format(name, null)).append(" (");
-
-        int columnCount = tableModel.getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
+        List<String> tableFields = new LinkedList<>();
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
 
             String type = "BLOB SUB_TYPE TEXT";
             if (tableModel.getColumnClass(i) == Integer.class)
@@ -134,31 +130,31 @@ public final class SQLUtils {
             else if (tableModel.getColumnClass(i) == Boolean.class)
                 type = "BOOLEAN";
 
-            sb.append("\n\t").append(tableModel.getColumnName(i).trim()).append(SPACE).append(type);
-            if (i < columnCount - 1)
-                sb.append(",");
+            String field = "\n\t" + tableModel.getColumnName(i).trim() + SPACE + type;
+            tableFields.add(field);
         }
-        sb.append("\n);");
 
-        return sb.toString();
+        return String.format(
+                "CREATE TABLE %s (%s%n);",
+                format(name, null),
+                String.join(",", tableFields)
+        );
     }
 
     public static String generateCreateTable(String name, ResultSetMetaData metaData) throws SQLException {
 
-        StringBuilder sb = new StringBuilder();
 
-        sb.append("CREATE TABLE ").append(format(name, null)).append(" (");
-
-        int columnCount = metaData.getColumnCount();
-        for (int i = 1; i < columnCount + 1; i++) {
-
-            sb.append("\n\t").append(metaData.getColumnName(i).trim()).append(SPACE).append(metaData.getColumnTypeName(i));
-            if (i < columnCount - 1)
-                sb.append(",");
+        List<String> tableFields = new LinkedList<>();
+        for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
+            String field = "\n\t" + metaData.getColumnName(i).trim() + SPACE + metaData.getColumnTypeName(i);
+            tableFields.add(field);
         }
-        sb.append("\n);");
 
-        return sb.toString();
+        return String.format(
+                "CREATE TABLE %s (%s%n);",
+                format(name, null),
+                String.join(",", tableFields)
+        );
     }
 
 

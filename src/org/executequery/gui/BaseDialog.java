@@ -31,6 +31,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Base dialog to be extended.
@@ -116,6 +118,22 @@ public class BaseDialog extends AbstractBaseDialog
     }
 
     // --- helper methods ---
+
+    public void setupAlwaysOnTop() {
+        setAlwaysOnTop(true);
+
+        addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                setAlwaysOnTop(false);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                setAlwaysOnTop(true);
+            }
+        });
+    }
 
     private void enableGlassPane() {
         Component glassPane = getRootPane().getGlassPane();

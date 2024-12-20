@@ -146,7 +146,12 @@ public final class SQLUtils {
 
         List<String> tableFields = new LinkedList<>();
         for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
-            String field = "\n\t" + metaData.getColumnName(i).trim() + SPACE + metaData.getColumnTypeName(i);
+
+            String type = metaData.getColumnTypeName(i);
+            if (hasPrecision(type))
+                type += "(" + metaData.getPrecision(i) + ")";
+
+            String field = "\n\t" + metaData.getColumnName(i).trim() + SPACE + type;
             tableFields.add(field);
         }
 
@@ -156,7 +161,6 @@ public final class SQLUtils {
                 String.join(",", tableFields)
         );
     }
-
 
     public static String generateDefinitionColumn(ColumnData cd, boolean computedNeed, boolean startWithNewLine, boolean setComma) {
 
@@ -2210,6 +2214,11 @@ public final class SQLUtils {
 
     private static List<String> getFormattedColumnsNames(List<DatabaseColumn> columns, DatabaseConnection dc) {
         return columns.stream().map(NamedObject::getName).map(e -> format(e, dc)).collect(Collectors.toList());
+    }
+
+    private static boolean hasPrecision(String columnType) {
+        List<String> columnTypes = Arrays.asList("DECIMAL", "DECFLOAT", "NUMERIC", "CHAR", "VARCHAR");
+        return columnType != null && columnTypes.contains(columnType.toUpperCase().trim());
     }
 
 }

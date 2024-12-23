@@ -44,9 +44,10 @@ public class ExportDataCommand extends AbstractBaseCommand {
             QueryEditor editor = (QueryEditor) panel;
             if (editor.isResultSetSelected()) {
                 new ExportDataPanel(editor.getResultSetTableModel(), null);
+                return;
+            }
 
-            } else
-                GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
+            GUIUtilities.displayErrorMessage(bundledString("errorMessage"));
         }
     }
 

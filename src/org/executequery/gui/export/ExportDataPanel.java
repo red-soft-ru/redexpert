@@ -588,7 +588,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
     private static boolean shouldOverwrite(String message, JTextField textField) {
 
         int result = GUIUtilities.displayYesNoDialog(message, Bundles.get("common.confirmation"));
-        if (result == JOptionPane.NO_OPTION) {
+        if (result != JOptionPane.YES_NO_OPTION) {
             textField.selectAll();
             textField.requestFocus();
             return false;

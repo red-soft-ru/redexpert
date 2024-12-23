@@ -17,7 +17,9 @@ import javax.swing.table.TableModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
@@ -205,11 +207,17 @@ public abstract class AbstractExportHelper implements ExportHelper {
                 String dataLength = String.format("%08x", lobData.length);
                 stringValue = ":h" + startIndex + "_" + dataLength;
 
-                Files.write(Paths.get(blobFilePath), lobData, StandardOpenOption.APPEND);
+                write(lobData, Paths.get(blobFilePath));
             }
         }
 
         return stringValue;
+    }
+
+    private static void write(byte[] bytes, Path path) throws IOException {
+        if (!Files.exists(path))
+            Files.write(path, "".getBytes(StandardCharsets.UTF_8));
+        Files.write(path, bytes, StandardOpenOption.APPEND);
     }
 
     // --- extract headers methods ---

@@ -1,6 +1,7 @@
 package org.underworldlabs.swing.table;
 
 import org.executequery.GUIUtilities;
+import org.executequery.localization.Bundles;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.util.MiscUtils;
 
@@ -55,7 +56,9 @@ public class DatePatterCellEditor extends DefaultCellEditor
             'x'  // Time zone offset (ISO-8601 without 'Z' for UTC)
     );
 
+    private String bundleKey = "invalid-format.";
     private transient Object oldValue;
+
     private final int valueType;
     private final JTable table;
     private final int rowIndex;
@@ -82,7 +85,7 @@ public class DatePatterCellEditor extends DefaultCellEditor
     private boolean validate(String value) {
 
         if (!MiscUtils.isNull(value) && (containsInvalidChars(value) || patternInvalid(value))) {
-            GUIUtilities.displayWarningMessage("Invalid date format: " + value);
+            GUIUtilities.displayWarningMessage(bundleString(bundleKey, value));
             return false;
         }
 
@@ -104,6 +107,8 @@ public class DatePatterCellEditor extends DefaultCellEditor
         }
     }
 
+    // --- helpers ---
+
     private TemporalAccessor getCheckValue() {
         switch (valueType) {
 
@@ -123,23 +128,36 @@ public class DatePatterCellEditor extends DefaultCellEditor
         }
     }
 
-    private static int typeForKey(String key) {
+    private int typeForKey(String key) {
         switch (key) {
 
             case "results.timestamp.timezone.pattern":
+                this.bundleKey += "zoned-timestamp";
                 return ZONED_TIMESTAMP;
+
             case "results.time.timezone.pattern":
+                this.bundleKey += "zoned-time";
                 return ZONED_TIME;
+
             case "results.timestamp.pattern":
+                this.bundleKey += "timestamp";
                 return TIMESTAMP;
+
             case "results.time.pattern":
+                this.bundleKey += "time";
                 return TIME;
+
             case "results.date.pattern":
+                this.bundleKey += "date";
                 return DATE;
 
             default:
                 throw new IllegalArgumentException("Unknown key: " + key);
         }
+    }
+
+    private Object bundleString(String key, Object... args) {
+        return Bundles.get(DatePatterCellEditor.class, key, args);
     }
 
     // --- DefaultCellEditor impl ---

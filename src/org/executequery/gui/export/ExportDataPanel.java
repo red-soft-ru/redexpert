@@ -41,8 +41,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -507,101 +505,92 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
         File exportFilePath = new File(getFilePath()).getAbsoluteFile();
         File exportBlobPath = new File(getBlobPath()).getAbsoluteFile();
+        boolean hasNoBlobsToExport = !isContainsBlob() || !isBlobFilePathSpecified();
 
-        // export files defined
+        return requiredFieldsNotEmpty()
+                && hasFieldsForExport()
+                && fileWritable(exportFilePath)
+                && (hasNoBlobsToExport || fileWritable(exportBlobPath))
+                && fileOverridable(exportFilePath, filePathField)
+                && (hasNoBlobsToExport || blobsFolderValid(exportBlobPath) || fileOverridable(exportBlobPath, blobPathField));
+    }
+
+    private boolean requiredFieldsNotEmpty() {
+
         if (!requirements.stream().allMatch(RequiredFieldPainter::check)) {
             GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAFileToExportTo"));
             return false;
         }
 
-        // export file writable
-        if (!canWrite(exportFilePath)) {
-            GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportFilePath));
+        return true;
+    }
+
+    private boolean hasFieldsForExport() {
+
+        if (columnTable.getRowCount() < 1)
+            return true;
+
+        for (int i = 0; i < columnTable.getRowCount(); i++)
+            if (isFieldSelected(i))
+                return true;
+
+        GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAColumnToExportTo"));
+        return false;
+    }
+
+    private static boolean fileWritable(File file) {
+
+        if (!canWrite(file)) {
+            GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", file));
             return false;
         }
 
-        // if blob file defined check if it writable
-        if (isContainsBlob() && isBlobFilePathSpecified() && !canWrite(exportBlobPath)) {
-            GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportBlobPath));
-            return false;
-        }
+        return true;
+    }
 
-        // fields for export defined
-        if (columnTable.getRowCount() > 0) {
+    private boolean fileOverridable(File file, JTextField textField) {
 
-            boolean selected = false;
-            for (int i = 0; i < columnTable.getRowCount(); i++) {
-                if (isFieldSelected(i)) {
-                    selected = true;
-                    break;
-                }
-            }
-
-            if (!selected) {
-                GUIUtilities.displayWarningMessage(bundleString("YouMustSpecifyAColumnToExportTo"));
-                return false;
-            }
-        }
-
-        // overwrite export file check
-        if (FileUtils.fileExists(exportFilePath.getAbsolutePath())) {
+        if (FileUtils.fileExists(file.getAbsolutePath())) {
 
             int result = GUIUtilities.displayYesNoDialog(
-                    String.format(bundleString("OverwriteFile"), exportFilePath),
+                    String.format(bundleString("OverwriteFile"), file),
                     Bundles.get("common.confirmation")
             );
 
             if (result == JOptionPane.NO_OPTION) {
-                filePathField.selectAll();
-                filePathField.requestFocus();
+                textField.selectAll();
+                textField.requestFocus();
                 return false;
-            }
-        }
-
-        // if blob file defined check if it for overwrite
-        if (isContainsBlob() && isBlobFilePathSpecified()) {
-
-            if (saveBlobsIndividuallyCheck.isSelected()) {
-                if (!folderCreated(exportBlobPath)) {
-                    GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
-                    return false;
-                }
-
-                return true;
-            }
-
-            if (FileUtils.fileExists(exportBlobPath.getAbsolutePath())) {
-
-                int result = GUIUtilities.displayYesNoDialog(
-                        String.format(bundleString("OverwriteFile"), exportBlobPath),
-                        Bundles.get("common.confirmation")
-                );
-
-                if (result == JOptionPane.NO_OPTION) {
-                    blobPathField.selectAll();
-                    blobPathField.requestFocus();
-                    return false;
-                }
-            }
-
-            try {
-                Files.write(exportBlobPath.toPath(), "".getBytes(StandardCharsets.UTF_8));
-
-            } catch (IOException e) {
-                Log.debug(e.getMessage(), e);
             }
         }
 
         return true;
     }
 
-    private static boolean folderCreated(File exportBlobPath) {
+    private boolean blobsFolderValid(File file) {
 
-        if (exportBlobPath.exists())
-            return exportBlobPath.isDirectory();
+        if (!saveBlobsIndividuallyCheck.isSelected())
+            return false;
 
-        return exportBlobPath.mkdirs();
+        if (file.exists()) {
+
+            if (!file.isDirectory()) {
+                GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
+                return false;
+            }
+
+            return true;
+        }
+
+        if (!file.mkdirs()) {
+            GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
+            return false;
+        }
+
+        return true;
     }
+
+    // ---
 
     protected boolean isFieldSelected(int fieldIndex) {
 
@@ -621,7 +610,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         if (!parent.exists())
             return canWrite(parent);
 
-        return parent.exists() && parent.canWrite();
+        return parent.canWrite();
     }
 
     protected boolean isBlobFilePathSpecified() {

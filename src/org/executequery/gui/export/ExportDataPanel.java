@@ -512,7 +512,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
                 && fileWritable(exportFilePath)
                 && (hasNoBlobsToExport || fileWritable(exportBlobPath))
                 && fileOverridable(exportFilePath, filePathField)
-                && (hasNoBlobsToExport || blobsFolderValid(exportBlobPath) || fileOverridable(exportBlobPath, blobPathField));
+                && (hasNoBlobsToExport || blobsCanBeExported(exportBlobPath));
     }
 
     private boolean requiredFieldsNotEmpty() {
@@ -550,27 +550,16 @@ public class ExportDataPanel extends AbstractBaseDialog {
 
     private boolean fileOverridable(File file, JTextField textField) {
 
-        if (FileUtils.fileExists(file.getAbsolutePath())) {
-
-            int result = GUIUtilities.displayYesNoDialog(
-                    String.format(bundleString("OverwriteFile"), file),
-                    Bundles.get("common.confirmation")
-            );
-
-            if (result == JOptionPane.NO_OPTION) {
-                textField.selectAll();
-                textField.requestFocus();
-                return false;
-            }
-        }
+        if (FileUtils.fileExists(file.getAbsolutePath()))
+            return shouldOverwrite(String.format(bundleString("OverwriteFile"), file), textField);
 
         return true;
     }
 
-    private boolean blobsFolderValid(File file) {
+    private boolean blobsCanBeExported(File file) {
 
         if (!saveBlobsIndividuallyCheck.isSelected())
-            return false;
+            return fileOverridable(file, blobPathField);
 
         if (file.exists()) {
 
@@ -578,6 +567,10 @@ public class ExportDataPanel extends AbstractBaseDialog {
                 GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
                 return false;
             }
+
+            File[] files = file.listFiles();
+            if (files != null && files.length > 0)
+                return shouldOverwrite(bundleString("BlobFolderNotEmpty"), blobPathField);
 
             return true;
         }
@@ -591,6 +584,18 @@ public class ExportDataPanel extends AbstractBaseDialog {
     }
 
     // ---
+
+    private static boolean shouldOverwrite(String message, JTextField textField) {
+
+        int result = GUIUtilities.displayYesNoDialog(message, Bundles.get("common.confirmation"));
+        if (result == JOptionPane.NO_OPTION) {
+            textField.selectAll();
+            textField.requestFocus();
+            return false;
+        }
+
+        return true;
+    }
 
     protected boolean isFieldSelected(int fieldIndex) {
 

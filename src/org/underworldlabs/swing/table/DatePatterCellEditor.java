@@ -71,6 +71,14 @@ public class DatePatterCellEditor extends DefaultCellEditor
         addCellEditorListener(this);
     }
 
+    /**
+     * Validates the input string as a valid date format pattern.
+     * This method checks if the input string contains only valid characters
+     * and if it represents a valid date format pattern.
+     *
+     * @param value The string to be validated as a date format pattern.
+     * @return true if the input is a valid date format pattern, false otherwise.
+     */
     private boolean validate(String value) {
 
         if (!MiscUtils.isNull(value) && (containsInvalidChars(value) || patternInvalid(value))) {

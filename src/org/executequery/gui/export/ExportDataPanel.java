@@ -515,13 +515,13 @@ public class ExportDataPanel extends AbstractBaseDialog {
         }
 
         // export file writable
-        if (couldNotWrite(exportFilePath)) {
+        if (!canWrite(exportFilePath)) {
             GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportFilePath));
             return false;
         }
 
         // if blob file defined check if it writable
-        if (isContainsBlob() && isBlobFilePathSpecified() && couldNotWrite(exportBlobPath)) {
+        if (isContainsBlob() && isBlobFilePathSpecified() && !canWrite(exportBlobPath)) {
             GUIUtilities.displayWarningMessage(bundleString("FileNotWritable", exportBlobPath));
             return false;
         }
@@ -562,7 +562,7 @@ public class ExportDataPanel extends AbstractBaseDialog {
         if (isContainsBlob() && isBlobFilePathSpecified()) {
 
             if (saveBlobsIndividuallyCheck.isSelected()) {
-                if (!exportBlobPath.isDirectory() || (!exportBlobPath.exists() && !exportBlobPath.mkdirs())) {
+                if (!folderCreated(exportBlobPath)) {
                     GUIUtilities.displayWarningMessage(bundleString("CouldNotCreateDirectory"));
                     return false;
                 }
@@ -595,6 +595,14 @@ public class ExportDataPanel extends AbstractBaseDialog {
         return true;
     }
 
+    private static boolean folderCreated(File exportBlobPath) {
+
+        if (exportBlobPath.exists())
+            return exportBlobPath.isDirectory();
+
+        return exportBlobPath.mkdirs();
+    }
+
     protected boolean isFieldSelected(int fieldIndex) {
 
         Object value = columnTable.getValueAt(fieldIndex, 0);
@@ -604,9 +612,16 @@ public class ExportDataPanel extends AbstractBaseDialog {
         return value.toString().toLowerCase().contains("true");
     }
 
-    private static boolean couldNotWrite(File file) {
+    private static boolean canWrite(File file) {
+
         File parent = file.getParentFile();
-        return parent == null || !parent.exists() || !parent.canWrite();
+        if (parent == null)
+            return false;
+
+        if (!parent.exists())
+            return canWrite(parent);
+
+        return parent.exists() && parent.canWrite();
     }
 
     protected boolean isBlobFilePathSpecified() {

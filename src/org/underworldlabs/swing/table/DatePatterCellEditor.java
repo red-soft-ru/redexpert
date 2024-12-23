@@ -9,15 +9,21 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.time.DateTimeException;
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.List;
 
 /// @author Aleksey Kozlov
 public class DatePatterCellEditor extends DefaultCellEditor
         implements CellEditorListener {
+
+    private static final int ZONED_TIMESTAMP = 0;
+    private static final int ZONED_TIME = ZONED_TIMESTAMP + 1;
+    private static final int TIMESTAMP = ZONED_TIME + 1;
+    private static final int TIME = TIMESTAMP + 1;
+    private static final int DATE = TIME + 1;
 
     private static final List<Character> DICTIONARY = Arrays.asList(
             ':', '-', '/', '.', ' ', ',', '\'',  // Separators
@@ -46,15 +52,18 @@ public class DatePatterCellEditor extends DefaultCellEditor
             'X', // Time zone offset (ISO-8601)
             'V', // Time zone ID (e.g., Russia/Moscow)
             'O', // Localized zone-offset (e.g., GMT+3)
-            'x' // Time zone offset (ISO-8601 without 'Z' for UTC)
+            'x'  // Time zone offset (ISO-8601 without 'Z' for UTC)
     );
 
     private transient Object oldValue;
+    private final int valueType;
     private final JTable table;
     private final int rowIndex;
 
-    public DatePatterCellEditor(JTable table, int rowIndex) {
+    public DatePatterCellEditor(String key, JTable table, int rowIndex) {
         super(new StringPicker());
+
+        this.valueType = typeForKey(key);
         this.rowIndex = rowIndex;
         this.oldValue = null;
         this.table = table;
@@ -62,7 +71,7 @@ public class DatePatterCellEditor extends DefaultCellEditor
         addCellEditorListener(this);
     }
 
-    private static boolean validate(String value) {
+    private boolean validate(String value) {
 
         if (!MiscUtils.isNull(value) && (containsInvalidChars(value) || patternInvalid(value))) {
             GUIUtilities.displayWarningMessage("Invalid date format: " + value);
@@ -76,14 +85,52 @@ public class DatePatterCellEditor extends DefaultCellEditor
         return !value.chars().mapToObj(charCode -> (char) charCode).allMatch(DICTIONARY::contains);
     }
 
-    private static boolean patternInvalid(String value) {
+    private boolean patternInvalid(String value) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(value);
-            formatter.format(Instant.now().atZone(ZoneId.systemDefault()));
+            formatter.format(getCheckValue());
             return false;
 
         } catch (IllegalArgumentException | DateTimeException e) {
             return true;
+        }
+    }
+
+    private TemporalAccessor getCheckValue() {
+        switch (valueType) {
+
+            case ZONED_TIMESTAMP:
+                return ZonedDateTime.now().toOffsetDateTime();
+            case TIMESTAMP:
+                return ZonedDateTime.now().toLocalDateTime();
+            case TIME:
+                return ZonedDateTime.now().toLocalTime();
+            case DATE:
+                return ZonedDateTime.now().toLocalDate();
+            case ZONED_TIME:
+                return ZonedDateTime.now();
+
+            default:
+                throw new IllegalArgumentException("Unknown value type: " + valueType);
+        }
+    }
+
+    private static int typeForKey(String key) {
+        switch (key) {
+
+            case "results.timestamp.timezone.pattern":
+                return ZONED_TIMESTAMP;
+            case "results.time.timezone.pattern":
+                return ZONED_TIME;
+            case "results.timestamp.pattern":
+                return TIMESTAMP;
+            case "results.time.pattern":
+                return TIME;
+            case "results.date.pattern":
+                return DATE;
+
+            default:
+                throw new IllegalArgumentException("Unknown key: " + key);
         }
     }
 

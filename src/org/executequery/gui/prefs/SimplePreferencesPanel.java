@@ -154,6 +154,7 @@ public class SimplePreferencesPanel extends JPanel
         cellEditors = new HashMap<String, DefaultCellEditor>();
 
         for (int i = 0; i < preferences.length; i++) {
+            String key = preferences[i].getKey();
             int type = preferences[i].getType();
             DefaultCellEditor editor = null;
 
@@ -178,7 +179,7 @@ public class SimplePreferencesPanel extends JPanel
                     break;
 
                 case UserPreference.DATE_PATTERN_TYPE:
-                    rowEditor.setEditorAt(i, new DatePatterCellEditor(table, i));
+                    rowEditor.setEditorAt(i, new DatePatterCellEditor(key, table, i));
                     break;
 
                 case UserPreference.PASSWORD_TYPE:

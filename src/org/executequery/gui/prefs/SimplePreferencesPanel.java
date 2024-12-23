@@ -176,6 +176,11 @@ public class SimplePreferencesPanel extends JPanel
                         //rowEditor.setEditorAt(i, editor);
                     }
                     break;
+
+                case UserPreference.DATE_PATTERN_TYPE:
+                    rowEditor.setEditorAt(i, new DatePatterCellEditor(table, i));
+                    break;
+
                 case UserPreference.PASSWORD_TYPE:
                     PasswordCellEditor passwordCellEditor = new PasswordCellEditor();
                     if (passwordRenderer == null) {
@@ -325,6 +330,7 @@ public class SimplePreferencesPanel extends JPanel
             switch (preference.getType()) {
 
                 case UserPreference.STRING_TYPE:
+                case UserPreference.DATE_PATTERN_TYPE:
                 case UserPreference.INTEGER_TYPE:
                 case UserPreference.FILE_TYPE:
                 case UserPreference.DIR_TYPE:

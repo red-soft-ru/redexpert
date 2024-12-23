@@ -106,7 +106,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.date.pattern";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.DATE_PATTERN_TYPE,
                 -1,
                 key,
                 bundledStaticString("DatePatternFormat"),
@@ -115,7 +115,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.time.pattern";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.DATE_PATTERN_TYPE,
                 -1,
                 key,
                 bundledStaticString("TimePatternFormat"),
@@ -124,7 +124,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.timestamp.pattern";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.DATE_PATTERN_TYPE,
                 -1,
                 key,
                 bundledStaticString("TimestampPatternFormat"),
@@ -133,7 +133,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.time.timezone.pattern";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.DATE_PATTERN_TYPE,
                 -1,
                 key,
                 bundledStaticString("TimeTimezonePatternFormat"),
@@ -142,7 +142,7 @@ public class PropertiesResultSetTableGeneral extends AbstractPropertiesBasePanel
 
         key = "results.timestamp.timezone.pattern";
         list.add(new UserPreference(
-                UserPreference.STRING_TYPE,
+                UserPreference.DATE_PATTERN_TYPE,
                 -1,
                 key,
                 bundledStaticString("TimestampTimezonePatternFormat"),

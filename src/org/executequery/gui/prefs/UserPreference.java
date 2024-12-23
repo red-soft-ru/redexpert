@@ -40,6 +40,7 @@ public class UserPreference {
     public static final int PASSWORD_TYPE = 6;
     public static final int ENUM_TYPE = 7;
     public static final int DIR_TYPE = 8;
+    public static final int DATE_PATTERN_TYPE = 9;
 
     private boolean saveActual;
     private Object value;
@@ -75,7 +76,7 @@ public class UserPreference {
 
     private String extractSavedValue(int type, Object value) {
 
-        if (type == STRING_TYPE) {
+        if (type == STRING_TYPE || type == DATE_PATTERN_TYPE) {
             if (value.getClass().isEnum())
                 return ((Enum<?>) value).name();
 
@@ -136,6 +137,7 @@ public class UserPreference {
 
     public String getSaveValue() {
         switch (type) {
+            case DATE_PATTERN_TYPE:
             case STRING_TYPE:
 
                 if (values != null) {
@@ -183,7 +185,7 @@ public class UserPreference {
     }
 
     private static boolean canProcess(int type, Object[] values) {
-        return type == STRING_TYPE && values != null && values.length > 0;
+        return (type == STRING_TYPE || type == DATE_PATTERN_TYPE) && values != null && values.length > 0;
     }
 
     // ---

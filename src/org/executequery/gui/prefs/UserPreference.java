@@ -41,141 +41,84 @@ public class UserPreference {
     public static final int ENUM_TYPE = 7;
     public static final int DIR_TYPE = 8;
 
-
-    private boolean collapsed;
     private boolean saveActual;
-    private String savedValue;
-
-    private int type;
-    private int maxLength;
-    private String key;
     private Object value;
-    private String displayedKey;
-    private Object[] availableValues;
 
-    public UserPreference() {
-    }
+    private final int type;
+    private final String key;
+    private final int maxLength;
+    private final Object[] values;
+    private final String savedValue;
+    private final String displayedKey;
 
     public UserPreference(int type, int maxLength, String key, String displayedKey, Object value) {
-
         this(type, maxLength, key, displayedKey, value, null);
     }
 
     public UserPreference(int type, String key, String displayedKey, Object value) {
-
         this(type, -1, key, displayedKey, value, null);
     }
 
-    public UserPreference(int type, String key, String displayedKey, Object value, Object[] availableValues) {
-
-        this(type, -1, key, displayedKey, value, availableValues);
+    public UserPreference(int type, String key, String displayedKey, Object value, Object[] values) {
+        this(type, -1, key, displayedKey, value, values);
     }
 
-    public UserPreference(int type, int maxLength, String key, String displayedKey, Object value, Object[] availableValues) {
-
+    public UserPreference(int type, int maxLength, String key, String displayedKey, Object value, Object[] values) {
+        this.savedValue = extractSavedValue(type, value);
+        this.value = extractValue(type, value, values);
+        this.displayedKey = displayedKey;
+        this.maxLength = maxLength;
+        this.values = values;
         this.type = type;
         this.key = key;
-        this.maxLength = maxLength;
+    }
+
+    private String extractSavedValue(int type, Object value) {
 
         if (type == STRING_TYPE) {
+            if (value.getClass().isEnum())
+                return ((Enum<?>) value).name();
 
-            if (value.getClass().isEnum()) {
-
-                savedValue = ((Enum) value).name();
-
-            } else {
-
-                savedValue = value.toString();
-            }
-
-            if (availableValues != null && availableValues.length > 0) {
-
-                try {
-
-                    int index = Integer.parseInt(savedValue);
-                    this.value = availableValues[index];
-
-                } catch (NumberFormatException e) {
-
-                    saveActual = true;
-                    // try the value
-                    for (int i = 0; i < availableValues.length; i++) {
-
-                        if (valueOf(availableValues[i]).equals(value)) {
-
-                            this.value = availableValues[i];
-                            break;
-                        }
-
-                    }
-
-                }
-
-            } else {
-
-                this.value = value;
-            }
-
-        } else {
-
-            this.value = value;
+            return value.toString();
         }
 
-        this.displayedKey = displayedKey;
-        this.availableValues = availableValues;
+        return null;
     }
 
-    private Object valueOf(Object object) {
+    private Object extractValue(int type, Object value, Object[] values) {
 
-        if (object instanceof LabelValuePair) {
+        if (canProcess(type, values)) {
+            try {
+                int index = Integer.parseInt(savedValue);
+                return values[index];
 
-            return ((LabelValuePair) object).getValue();
+            } catch (NumberFormatException | NullPointerException e) {
+                saveActual = true;
+                for (Object availableValue : values)
+                    if (valueOf(availableValue).equals(value))
+                        return availableValue;
+            }
         }
-        return object;
-    }
 
-    public int getMaxLength() {
-        return maxLength;
-    }
-
-    public void setMaxLength(int maxLength) {
-        this.maxLength = maxLength;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public Object getValue() {
         return value;
     }
 
-    public void reset(Object value, Class<?> clazz) {
-        Object oldValue = this.value != null ? this.value.toString() : null;
+    // ---
 
-        if (type == STRING_TYPE && availableValues != null && availableValues.length > 0) {
+    public void reset(Object value, Class<?> clazz) {
+        Object oldValue = getStringValue(this.value, false);
+
+        if (canProcess(type, values)) {
 
             if (saveActual)
                 this.value = savedValue;
 
             try {
                 int index = Integer.parseInt(savedValue);
-                this.value = availableValues[index];
+                this.value = values[index];
 
             } catch (NumberFormatException e) {
-                for (Object availableValue : availableValues) {
+                for (Object availableValue : values) {
                     if (valueOf(availableValue).equals(value)) {
                         this.value = availableValue;
                         break;
@@ -186,43 +129,26 @@ public class UserPreference {
         } else
             this.value = value;
 
-        Object newValue = this.value != null ? this.value.toString() : null;
+        Object newValue = getStringValue(this.value, false);
         if (!Objects.equals(newValue, oldValue))
             PropertiesPanel.setHasChanges(key, clazz);
-    }
-
-    public void setValue(Object value, Class<?> clazz) {
-        PropertiesPanel.setHasChanges(key, clazz);
-        this.value = value;
     }
 
     public String getSaveValue() {
         switch (type) {
             case STRING_TYPE:
 
-                if (availableValues != null) {
+                if (values != null) {
 
-                    if (saveActual && value != null) {
-                        if (value instanceof LabelValuePair)
-                            return ((LabelValuePair) value).getValue().toString();
+                    if (saveActual && value != null)
+                        return valueOf(value).toString();
 
-                        return value.toString();
-                    }
-
-                    for (int i = 0; i < availableValues.length; i++) {
-                        if (value == availableValues[i]) {
+                    for (int i = 0; i < values.length; i++)
+                        if (Objects.equals(value, values[i]))
                             return Integer.toString(i);
-                        }
-                    }
-
                 }
 
-                if (value == null) {
-
-                    return Constants.EMPTY;
-                }
-
-                return value.toString();
+                return getStringValue(value, true);
 
             case COLOUR_TYPE:
                 return Integer.toString(((Color) value).getRGB());
@@ -237,30 +163,53 @@ public class UserPreference {
         }
     }
 
+    // ---
+
+    public void setValue(Object value, Class<?> clazz) {
+        PropertiesPanel.setHasChanges(key, clazz);
+        this.value = value;
+    }
+
+    private Object valueOf(Object object) {
+        if (object instanceof LabelValuePair)
+            return ((LabelValuePair) object).getValue();
+        return object;
+    }
+
+    private String getStringValue(Object value, boolean notNull) {
+        if (value != null)
+            return value.toString();
+        return notNull ? Constants.EMPTY : null;
+    }
+
+    private static boolean canProcess(int type, Object[] values) {
+        return type == STRING_TYPE && values != null && values.length > 0;
+    }
+
+    // ---
+
+    public Object[] getValues() {
+        return values;
+    }
+
     public String getDisplayedKey() {
         return displayedKey;
     }
 
-    public void setDisplayedKey(String displayedKey) {
-        this.displayedKey = displayedKey;
+    public int getMaxLength() {
+        return maxLength;
     }
 
-    public Object[] getAvailableValues() {
-        return availableValues;
+    public Object getValue() {
+        return value;
     }
 
-    public void setAvailableValues(Object[] availableValues) {
-        this.availableValues = availableValues;
+    public String getKey() {
+        return key;
     }
 
-    public boolean isCollapsed() {
-        return collapsed;
-    }
-
-    public void setCollapsed(boolean collapsed) {
-        this.collapsed = collapsed;
+    public int getType() {
+        return type;
     }
 
 }
-
-

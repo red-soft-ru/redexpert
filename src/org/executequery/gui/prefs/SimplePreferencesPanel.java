@@ -160,7 +160,7 @@ public class SimplePreferencesPanel extends JPanel
             switch (type) {
                 case UserPreference.ENUM_TYPE:
                 case UserPreference.STRING_TYPE:
-                    Object[] values = preferences[i].getAvailableValues();
+                    Object[] values = preferences[i].getValues();
                     if (values != null && values.length > 0) {
                         editor = new DefaultCellEditor(new TableComboBox(values));
                         rowEditor.setEditorAt(i, editor);

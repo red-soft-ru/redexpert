@@ -3,7 +3,11 @@ package org.underworldlabs.util.validation;
 /// @author Aleksey Kozlov
 public interface Validator {
 
-    boolean isValid(Object value);
+    boolean isValid(Object value, boolean displayMessage);
+
+    default boolean isValid(Object value) {
+        return isValid(value, true);
+    }
 
     /**
      * Creates a validator instance based on the provided property key.

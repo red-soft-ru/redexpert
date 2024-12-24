@@ -14,7 +14,7 @@ public class DatePatterCellEditor extends DefaultCellEditor
 
     private transient Object oldValue;
 
-    private final Validator validator;
+    private final transient Validator validator;
     private final JTable table;
     private final int rowIndex;
 
@@ -33,7 +33,7 @@ public class DatePatterCellEditor extends DefaultCellEditor
      * Validates the current value in the cell editor.
      * If the validation fails, it reverts the cell value to its previous state.
      */
-    private void validate() {
+    public void validate() {
         if (!validator.isValid(((StringPicker) getComponent()).getValue()))
             table.setValueAt(oldValue, rowIndex, 2);
     }

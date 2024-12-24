@@ -58,11 +58,12 @@ class DatePatternValidator extends AbstractValidator {
      * @return true if the input is a valid date format pattern, false otherwise.
      */
     @Override
-    public boolean isValid(Object value) {
+    public boolean isValid(Object value, boolean displayMessage) {
         String stringValue = (String) value;
 
         if (!MiscUtils.isNull(stringValue) && (containsInvalidChars(stringValue) || patternInvalid(stringValue))) {
-            GUIUtilities.displayWarningMessage(bundleString(getBundleKey(), stringValue));
+            if (displayMessage)
+                GUIUtilities.displayWarningMessage(bundleString(getBundleKey(), stringValue));
             return false;
         }
 

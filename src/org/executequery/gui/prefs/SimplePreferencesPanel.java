@@ -35,6 +35,7 @@ import org.underworldlabs.swing.table.*;
 import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.LabelValuePair;
 import org.underworldlabs.util.SystemProperties;
+import org.underworldlabs.util.validation.Validator;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -181,7 +182,8 @@ public class SimplePreferencesPanel extends JPanel
                     break;
 
                 case UserPreference.DATE_PATTERN_TYPE:
-                    rowEditor.setEditorAt(i, new DatePatterCellEditor(key, table, i));
+                    editor = new DatePatterCellEditor(key, table, i);
+                    rowEditor.setEditorAt(i, editor);
                     break;
 
                 case UserPreference.PASSWORD_TYPE:
@@ -430,14 +432,16 @@ public class SimplePreferencesPanel extends JPanel
         // set the new properties
         for (UserPreference preference : preferenceList) {
 
-            if (preference.getKey().equals("startup.java.path")) {
+            if (preference.getType() == UserPreference.DATE_PATTERN_TYPE) {
+                saveDatePattern(preference, propertiesName);
+
+            } else if (preference.getKey().equals("startup.java.path")) {
                 saveStartupJavaPath(preference, propertiesName);
 
             } else {
                 savePreference(preference, propertiesName);
             }
         }
-
     }
 
     private static void savePreference(UserPreference preference, String propertiesName) {
@@ -445,6 +449,18 @@ public class SimplePreferencesPanel extends JPanel
 
         if (preference.getKey().equals("startup.display.language"))
             System.setProperty("user.language", preference.getSaveValue());
+    }
+
+    private void saveDatePattern(UserPreference preference, String propertiesName) {
+        String value = preference.getSaveValue();
+        String key = preference.getKey();
+
+        DefaultCellEditor cellEditor = cellEditors.get(key);
+        if (cellEditor instanceof DatePatterCellEditor)
+            ((DatePatterCellEditor) cellEditors.get(key)).validate();
+
+        if (Validator.of(key).isValid(value, false))
+            SystemProperties.setProperty(propertiesName, key, value);
     }
 
     private static void saveStartupJavaPath(UserPreference preference, String propertiesName) {

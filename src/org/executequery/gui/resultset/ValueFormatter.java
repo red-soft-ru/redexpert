@@ -1,8 +1,7 @@
 package org.executequery.gui.resultset;
 
-import org.executequery.Constants;
-import org.underworldlabs.util.MiscUtils;
-import org.underworldlabs.util.SystemProperties;
+import org.executequery.util.UserProperties;
+import org.underworldlabs.util.validation.Validator;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -15,6 +14,12 @@ import java.time.format.DateTimeFormatter;
  */
 public final class ValueFormatter {
 
+    private static final String ZONED_TIMESTAMP_KEY = "results.timestamp.timezone.pattern";
+    private static final String ZONED_TIME_KEY = "results.time.timezone.pattern";
+    private static final String TIMESTAMP_KEY = "results.timestamp.pattern";
+    private static final String TIME_KEY = "results.time.pattern";
+    private static final String DATE_KEY = "results.date.pattern";
+
     private static final DateTimeFormatter dateFormatter;
     private static final DateTimeFormatter timeFormatter;
     private static final DateTimeFormatter timestampFormatter;
@@ -22,17 +27,22 @@ public final class ValueFormatter {
     private static final DateTimeFormatter zonedTimestampFormatter;
 
     static {
-        String datePattern = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "results.date.pattern");
-        String timePattern = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "results.time.pattern");
-        String timestampPattern = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "results.timestamp.pattern");
-        String timeTimezonePattern = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "results.time.timezone.pattern");
-        String timestampTimezonePattern = SystemProperties.getProperty(Constants.USER_PROPERTIES_KEY, "results.timestamp.timezone.pattern");
 
-        dateFormatter = !MiscUtils.isNull(datePattern) ? DateTimeFormatter.ofPattern(datePattern) : null;
-        timeFormatter = !MiscUtils.isNull(timePattern) ? DateTimeFormatter.ofPattern(timePattern) : null;
-        timestampFormatter = !MiscUtils.isNull(timestampPattern) ? DateTimeFormatter.ofPattern(timestampPattern) : null;
-        zonedTimeFormatter = !MiscUtils.isNull(timeTimezonePattern) ? DateTimeFormatter.ofPattern(timeTimezonePattern) : null;
-        zonedTimestampFormatter = !MiscUtils.isNull(timestampTimezonePattern) ? DateTimeFormatter.ofPattern(timestampTimezonePattern) : null;
+        String zonedTimestamp = UserProperties.getInstance().getProperty(ZONED_TIMESTAMP_KEY);
+        String zonedTime = UserProperties.getInstance().getProperty(ZONED_TIME_KEY);
+        String timestamp = UserProperties.getInstance().getProperty(TIMESTAMP_KEY);
+        String time = UserProperties.getInstance().getProperty(TIME_KEY);
+        String date = UserProperties.getInstance().getProperty(DATE_KEY);
+
+        dateFormatter = Validator.of(DATE_KEY).isValid(date, false) ? DateTimeFormatter.ofPattern(date) : null;
+        timeFormatter = Validator.of(TIME_KEY).isValid(time, false) ? DateTimeFormatter.ofPattern(time) : null;
+        timestampFormatter = Validator.of(TIMESTAMP_KEY).isValid(timestamp, false) ? DateTimeFormatter.ofPattern(timestamp) : null;
+        zonedTimeFormatter = Validator.of(ZONED_TIME_KEY).isValid(zonedTime, false) ? DateTimeFormatter.ofPattern(zonedTime) : null;
+        zonedTimestampFormatter = Validator.of(ZONED_TIMESTAMP_KEY).isValid(zonedTimestamp, false) ? DateTimeFormatter.ofPattern(zonedTimestamp) : null;
+    }
+
+    /// Private constructor to prevent installation
+    private ValueFormatter() {
     }
 
     public static String formatted(Object value) {

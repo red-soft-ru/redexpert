@@ -1,4 +1,4 @@
-package org.underworldlabs.swing.table;
+package org.underworldlabs.swing.celleditor;
 
 import org.executequery.GUIUtilities;
 import org.executequery.localization.Bundles;

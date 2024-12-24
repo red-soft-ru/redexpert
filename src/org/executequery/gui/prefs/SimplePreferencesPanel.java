@@ -29,6 +29,7 @@ import org.executequery.localization.Bundles;
 import org.executequery.localization.InterfaceLanguage;
 import org.executequery.log.Log;
 import org.executequery.plaf.LookAndFeelType;
+import org.underworldlabs.swing.celleditor.DatePatterCellEditor;
 import org.underworldlabs.swing.celleditor.picker.StringPicker;
 import org.underworldlabs.swing.table.*;
 import org.underworldlabs.util.FileUtils;

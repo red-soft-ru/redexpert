@@ -5,6 +5,7 @@ import org.underworldlabs.util.validation.Validator;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 
 /**
  * ResultSet values formatter class.<br>
@@ -20,69 +21,98 @@ public final class ValueFormatter {
     private static final String TIME_KEY = "results.time.pattern";
     private static final String DATE_KEY = "results.date.pattern";
 
-    private static final DateTimeFormatter dateFormatter;
-    private static final DateTimeFormatter timeFormatter;
-    private static final DateTimeFormatter timestampFormatter;
-    private static final DateTimeFormatter zonedTimeFormatter;
-    private static final DateTimeFormatter zonedTimestampFormatter;
+    private static DateTimeFormatter dateFormatter;
+    private static DateTimeFormatter timeFormatter;
+    private static DateTimeFormatter timestampFormatter;
+    private static DateTimeFormatter zonedTimeFormatter;
+    private static DateTimeFormatter zonedTimestampFormatter;
 
-    static {
-
-        String zonedTimestamp = UserProperties.getInstance().getProperty(ZONED_TIMESTAMP_KEY);
-        String zonedTime = UserProperties.getInstance().getProperty(ZONED_TIME_KEY);
-        String timestamp = UserProperties.getInstance().getProperty(TIMESTAMP_KEY);
-        String time = UserProperties.getInstance().getProperty(TIME_KEY);
-        String date = UserProperties.getInstance().getProperty(DATE_KEY);
-
-        dateFormatter = Validator.of(DATE_KEY).isValid(date, false) ? DateTimeFormatter.ofPattern(date) : null;
-        timeFormatter = Validator.of(TIME_KEY).isValid(time, false) ? DateTimeFormatter.ofPattern(time) : null;
-        timestampFormatter = Validator.of(TIMESTAMP_KEY).isValid(timestamp, false) ? DateTimeFormatter.ofPattern(timestamp) : null;
-        zonedTimeFormatter = Validator.of(ZONED_TIME_KEY).isValid(zonedTime, false) ? DateTimeFormatter.ofPattern(zonedTime) : null;
-        zonedTimestampFormatter = Validator.of(ZONED_TIMESTAMP_KEY).isValid(zonedTimestamp, false) ? DateTimeFormatter.ofPattern(zonedTimestamp) : null;
-    }
+    private static boolean markedForReload = true;
 
     /// Private constructor to prevent installation
     private ValueFormatter() {
     }
 
+    private static void maybeInitialize() {
+        if (markedForReload) {
+            markLoaded();
+            reset();
+            init();
+        }
+    }
+
+    private static void init() {
+
+        String pattern = UserProperties.getInstance().getProperty(ZONED_TIMESTAMP_KEY);
+        if (Validator.of(ZONED_TIMESTAMP_KEY).isValid(pattern, false))
+            zonedTimestampFormatter = DateTimeFormatter.ofPattern(pattern);
+
+        pattern = UserProperties.getInstance().getProperty(ZONED_TIME_KEY);
+        if (Validator.of(ZONED_TIME_KEY).isValid(pattern, false))
+            zonedTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+
+        pattern = UserProperties.getInstance().getProperty(TIMESTAMP_KEY);
+        if (Validator.of(TIMESTAMP_KEY).isValid(pattern, false))
+            timestampFormatter = DateTimeFormatter.ofPattern(pattern);
+
+        pattern = UserProperties.getInstance().getProperty(TIME_KEY);
+        if (Validator.of(TIME_KEY).isValid(pattern, false))
+            timeFormatter = DateTimeFormatter.ofPattern(pattern);
+
+        pattern = UserProperties.getInstance().getProperty(DATE_KEY);
+        if (Validator.of(DATE_KEY).isValid(pattern, false))
+            dateFormatter = DateTimeFormatter.ofPattern(pattern);
+    }
+
     public static String formatted(Object value) {
+        maybeInitialize();
+
+        if (value == null)
+            return null;
 
         if (value instanceof SimpleRecordDataItem)
             value = ((SimpleRecordDataItem) value).getValue();
 
+        DateTimeFormatter formatter = formatterForValue(value);
+        return formatter != null ? formatter.format((TemporalAccessor) value) : value.toString();
+    }
+
+    private static DateTimeFormatter formatterForValue(Object value) {
+
+        if (value instanceof OffsetDateTime)
+            return zonedTimestampFormatter;
+
+        if (value instanceof OffsetTime)
+            return zonedTimeFormatter;
+
+        if (value instanceof LocalDateTime)
+            return timestampFormatter;
+
+        if (value instanceof LocalTime)
+            return timeFormatter;
+
         if (value instanceof LocalDate)
-            return formattedDate((LocalDate) value);
-        else if (value instanceof LocalTime)
-            return formattedTime((LocalTime) value);
-        else if (value instanceof LocalDateTime)
-            return formattedTimestamp((LocalDateTime) value);
-        else if (value instanceof OffsetTime)
-            return formattedZonedTime((OffsetTime) value);
-        else if (value instanceof OffsetDateTime)
-            return formattedZonedTimestamp((OffsetDateTime) value);
-        else if (value != null)
-            return value.toString();
+            return dateFormatter;
 
         return null;
     }
 
-    private static String formattedDate(LocalDate date) {
-        return dateFormatter != null ? dateFormatter.format(date) : date.toString();
+    // ---
+
+    private static void reset() {
+        zonedTimestampFormatter = null;
+        zonedTimeFormatter = null;
+        timestampFormatter = null;
+        timeFormatter = null;
+        dateFormatter = null;
     }
 
-    private static String formattedTime(LocalTime date) {
-        return timeFormatter != null ? timeFormatter.format(date) : date.toString();
+    public static void markForReload() {
+        ValueFormatter.markedForReload = true;
     }
 
-    private static String formattedTimestamp(LocalDateTime date) {
-        return timestampFormatter != null ? timestampFormatter.format(date) : date.toString();
+    public static void markLoaded() {
+        ValueFormatter.markedForReload = false;
     }
 
-    private static String formattedZonedTime(OffsetTime date) {
-        return zonedTimeFormatter != null ? zonedTimeFormatter.format(date) : date.toString();
-    }
-
-    private static String formattedZonedTimestamp(OffsetDateTime date) {
-        return zonedTimestampFormatter != null ? zonedTimestampFormatter.format(date) : date.toString();
-    }
 }

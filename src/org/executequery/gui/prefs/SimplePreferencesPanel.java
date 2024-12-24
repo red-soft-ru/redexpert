@@ -25,6 +25,7 @@ import org.executequery.*;
 import org.executequery.components.table.CategoryHeaderCellRenderer;
 import org.executequery.components.table.FileSelectionTableCell;
 import org.executequery.gui.resultset.ResultSetCellAlign;
+import org.executequery.gui.resultset.ValueFormatter;
 import org.executequery.localization.Bundles;
 import org.executequery.localization.InterfaceLanguage;
 import org.executequery.log.Log;
@@ -459,8 +460,10 @@ public class SimplePreferencesPanel extends JPanel
         if (cellEditor instanceof DatePatterCellEditor)
             ((DatePatterCellEditor) cellEditors.get(key)).validate();
 
-        if (Validator.of(key).isValid(value, false))
+        if (Validator.of(key).isValid(value, false)) {
             SystemProperties.setProperty(propertiesName, key, value);
+            ValueFormatter.markForReload();
+        }
     }
 
     private static void saveStartupJavaPath(UserPreference preference, String propertiesName) {

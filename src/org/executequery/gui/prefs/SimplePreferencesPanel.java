@@ -54,6 +54,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Properties panel base.
@@ -422,33 +423,43 @@ public class SimplePreferencesPanel extends JPanel
         if (table.isEditing())
             table.editingStopped(null);
 
+        List<UserPreference> preferenceList = Arrays.stream(preferences)
+                .filter(p -> p.getType() != UserPreference.CATEGORY_TYPE)
+                .collect(Collectors.toList());
+
         // set the new properties
-        for (UserPreference preference : preferences) {
-            if (preference.getType() != UserPreference.CATEGORY_TYPE) {
+        for (UserPreference preference : preferenceList) {
 
-                if (preference.getKey().equals("startup.java.path")) {
+            if (preference.getKey().equals("startup.java.path")) {
+                saveStartupJavaPath(preference, propertiesName);
 
-                    // TODO remove in the next release
-                    // needs to get rid of the old relative path syntax
-                    String pathToJava = preference.getSaveValue();
-                    if (pathToJava.startsWith("%re%")) {
-                        pathToJava = pathToJava.replace("%re%" + FileSystems.getDefault().getSeparator(), "");
-                        pathToJava = pathToJava.replace("%re%", "");
-                    }
-
-                    if (JavaFileProperty.setValue(pathToJava)) {
-                        SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
-                        PropertiesPanel.setUpdateEnvNeed(true);
-                    }
-
-                } else
-                    SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
-
-                if (preference.getKey().equals("startup.display.language"))
-                    System.setProperty("user.language", preference.getSaveValue());
+            } else {
+                savePreference(preference, propertiesName);
             }
         }
 
+    }
+
+    private static void savePreference(UserPreference preference, String propertiesName) {
+        SystemProperties.setProperty(propertiesName, preference.getKey(), preference.getSaveValue());
+
+        if (preference.getKey().equals("startup.display.language"))
+            System.setProperty("user.language", preference.getSaveValue());
+    }
+
+    private static void saveStartupJavaPath(UserPreference preference, String propertiesName) {
+
+        // needs to get rid of the old relative path syntax
+        String pathToJava = preference.getSaveValue();
+        if (pathToJava.startsWith("%re%")) {
+            pathToJava = pathToJava.replace("%re%" + FileSystems.getDefault().getSeparator(), "");
+            pathToJava = pathToJava.replace("%re%", "");
+        }
+
+        if (JavaFileProperty.setValue(pathToJava)) {
+            SystemProperties.setProperty(propertiesName, preference.getKey(), pathToJava);
+            PropertiesPanel.setUpdateEnvNeed(true);
+        }
     }
 
     private void leftButtonAction(int col, int row, int valueColumn) {

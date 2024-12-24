@@ -304,7 +304,7 @@ next_transaction
 ;
 
 procedure_info
-:procedure_name ':' end_line
+:procedure_name ':' end_line+
 (CARETS end_line plan end_line*)?
 (params end_line+)?
 ('returns:' (SPACE|end_line) return_value end_line+)?
@@ -455,7 +455,15 @@ received_data
 ;
 
 error_message
-:.*?
+:(error end_line)*
+;
+
+error:
+id SPACE ':' error_text
+;
+
+error_text
+:(~('\n'))*
 ;
 
 time_execution

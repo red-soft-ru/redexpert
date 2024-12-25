@@ -23,11 +23,9 @@ package org.executequery.databasemediators.spi;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.executequery.databasemediators.DatabaseDriver;
 import org.executequery.datasource.DatabaseDefinition;
-import org.executequery.datasource.DefaultDriverLoader;
 import org.executequery.datasource.SimpleDataSource;
 
 import java.sql.Driver;
-import java.util.Map;
 
 /**
  * @author Takis Diakoumis
@@ -101,7 +99,7 @@ public class DefaultDatabaseDriver implements DatabaseDriver {
     }
 
     public void setPath(String path) {
-        this.path = path;
+        this.path = path.replaceAll("\\s*", "");
     }
 
     public String getClassName() {

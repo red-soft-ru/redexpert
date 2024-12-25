@@ -34,8 +34,10 @@ public class DatePatterCellEditor extends DefaultCellEditor
      * If the validation fails, it reverts the cell value to its previous state.
      */
     public void validate() {
-        if (!validator.isValid(((StringPicker) getComponent()).getValue()))
+        if (!validator.isValid(((StringPicker) getComponent()).getValue())) {
+            ((StringPicker) getComponent()).setValue(oldValue);
             table.setValueAt(oldValue, rowIndex, 2);
+        }
     }
 
     // --- DefaultCellEditor impl ---

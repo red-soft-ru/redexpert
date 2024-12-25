@@ -23,6 +23,7 @@ package org.executequery.util;
 import org.apache.commons.lang.StringUtils;
 import org.executequery.Application;
 import org.executequery.ApplicationContext;
+import org.executequery.ExecuteQuery;
 import org.executequery.GUIUtilities;
 import org.executequery.io.XMLFile;
 import org.executequery.localization.Bundles;
@@ -213,6 +214,8 @@ public class SystemResources {
                                 FileUtils.copyFile(oldFile.getAbsolutePath(), newFile.getAbsolutePath());
                             }
                         }
+
+                        ExecuteQuery.restart(null, false, true, true);
                         break;
 
                     case JOptionPane.CANCEL_OPTION:

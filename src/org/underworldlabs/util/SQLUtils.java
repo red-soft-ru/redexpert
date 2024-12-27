@@ -473,6 +473,10 @@ public final class SQLUtils {
             metaTag = NamedObject.META_TYPES[TRIGGER];
 
         StringBuilder sb = new StringBuilder();
+        sb.append("COMMENT ON ").append(metaTag).append(" ");
+        sb.append(nameAlreadyFormatted ? name : format(name, dc));
+        sb.append(" IS ");
+
         if (comment != null && !comment.isEmpty()) {
 
             if (comment.startsWith("'") && comment.endsWith("'"))
@@ -480,18 +484,16 @@ public final class SQLUtils {
 
             comment = comment.replace("'", "''");
 
-            sb.append("COMMENT ON ").append(metaTag).append(" ");
-            sb.append(nameAlreadyFormatted ? name : format(name, dc));
-            sb.append(" IS ");
-
             if (!comment.equals("NULL"))
                 sb.append("'").append(comment).append("'");
             else
                 sb.append("NULL");
 
-            sb.append(delimiter);
-            sb.append("\n");
-        }
+        } else
+            sb.append("NULL");
+
+        sb.append(delimiter);
+        sb.append("\n");
 
         return sb.toString();
     }
@@ -2104,9 +2106,13 @@ public final class SQLUtils {
             DefaultDatabaseJob job, String name, String cronSchedule, boolean active, LocalDateTime startDate,
             LocalDateTime endDate, int jobType, String source, String comment, boolean setTerm) {
 
+        DatabaseConnection dc = job.getHost().getDatabaseConnection();
+
         StringBuilder sb = new StringBuilder();
         sb.append(setTerm ? "SET TERM ^;\n" : "");
-        sb.append("ALTER JOB ").append(format(name, job.getHost().getDatabaseConnection())).append("\n");
+        sb.append("ALTER JOB ").append(format(name, dc)).append("\n");
+
+        String hasNoChangesCheckString = sb.toString();
 
         if (!job.getCronSchedule().equals(cronSchedule))
             sb.append("'").append(cronSchedule).append("'").append("\n");
@@ -2137,8 +2143,16 @@ public final class SQLUtils {
                 sb.append("AS\n").append(source);
         }
 
-        if (!Objects.equals(job.getRemarks(), comment) && !comment.isEmpty())
-            sb.append("^").append(generateComment(name, "JOB", comment, "", false, job.getHost().getDatabaseConnection()));
+        if (Objects.equals(hasNoChangesCheckString.trim(), sb.toString().trim())) {
+            sb.setLength(0);
+            sb.append(setTerm ? "SET TERM ^;\n" : "");
+        }
+
+        if (!Objects.equals(job.getRemarks(), comment)) {
+            if (sb.length() > 0)
+                sb.append("\n^\n");
+            sb.append(generateComment(name, "JOB", comment, "", false, dc));
+        }
 
         return sb.append(setTerm ? "^\nSET TERM ;^\n" : "^\n").toString();
     }

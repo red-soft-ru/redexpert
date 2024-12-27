@@ -252,6 +252,7 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
 
     @Override
     public void setParameters(Object[] params) {
+        // do nothing
     }
 
 }

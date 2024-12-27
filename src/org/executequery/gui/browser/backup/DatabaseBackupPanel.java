@@ -14,9 +14,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FilenameUtils;
 import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
+import org.executequery.databaseobjects.impl.DefaultDatabaseHost;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.gui.browser.DatabaseBackupRestorePanel;
-import org.executequery.listeners.SimpleDocumentListener;
 import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
@@ -36,7 +36,6 @@ import static org.executequery.gui.browser.DatabaseBackupRestorePanel.BACKUP_FIL
  */
 public class DatabaseBackupPanel implements Serializable {
     private final transient ParameterSaver parameterSaver;
-    private boolean override;
 
     private JTextField backupFileField;
     private JButton browseBackupFileButton;
@@ -74,7 +73,6 @@ public class DatabaseBackupPanel implements Serializable {
         backupButton = WidgetFactory.createButton("backupButton", bundleString("backupButton"));
 
         backupFileField = WidgetFactory.createTextField("backupFileField", DatabaseBackupRestorePanel.getLastBackupFilePath(parameterSaver));
-        backupFileField.getDocument().addDocumentListener(new SimpleDocumentListener(() -> override = false));
     }
 
     /**
@@ -193,17 +191,23 @@ public class DatabaseBackupPanel implements Serializable {
             throws InvalidBackupFileException, SQLException, ClassNotFoundException {
 
         String backupFileName = getNewFileName();
-        if (FileUtils.fileExists(backupFileName) && !override) {
-            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
-            if (result != JOptionPane.YES_OPTION)
+        if (FileUtils.fileExists(backupFileName)) {
+
+            GUIUtilities.displayWarningMessage(bundleString("backupOverrideNotSupport"));
+            return false;
+
+            /* todo add when backup file override will be available
+            (method available in jaybird 3.0.37+, 4.0.31+, 5.0.22+)
+
+            if (!supportsBackupOverride(dc) || GUIUtilities.displayYesNoDialog() != JOptionPane.YES_OPTION)
                 return false;
 
-            override = true;
+            // BackupManager#setBackupReplace method call
+             */
         }
 
         int workersCount = (int) workersSpinner.getValue();
         int options = getCheckBoxOptions();
-        override = false;
 
         parameterSaver.getProperties().put(BACKUP_FILE, backupFileName).save();
         DatabaseBackupRestoreService.backupDatabase(dc, backupFileName, options, workersCount, os);
@@ -257,15 +261,28 @@ public class DatabaseBackupPanel implements Serializable {
             filePath += ".fbk";
 
         backupFileField.setText(filePath);
+    }
 
-        if (FileUtils.fileExists(filePath)) {
-            int result = GUIUtilities.displayYesNoDialog(Bundles.get("common.file.override"), Bundles.get("common.confirmation"));
-            if (result != JOptionPane.YES_OPTION) {
-                browseBackupFile();
-                return;
-            }
-            override = true;
-        }
+    /**
+     * Checks if the given database connection supports backup override functionality.
+     * This feature is supported in RedDatabase 5.0.1 and above, but not in Firebird.
+     *
+     * @param dc The DatabaseConnection object to check for backup override support.
+     * @return true if the connected database supports backup override, false otherwise.
+     */
+    private boolean supportsBackupOverride(DatabaseConnection dc) {
+
+        // backup override supports since RDB 5.0.1 (FB doesn't support)
+        String serverName = new DefaultDatabaseHost(dc).getDatabaseProductName();
+        boolean supportsBackupOverride = !MiscUtils.isNull(serverName)
+                && serverName.toLowerCase().contains("reddatabase")
+                && dc.getMajorServerVersion() > 4
+                && dc.getMinorServerVersion() > 0;
+
+        if (!supportsBackupOverride)
+            GUIUtilities.displayWarningMessage(bundleString("backupOverrideNotSupport"));
+
+        return supportsBackupOverride;
     }
 
     /**

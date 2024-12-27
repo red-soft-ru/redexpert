@@ -232,7 +232,7 @@ public abstract class AbstractCreateObjectPanel extends AbstractFormObjectViewPa
 
     protected void addCommentTab(DatabaseObject databaseObject) {
         simpleCommentPanel = new SimpleCommentPanel(databaseObject);
-        tabbedPane.add(Bundles.getCommon("comment-field-label"), simpleCommentPanel.getCommentPanel());
+        tabbedPane.add(Bundles.getCommon("comment-field-label"), simpleCommentPanel);
     }
 
     public static AbstractCreateObjectPanel getEditPanelFromType(int type, DatabaseConnection dc, Object databaseObject) {

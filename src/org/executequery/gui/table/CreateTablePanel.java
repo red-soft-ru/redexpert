@@ -354,7 +354,7 @@ public class CreateTablePanel extends AbstractSQLSecurityObjectPanel
         };
 
         nameField.addKeyListener(keyAdapter);
-        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(keyAdapter);
+        simpleCommentPanel.addKeyListener(keyAdapter);
     }
 
     protected void addButtonsPanel(JPanel buttonsPanel) {

@@ -999,11 +999,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         if (propertiesPanel != null) {
 
             SimpleCommentPanel simpleCommentPanel = new SimpleCommentPanel(table);
-            simpleCommentPanel.getCommentPanel().setBorder(BorderFactory.createTitledBorder(bundleString("comment-field-label")));
-            simpleCommentPanel.addActionForCommentUpdateButton(action -> {
-                createSqlText.setSQLText(createTableStatementFormatted());
-                setValues(table);
-            });
+            simpleCommentPanel.setBorder(BorderFactory.createTitledBorder(bundleString("comment-field-label")));
 
             propertiesPanel.setCommentPanel(simpleCommentPanel);
             propertiesPanel.update();
@@ -1493,7 +1489,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
 
             JPanel mainPanel = new JPanel(new GridBagLayout());
             mainPanel.add(propertiesPanel, gbh.spanX().get());
-            mainPanel.add(commentPanel.getCommentPanel(), gbh.nextRowFirstCol().setMaxWeightY().fillBoth().get());
+            mainPanel.add(commentPanel, gbh.nextRowFirstCol().setMaxWeightY().fillBoth().get());
             mainPanel.add(savePreferencesButton, gbh.nextRowFirstCol().anchorSouthEast().fillNone().setMinWeightY().get());
 
             setLayout(new GridBagLayout());
@@ -1541,8 +1537,7 @@ public class BrowserTableEditingPanel extends AbstractFormObjectViewPanel
         }
 
         private void saveChanges() {
-
-            commentPanel.updateComment();
+            commentPanel.saveComment();
 
             String query = "ALTER TABLE " + MiscUtils.getFormattedObject(table.getName(), table.getHost().getDatabaseConnection());
             String noChangesCheckString = query;

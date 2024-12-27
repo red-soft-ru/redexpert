@@ -38,7 +38,6 @@ public class DatabaseRestorePanel implements Serializable {
     private JButton browseBackupFileButton;
     private JCheckBox deactivateIdxCheckBox;
     private JCheckBox noShadowCheckBox;
-    private JCheckBox restoreOverrideCheck;
     private JCheckBox noValidityCheckBox;
     private JCheckBox metadataOnlyCheckBox;
     private JCheckBox oneAtATimeCheckBox;
@@ -90,9 +89,6 @@ public class DatabaseRestorePanel implements Serializable {
         metadataOnlyCheckBox = WidgetFactory.createCheckBox("metadataOnlyCheckBox", bundleString("metadataOnlyCheckBox"));
         oneAtATimeCheckBox = WidgetFactory.createCheckBox("oneAtATimeCheckBox", bundleString("oneAtATimeCheckBox"));
 
-        restoreOverrideCheck = WidgetFactory.createCheckBox("restoreOverrideCheck", bundleString("restoreOverrideCheck"));
-        restoreOverrideCheck.setSelected(true);
-
         pageSizeCombo = WidgetFactory.createComboBox("pageSizeCombo", Arrays.asList("4096", "8192", "16384", "32768"));
         pageSizeCombo.setSelectedIndex(1);
 
@@ -103,7 +99,6 @@ public class DatabaseRestorePanel implements Serializable {
     private void initParameterSaver() {
         Map<String, Component> components = new HashMap<>();
         components.put(buildName(deactivateIdxCheckBox), deactivateIdxCheckBox);
-        components.put(buildName(restoreOverrideCheck), restoreOverrideCheck);
         components.put(buildName(metadataOnlyCheckBox), metadataOnlyCheckBox);
         components.put(buildName(noValidityCheckBox), noValidityCheckBox);
         components.put(buildName(oneAtATimeCheckBox), oneAtATimeCheckBox);
@@ -149,12 +144,11 @@ public class DatabaseRestorePanel implements Serializable {
     private JPanel createCheckBoxPanel() {
         JPanel checkBoxPanel = WidgetFactory.createPanel("checkBoxPanel");
         GridBagHelper gbh = new GridBagHelper().anchorNorthWest().fillHorizontally();
-        checkBoxPanel.add(restoreOverrideCheck, gbh.get());
-        checkBoxPanel.add(deactivateIdxCheckBox, gbh.nextCol().leftGap(5).get());
+        checkBoxPanel.add(deactivateIdxCheckBox, gbh.get());
+        checkBoxPanel.add(noValidityCheckBox, gbh.nextCol().leftGap(5).get());
         checkBoxPanel.add(metadataOnlyCheckBox, gbh.nextCol().get());
         checkBoxPanel.add(noShadowCheckBox, gbh.nextRowFirstCol().leftGap(0).topGap(5).get());
-        checkBoxPanel.add(noValidityCheckBox, gbh.nextCol().leftGap(5).get());
-        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextCol().get());
+        checkBoxPanel.add(oneAtATimeCheckBox, gbh.nextCol().leftGap(5).get());
         checkBoxPanel.add(new JPanel(), gbh.nextCol().setMaxWeightX().spanX().get());
         return checkBoxPanel;
     }
@@ -242,10 +236,6 @@ public class DatabaseRestorePanel implements Serializable {
         if (oneAtATimeCheckBox.isSelected()) {
             options |= IFBBackupManager.RESTORE_ONE_AT_A_TIME;
             Log.info("Restoring one table at a time is enabled");
-        }
-        if (restoreOverrideCheck.isSelected()) {
-            options |= IFBBackupManager.RESTORE_OVERWRITE;
-            Log.info("Override restoring file is enabled");
         }
         return options;
     }

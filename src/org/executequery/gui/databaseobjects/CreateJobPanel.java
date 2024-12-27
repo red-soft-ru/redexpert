@@ -107,6 +107,9 @@ public class CreateJobPanel extends AbstractCreateObjectPanel {
     @Override
     protected void reset() {
 
+        if (job == null)
+            return;
+
         jobTypeCombo.setSelectedIndex(job.getJobType());
         startDatePicker.setDateTime(job.getStartDate());
         endDatePicker.setDateTime(job.getEndDate());

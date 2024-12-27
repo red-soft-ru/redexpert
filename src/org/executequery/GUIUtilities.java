@@ -1329,6 +1329,10 @@ public final class GUIUtilities {
         return GUIUtils.displayConfirmCancelErrorMessage(getInFocusDialogOrWindow(), message);
     }
 
+    public static int displayYesNoDialog() {
+        return displayYesNoDialog(Bundles.getCommon("file.override"), Bundles.getCommon("confirmation"));
+    }
+
     public static int displayYesNoDialog(Object message, String title) {
         return GUIUtils.displayYesNoDialog(getInFocusDialogOrWindow(), message, title);
     }

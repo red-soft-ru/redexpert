@@ -13,12 +13,14 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.gui.WidgetFactory;
 import org.executequery.localization.Bundles;
 import org.executequery.gui.browser.DatabaseBackupRestorePanel;
 import org.executequery.log.Log;
 import org.underworldlabs.swing.layouts.GridBagHelper;
+import org.underworldlabs.util.FileUtils;
 import org.underworldlabs.util.MiscUtils;
 import org.underworldlabs.util.ParameterSaver;
 
@@ -205,6 +207,13 @@ public class DatabaseRestorePanel implements Serializable {
         String backupFile = getBackupFileName();
         int pageSize = getSelectedPageSize();
         int options = getCheckBoxOptions();
+
+        if (FileUtils.fileExists(databaseFile)) {
+            if (GUIUtilities.displayYesNoDialog() != JOptionPane.YES_OPTION)
+                return false;
+
+            options |= IFBBackupManager.RESTORE_OVERWRITE;
+        }
 
         DatabaseBackupRestoreService.restoreDatabase(dc, backupFile, databaseFile, options, pageSize, workersCount, os);
         return true;

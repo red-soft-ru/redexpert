@@ -462,51 +462,13 @@ public final class SQLUtils {
         return generateComment(name, metaTag, comment, delimiter, true, null);
     }
 
-    public static String generateComment(
-            String name, String metaTag, String comment, String delimiter,
-            boolean nameAlreadyFormatted, DatabaseConnection dc) {
-
-        if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
-            metaTag = NamedObject.META_TYPES[TABLE];
-
-        if (metaTag != null && (metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
-            metaTag = NamedObject.META_TYPES[TRIGGER];
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("COMMENT ON ").append(metaTag).append(" ");
-        sb.append(nameAlreadyFormatted ? name : format(name, dc));
-        sb.append(" IS ");
-
-        if (comment != null && !comment.isEmpty()) {
-
-            if (comment.startsWith("'") && comment.endsWith("'"))
-                comment = comment.substring(1, comment.length() - 1);
-
-            comment = comment.replace("'", "''");
-
-            if (!comment.equals("NULL"))
-                sb.append("'").append(comment).append("'");
-            else
-                sb.append("NULL");
-
-        } else
-            sb.append("NULL");
-
-        sb.append(delimiter);
-        sb.append("\n");
-
-        return sb.toString();
+    public static String generateComment(String name, String metaTag, String comment, String delimiter,
+                                         boolean nameFormatted, DatabaseConnection dc) {
+        return generateComment(name, metaTag, comment, null, delimiter, nameFormatted, dc);
     }
 
-    public static String generateComment(
-            String name, String metaTag, String comment, String plugin, String delimiter,
-            boolean nameAlreadyFormatted, DatabaseConnection dc) {
-
-        if (metaTag != null && metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
-            metaTag = NamedObject.META_TYPES[TABLE];
-
-        if (metaTag != null && (metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
-            metaTag = NamedObject.META_TYPES[TRIGGER];
+    public static String generateComment(String name, String metaTag, String comment, String plugin, String delimiter,
+                                         boolean nameFormatted, DatabaseConnection dc) {
 
         StringBuilder sb = new StringBuilder();
         if (comment != null && !comment.isEmpty()) {
@@ -516,8 +478,8 @@ public final class SQLUtils {
 
             comment = comment.replace("'", "''");
 
-            sb.append("COMMENT ON ").append(metaTag).append(" ");
-            sb.append(nameAlreadyFormatted ? name : format(name, dc));
+            sb.append("COMMENT ON ").append(getMetaTagForQuery(metaTag)).append(" ");
+            sb.append(nameFormatted ? name : format(name, dc));
 
             if (plugin != null && !plugin.isEmpty())
                 sb.append(" USING PLUGIN ").append(plugin);
@@ -2204,6 +2166,20 @@ public final class SQLUtils {
 
     public static String generateAlterActive(String type, String name, boolean isActive) {
         return "ALTER " + type + " " + name + (isActive ? " ACTIVE" : " INACTIVE");
+    }
+
+    private static String getMetaTagForQuery(String metaTag) {
+
+        if (metaTag == null)
+            return null;
+
+        if (metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
+            return NamedObject.META_TYPES[TABLE];
+
+        if ((metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
+            return NamedObject.META_TYPES[TRIGGER];
+
+        return metaTag;
     }
 
     private static String format(String object, DatabaseConnection dc) {

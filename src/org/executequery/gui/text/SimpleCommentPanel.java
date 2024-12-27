@@ -7,112 +7,193 @@ import org.executequery.databasemediators.spi.DefaultStatementExecutor;
 import org.executequery.databaseobjects.DatabaseObject;
 import org.executequery.databaseobjects.NamedObject;
 import org.executequery.databaseobjects.impl.DefaultDatabaseUser;
+import org.executequery.gui.WidgetFactory;
+import org.executequery.localization.Bundles;
 import org.executequery.log.Log;
 import org.executequery.sql.SqlStatementResult;
+import org.underworldlabs.swing.RolloverButton;
+import org.underworldlabs.swing.layouts.GridBagHelper;
 import org.underworldlabs.util.SQLUtils;
 
-import javax.swing.text.Document;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.function.Consumer;
 
-public class SimpleCommentPanel extends SimpleTextArea {
+public class SimpleCommentPanel {
 
-    private DatabaseObject object;
+    /**
+     * current database object
+     */
+    private DatabaseObject currentDatabaseObject;
+    /**
+     * comment main panel
+     */
+    private JPanel commentPanel;
+    /**
+     * comment text field
+     */
+    private SimpleTextArea commentField;
+    /**
+     * update comment button
+     */
+    private RolloverButton updateCommentButton;
+    /**
+     * update comment button
+     */
+    private RolloverButton rollbackCommentButton;
+    /**
+     * update button action listener
+     */
+    private ActionListener updateButtonActionListener;
 
     public SimpleCommentPanel(DatabaseObject object) {
-        this.object = object;
+        currentDatabaseObject = object;
+        init();
         resetComment();
     }
 
-    public void saveComment() {
+    private void init() {
 
-        if (object == null) {
-            Log.debug("Couldn't save comment, database object is null");
-            return;
-        }
+        commentField = new SimpleTextArea();
+        updateButtonActionListener = e -> updateComment();
 
-        String comment = getComment().trim();
-        if (comment.isEmpty())
-            comment = "NULL";
+        updateCommentButton = WidgetFactory.createRolloverButton(
+                "updateCommentButton",
+                Bundles.get("common.commit.button"),
+                "icon_commit",
+                updateButtonActionListener);
+        updateCommentButton.setEnabled(currentDatabaseObject != null);
 
-        DefaultStatementExecutor executor = new DefaultStatementExecutor();
-        try {
-            String metaTag = NamedObject.META_TYPES[object.getType()];
+        rollbackCommentButton = WidgetFactory.createRolloverButton(
+                "rollbackCommentButton",
+                Bundles.get("common.rollback.button"),
+                "icon_rollback",
+                e -> resetComment()
+        );
 
-            executor.setCommitMode(false);
-            executor.setKeepAlive(true);
-            executor.setDatabaseConnection(getSelectedConnection());
+        GridBagHelper gridBagHelper = new GridBagHelper();
+        commentPanel = new JPanel(new GridBagLayout());
 
-            String query;
-            if (object instanceof DefaultDatabaseUser) {
-                query = SQLUtils.generateComment(
-                        object.getName(),
-                        metaTag,
-                        comment,
-                        ((DefaultDatabaseUser) object).getPlugin(),
-                        ";",
-                        false,
-                        getSelectedConnection()
-                );
+        commentPanel.add(updateCommentButton,
+                gridBagHelper.setInsets(2, 2, 2, 2).anchorNorthWest().setLabelDefault().get());
+        commentPanel.add(rollbackCommentButton,
+                gridBagHelper.nextCol().nextCol().get());
+        commentPanel.add(commentField,
+                gridBagHelper.nextRowFirstCol().fillBoth().spanX().spanY().setWidth(3).setMaxWeightX().get());
+    }
 
-            } else {
-                query = SQLUtils.generateComment(
-                        object.getName(),
-                        metaTag,
-                        comment,
-                        ";",
-                        false,
-                        getSelectedConnection()
-                );
+    private void saveComment() {
+        if (currentDatabaseObject != null) {
+            DefaultStatementExecutor executor = new DefaultStatementExecutor();
+
+            String comment = commentField.getTextAreaComponent().getText().trim();
+            if (comment.isEmpty())
+                comment = "NULL";
+
+            try {
+                String metaTag = NamedObject.META_TYPES[currentDatabaseObject.getType()];
+
+                executor.setCommitMode(false);
+                executor.setKeepAlive(true);
+                executor.setDatabaseConnection(getSelectedConnection());
+
+                String request;
+                if (currentDatabaseObject instanceof DefaultDatabaseUser) {
+                    request = SQLUtils.generateComment(
+                            currentDatabaseObject.getName(),
+                            metaTag,
+                            comment,
+                            ((DefaultDatabaseUser) currentDatabaseObject).getPlugin(),
+                            ";",
+                            false,
+                            getSelectedConnection()
+                    );
+
+                } else {
+                    request = SQLUtils.generateComment(
+                            currentDatabaseObject.getName(),
+                            metaTag,
+                            comment,
+                            ";",
+                            false,
+                            getSelectedConnection()
+                    );
+                }
+
+                Log.info("Query created: " + request);
+
+                SqlStatementResult result = executor.execute(QueryTypes.COMMENT, request);
+                executor.getConnection().commit();
+
+                if (result.isException()) {
+                    Log.error(result.getErrorMessage());
+                    GUIUtilities.displayWarningMessage("Error updating comment on table\n" + result.getErrorMessage());
+                } else
+                    Log.info("Changes saved");
+
+                currentDatabaseObject.reset();
+                currentDatabaseObject.setRemarks(null);
+
+
+            } catch (Exception e) {
+                GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e, this.getClass());
+                Log.error("Error updating comment on table", e);
+
+            } finally {
+                executor.releaseResources();
             }
 
-            Log.info("Query created: " + query);
-
-            SqlStatementResult result = executor.execute(QueryTypes.COMMENT, query);
-            executor.getConnection().commit();
-
-            if (result.isException()) {
-                Log.error(result.getErrorMessage());
-                GUIUtilities.displayWarningMessage("Error updating comment on table\n" + result.getErrorMessage());
-
-            } else
-                Log.info("Changes saved");
-
-            object.reset();
-            object.setRemarks(null);
-
-        } catch (Exception e) {
-            GUIUtilities.displayExceptionErrorDialog("Error updating comment on table", e, this.getClass());
-            Log.error("Error updating comment on table", e);
-
-        } finally {
-            executor.releaseResources();
-        }
+        } else
+            Log.error("databaseObject is null");
     }
 
     public void resetComment() {
-        setComment(object != null ? object.getRemarks() : null);
+        if (currentDatabaseObject != null)
+            setComment(currentDatabaseObject.getRemarks());
+        else setComment("");
     }
-
-    // ---
 
     private DatabaseConnection getSelectedConnection() {
-        return object != null ? object.getHost().getDatabaseConnection() : null;
+        return currentDatabaseObject.getHost().getDatabaseConnection();
     }
 
-    public void setDatabaseObject(DatabaseObject object) {
-        this.object = object;
+    public JPanel getCommentPanel() {
+        return commentPanel;
+    }
+
+    public void updateComment() {
+        saveComment();
+    }
+
+    public SimpleTextArea getCommentField() {
+        return commentField;
+    }
+
+    public void setDatabaseObject(DatabaseObject databaseObject) {
+        this.currentDatabaseObject = databaseObject;
+        updateCommentButton.setEnabled(currentDatabaseObject != null);
         resetComment();
     }
 
+    public void addActionForCommentUpdateButton(Consumer<ActionEvent> additionalAction) {
+
+        updateCommentButton.removeActionListener(updateButtonActionListener);
+
+        updateButtonActionListener = e -> {
+            updateComment();
+            additionalAction.accept(e);
+        };
+
+        updateCommentButton.addActionListener(updateButtonActionListener);
+    }
+
     public String getComment() {
-        return getTextAreaComponent().getText();
+        return getCommentField().getTextAreaComponent().getText();
     }
 
     public void setComment(String comment) {
-        getTextAreaComponent().setText(comment);
+        getCommentField().getTextAreaComponent().setText(comment);
     }
-
-    public Document getDocument() {
-        return getTextAreaComponent().getDocument();
-    }
-
 }

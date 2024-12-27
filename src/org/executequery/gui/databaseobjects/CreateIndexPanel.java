@@ -159,7 +159,7 @@ public class CreateIndexPanel extends AbstractCreateObjectPanel {
         nameField.setEditable(false);
 
         simpleCommentPanel.setDatabaseObject(databaseIndex);
-        simpleCommentPanel.getDocument().addDocumentListener(new DocumentListener() {
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 commentChanged = !databaseIndex.getRemarks().equals(simpleCommentPanel.getComment());

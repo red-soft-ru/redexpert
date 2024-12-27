@@ -21,6 +21,7 @@
 package org.executequery.gui.browser;
 
 import org.apache.commons.lang.StringUtils;
+import org.executequery.GUIUtilities;
 import org.executequery.databasemediators.DatabaseConnection;
 import org.executequery.databaseobjects.DatabaseColumn;
 import org.executequery.databaseobjects.DatabaseObject;
@@ -208,7 +209,9 @@ public class ObjectDefinitionPanel extends AbstractFormObjectViewPanel
         sqlTextPanel.getTextPane().setDatabaseConnection(object.getHost().getDatabaseConnection());
         sqlTextPanel.setSQLText(Constants.EMPTY);
 
-        tabPane.setComponentAt(tabPane.getTabCount() - 1, new SimpleCommentPanel(currentObjectView));
+        SimpleCommentPanel simpleCommentPanel = new SimpleCommentPanel(currentObjectView);
+        simpleCommentPanel.addActionForCommentUpdateButton(e -> sqlTextPanel.setSQLText(currentObjectView.getCreateSQLText()));
+        tabPane.setComponentAt(tabPane.getTabCount() - 1, simpleCommentPanel.getCommentPanel());
 
         // --- header values ---
 

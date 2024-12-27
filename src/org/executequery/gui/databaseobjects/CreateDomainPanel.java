@@ -83,7 +83,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
         tabbedPane.add(bundleStaticString("default-value"), defaultValuePanel);
         tabbedPane.add(bundleStaticString("check"), checkPanel);
         addCommentTab(null);
-        simpleCommentPanel.getDocument().addDocumentListener(this);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument().addDocumentListener(this);
         tabbedPane.add(bundleStaticString("SQL"), sqlPanel);
         centralPanel.setVisible(false);
     }
@@ -190,7 +190,7 @@ public class CreateDomainPanel extends AbstractCreateObjectPanel implements Docu
             columnData.setDefaultValue(defaultValueTextPane.getText());
         } else if (e.getDocument() == checkTextPane.getDocument()) {
             columnData.setCheck(checkTextPane.getText());
-        } else if (e.getDocument() == simpleCommentPanel.getDocument()) {
+        } else if (e.getDocument() == simpleCommentPanel.getCommentField().getTextAreaComponent().getDocument()) {
             columnData.setRemarks(simpleCommentPanel.getComment());
         } else if (e.getDocument() == nameField.getDocument()) {
             columnData.setColumnName(nameField.getText());

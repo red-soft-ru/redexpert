@@ -263,7 +263,7 @@ public abstract class CreateProcedureFunctionPanel extends AbstractCreateExterna
         inputParamsPanel.addChangesListener(changeActionListener);
         outputParamsPanel.addChangesListener(changeActionListener);
         showHelpersCheck.addActionListener(e -> showHelpersCheckTriggered());
-        simpleCommentPanel.addKeyListener(changeKeyListener);
+        simpleCommentPanel.getCommentField().getTextAreaComponent().addKeyListener(changeKeyListener);
     }
 
     private void showHelpersCheckTriggered() {

@@ -101,23 +101,21 @@ public class SimpleCommentPanel {
 
                 String request;
                 if (currentDatabaseObject instanceof DefaultDatabaseUser) {
-                    request = SQLUtils.generateComment(
+                    request = SQLUtils.generateNullableComment(
                             currentDatabaseObject.getName(),
                             metaTag,
                             comment,
                             ((DefaultDatabaseUser) currentDatabaseObject).getPlugin(),
                             ";",
-                            false,
                             getSelectedConnection()
                     );
 
                 } else {
-                    request = SQLUtils.generateComment(
+                    request = SQLUtils.generateNullableComment(
                             currentDatabaseObject.getName(),
                             metaTag,
                             comment,
                             ";",
-                            false,
                             getSelectedConnection()
                     );
                 }

@@ -10,6 +10,7 @@ import org.executequery.gui.table.CreateTableSQLSyntax;
 import org.executequery.gui.table.TableDefinitionPanel;
 import org.executequery.log.Log;
 import org.underworldlabs.jdbc.DataSourceException;
+import org.underworldlabs.util.sql.SQLComment;
 
 import javax.swing.table.TableModel;
 import java.sql.*;
@@ -102,8 +103,8 @@ public final class SQLUtils {
 
         if (setComment) {
             sb.append(generateCommentForColumns(name, columnDataList, "COLUMN", delimiter));
-            if (!MiscUtils.isNull(comment) && !comment.equals(""))
-                sb.append(generateComment(name, "TABLE", comment, delimiter, false, dc));
+            if (!MiscUtils.isNull(comment))
+                sb.append(generateComment(format(name, dc), "TABLE", comment, delimiter));
         }
 
         return sb.toString();
@@ -355,7 +356,7 @@ public final class SQLUtils {
             sb.append("\n^\n");
 
         if (setComment) {
-            sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
+            sb.append(generateComment(format(name, dc), NamedObject.META_TYPES[PROCEDURE], comment, "^"));
             sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
             sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
         }
@@ -371,7 +372,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (setComment) {
-            sb.append(generateComment(name, NamedObject.META_TYPES[PROCEDURE], comment, "^", false, dc));
+            sb.append(generateComment(format(name, dc), NamedObject.META_TYPES[PROCEDURE], comment, "^"));
             sb.append(generateCommentForColumns(name, inputParameters, "PARAMETER", "^"));
             sb.append(generateCommentForColumns(name, outputParameters, "PARAMETER", "^"));
         }
@@ -384,7 +385,7 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         if (setComment) {
-            sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
+            sb.append(generateComment(format(name, dc), NamedObject.META_TYPES[FUNCTION], comment, "^"));
             sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         }
         if (sb.length() > 0)
@@ -445,56 +446,40 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String generateCommentForColumns(
-            String relationName, List<ColumnData> cols, String metaTag, String delimiter) {
+    public static String generateCommentForColumns(String relationName, List<ColumnData> cols, String metaTag, String delimiter) {
 
         StringBuilder sb = new StringBuilder();
 
         for (ColumnData cd : cols) {
             String name = format(relationName, cd.getConnection()) + "." + cd.getFormattedColumnName();
-            sb.append(generateComment(name, metaTag, cd.getRemarks(), delimiter, true, cd.getConnection()));
+            sb.append(SQLComment.generate(name, metaTag, cd.getRemarks(), delimiter, false));
         }
 
         return sb.toString();
     }
 
     public static String generateComment(String name, String metaTag, String comment, String delimiter) {
-        return generateComment(name, metaTag, comment, delimiter, true, null);
+        return SQLComment.generate(name, metaTag, comment, delimiter, false);
     }
 
-    public static String generateComment(String name, String metaTag, String comment, String delimiter,
-                                         boolean nameFormatted, DatabaseConnection dc) {
-        return generateComment(name, metaTag, comment, null, delimiter, nameFormatted, dc);
+    public static String generateComment(String name, String metaTag, String comment, String plugin, String delimiter) {
+        return SQLComment.generate(name, metaTag, plugin, comment, delimiter, false);
     }
 
-    public static String generateComment(String name, String metaTag, String comment, String plugin, String delimiter,
-                                         boolean nameFormatted, DatabaseConnection dc) {
+    public static String generateNullableComment(String name, String metaTag, String comment, String delimiter) {
+        return SQLComment.generate(name, metaTag, comment, delimiter, true);
+    }
 
-        StringBuilder sb = new StringBuilder();
-        if (comment != null && !comment.isEmpty()) {
+    public static String generateNullableComment(String name, String metaTag, String comment, String plugin, String delimiter) {
+        return SQLComment.generate(name, metaTag, plugin, comment, delimiter, true);
+    }
 
-            if (comment.startsWith("'") && comment.endsWith("'"))
-                comment = comment.substring(1, comment.length() - 1);
+    public static String generateNullableComment(String name, String metaTag, String comment, String delimiter, DatabaseConnection dc) {
+        return SQLComment.generate(format(name, dc), metaTag, null, comment, delimiter, true);
+    }
 
-            comment = comment.replace("'", "''");
-
-            sb.append("COMMENT ON ").append(getMetaTagForQuery(metaTag)).append(" ");
-            sb.append(nameFormatted ? name : format(name, dc));
-
-            if (plugin != null && !plugin.isEmpty())
-                sb.append(" USING PLUGIN ").append(plugin);
-
-            sb.append(" IS ");
-            if (!comment.equals("NULL"))
-                sb.append("'").append(comment).append("'");
-            else
-                sb.append("NULL");
-
-            sb.append(delimiter);
-            sb.append("\n");
-        }
-
-        return sb.toString();
+    public static String generateNullableComment(String name, String metaTag, String comment, String plugin, String delimiter, DatabaseConnection dc) {
+        return SQLComment.generate(format(name, dc), metaTag, plugin, comment, delimiter, true);
     }
 
     public static String generateCreateProcedureOrFunctionHeader(
@@ -586,7 +571,7 @@ public final class SQLUtils {
             sb.append("\n^\n");
 
         if (setComment) {
-            sb.append(generateComment(name, NamedObject.META_TYPES[FUNCTION], comment, "^", false, dc));
+            sb.append(generateComment(format(name, dc), NamedObject.META_TYPES[FUNCTION], comment, "^"));
             sb.append(generateCommentForColumns(name, inputArguments, "PARAMETER", "^"));
         }
 
@@ -1003,9 +988,10 @@ public final class SQLUtils {
     }
 
     public static String generateCreateUser(DefaultDatabaseUser user, boolean setComment) {
+        DatabaseConnection dc = user.getHost().getDatabaseConnection();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE USER ").append(format(user.getName(), user.getHost().getDatabaseConnection()));
+        sb.append("CREATE USER ").append(format(user.getName(), dc));
 
         if (!MiscUtils.isNull(user.getFirstName()))
             sb.append("\nFIRSTNAME '").append(user.getFirstName()).append("'");
@@ -1037,8 +1023,15 @@ public final class SQLUtils {
         }
         sb.append(";\n");
 
-        if (setComment && !MiscUtils.isNull(user.getRemarks()))
-            sb.append(generateComment(user.getName(), "USER", user.getRemarks(), user.getPlugin(), ";", false, user.getHost().getDatabaseConnection()));
+        if (setComment && !MiscUtils.isNull(user.getRemarks())) {
+            sb.append(generateComment(
+                    format(user.getName(), dc),
+                    "USER",
+                    user.getRemarks(),
+                    user.getPlugin(),
+                    ";"
+            ));
+        }
 
         return sb.toString();
     }
@@ -1178,13 +1171,11 @@ public final class SQLUtils {
 
                     if (comments) {
                         if (!Objects.equals(thisCD.getRemarks(), comparingCD.getRemarks())) {
-                            columnComments.append(generateComment(
+                            columnComments.append(generateNullableComment(
                                     format(thisCD.getTableName(), thisCD.getConnection()) + "." + thisCD.getFormattedColumnName(),
                                     "COLUMN",
                                     comparingCD.getRemarks(),
-                                    ";",
-                                    true,
-                                    thisCD.getConnection()
+                                    ";"
                             ));
                         }
                     }
@@ -1211,13 +1202,11 @@ public final class SQLUtils {
                 sb.append("\n\tADD ").append(generateDefinitionColumn(comparingCD, computed, false, false)).append(COMMA);
 
                 if (comments) {
-                    columnComments.append(generateComment(
+                    columnComments.append(generateNullableComment(
                             format(comparingCD.getTableName(), comparingCD.getConnection()) + "." + comparingCD.getFormattedColumnName(),
                             "COLUMN",
                             comparingCD.getRemarks(),
-                            ";",
-                            true,
-                            comparingCD.getConnection()
+                            ";"
                     ));
                 }
             }
@@ -1311,14 +1300,12 @@ public final class SQLUtils {
         if (comments) {
             sb.append(columnComments);
             if (!Objects.equals(thisTable.getRemarks(), comparingTable.getRemarks())) {
-                sb.append(generateComment(
-                        thisTable.getName(),
+                sb.append(generateNullableComment(
+                        format(thisTable.getName(), thisTable.getHost().getDatabaseConnection()),
                         "TABLE",
                         comparingTable.getRemarks(),
-                        ";",
-                        false,
-                        thisTable.getHost().getDatabaseConnection())
-                );
+                        ";"
+                ));
             }
         }
 
@@ -1455,7 +1442,8 @@ public final class SQLUtils {
     public static String generateAlterUser(DefaultDatabaseUser thisUser, DefaultDatabaseUser compareUser, boolean setComment) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER USER ").append(format(thisUser.getName(), thisUser.getHost().getDatabaseConnection()));
+        DatabaseConnection dc = thisUser.getHost().getDatabaseConnection();
+        sb.append("ALTER USER ").append(format(thisUser.getName(), dc));
         if (!thisUser.getPlugin().isEmpty())
             sb.append("\nUSING PLUGIN ").append(thisUser.getPlugin());
 
@@ -1502,7 +1490,13 @@ public final class SQLUtils {
             sb.append(";\n");
 
         if (setComment && !Objects.equals(thisUser.getRemarks(), compareUser.getRemarks())) {
-            sb.append(generateComment(thisUser.getName(), "USER", compareUser.getRemarks(), thisUser.getPlugin(), ";", false, thisUser.getHost().getDatabaseConnection()));
+            sb.append(generateNullableComment(
+                    format(thisUser.getName(), dc),
+                    "USER",
+                    compareUser.getRemarks(),
+                    thisUser.getPlugin(),
+                    ";"
+            ));
         }
 
         return !sb.toString().isEmpty() ? sb.toString() : THERE_ARE_NO_CHANGES;
@@ -1516,25 +1510,24 @@ public final class SQLUtils {
         StringBuilder sb = new StringBuilder();
 
         String comparingFileName = comparingTablespace.getFileName();
+        DatabaseConnection dc = thisTablespace.getHost().getDatabaseConnection();
         if (!Objects.equals(thisTablespace.getFileName(), comparingFileName)) {
             sb.append(generateAlterTablespace(
                     thisTablespace.getName(),
                     comparingFileName,
                     null,
                     false,
-                    thisTablespace.getHost().getDatabaseConnection()
+                    dc
             ));
         }
 
         String comparingComment = comparingTablespace.getRemarks();
         if (commentsNeed && !Objects.equals(thisTablespace.getRemarks(), comparingComment)) {
-            sb.append(generateComment(
-                    thisTablespace.getName(),
+            sb.append(generateNullableComment(
+                    format(thisTablespace.getName(), dc),
                     "TABLESPACE",
                     comparingComment,
-                    ";",
-                    false,
-                    thisTablespace.getHost().getDatabaseConnection()
+                    ";"
             ));
         }
 
@@ -1549,7 +1542,7 @@ public final class SQLUtils {
         sb.append(" SET FILE '").append(file).append("';\n");
 
         if (commentNeed && !MiscUtils.isNull(comment))
-            sb.append(generateComment(formattedName, "TABLESPACE", comment, ";"));
+            sb.append(generateNullableComment(formattedName, "TABLESPACE", comment, ";"));
 
         return sb.toString();
     }
@@ -1588,8 +1581,8 @@ public final class SQLUtils {
 
         }
 
-        if (description != null && !description.trim().equals(""))
-            sb.append(generateComment(name, "SEQUENCE", description.trim(), ";", false, dc));
+        if (!MiscUtils.isNull(description))
+            sb.append(generateComment(format(name, dc), "SEQUENCE", description.trim(), ";"));
 
         return sb.toString();
     }
@@ -1611,8 +1604,8 @@ public final class SQLUtils {
         sb.append("\nAS \n").append(selectStatement.trim());
         sb.append(sb.toString().endsWith(";") ? "\n" : ";\n");
 
-        if (description != null && !description.trim().isEmpty())
-            sb.append(generateComment(name, "VIEW", description.trim(), ";", false, dc));
+        if (!MiscUtils.isNull(description))
+            sb.append(generateComment(format(name, dc), "VIEW", description.trim(), ";"));
 
         return sb.toString();
     }
@@ -1733,7 +1726,7 @@ public final class SQLUtils {
         sb.append("^\n").append("SET TERM ; ^").append("\n");
 
         if (description != null && !description.isEmpty())
-            sb.append(generateComment(name, "PACKAGE", description, ";", false, dc));
+            sb.append(generateComment(format(name, dc), "PACKAGE", description, ";"));
 
         return sb.toString();
     }
@@ -1893,7 +1886,7 @@ public final class SQLUtils {
         if (tablespace != null)
             sb.append("ALTER INDEX ").append(format(name, dc)).append(" SET TABLESPACE TO ").append(tablespace).append(";\n");
         if (comment != null)
-            sb.append(generateComment(name, "INDEX", comment, ";", false, dc));
+            sb.append(generateNullableComment(format(name, dc), "INDEX", comment, ";"));
 
         return sb.toString();
     }
@@ -2058,8 +2051,8 @@ public final class SQLUtils {
         else
             sb.append("AS\n").append(source);
 
-        if (comment != null && !comment.isEmpty())
-            sb.append("^").append(generateComment(name, "JOB", comment, "", false, dc));
+        if (!MiscUtils.isNull(comment))
+            sb.append("^").append(generateComment(format(name, dc), "JOB", comment, ""));
 
         return sb.append(setTerm ? "^\nSET TERM ;^\n" : "^\n").toString();
     }
@@ -2113,7 +2106,7 @@ public final class SQLUtils {
         if (!Objects.equals(job.getRemarks(), comment)) {
             if (sb.length() > 0)
                 sb.append("\n^\n");
-            sb.append(generateComment(name, "JOB", comment, "", false, dc));
+            sb.append(generateNullableComment(format(name, dc), "JOB", comment, ""));
         }
 
         return sb.append(setTerm ? "^\nSET TERM ;^\n" : "^\n").toString();
@@ -2123,7 +2116,8 @@ public final class SQLUtils {
 
         StringBuilder sb = new StringBuilder();
         sb.append("SET TERM ^;\n");
-        sb.append("ALTER JOB ").append(format(thisJob.getName(), thisJob.getHost().getDatabaseConnection())).append("\n");
+        DatabaseConnection dc = thisJob.getHost().getDatabaseConnection();
+        sb.append("ALTER JOB ").append(format(thisJob.getName(), dc)).append("\n");
 
         String noChangesCheckString = sb.toString();
 
@@ -2156,8 +2150,14 @@ public final class SQLUtils {
                 sb.append("AS\n").append(compareJob.getSource());
         }
 
-        if (!Objects.equals(thisJob.getRemarks(), compareJob.getRemarks()) && !compareJob.getRemarks().isEmpty())
-            sb.append("^").append(generateComment(thisJob.getName(), "JOB", compareJob.getRemarks(), "", false, thisJob.getHost().getDatabaseConnection()));
+        if (!Objects.equals(thisJob.getRemarks(), compareJob.getRemarks()) && !compareJob.getRemarks().isEmpty()) {
+            sb.append("^").append(generateNullableComment(
+                    format(thisJob.getName(), dc),
+                    "JOB",
+                    compareJob.getRemarks(),
+                    ""
+            ));
+        }
 
         if (noChangesCheckString.contentEquals(sb))
             return THERE_ARE_NO_CHANGES;
@@ -2166,20 +2166,6 @@ public final class SQLUtils {
 
     public static String generateAlterActive(String type, String name, boolean isActive) {
         return "ALTER " + type + " " + name + (isActive ? " ACTIVE" : " INACTIVE");
-    }
-
-    private static String getMetaTagForQuery(String metaTag) {
-
-        if (metaTag == null)
-            return null;
-
-        if (metaTag.contentEquals(NamedObject.META_TYPES[GLOBAL_TEMPORARY]))
-            return NamedObject.META_TYPES[TABLE];
-
-        if ((metaTag.contentEquals(NamedObject.META_TYPES[DATABASE_TRIGGER]) || metaTag.contentEquals(NamedObject.META_TYPES[DDL_TRIGGER])))
-            return NamedObject.META_TYPES[TRIGGER];
-
-        return metaTag;
     }
 
     private static String format(String object, DatabaseConnection dc) {
